@@ -17,8 +17,8 @@ Route::get('/login', function () { return view('auth.login'); })->name('login');
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });
     Route::group(['prefix' => 'clients'], function () {
-        Route::get('/', function () { return view('auth.clients.index'); })->name('auth.clients');
-        Route::get('/packages', function () { return view('auth.clients.packages'); })->name('auth.clients.packages');
+        Route::get('/', function () { return view('auth.company.index'); })->name('auth.clients');
+        Route::get('/packages', function () { return view('auth.company.packages'); })->name('auth.clients.packages');
         Route::group(['prefix' => 'invoices'], function () {
             Route::get('/', function () { return view('auth.clients.invoices.index'); })->name('auth.clients.invoices');
             Route::get('/payments', function () { abort(404); })->name('auth.clients.invoices.payments');
@@ -30,8 +30,22 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 Route::group(['prefix' => 'clients'], function () {
+    Route::get('/', function () { return view('auth.dashboard.index'); });
+    Route::group(['prefix' => 'customers'], function () {
+        Route::get('/', function () { })->name('clients.customers');
+        Route::get('/pppoe', function () { })->name('clients.customers.pppoe');
+        Route::get('/hotspot', function () { })->name('clients.customers.hotspot');
+        Route::group(['prefix' => 'invoices'], function () {
+            Route::get('/', function () { })->name('clients.customers.invoices');
+            Route::get('/payments', function () { })->name('clients.customers.invoices.payment');
+        });
+    });
     Route::group(['prefix' => 'users'], function () {
         Route::get('/', function () { return view('clients.users.index'); })->name('clients.users');
         Route::get('/privileges', function () { return view('clients.users.privileges.index'); })->name('clients.users.privileges');
+    });
+    Route::group(['prefix' => 'routerboards'], function () {
+        Route::get('/', function () { return view('clients.routerboards.index'); })->name('clients.routerboards');
+        Route::get('/select', function () { return view('clients.routerboards.index'); })->name('clients.routerboards.select');
     });
 });

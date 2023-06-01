@@ -179,6 +179,7 @@ class PrivilegeRepository
                     'value' => $level->id,
                     'label' => $level->name,
                     'meta' => (object) [
+                        'description' => $level->description,
                         'company' => $level->companyObj,
                         'super' => $level->super,
                         'default' => $level->is_default,

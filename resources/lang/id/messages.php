@@ -4,6 +4,7 @@ return [
     'method' => 'Undefined method',
     'ok' => 'ok',
     'close' => 'Tutup',
+    'otp' => 'One Time Payment (sekali bayar)',
     'menu' => [
         'name' => 'Nama Menu / Fungsi',
         'read' => 'Baca / Buka',
@@ -15,6 +16,7 @@ return [
         'labels' => [
             'search' => 'Cari client Radius...',
             'menu' => 'Client Radius',
+            'menu_info' => 'Manajemen client radius / company',
             'name' => 'Nama Client Radius'
         ],
         'create' => [
@@ -40,12 +42,15 @@ return [
         'packages' => [
             'labels' => [
                 'menu' => 'Paket Client Radius',
+                'menu_info' => 'Manajemen paket client radius'
             ],
         ],
         'invoice' => [
             'labels' => [
                 'menu' => 'Tagihan Client Radius',
-                'payment' => 'Pembayaran Tagihan Client Radius'
+                'menu_info' => 'Manajemen tagihan pelanggan client radius',
+                'payment' => 'Pembayaran Tagihan Client Radius',
+                'payment_info' => 'Pembayaran tagihan client radius secara manual',
             ],
         ],
     ],
@@ -60,6 +65,7 @@ return [
             'info' => 'Informasi hak akses',
             'search' => 'Cari hak akses ...',
             'menu' => 'Hak Akses',
+            'menu_info' => 'Manajemen hak akses pengguna',
             'name' => 'Nama Hak Akses',
             'super' => 'Super User',
             'client' => 'Untuk Client Radius',
@@ -102,6 +108,7 @@ return [
             'date_format' => 'format_tanggal'
         ],
         'labels' => [
+            'sign_out' => 'Keluar',
             'warning' => [
                 'title' => "Bertanggung Jawab lah !!",
                 'content' => 'Rubah dan hapus data dengan bertanggungjawab karena beberapa dan atau semua data terhubung dengan akun lainnya'
@@ -116,6 +123,7 @@ return [
             'password' => 'Kata Sandi',
             'password_confirm' => 'Konfirmasi Kata Sandi',
             'menu' => 'Pengguna',
+            'menu_info' => 'Manajemen pengguna aplikasi',
             'lang' => [
                 'label' => 'Bahasa',
                 'select' => 'Pilih Bahasa',

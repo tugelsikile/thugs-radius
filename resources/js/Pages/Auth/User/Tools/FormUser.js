@@ -69,7 +69,20 @@ class FormUser extends React.Component {
     }
     handleSelect(event, name) {
         let form = this.state.form;
-        form[name] = event; this.setState({form});
+        form[name] = event;
+        if (name === 'level') {
+            if (event.meta.company !== null) {
+                if (this.props.companies !== null) {
+                    if (this.props.companies.length > 0) {
+                        let indexCompany = this.props.companies.findIndex((f) => f.value === event.meta.company.id);
+                        if (indexCompany >= 0) {
+                            form.company = this.props.companies[indexCompany];
+                        }
+                    }
+                }
+            }
+        }
+        this.setState({form});
     }
     handleChange(event) {
         let form = this.state.form;
@@ -234,7 +247,9 @@ class FormUser extends React.Component {
                         <div className="form-group row">
                             <label className="col-sm-3 col-form-label">{Lang.get('messages.company.labels.name')}</label>
                             <div className="col-sm-3">
-                                <Select onChange={(e)=>this.handleSelect(e,'company')} placeholder={<small>{Lang.get('messages.company.select.option')}</small>} options={this.props.companies} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} isClearable/>
+                                <Select onChange={(e)=>this.handleSelect(e,'company')}
+                                        placeholder={<small>{Lang.get('messages.company.select.option')}</small>}
+                                        options={this.state.form.level !== null && this.state.form.level.meta.company !== null ? [{value:this.state.form.level.meta.company.id,label:this.state.form.level.meta.company.name}] : this.props.companies} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} isClearable/>
                             </div>
                         </div>
                         <div className="form-group row">

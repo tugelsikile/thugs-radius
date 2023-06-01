@@ -15,6 +15,14 @@ class ClientCompany extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $casts = [
+        'discount' => 'double'
+    ];
+
+    public function packageObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(CompanyPackage::class,'package','id');
+    }
     public function provinceObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Province::class,'province','code');

@@ -1,11 +1,11 @@
 import React from "react";
-import {Dialog, DialogContent} from "@mui/material";
+import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import Select from "react-select";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
 import {crudPrivileges} from "../../../../../Services/UserService";
 
-// noinspection JSCheckFunctionSignatures,DuplicatedCode
+// noinspection JSCheckFunctionSignatures,DuplicatedCode,CommaExpressionJS
 class FormPrivilege extends React.Component {
     constructor(props) {
         super(props);
@@ -89,7 +89,10 @@ class FormPrivilege extends React.Component {
         return (
             <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave} className="modal-content">
-                    <div className="modal-header">
+                    <DialogTitle>
+                        <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
+                            <span aria-hidden="true">×</span>
+                        </button>
                         <h5 className="modal-title text-sm">
                             {this.state.form.id === null ?
                                 Lang.get('messages.privileges.create.form')
@@ -97,11 +100,8 @@ class FormPrivilege extends React.Component {
                                 Lang.get('messages.privileges.update.form')
                             }
                         </h5>
-                        <button type="button" className="close" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
-                        </button>
-                    </div>
-                    <DialogContent>
+                    </DialogTitle>
+                    <DialogContent dividers>
                         <div className="form-group row">
                             <label className="col-sm-3 col-form-label" htmlFor="inputCheck">{Lang.get('messages.privileges.labels.client')}</label>
                             <div className="col-sm-9">
@@ -132,7 +132,7 @@ class FormPrivilege extends React.Component {
                             </div>
                         </div>
                     </DialogContent>
-                    <div className="modal-footer justify-content-between">
+                    <DialogActions className="justify-content-between">
                         <button type="submit" className="btn btn-success" disabled={this.state.loading}>
                             {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
                             {this.state.form.id === null ? Lang.get('messages.privileges.create.button') : Lang.get('messages.privileges.update.button',null, 'id')}
@@ -140,7 +140,7 @@ class FormPrivilege extends React.Component {
                         <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
                             <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
                         </button>
-                    </div>
+                    </DialogActions>
                 </form>
             </Dialog>
         );

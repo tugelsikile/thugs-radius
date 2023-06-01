@@ -16,3 +16,16 @@ export const dateFormatSelect = [
     { value : 'yyyy/MM/DD HH:mm', label : 'yyyy/MM/DD HH:mm'},
     { value : 'yy/MM/DD HH:mm', label : 'yy/MM/DD HH:mm'},
 ]
+export const ucFirst = (string) => {
+    return string.toLowerCase().replace(/\b[a-z]/g, (letter) => {
+        return letter.toUpperCase();
+    })
+}
+export const durationType = [
+    { value : 'minutes', label : Lang.get('durations.minutes') },
+    { value : 'hours', label : Lang.get('durations.hours') },
+    { value : 'days', label : Lang.get('durations.days') },
+    { value : 'weeks', label : Lang.get('durations.weeks') },
+    { value : 'months', label : Lang.get('durations.months') },
+    { value : 'years', label : Lang.get('durations.years') },
+]

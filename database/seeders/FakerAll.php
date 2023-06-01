@@ -44,7 +44,7 @@ class FakerAll extends Seeder
                 $package->id = Uuid::uuid4()->toString();
                 $package->code = generateCompanyPackageCode();
                 $package->order = $int;
-                $package->name = $faker->domainName;
+                $package->name = $faker->domainWord;
                 $package->description = $faker->streetAddress;
                 $package->base_price = mt_rand(100000,2000000);
                 $package->vat_percent = mt_rand(0,11);

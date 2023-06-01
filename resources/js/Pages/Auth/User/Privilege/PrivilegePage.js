@@ -67,7 +67,7 @@ class PrivilegePage extends React.Component {
                 ids.push(item);
             });
         }
-        confirmDialog(this, ids,'delete',`${window.origin}/api/auth/users/privileges`,Lang.get('messages.privileges.delete.name'),Lang.get('messages.privileges.delete.select'),'app.loadLevels()');
+        confirmDialog(this, ids,'delete',`${window.origin}/api/auth/users/privileges`,Lang.get('messages.privileges.delete.form'),Lang.get('messages.privileges.delete.select'),'app.loadLevels()');
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -336,11 +336,11 @@ class PrivilegePage extends React.Component {
                                         {this.state.privilege !== null &&
                                             <>
                                                 {this.state.privilege.create &&
-                                                    <button onClick={()=>this.toggleModal()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fe fe-plus"/> {Lang.get('messages.privileges.create.form')}</button>
+                                                    <button onClick={()=>this.toggleModal()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('messages.privileges.create.form')}</button>
                                                 }
                                                 {this.state.privilege.delete &&
                                                     this.state.levels.selected.length > 0 &&
-                                                    <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fe fe-trash-2"/> {Lang.get('messages.privileges.delete.select')}</button>
+                                                    <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('messages.privileges.delete.select')}</button>
                                                 }
                                             </>
                                         }
@@ -414,23 +414,27 @@ class PrivilegePage extends React.Component {
                                                                 let element = document.getElementById(`table_${item.value}`);
                                                                 element.style.visibility = element.style.visibility === 'collapse' ? null : 'collapse';
                                                             }} title={Lang.get('messages.privileges.set.vis')} className="btn btn-xs float-left btn-block text-left">
-                                                                <i className="fe fe-arrow-down-circle mr-1"/>
-                                                                {item.label}
+                                                                <i className="far fa-question-circle mr-1"/>
+                                                                <strong>{item.label}</strong>
+                                                                {item.meta.description !== null &&
+                                                                    item.meta.description.length > 0 &&
+                                                                        <span className="text-muted small"><br/>{item.meta.description}</span>
+                                                                }
                                                             </a>
                                                         </td>
                                                         <td className="align-middle">{item.meta.company !== null && item.meta.company.name}</td>
                                                         <td className="align-middle text-center">
                                                             {item.meta.super ?
-                                                                <i className="fe fe-check-circle text-success"/>
+                                                                <i className="far fa-check-square text-success"/>
                                                                 :
-                                                                <i className="fe fe-x-circle text-warning"/>
+                                                                <i className="far fa-window-close text-danger"/>
                                                             }
                                                         </td>
                                                         <td className="align-middle text-center">
                                                             {item.meta.client ?
-                                                                <i className="fe fe-check-circle text-success"/>
+                                                                <i className="far fa-check-square text-success"/>
                                                                 :
-                                                                <i className="fe fe-x-circle text-warning"/>
+                                                                <i className="far fa-window-close text-danger"/>
                                                             }
                                                         </td>
                                                         <td className="align-middle text-center">
@@ -469,9 +473,9 @@ class PrivilegePage extends React.Component {
                                                                     <React.Fragment key={menu.value}>
                                                                         <tr key={menu.value}>
                                                                             <td>
-                                                                                <i className="fe fe-chevrons-right mr-1"/>
-                                                                                {Lang.get(`messages.${menu.meta.lang}`)}
-                                                                                <br/><span className="small text-muted ml-3">{menu.meta.description}</span>
+                                                                                <i className={`${menu.meta.icon} mr-1`}/>
+                                                                                {Lang.get(`${menu.meta.lang}`)}
+                                                                                <br/><span className="small text-muted ml-3">{Lang.get(`${menu.meta.lang}_info`)}</span>
                                                                             </td>
                                                                             {menu.meta.function ?
                                                                                 <td className="align-middle text-left" colSpan={4}>
@@ -544,9 +548,9 @@ class PrivilegePage extends React.Component {
                                                                         {menu.meta.childrens.map((child,indexChild)=>
                                                                             <tr key={child.value}>
                                                                                 <td>
-                                                                                    <i className="fe fe-corner-down-right ml-3 mr-1"/>
-                                                                                    {Lang.get(`messages.${child.meta.lang}`)}
-                                                                                    <br/><span className="small text-muted ml-5">{child.meta.description}</span>
+                                                                                    <i className={`${child.meta.icon} ml-3 mr-1`}/>
+                                                                                    {Lang.get(`${child.meta.lang}`)}
+                                                                                    <br/><span className="small text-muted ml-3">{Lang.get(`${child.meta.lang}_info`)}</span>
                                                                                 </td>
                                                                                 {child.meta.function ?
                                                                                     <td className="align-middle text-left" colSpan={4}>

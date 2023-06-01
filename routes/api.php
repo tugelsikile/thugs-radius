@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\CompanyController;
+use App\Http\Controllers\Client\PackageController;
+use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
@@ -33,5 +35,11 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
     Route::group(['prefix' => 'companies'], function () {
         Route::any('/', [CompanyController::class, 'crud']);
+        Route::group(['prefix' => 'packages'], function () {
+            Route::any('/', [PackageController::class, 'crud']);
+        });
     });
+});
+Route::group(['prefix' => 'regions'], function () {
+    Route::post('/all', [RegionController::class, 'all']);
 });

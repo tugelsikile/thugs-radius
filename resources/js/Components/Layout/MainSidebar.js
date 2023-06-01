@@ -1,4 +1,5 @@
 import React from "react";
+import {logout} from "../Authentication";
 
 // noinspection JSUnresolvedVariable,SpellCheckingInspection
 class MainSidebar extends React.Component {
@@ -40,7 +41,7 @@ class MainSidebar extends React.Component {
                                             <li key={parent.value} className="nav-item">
                                                 <a href={parent.meta.url} className={this.props.route === parent.meta.route ? 'nav-link active' : 'nav-link'}>
                                                     <i className={`nav-icon ${parent.meta.icon}`}/>
-                                                    <p>{Lang.get(`messages.${parent.meta.lang}`)}</p>
+                                                    <p>{Lang.get(`${parent.meta.lang}`)}</p>
                                                 </a>
                                             </li>
                                             :
@@ -48,7 +49,7 @@ class MainSidebar extends React.Component {
                                                 <a href="#" className={parent.meta.childrens.findIndex((f) => f.meta.route === this.props.route) >= 0 ? 'nav-link active' : 'nav-link'}>
                                                     <i className={`nav-icon ${parent.meta.icon}`}/>
                                                     <p>
-                                                        {Lang.get(`messages.${parent.meta.lang}`)}
+                                                        {Lang.get(`${parent.meta.lang}`)}
                                                         <i className="right fas fa-angle-left"/>
                                                     </p>
                                                 </a>
@@ -57,7 +58,7 @@ class MainSidebar extends React.Component {
                                                         <li key={children.value} className="nav-item">
                                                             <a href={children.meta.url} className={children.meta.route === this.props.route ? 'nav-link active' : 'nav-link'}>
                                                                 <i className={`nav-icon ${children.meta.icon}`}/>
-                                                                <p>{Lang.get(`messages.${children.meta.lang}`)}</p>
+                                                                <p>{Lang.get(`${children.meta.lang}`)}</p>
                                                             </a>
                                                         </li>
                                                     )}
@@ -65,6 +66,12 @@ class MainSidebar extends React.Component {
                                             </li>
                                     )
                                 }
+                                <li className="nav-item">
+                                    <a onClick={()=>logout()} href="#" className="nav-link">
+                                        <i className="nav-icon fe fe-log-out text-danger"></i>
+                                        <p className="text text-danger">{Lang.get('messages.users.labels.sign_out')}</p>
+                                    </a>
+                                </li>
                             </ul>
                         </nav>
                     </div>

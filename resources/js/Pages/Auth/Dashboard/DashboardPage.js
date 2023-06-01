@@ -4,6 +4,7 @@ import MainHeader from "../../../Components/Layout/MainHeader";
 import MainSidebar from "../../../Components/Layout/MainSidebar";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import PageLoader from "../../../Components/PageLoader";
+import MainFooter from "../../../Components/Layout/MainFooter";
 
 class DashboardPage extends React.Component {
     constructor(props) {
@@ -28,6 +29,8 @@ class DashboardPage extends React.Component {
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
+
+                <MainFooter/>
             </React.StrictMode>
         )
     }

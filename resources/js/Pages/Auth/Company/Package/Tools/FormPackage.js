@@ -1,3 +1,5 @@
+// noinspection JSValidateTypes,CommaExpressionJS
+
 import React from "react";
 import {durationType} from "../../../../../Components/mixedConsts";
 import {crudCompanyPackage} from "../../../../../Services/CompanyService";
@@ -6,8 +8,9 @@ import {logout} from "../../../../../Components/Authentication";
 import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import {NumericFormat} from "react-number-format";
 import Select from "react-select";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
-// noinspection DuplicatedCode,JSCheckFunctionSignatures
+// noinspection DuplicatedCode,JSCheckFunctionSignatures,JSValidateTypes,CommaExpressionJS
 class FormPackage extends React.Component {
     constructor(props) {
         super(props);
@@ -205,7 +208,12 @@ class FormPackage extends React.Component {
                     </DialogContent>
                     <DialogActions className="justify-content-between">
                         <button type="submit" className="btn btn-success" disabled={this.state.loading}>
-                            <i className="fas fa-save mr-1"/>
+                            {this.state.loading ?
+                                <FontAwesomeIcon icon="fa-circle-notch" className="fa-spin"/>
+                                :
+                                <FontAwesomeIcon icon="fas fa-save"/>
+                            }
+                            <span className="mr-1"/>
                             {this.state.form.id === null ? Lang.get('companies.packages.create.button') : Lang.get('companies.packages.update.button',null, 'id')}
                         </button>
                         <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>

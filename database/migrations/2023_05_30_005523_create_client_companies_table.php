@@ -19,7 +19,7 @@ class CreateClientCompaniesTable extends Migration
             $table->string('code')->unique();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('domain')->unique();
+            $table->string('domain')->nullable();
             $table->text('address')->nullable();
             $table->char('province',2)->nullable();
             $table->char('city',4)->nullable();

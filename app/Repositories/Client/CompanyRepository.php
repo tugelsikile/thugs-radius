@@ -11,10 +11,13 @@ namespace App\Repositories\Client;
 use App\Models\Company\AdditionalPackage;
 use App\Models\Company\ClientCompany;
 use App\Models\Company\CompanyPackage;
+use App\Models\User\User;
+use App\Models\User\UserLevel;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Hash;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -124,6 +127,18 @@ class CompanyRepository
                     $additional->otp = $item[__('companies.packages.form_input.otp')] == 1;
                     $additional->saveOrFail();
                 }
+            }
+            $levelUser = UserLevel::where('name', 'Admin')->first();
+            if ($levelUser != null) {
+                $user = new User();
+                $user->id = Uuid::uuid4()->toString();
+                $user->level = $levelUser->id;
+                $user->company = $company->id;
+                $user->name = $company->name;
+                $user->email = $company->email;
+                $user->password = Hash::make($user->email);
+                $user->locale = (object) [ 'lang' => 'id', 'date_format' => 'DD/MM/yyyy HH:mm:ss', 'time_zone' => 'Asia/Jakarta' ];
+                $user->saveOrFail();
             }
             return $this->table(new Request(['id' => $company->id]))->first();
         } catch (Exception $exception) {

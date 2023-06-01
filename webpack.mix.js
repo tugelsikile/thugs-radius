@@ -17,3 +17,4 @@ mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
 mix.js('resources/js/src/auth/companies/index.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/companies/packages.js','public/js/auth/companies');

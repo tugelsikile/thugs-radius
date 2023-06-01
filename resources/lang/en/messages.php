@@ -4,6 +4,7 @@ return [
     'method' => 'Undefined method',
     'ok' => 'ok',
     'close' => 'Tutup',
+    'otp' => 'One Time Payment (sekali bayar)',
     'menu' => [
         'name' => 'Nama Menu / Fungsi',
         'read' => 'Baca / Buka',

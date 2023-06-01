@@ -22,7 +22,7 @@ class MenuSeeder extends Seeder
         $requests->push((object) [
             'name' => 'Client', 'route' => 'auth.clients', 'description' => 'Client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-building', 'lang' => 'messages.company.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Package', 'route' => 'auth.clients.packages', 'description' => 'Package for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-file-contract', 'lang' => 'messages.company.packages.labels.menu' ],
+                (object) [ 'name' => 'Package', 'route' => 'auth.clients.packages', 'description' => 'Package for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-archive', 'lang' => 'messages.company.packages.labels.menu' ],
                 (object) [ 'name' => 'Invoice', 'route' => 'auth.clients.invoices', 'description' => 'Invoice for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-file-invoice-dollar', 'lang' => 'messages.company.invoice.labels.menu'],
                 (object) [ 'name' => 'Invoice Payment', 'route' => 'auth.clients.invoices.payments', 'description' => 'Payment Invoice for client radius', 'function' => true, 'for_client' => false, 'icon' => 'fas fa-cash-register', 'lang' => 'messages.company.invoice.labels.payment' ],
             ])

@@ -14720,8 +14720,9 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("table", {
         className: "table table-sm table-striped"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("thead", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle text-center",
-        width: 50
+        width: 30
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
         className: "custom-control custom-checkbox"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
@@ -14735,51 +14736,63 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
         htmlFor: "checkAll",
         className: "custom-control-label"
       }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle",
-        width: 100
+        width: 90
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "code",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.code'),
+        name: Lang.get('companies.packages.labels.table_columns.code'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "name",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.name'),
+        name: Lang.get('companies.packages.labels.table_columns.name'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle",
-        width: 150
+        width: 120
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "price",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.price'),
+        name: Lang.get('companies.packages.labels.table_columns.price'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle",
-        width: 50
+        width: 70
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "vat",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.vat'),
+        name: Lang.get('companies.packages.labels.table_columns.vat'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle",
         width: 100
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "duration",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.duration'),
+        name: Lang.get('companies.packages.labels.table_columns.duration'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        colSpan: 4,
+        className: "align-middle text-center"
+      }, Lang.get('companies.packages.labels.table_columns.max.main')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        rowSpan: 2,
         className: "align-middle",
-        width: 50
+        width: 30
+      }, Lang.get('messages.users.labels.table_action'))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
+        className: "align-middle",
+        width: 120
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "user",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.max_user'),
+        name: Lang.get('companies.packages.labels.table_columns.max.user'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
         className: "align-middle",
@@ -14787,7 +14800,7 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "customer",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.max_customer'),
+        name: Lang.get('companies.packages.labels.table_columns.max.customer'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
         className: "align-middle",
@@ -14795,20 +14808,17 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "voucher",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.max_voucher'),
+        name: Lang.get('companies.packages.labels.table_columns.max.voucher'),
         handleSort: this.handleSort
       })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
         className: "align-middle",
-        width: 50
+        width: 70
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_User_Tools_BtnSort__WEBPACK_IMPORTED_MODULE_10__["default"], {
         sort: "router",
         filter: this.state.filter,
-        name: Lang.get('companies.packages.labels.max_router'),
+        name: Lang.get('companies.packages.labels.table_columns.max.router'),
         handleSort: this.handleSort
-      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("th", {
-        className: "align-middle",
-        width: 50
-      }, Lang.get('messages.users.labels.table_action')))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tbody", null, this.state.packages.filtered.length === 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("td", {
+      })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tbody", null, this.state.packages.filtered.length === 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("td", {
         className: "align-middle text-center",
         colSpan: 11
       }, "Tidak ada data")) : this.state.packages.filtered.map(function (item, index) {
@@ -14834,7 +14844,7 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
         }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("td", {
           className: "align-middle text-center"
         }, item.meta.code), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("td", null, item.label), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("td", {
-          className: item.meta.prices.base === 0 ? 'align-middle text-center' : null
+          className: item.meta.prices.base === 0 ? 'align-middle text-center' : 'align-middle'
         }, item.meta.prices.base === 0 ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
           className: "badge badge-success"
         }, "FREE") : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement((react__WEBPACK_IMPORTED_MODULE_0___default().Fragment), null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
@@ -15448,18 +15458,23 @@ var BtnSort = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-        className: "link-black btn-block",
+        className: "btn-block",
         "data-sort": this.props.sort,
         onClick: this.props.handleSort,
         href: "#"
-      }, this.props.name, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-        className: "float-left text-muted mr-1"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+        className: "text-dark"
+      }, this.props.name), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+        className: "float-right ml-1"
       }, this.props.filter.sort.by !== this.props.sort ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort fa-2xs"
+        icon: "fas fa-sort fa-2xs",
+        className: "text-muted"
       }) : this.props.filter.sort.dir === 'asc' ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort-down fa-2xs"
+        icon: "fas fa-sort-down fa-2xs",
+        className: "text-dark"
       }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort-up fa-2xs"
+        icon: "fas fa-sort-up fa-2xs",
+        className: "text-dark"
       })));
     }
   }]);

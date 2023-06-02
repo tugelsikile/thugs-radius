@@ -15420,18 +15420,23 @@ var BtnSort = /*#__PURE__*/function (_React$Component) {
     key: "render",
     value: function render() {
       return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-        className: "link-black btn-block",
+        className: "btn-block",
         "data-sort": this.props.sort,
         onClick: this.props.handleSort,
         href: "#"
-      }, this.props.name, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-        className: "float-left text-muted mr-1"
+      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+        className: "text-dark"
+      }, this.props.name), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+        className: "float-right ml-1"
       }, this.props.filter.sort.by !== this.props.sort ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort fa-2xs"
+        icon: "fas fa-sort fa-2xs",
+        className: "text-muted"
       }) : this.props.filter.sort.dir === 'asc' ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort-down fa-2xs"
+        icon: "fas fa-sort-down fa-2xs",
+        className: "text-dark"
       }) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_1__.FontAwesomeIcon, {
-        icon: "fas fa-sort-up fa-2xs"
+        icon: "fas fa-sort-up fa-2xs",
+        className: "text-dark"
       })));
     }
   }]);

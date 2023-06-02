@@ -16,7 +16,15 @@ return [
         'address' => 'Alamat Client Radius',
         'email' => 'Email Client Radius',
         'postal' => 'Kode Pos',
-        'phone' => 'Nomor Telepon / HP'
+        'phone' => 'Nomor Telepon / HP',
+        'table_columns' => [
+            'code' => 'ID',
+            'name' => 'Nama Client Radius',
+            'email' => 'Email',
+            'expired' => [
+                'at' =>  'Tgl. Expired',
+            ],
+        ]
     ],
     'create' => [
         'form' => 'Tambah Data Client Radius',
@@ -80,6 +88,20 @@ return [
             'max_customer' => 'Max Pelanggan',
             'max_voucher' => 'Max Voucher',
             'max_router' => 'Max NAS / Router',
+            'table_columns' => [
+                'code' => 'ID',
+                'name' => 'Nama Paket',
+                'price' => 'Harga',
+                'vat' => 'Pajak',
+                'duration' => 'Durasi',
+                'max' => [
+                    'main' => 'Maksimal',
+                    'user' => 'Pengguna',
+                    'customer' => 'Pelanggan',
+                    'voucher' => 'Voucher',
+                    'router' => 'NAS'
+                ]
+            ],
         ],
         'create' => [
             'form' => 'Tambah Data Paket Client Radius',

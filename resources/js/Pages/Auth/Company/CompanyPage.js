@@ -12,6 +12,7 @@ import BtnSort from "../User/Tools/BtnSort";
 import {ucFirst} from "../../../Components/mixedConsts";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCompany from "./Tools/FormCompany";
+import moment from "moment";
 
 // noinspection DuplicatedCode
 class CompanyPage extends React.Component {
@@ -141,6 +142,13 @@ class CompanyPage extends React.Component {
                     companies.filtered = companies.filtered.sort((a,b) => (a.meta.address.email > b.meta.address.email) ? 1 : ((b.meta.address.email > a.meta.address.email) ? -1 : 0));
                 } else {
                     companies.filtered = companies.filtered.sort((a,b) => (a.meta.address.email > b.meta.address.email) ? -1 : ((b.meta.address.email > a.meta.address.email) ? 1 : 0));
+                }
+                break;
+            case 'expired' :
+                if (this.state.filter.sort.dir === 'asc') {
+                    companies.filtered = companies.filtered.sort((a,b) => (a.meta.expiry > b.meta.expiry) ? 1 : ((b.meta.expiry > a.meta.expiry) ? -1 : 0));
+                } else {
+                    companies.filtered = companies.filtered.sort((a,b) => (a.meta.expiry > b.meta.expiry) ? -1 : ((b.meta.expiry > a.meta.expiry) ? 1 : 0));
                 }
                 break;
         }
@@ -273,32 +281,38 @@ class CompanyPage extends React.Component {
                                     <table className="table table-sm table-striped">
                                         <thead>
                                         <tr>
-                                            <th className="align-middle text-center" width={50}>
+                                            <th className="align-middle text-center" width={30}>
                                                 <div className="custom-control custom-checkbox">
                                                     <input data-id="" disabled={this.state.loadings.companies} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
                                                     <label htmlFor="checkAll" className="custom-control-label"/>
                                                 </div>
                                             </th>
-                                            <th width={100}>
+                                            <th width={80}>
                                                 <BtnSort sort="code"
-                                                         name={Lang.get('companies.labels.code')}
+                                                         name={Lang.get('companies.labels.table_columns.code')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th>
                                                 <BtnSort sort="name"
-                                                         name={Lang.get('companies.labels.name')}
+                                                         name={Lang.get('companies.labels.table_columns.name')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th>
                                                 <BtnSort sort="email"
-                                                         name={Lang.get('companies.labels.email')}
+                                                         name={Lang.get('companies.labels.table_columns.email')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th>
-                                                {Lang.get('companies.packages.labels.menu')}
+                                                {Lang.get('companies.packages.labels.table_columns.name')}
+                                            </th>
+                                            <th className="align-middle">
+                                                <BtnSort sort="expired"
+                                                         name={Lang.get('companies.labels.table_columns.expired.at')}
+                                                         filter={this.state.filter}
+                                                         handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle text-center" width={50}>{Lang.get('messages.users.labels.table_action')}</th>
                                         </tr>
@@ -329,6 +343,17 @@ class CompanyPage extends React.Component {
                                                                 <li key={pack.package.value}><i className="fas fa-minus mr-1"/> {pack.package.label}</li>
                                                             )}
                                                         </ul>
+                                                    </td>
+                                                    <td className="align-middle">
+                                                        {item.meta.expiry === null ?
+                                                            <span className="badge badge-success">Unlimited</span>
+                                                            :
+                                                            moment().isBefore(moment(item.meta.expiry)) ?
+                                                                <span className="badge badge-primary">{moment(item.meta.expiry).locale(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-EN').format(localStorage.getItem('locale_date_format'))}</span>
+                                                                :
+                                                                <span className="badge badge-danger">{moment(item.meta.expiry).locale(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-EN').format(localStorage.getItem('locale_date_format'))}</span>
+
+                                                        }
                                                     </td>
                                                     <td className="align-top text-center">
                                                         {this.state.privilege !== null &&

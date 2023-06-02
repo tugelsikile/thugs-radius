@@ -316,68 +316,73 @@ class PackagePage extends React.Component {
                                     <table className="table table-sm table-striped">
                                         <thead>
                                         <tr>
-                                            <th className="align-middle text-center" width={50}>
+                                            <th rowSpan={2} className="align-middle text-center" width={30}>
                                                 <div className="custom-control custom-checkbox">
                                                     <input data-id="" disabled={this.state.loadings.packages} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
                                                     <label htmlFor="checkAll" className="custom-control-label"/>
                                                 </div>
                                             </th>
-                                            <th className="align-middle" width={100}>
+                                            <th rowSpan={2} className="align-middle" width={90}>
                                                 <BtnSort sort="code"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.code')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.code')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle">
+                                            <th rowSpan={2} className="align-middle">
                                                 <BtnSort sort="name"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.name')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.name')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={150}>
+                                            <th rowSpan={2} className="align-middle" width={120}>
                                                 <BtnSort sort="price"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.price')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.price')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={50}>
+                                            <th rowSpan={2} className="align-middle" width={70}>
                                                 <BtnSort sort="vat"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.vat')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.vat')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={100}>
+                                            <th rowSpan={2} className="align-middle" width={100}>
                                                 <BtnSort sort="duration"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.duration')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.duration')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={50}>
+                                            <th colSpan={4} className="align-middle text-center">
+                                                {Lang.get('companies.packages.labels.table_columns.max.main')}
+                                            </th>
+                                            <th rowSpan={2} className="align-middle" width={30}>
+                                                {Lang.get('messages.users.labels.table_action')}
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th className="align-middle" width={120}>
                                                 <BtnSort sort="user"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.max_user')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.max.user')}
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle" width={100}>
                                                 <BtnSort sort="customer"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.max_customer')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.max.customer')}
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle" width={100}>
                                                 <BtnSort sort="voucher"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.max_voucher')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.max.voucher')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={50}>
+                                            <th className="align-middle" width={70}>
                                                 <BtnSort sort="router"
                                                          filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.max_router')}
+                                                         name={Lang.get('companies.packages.labels.table_columns.max.router')}
                                                          handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                {Lang.get('messages.users.labels.table_action')}
                                             </th>
                                         </tr>
                                         </thead>
@@ -395,7 +400,7 @@ class PackagePage extends React.Component {
                                                     </td>
                                                     <td className="align-middle text-center">{item.meta.code}</td>
                                                     <td>{item.label}</td>
-                                                    <td className={item.meta.prices.base === 0 ? 'align-middle text-center' : null}>
+                                                    <td className={item.meta.prices.base === 0 ? 'align-middle text-center' : 'align-middle'}>
                                                         {item.meta.prices.base === 0 ?
                                                             <span className="badge badge-success">FREE</span>
                                                             :

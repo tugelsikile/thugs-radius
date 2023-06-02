@@ -66,7 +66,7 @@ return [
             'duration_type' => 'Jenis Durasi',
             'duration_type_select' => 'Pilih Jenis Durasi',
             'description' => 'Keterangan Paket',
-            'code' => 'Kode',
+            'code' => 'Kode Paket',
             'menu' => 'Paket Client Radius',
             'name' => 'Nama Paket',
             'menu_info' => 'Manajemen paket client radius',
@@ -124,6 +124,7 @@ return [
     ],
     'invoices' => [
         'form_input' => [
+            'name' => 'tagihan',
             'periode' => 'periode_tagihan',
             'discount' => 'diskon_tagihan',
             'vat' => 'pajak_tagihan',
@@ -139,6 +140,7 @@ return [
             ]
         ],
         'labels' => [
+            'periode' => 'Periode Tagihan',
             'menu' => 'Tagihan Client Radius',
             'select_periode' => 'Pilih Periode Penagihan',
             'search' => 'Cari Tagihan ...',
@@ -169,20 +171,47 @@ return [
             'button' => 'Tambah',
         ],
         'update' => [
-            'form' => 'Rubah Tagihan Client Radius',
+            'form' => 'Rubah Tagihan',
             'success' => 'Berhasil merubah data tagihan client radius',
             'button' => 'Simpan',
         ],
         'delete' => [
-            'form' => 'Hapus Tagihan Client Radius',
+            'form' => 'Hapus Tagihan',
             'confirm' => "Yakin ingin menghapus data tagihan client radius.\nData yang berhubungan akan ikut terhapus",
             'success' => 'Berhasil menghapus data tagihan client radius',
             'button' => 'Hapus',
-            'select' => 'Hapus Tagihan Client Radius Dipilih'
+            'select' => 'Hapus Tagihan Dipilih'
         ],
         'payments' => [
+            'form_input' => [
+                'id' => 'pembayaran',
+                'name' => 'pembayaran_tagihan',
+                'delete' => 'hapus_pembayaran',
+                'date' => 'tanggal_pembayaran',
+                'note' => 'catatan_pembayaran',
+                'amount' => 'jumlah_pembayaran',
+                'max_amount' => 'maksimal_pembayaran',
+            ],
             'labels' => [
-                'menu' => 'Pembayaran Tagihan'
+                'success' => 'Pembayaran tagihan berhasil ditambahkan',
+                'error_amount' => 'Total jumlah pembayaran melebihi besar tagihan',
+                'menu' => 'Pembayaran Tagihan',
+                'button' => 'Simpan Pembayaran',
+                'add' => 'Tambah Pembayaran',
+                'code' => 'ID Pembayaran',
+                'code_temp' => 'Akan Generate',
+                'date' => 'Tgl. Pembayaran',
+                'date_select' => 'Pilih Tgl. Bayar',
+                'note' => 'Catatan Pembayaran',
+                'by' => 'Oleh',
+                'subtotal' => 'Subtotal Pembayaran',
+                'amount' => 'Jml. Pembayaran',
+                'amount_left' => 'Sisa Pembayaran',
+                'status' => [
+                    'pending' => 'Menunggu Pembayaran',
+                    'success' => 'Lunas',
+                    'partial' => 'Bayar Sebagian',
+                ]
             ]
         ]
     ],

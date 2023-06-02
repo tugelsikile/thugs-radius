@@ -19,7 +19,14 @@ class CompanyInvoiceController extends Controller
         $this->repository = new InvoiceRepository();
         $this->validation = new InvoiceValidation();
     }
-    public function payment(Request $request) {
+
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Throwable
+     */
+    public function payment(Request $request): JsonResponse
+    {
         try {
             $valid = $this->validation->payment($request);
             $params = $this->repository->payment($valid);

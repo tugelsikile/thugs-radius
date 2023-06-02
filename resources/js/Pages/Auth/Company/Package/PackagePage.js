@@ -11,7 +11,7 @@ import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import BtnSort from "../../User/Tools/BtnSort";
-import {durationBy} from "../../../../Components/mixedConsts";
+import {CardPreloader, durationBy} from "../../../../Components/mixedConsts";
 import FormPackage from "./Tools/FormPackage";
 
 class PackagePage extends React.Component {
@@ -287,7 +287,7 @@ class PackagePage extends React.Component {
 
                             <div className="card card-outline card-secondary">
                                 {this.state.loadings.packages &&
-                                    <div className="overlay"><i className="fa-spin fas fa-3x fa-sync-alt"/></div>
+                                    <CardPreloader/>
                                 }
                                 <div className="card-header">
                                     <h3 className="card-title">

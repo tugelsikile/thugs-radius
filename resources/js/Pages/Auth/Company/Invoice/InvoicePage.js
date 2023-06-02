@@ -19,7 +19,7 @@ registerLocale("en", en);
 import moment from "moment";
 import BtnSort from "../../User/Tools/BtnSort";
 import FormInvoice from "./Tools/FormInvoice";
-import {sumTotalInvoiceSingle, sumTotalPaymentSingle} from "../../../../Components/mixedConsts";
+import {CardPreloader, sumTotalInvoiceSingle, sumTotalPaymentSingle} from "../../../../Components/mixedConsts";
 import FormPayment from "./Tools/FormPayment";
 
 
@@ -322,7 +322,7 @@ class InvoicePage extends React.Component {
 
                             <div className="card card-outline card-secondary">
                                 {this.state.loadings.invoices &&
-                                    <div className="overlay"><i className="fa-spin fas fa-3x fa-sync-alt"/></div>
+                                    <CardPreloader/>
                                 }
                                 <div className="card-header">
                                     <div className="card-title">

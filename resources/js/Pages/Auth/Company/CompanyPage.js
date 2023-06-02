@@ -9,7 +9,7 @@ import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../User/Tools/BtnSort";
-import {ucFirst} from "../../../Components/mixedConsts";
+import {CardPreloader, ucFirst} from "../../../Components/mixedConsts";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCompany from "./Tools/FormCompany";
 import moment from "moment";
@@ -252,7 +252,7 @@ class CompanyPage extends React.Component {
 
                             <div className="card card-outline card-secondary">
                                 {this.state.loadings.companies &&
-                                    <div className="overlay"><i className="fa-spin fas fa-3x fa-sync-alt"/></div>
+                                    <CardPreloader/>
                                 }
                                 <div className="card-header">
                                     <h3 className="card-title">

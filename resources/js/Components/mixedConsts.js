@@ -55,6 +55,9 @@ export const sumTotalPaymentSingle = (data) => {
 export const sumTotalPackageSingle = (item) => {
     return (((( item.meta.prices.price * item.meta.prices.qty) * item.meta.prices.vat ) / 100 ) + ( item.meta.prices.price * item.meta.prices.qty)) - item.meta.prices.discount;
 }
+export const CardPreloader = () => {
+    return <div className="overlay"><img src={window.origin + '/preloader.svg'} style={{height:100}}/></div>
+}
 export const parseInputFloat = (event) => {
     let currentValue = event.currentTarget.value;
     let leftValue;

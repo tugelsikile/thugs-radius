@@ -203,7 +203,9 @@ class AuthRepository
             $logs->user = $user->id;
             $logs->url = $request->fullUrl();
             $logs->method = strtolower($request->method());
-            $logs->params = $request->all();
+            $requestX = $request->all();
+            $requestX['password'] = '**********';
+            $logs->params = $requestX;
             $logs->ip = $request->ip();
             $logs->browser = Browser::browserFamily() . ' ' . Browser::browserVersion();
             $logs->platform = Browser::platformName();

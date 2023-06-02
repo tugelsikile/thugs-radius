@@ -17,6 +17,7 @@ return [
         'email' => 'Email Client Radius',
         'postal' => 'Kode Pos',
         'phone' => 'Nomor Telepon / HP',
+        'select' => 'Pilih client radius',
         'table_columns' => [
             'code' => 'ID',
             'name' => 'Nama Client Radius',
@@ -65,7 +66,7 @@ return [
             'duration_type' => 'Jenis Durasi',
             'duration_type_select' => 'Pilih Jenis Durasi',
             'description' => 'Keterangan Paket',
-            'code' => 'Kode',
+            'code' => 'Kode Paket',
             'menu' => 'Paket Client Radius',
             'name' => 'Nama Paket',
             'menu_info' => 'Manajemen paket client radius',
@@ -120,5 +121,98 @@ return [
             'button' => 'Hapus',
             'select' => 'Hapus Paket Client Radius Dipilih'
         ],
-    ]
+    ],
+    'invoices' => [
+        'form_input' => [
+            'name' => 'tagihan',
+            'periode' => 'periode_tagihan',
+            'discount' => 'diskon_tagihan',
+            'vat' => 'pajak_tagihan',
+            'code' => 'nomor_invoice',
+            'package' => [
+                'input' => 'paket',
+                'name' => 'nama_paket',
+                'price' => 'harga_layanan',
+                'vat' => 'pajak_layanan',
+                'qty' => 'jumlah_layanan',
+                'discount' => 'diskon_layanan',
+                'input_delete' => 'hapus_paket',
+            ]
+        ],
+        'labels' => [
+            'periode' => 'Periode Tagihan',
+            'menu' => 'Tagihan Client Radius',
+            'select_periode' => 'Pilih Periode Penagihan',
+            'search' => 'Cari Tagihan ...',
+            'code' => 'Nomor Invoice',
+            'vat' => 'Pajak Tagihan',
+            'status' => 'Status Tagihan',
+            'discount' => 'Diskon Tagihan',
+            'subtotal' => [
+                'main' => 'Besar Tagihan',
+                'item' => 'Subtotal',
+            ],
+            'package' => [
+                'add' => 'Tambah Paket',
+                'input' => 'Paket',
+                'name' => 'Nama Paket',
+                'price' => 'Harga',
+                'vat' => '% Pajak',
+                'qty' => 'Jumlah',
+                'discount' => 'Diskon',
+            ]
+        ],
+        'generate' => [
+            'form' => 'Generate Tagihan',
+        ],
+        'create' => [
+            'form' => 'Tambah Tagihan',
+            'success' => 'Berhasil menambahkan tagihan client radius',
+            'button' => 'Tambah',
+        ],
+        'update' => [
+            'form' => 'Rubah Tagihan',
+            'success' => 'Berhasil merubah data tagihan client radius',
+            'button' => 'Simpan',
+        ],
+        'delete' => [
+            'form' => 'Hapus Tagihan',
+            'confirm' => "Yakin ingin menghapus data tagihan client radius.\nData yang berhubungan akan ikut terhapus",
+            'success' => 'Berhasil menghapus data tagihan client radius',
+            'button' => 'Hapus',
+            'select' => 'Hapus Tagihan Dipilih'
+        ],
+        'payments' => [
+            'form_input' => [
+                'id' => 'pembayaran',
+                'name' => 'pembayaran_tagihan',
+                'delete' => 'hapus_pembayaran',
+                'date' => 'tanggal_pembayaran',
+                'note' => 'catatan_pembayaran',
+                'amount' => 'jumlah_pembayaran',
+                'max_amount' => 'maksimal_pembayaran',
+            ],
+            'labels' => [
+                'success' => 'Pembayaran tagihan berhasil ditambahkan',
+                'error_amount' => 'Total jumlah pembayaran melebihi besar tagihan',
+                'menu' => 'Pembayaran Tagihan',
+                'button' => 'Simpan Pembayaran',
+                'add' => 'Tambah Pembayaran',
+                'code' => 'ID Pembayaran',
+                'code_temp' => 'Akan Generate',
+                'date' => 'Tgl. Pembayaran',
+                'date_select' => 'Pilih Tgl. Bayar',
+                'note' => 'Catatan Pembayaran',
+                'by' => 'Oleh',
+                'subtotal' => 'Subtotal Pembayaran',
+                'amount' => 'Jml. Pembayaran',
+                'amount_left' => 'Sisa Pembayaran',
+                'status' => [
+                    'pending' => 'Menunggu Pembayaran',
+                    'success' => 'Lunas',
+                    'partial' => 'Bayar Sebagian',
+                ]
+            ]
+        ]
+    ],
 ];

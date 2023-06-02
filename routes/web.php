@@ -20,7 +20,7 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('/', function () { return view('auth.company.index'); })->name('auth.clients');
         Route::get('/packages', function () { return view('auth.company.packages'); })->name('auth.clients.packages');
         Route::group(['prefix' => 'invoices'], function () {
-            Route::get('/', function () { return view('auth.clients.invoices.index'); })->name('auth.clients.invoices');
+            Route::get('/', function () { return view('auth.company.invoices'); })->name('auth.clients.invoices');
             Route::get('/payments', function () { abort(404); })->name('auth.clients.invoices.payments');
         });
     });

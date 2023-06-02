@@ -4,6 +4,8 @@ return [
     'method' => 'Undefined method',
     'ok' => 'ok',
     'close' => 'Tutup',
+    'action' => 'Aksi',
+    'no_data' => 'Sementara data tidak ada',
     'otp' => 'One Time Payment (sekali bayar)',
     'menu' => [
         'name' => 'Nama Menu / Fungsi',

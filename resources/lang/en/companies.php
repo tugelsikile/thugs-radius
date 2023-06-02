@@ -16,7 +16,16 @@ return [
         'address' => 'Alamat Client Radius',
         'email' => 'Email Client Radius',
         'postal' => 'Kode Pos',
-        'phone' => 'Nomor Telepon / HP'
+        'phone' => 'Nomor Telepon / HP',
+        'select' => 'Pilih client radius',
+        'table_columns' => [
+            'code' => 'ID',
+            'name' => 'Nama Client Radius',
+            'email' => 'Email',
+            'expired' => [
+                'at' =>  'Tgl. Expired',
+            ],
+        ]
     ],
     'create' => [
         'form' => 'Tambah Data Client Radius',
@@ -80,6 +89,20 @@ return [
             'max_customer' => 'Max Pelanggan',
             'max_voucher' => 'Max Voucher',
             'max_router' => 'Max NAS / Router',
+            'table_columns' => [
+                'code' => 'ID',
+                'name' => 'Nama Paket',
+                'price' => 'Harga',
+                'vat' => 'Pajak',
+                'duration' => 'Durasi',
+                'max' => [
+                    'main' => 'Maksimal',
+                    'user' => 'Pengguna',
+                    'customer' => 'Pelanggan',
+                    'voucher' => 'Voucher',
+                    'router' => 'NAS'
+                ]
+            ],
         ],
         'create' => [
             'form' => 'Tambah Data Paket Client Radius',
@@ -98,5 +121,69 @@ return [
             'button' => 'Hapus',
             'select' => 'Hapus Paket Client Radius Dipilih'
         ],
-    ]
+    ],
+    'invoices' => [
+        'form_input' => [
+            'periode' => 'periode_tagihan',
+            'discount' => 'diskon_tagihan',
+            'vat' => 'pajak_tagihan',
+            'code' => 'nomor_invoice',
+            'package' => [
+                'input' => 'paket',
+                'name' => 'nama_paket',
+                'price' => 'harga_layanan',
+                'vat' => 'pajak_layanan',
+                'qty' => 'jumlah_layanan',
+                'discount' => 'diskon_layanan',
+                'input_delete' => 'hapus_paket',
+            ]
+        ],
+        'labels' => [
+            'menu' => 'Tagihan Client Radius',
+            'select_periode' => 'Pilih Periode Penagihan',
+            'search' => 'Cari Tagihan ...',
+            'code' => 'Nomor Invoice',
+            'vat' => 'Pajak Tagihan',
+            'status' => 'Status Tagihan',
+            'discount' => 'Diskon Tagihan',
+            'subtotal' => [
+                'main' => 'Besar Tagihan',
+                'item' => 'Subtotal',
+            ],
+            'package' => [
+                'add' => 'Tambah Paket',
+                'input' => 'Paket',
+                'name' => 'Nama Paket',
+                'price' => 'Harga',
+                'vat' => '% Pajak',
+                'qty' => 'Jumlah',
+                'discount' => 'Diskon',
+            ]
+        ],
+        'generate' => [
+            'form' => 'Generate Tagihan',
+        ],
+        'create' => [
+            'form' => 'Tambah Tagihan',
+            'success' => 'Berhasil menambahkan tagihan client radius',
+            'button' => 'Tambah',
+        ],
+        'update' => [
+            'form' => 'Rubah Tagihan Client Radius',
+            'success' => 'Berhasil merubah data tagihan client radius',
+            'button' => 'Simpan',
+        ],
+        'delete' => [
+            'form' => 'Hapus Tagihan Client Radius',
+            'confirm' => "Yakin ingin menghapus data tagihan client radius.\nData yang berhubungan akan ikut terhapus",
+            'success' => 'Berhasil menghapus data tagihan client radius',
+            'button' => 'Hapus',
+            'select' => 'Hapus Tagihan Client Radius Dipilih'
+        ],
+        'payments' => [
+            'labels' => [
+                'menu' => 'Pembayaran Tagihan'
+            ]
+        ]
+    ],
 ];

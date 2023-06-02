@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\CompanyController;
+use App\Http\Controllers\Client\CompanyInvoiceController;
 use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
@@ -37,6 +38,10 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::any('/', [CompanyController::class, 'crud']);
         Route::group(['prefix' => 'packages'], function () {
             Route::any('/', [PackageController::class, 'crud']);
+        });
+        Route::group(['prefix' => 'invoices'], function () {
+            Route::any('/', [CompanyInvoiceController::class, 'crud']);
+            Route::any('/payments', [CompanyInvoiceController::class, 'payment']);
         });
     });
 });

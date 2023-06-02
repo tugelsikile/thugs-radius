@@ -44,13 +44,41 @@ export const getPrivileges = async (routes = null) => {
             return null;
         } else {
             if (response.data.params.privileges !== null) {
+                if (Array.isArray(response.data.params.privileges)) {
+                    if (response.data.params.privileges.length > 1) {
+                        let privilege = {
+                            read : response.data.params.privileges[0].read,
+                            create : response.data.params.privileges[0].create,
+                            update : response.data.params.privileges[0].update,
+                            delete : response.data.params.privileges[0].delete,
+                        };
+                        response.data.params.privileges.map((item,index)=>{
+                            if (index > 0) {
+                                let privString = item.value;
+                                privString = privString.split('.');
+                                privString = privString[privString.length - 1];
+                                privilege[privString] = item.read;
+                            }
+                        });
+                        response.data.params.privileges = privilege;
+                    }
+                } else {
+                    if (! response.data.params.privileges.read) {
+                        window.location.href = getRootUrl();
+                    }
+                }
+            }
+            return response.data.params;
+            //console.log(response.data.params);
+            /*if (response.data.params.privileges !== null) {
                 if (! response.data.params.privileges.read) {
                     window.location.href = getRootUrl();
                 }
             }
-            return response.data.params;
+            return response.data.params;*/
         }
     } catch (e) {
+        console.log(e);
         if (e.response.status === 401) logout();
         return null;
     }

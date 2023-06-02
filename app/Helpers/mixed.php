@@ -5,6 +5,8 @@
 
 use App\Models\Company\ClientCompany;
 use App\Models\Company\CompanyPackage;
+use App\Models\Company\Invoice\CompanyInvoice;
+use App\Models\Company\Invoice\CompanyInvoicePayment;
 use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
@@ -28,6 +30,32 @@ function generateCompanyExpired($current, $durString, $durAmmount) {
 function generateCompanyPackageCode(): string
 {
     $length = CompanyPackage::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return Carbon::now()->format('ym') . Str::padLeft($length,4,'0');
+}
+function generateCompanyInvoicePaymentCode($tanggal): string
+{
+    $length = CompanyInvoicePayment::orderBy('code', 'desc')->whereDate('paid_at', Carbon::parse($tanggal)->format('Y-m-d'))->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return Carbon::parse($tanggal)->format('ym') . Str::padLeft($length,4,'0');
+}
+function generateCompanyInvoiceCode(): string
+{
+    $length = CompanyInvoice::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);

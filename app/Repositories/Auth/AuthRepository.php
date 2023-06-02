@@ -158,9 +158,7 @@ class AuthRepository
                 $response = collect();
                 $user = auth()->guard('api')->user();
                 $menus = Menu::orderBy('created_at', 'asc');
-                foreach ($request->route as $route) {
-                    $menus = $menus->where('route', $route);
-                }
+                $menus->whereIn('route', $request->route);
                 $menus = $menus->get();
                 foreach ($menus as $menu) {
                     $privilege = UserPrivilege::where('route', $menu->route)->where('level', $user->level)->first();

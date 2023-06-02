@@ -278,6 +278,9 @@ class UserPage extends React.Component {
                                 <button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>
                             </div>
                             <div className="card">
+                                {this.state.loadings.users &&
+                                    <CardPreloader/>
+                                }
                                 <div className="card-header">
                                     <h3 className="card-title">
                                         {this.state.privileges !== null &&
@@ -302,9 +305,6 @@ class UserPage extends React.Component {
                                     </div>
                                 </div>
                                 <div className="card-body table-responsive p-0">
-                                    {this.state.loadings.users &&
-                                        <CardPreloader/>
-                                    }
                                     <table className="table table-head-fixed text-nowrap table-sm">
                                         <thead>
                                         <tr>

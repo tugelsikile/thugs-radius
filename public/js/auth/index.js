@@ -2105,6 +2105,7 @@ var getPrivileges = /*#__PURE__*/function () {
       formData,
       user,
       response,
+      privilege,
       _args = arguments;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
@@ -2144,20 +2145,41 @@ var getPrivileges = /*#__PURE__*/function () {
           return _context.abrupt("return", null);
         case 14:
           if (response.data.params.privileges !== null) {
-            if (!response.data.params.privileges.read) {
-              window.location.href = getRootUrl();
+            if (Array.isArray(response.data.params.privileges)) {
+              if (response.data.params.privileges.length > 1) {
+                privilege = {
+                  read: response.data.params.privileges[0].read,
+                  create: response.data.params.privileges[0].create,
+                  update: response.data.params.privileges[0].update,
+                  "delete": response.data.params.privileges[0]["delete"]
+                };
+                response.data.params.privileges.map(function (item, index) {
+                  if (index > 0) {
+                    var privString = item.value;
+                    privString = privString.split('.');
+                    privString = privString[privString.length - 1];
+                    privilege[privString] = item.read;
+                  }
+                });
+                response.data.params.privileges = privilege;
+              }
+            } else {
+              if (!response.data.params.privileges.read) {
+                window.location.href = getRootUrl();
+              }
             }
           }
           return _context.abrupt("return", response.data.params);
         case 16:
-          _context.next = 22;
+          _context.next = 23;
           break;
         case 18:
           _context.prev = 18;
           _context.t0 = _context["catch"](2);
+          console.log(_context.t0);
           if (_context.t0.response.status === 401) logout();
           return _context.abrupt("return", null);
-        case 22:
+        case 23:
         case "end":
           return _context.stop();
       }

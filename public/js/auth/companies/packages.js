@@ -13164,6 +13164,7 @@ var getPrivileges = /*#__PURE__*/function () {
       formData,
       user,
       response,
+      privilege,
       _args = arguments;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
@@ -13203,20 +13204,41 @@ var getPrivileges = /*#__PURE__*/function () {
           return _context.abrupt("return", null);
         case 14:
           if (response.data.params.privileges !== null) {
-            if (!response.data.params.privileges.read) {
-              window.location.href = getRootUrl();
+            if (Array.isArray(response.data.params.privileges)) {
+              if (response.data.params.privileges.length > 1) {
+                privilege = {
+                  read: response.data.params.privileges[0].read,
+                  create: response.data.params.privileges[0].create,
+                  update: response.data.params.privileges[0].update,
+                  "delete": response.data.params.privileges[0]["delete"]
+                };
+                response.data.params.privileges.map(function (item, index) {
+                  if (index > 0) {
+                    var privString = item.value;
+                    privString = privString.split('.');
+                    privString = privString[privString.length - 1];
+                    privilege[privString] = item.read;
+                  }
+                });
+                response.data.params.privileges = privilege;
+              }
+            } else {
+              if (!response.data.params.privileges.read) {
+                window.location.href = getRootUrl();
+              }
             }
           }
           return _context.abrupt("return", response.data.params);
         case 16:
-          _context.next = 22;
+          _context.next = 23;
           break;
         case 18:
           _context.prev = 18;
           _context.t0 = _context["catch"](2);
+          console.log(_context.t0);
           if (_context.t0.response.status === 401) logout();
           return _context.abrupt("return", null);
-        case 22:
+        case 23:
         case "end":
           return _context.stop();
       }
@@ -13997,14 +14019,21 @@ var confirmDialog = function confirmDialog(app, ids) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CardPreloader: () => (/* binding */ CardPreloader),
 /* harmony export */   dateFormatSelect: () => (/* binding */ dateFormatSelect),
 /* harmony export */   durationBy: () => (/* binding */ durationBy),
 /* harmony export */   durationType: () => (/* binding */ durationType),
 /* harmony export */   langSelect: () => (/* binding */ langSelect),
+/* harmony export */   parseInputFloat: () => (/* binding */ parseInputFloat),
+/* harmony export */   sumTotalInvoiceSingle: () => (/* binding */ sumTotalInvoiceSingle),
+/* harmony export */   sumTotalPackageSingle: () => (/* binding */ sumTotalPackageSingle),
+/* harmony export */   sumTotalPaymentSingle: () => (/* binding */ sumTotalPaymentSingle),
 /* harmony export */   ucFirst: () => (/* binding */ ucFirst)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+// noinspection DuplicatedCode
+
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 var langSelect = [{
@@ -14098,6 +14127,52 @@ var durationBy = function durationBy(ammount, type) {
       break;
   }
   return response;
+};
+var sumTotalInvoiceSingle = function sumTotalInvoiceSingle(data) {
+  return data.meta.packages.reduce(function (a, b) {
+    return a + (b.meta.prices.price * b.meta.prices.qty * b.meta.prices.vat / 100 + b.meta.prices.price * b.meta.prices.qty) - b.meta.prices.discount;
+  }, 0) * data.meta.vat / 100 + data.meta.packages.reduce(function (a, b) {
+    return a + (b.meta.prices.price * b.meta.prices.qty * b.meta.prices.vat / 100 + b.meta.prices.price * b.meta.prices.qty) - b.meta.prices.discount;
+  }, 0) - data.meta.discount;
+};
+var sumTotalPaymentSingle = function sumTotalPaymentSingle(data) {
+  return data.meta.timestamps.paid.payments.reduce(function (a, b) {
+    return a + b.meta.amount;
+  }, 0);
+};
+var sumTotalPackageSingle = function sumTotalPackageSingle(item) {
+  return item.meta.prices.price * item.meta.prices.qty * item.meta.prices.vat / 100 + item.meta.prices.price * item.meta.prices.qty - item.meta.prices.discount;
+};
+var CardPreloader = function CardPreloader() {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+    className: "overlay"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
+    src: window.origin + '/preloader.svg',
+    style: {
+      height: 100
+    }
+  }));
+};
+var parseInputFloat = function parseInputFloat(event) {
+  var currentValue = event.currentTarget.value;
+  var leftValue;
+  var rightValue = 0;
+  var decimalValue = currentValue.split(',');
+  if (decimalValue.length === 2) {
+    leftValue = decimalValue[0];
+    if (decimalValue[1].length > 0) {
+      rightValue = decimalValue[1];
+    }
+  } else {
+    leftValue = currentValue;
+  }
+  leftValue = leftValue.replaceAll('.', '');
+  leftValue = parseInt(leftValue);
+  if (parseFloat(rightValue) > 0) {
+    return parseFloat(leftValue + '.' + parseFloat(rightValue));
+  } else {
+    return parseFloat(leftValue);
+  }
 };
 
 /***/ }),
@@ -14670,11 +14745,7 @@ var PackagePage = /*#__PURE__*/function (_React$Component) {
         className: "container-fluid"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
         className: "card card-outline card-secondary"
-      }, this.state.loadings.packages && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-        className: "overlay"
-      }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("i", {
-        className: "fa-spin fas fa-3x fa-sync-alt"
-      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+      }, this.state.loadings.packages && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Components_mixedConsts__WEBPACK_IMPORTED_MODULE_11__.CardPreloader, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
         className: "card-header"
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
         className: "card-title"
@@ -15620,6 +15691,8 @@ var updateLang = /*#__PURE__*/function () {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   crudCompany: () => (/* binding */ crudCompany),
+/* harmony export */   crudCompanyInvoice: () => (/* binding */ crudCompanyInvoice),
+/* harmony export */   crudCompanyInvoicePayment: () => (/* binding */ crudCompanyInvoicePayment),
 /* harmony export */   crudCompanyPackage: () => (/* binding */ crudCompanyPackage)
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
@@ -15679,6 +15752,58 @@ var crudCompanyPackage = /*#__PURE__*/function () {
   }));
   return function crudCompanyPackage(_x2) {
     return _ref2.apply(this, arguments);
+  };
+}();
+var crudCompanyInvoice = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(data) {
+    var request;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          request = axios__WEBPACK_IMPORTED_MODULE_0___default()({
+            headers: {
+              "Accept": "application/json",
+              "Authorization": "Bearer ".concat(localStorage.getItem('token'))
+            },
+            method: "post",
+            url: window.origin + "/api/auth/companies/invoices",
+            data: data
+          });
+          return _context3.abrupt("return", Promise.resolve(request));
+        case 2:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3);
+  }));
+  return function crudCompanyInvoice(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+var crudCompanyInvoicePayment = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(data) {
+    var request;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          request = axios__WEBPACK_IMPORTED_MODULE_0___default()({
+            headers: {
+              "Accept": "application/json",
+              "Authorization": "Bearer ".concat(localStorage.getItem('token'))
+            },
+            method: "post",
+            url: window.origin + "/api/auth/companies/invoices/payments",
+            data: data
+          });
+          return _context4.abrupt("return", Promise.resolve(request));
+        case 2:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4);
+  }));
+  return function crudCompanyInvoicePayment(_x4) {
+    return _ref4.apply(this, arguments);
   };
 }();
 

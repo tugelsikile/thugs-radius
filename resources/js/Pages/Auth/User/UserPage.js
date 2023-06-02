@@ -14,6 +14,7 @@ import { mdiSortAlphabeticalDescending,mdiSortAlphabeticalAscending,mdiSortRever
 import BtnSort from "./Tools/BtnSort";
 import FormUser from "./Tools/FormUser";
 import {crudCompany} from "../../../Services/CompanyService";
+import {CardPreloader} from "../../../Components/mixedConsts";
 
 class UserPage extends React.Component {
     constructor(props) {
@@ -302,7 +303,7 @@ class UserPage extends React.Component {
                                 </div>
                                 <div className="card-body table-responsive p-0">
                                     {this.state.loadings.users &&
-                                        <div className="overlay"><i className="fa-spin fas fa-3x fa-sync-alt"/></div>
+                                        <CardPreloader/>
                                     }
                                     <table className="table table-head-fixed text-nowrap table-sm">
                                         <thead>

@@ -11,6 +11,7 @@ import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudPrivileges, setPrivileges} from "../../../../Services/UserService";
 import {crudCompany} from "../../../../Services/CompanyService";
 import FormPrivilege from "./Tools/FormPrivilege";
+import {CardPreloader} from "../../../../Components/mixedConsts";
 
 // noinspection DuplicatedCode
 class PrivilegePage extends React.Component {
@@ -331,6 +332,9 @@ class PrivilegePage extends React.Component {
                             </div>
 
                             <div className="card">
+                                {this.state.loadings.levels &&
+                                    <CardPreloader/>
+                                }
                                 <div className="card-header">
                                     <h3 className="card-title">
                                         {this.state.privilege !== null &&
@@ -355,9 +359,6 @@ class PrivilegePage extends React.Component {
                                     </div>
                                 </div>
                                 <div className="card-body p-0">
-                                    {this.state.loadings.levels &&
-                                        <div className="overlay"><i className="fa-spin fas fa-3x fa-sync-alt"/></div>
-                                    }
                                     <table className="table table-head-fixed table-sm">
                                         <thead>
                                         <tr>

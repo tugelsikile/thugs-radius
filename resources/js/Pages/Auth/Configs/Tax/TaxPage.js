@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl, logout} from "../../../../Components/Authentication";
-import {siteData, sortByCompany} from "../../../../Components/mixedConsts";
+import {CardPreloader, siteData, sortByCompany} from "../../../../Components/mixedConsts";
 import {crudTaxes} from "../../../../Services/ConfigService";
 import {confirmDialog, showError} from "../../../../Components/Toaster";
 import PageLoader from "../../../../Components/PageLoader";
@@ -231,7 +231,8 @@ class TaxPage extends React.Component {
 
                         <div className="container-fluid">
 
-                            <form onSubmit={this.handleSave} className="card card-outline card-primary">
+                            <div className="card card-outline card-primary">
+                                {this.state.loadings.taxes && <CardPreloader/>}
                                 <div className="card-header">
                                     <div className="card-title">
                                         {this.state.privilege !== null &&
@@ -343,7 +344,7 @@ class TaxPage extends React.Component {
                                 <div className="card-footer justify-content-between">
 
                                 </div>
-                            </form>
+                            </div>
 
                         </div>
 

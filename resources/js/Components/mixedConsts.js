@@ -73,6 +73,9 @@ export const formatLocaleString = (number, maximumFractionDigits = 2) => {
     }
     return response;
 }
+export const sortByCompany = (data) => {
+    return data.meta.company === null ? 'z' : data.meta.company.label;
+}
 export const sortActiveCompany = (data) => {
     return data.meta.timestamps.active.at === null ? 'x' : data.meta.timestamps.active.at;
 }

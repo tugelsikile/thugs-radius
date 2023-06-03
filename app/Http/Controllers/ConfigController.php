@@ -17,7 +17,41 @@ class ConfigController extends Controller
         $this->repository = new ConfigRepository();
         $this->validation = new ConfigValidation();
     }
-    public function currencies(Request $request) {
+    public function taxes(Request $request) {
+        try {
+            $code = 400; $message = __('messages.method'); $params = null;
+            switch (strtolower($request->method())) {
+                case 'post' :
+                    $params = $this->repository->taxes($request);
+                    $code = 200; $message = __('messages.ok');
+                    break;
+                case 'put' :
+                    $valid = $this->validation->createTax($request);
+                    $params = $this->repository->createTax($valid);
+                    $code = 200; $message = __('taxes.create.success');
+                    break;
+                case 'patch' :
+                    $valid = $this->validation->updateTax($request);
+                    $params = $this->repository->updateTax($valid);
+                    $code = 200; $message = __('taxes.update.success');
+                    break;
+                case 'delete' :
+                    $valid = $this->validation->deleteTax($request);
+                    $params = $this->repository->deleteTax($valid);
+                    $code = 200; $message = __('taxes.delete.success');
+                    break;
+            }
+            return formatResponse($code, $message, $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function currencies(Request $request): JsonResponse
+    {
         try {
             $code = 400; $message = __('messages.method'); $params = null;
             switch (strtolower($request->method())) {

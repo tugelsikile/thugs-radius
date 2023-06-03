@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             UserPrivilegeSeeder::class,
             CurrencySeeder::class,
+            TaxSeeder::class,
         ]);
     }
 }

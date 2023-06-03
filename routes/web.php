@@ -33,7 +33,7 @@ Route::group(['prefix' => 'auth'], function () {
         Route::get('/', function () { })->name('auth.configs');
         Route::get('/discounts', function () { })->name('auth.configs.discounts');
         Route::get('/taxes', function () { })->name('auth.configs.taxes');
-        Route::get('/currencies', function () { })->name('auth.configs.currencies');
+        Route::get('/currencies', function () { return view('auth.configs.currencies'); })->name('auth.configs.currencies');
         Route::get('/timezones', function () { return view('auth.configs.timezones'); })->name('auth.configs.timezones');
     });
 });

@@ -17,7 +17,20 @@ class ConfigController extends Controller
         $this->repository = new ConfigRepository();
         $this->validation = new ConfigValidation();
     }
-
+    public function currencies(Request $request) {
+        try {
+            $code = 400; $message = __('messages.method'); $params = null;
+            switch (strtolower($request->method())) {
+                case 'post' :
+                    $params = $this->repository->currencies($request);
+                    $code = 200; $message = __('messages.ok');
+                    break;
+            }
+            return formatResponse($code, $message, $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
     /* @
      * @param Request $request
      * @return JsonResponse

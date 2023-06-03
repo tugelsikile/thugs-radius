@@ -1,4 +1,3 @@
 {
-    "/js/login.js": "/js/login.js",
-    "/js/auth/configs/timezones.js": "/js/auth/configs/timezones.js"
+    "/js/auth/configs/currencies.js": "/js/auth/configs/currencies.js"
 }

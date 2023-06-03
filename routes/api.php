@@ -48,6 +48,7 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
     Route::group(['prefix' => 'configs'], function () {
         Route::any('/timezones', [ConfigController::class, 'timezone']);
+        Route::any('/currencies', [ConfigController::class, 'currencies']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

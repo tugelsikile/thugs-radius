@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Config;
+use App\Models\Currency;
 use App\Models\User\User;
 use DateTimeZone;
 use Exception;
@@ -15,6 +16,37 @@ use Laravolt\Indonesia\Models\Village;
 
 class ConfigRepository
 {
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function currencies(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $currencies = Currency::orderBy('code', 'asc');
+            if (strlen($request->id) > 0) $currencies = $currencies->where('id', $request->id);
+            $currencies = $currencies->get();
+            if ($currencies->count() > 0) {
+                foreach ($currencies as $currency) {
+                    $response->push((object) [
+                        'value' => $currency->id,
+                        'label' => $currency->name,
+                        'meta' => (object) [
+                            'code' => $currency->code,
+                            'symbol' => $currency->symbols,
+                            'rate' => $currency->exchange_rate,
+                            'prefix' => $currency->prefix,
+                        ]
+                    ]);
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return mixed

@@ -19,13 +19,13 @@ class CurrencySeeder extends Seeder
     {
         $requests = collect();
         $requests->push((object) [
-            'code' => 'IDR', 'name' => 'Indonesia Rupiah', 'symbols' => 'Rp.', 'exchange_rate' => 1, 'prefix' => true,
+            'code' => 'IDR', 'name' => 'Indonesia Rupiah', 'symbols' => 'Rp.', 'exchange_rate' => 0.0000067, 'prefix' => true,
         ]);
         $requests->push((object) [
             'code' => 'USD', 'name' => 'United States Dollar', 'symbols' => '$', 'exchange_rate' => 1, 'prefix' => true,
         ]);
         $requests->push((object) [
-            'code' => 'RM', 'name' => 'Malaysia Ringgit', 'symbols' => 'RM', 'exchange_rate' => 1, 'prefix' => true,
+            'code' => 'RM', 'name' => 'Malaysia Ringgit', 'symbols' => 'RM', 'exchange_rate' => 0.00031, 'prefix' => true,
         ]);
         $this->command->getOutput()->progressStart($requests->count());
         foreach ($requests as $request) {
@@ -36,10 +36,10 @@ class CurrencySeeder extends Seeder
                 $currency->code = $request->code;
                 $currency->name = $request->name;
                 $currency->symbols = $request->symbols;
-                $currency->exchange_rate = $request->exchange_rate;
                 $currency->prefix = $request->prefix;
-                $currency->saveOrFail();
             }
+            $currency->exchange_rate = $request->exchange_rate;
+            $currency->saveOrFail();
             $this->command->getOutput()->progressAdvance();
         }
         $this->command->getOutput()->progressFinish();

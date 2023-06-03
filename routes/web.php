@@ -22,11 +22,19 @@ Route::group(['prefix' => 'auth'], function () {
         Route::group(['prefix' => 'invoices'], function () {
             Route::get('/', function () { return view('auth.company.invoices'); })->name('auth.clients.invoices');
             Route::get('/payments', function () { abort(404); })->name('auth.clients.invoices.payments');
+            Route::get('/print/{id}', function () { return view('auth.company.print-invoices',['id' => request()->id]); });
         });
     });
     Route::group(['prefix' => 'users'], function () {
         Route::get('/', function () { return view('auth.users.index'); })->name('auth.users');
         Route::get('/privileges', function () { return view('auth.users.privileges'); })->name('auth.users.privileges');
+    });
+    Route::group(['prefix' => 'configs'], function () {
+        Route::get('/', function () { })->name('auth.configs');
+        Route::get('/discounts', function () { })->name('auth.configs.discounts');
+        Route::get('/taxes', function () { })->name('auth.configs.taxes');
+        Route::get('/currencies', function () { })->name('auth.configs.currencies');
+        Route::get('/timezones', function () { return view('auth.configs.timezones'); })->name('auth.configs.timezones');
     });
 });
 Route::group(['prefix' => 'clients'], function () {

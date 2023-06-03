@@ -9,7 +9,7 @@ import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../User/Tools/BtnSort";
-import {CardPreloader, ucFirst} from "../../../Components/mixedConsts";
+import {CardPreloader, formatLocaleDate, sortActiveCompany, ucFirst} from "../../../Components/mixedConsts";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCompany from "./Tools/FormCompany";
 import moment from "moment";
@@ -37,6 +37,7 @@ class CompanyPage extends React.Component {
         this.handleSort = this.handleSort.bind(this);
         this.toggleForm = this.toggleForm.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
+        this.confirmActive = this.confirmActive.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -52,6 +53,9 @@ class CompanyPage extends React.Component {
                     });
             }
         }
+    }
+    confirmActive(data) {
+        confirmDialog(this, data.value,'patch',`${window.origin}/api/auth/companies/active`,'Warning', Lang.get('companies.active.confirm'),'app.loadCompanies(response.data.params)');
     }
     confirmDelete(data = null) {
         let ids = [];
@@ -122,6 +126,7 @@ class CompanyPage extends React.Component {
         } else {
             companies.filtered = companies.unfiltered;
         }
+        console.log(this.state.filter.sort.by);
         switch (this.state.filter.sort.by) {
             case 'code' :
                 if (this.state.filter.sort.dir === 'asc') {
@@ -149,6 +154,13 @@ class CompanyPage extends React.Component {
                     companies.filtered = companies.filtered.sort((a,b) => (a.meta.expiry > b.meta.expiry) ? 1 : ((b.meta.expiry > a.meta.expiry) ? -1 : 0));
                 } else {
                     companies.filtered = companies.filtered.sort((a,b) => (a.meta.expiry > b.meta.expiry) ? -1 : ((b.meta.expiry > a.meta.expiry) ? 1 : 0));
+                }
+                break;
+            case 'active' :
+                if (this.state.filter.sort.dir === 'asc') {
+                    companies.filtered = companies.filtered.sort((a,b) => (sortActiveCompany(a) > sortActiveCompany(b)) ? 1 : ((sortActiveCompany(b) > sortActiveCompany(a)) ? -1 : 0));
+                } else {
+                    companies.filtered = companies.filtered.sort((a,b) => (sortActiveCompany(a) > sortActiveCompany(b)) ? -1 : ((sortActiveCompany(b) > sortActiveCompany(a)) ? 1 : 0));
                 }
                 break;
         }
@@ -308,7 +320,13 @@ class CompanyPage extends React.Component {
                                             <th>
                                                 {Lang.get('companies.packages.labels.table_columns.name')}
                                             </th>
-                                            <th className="align-middle">
+                                            <th className="align-middle" width={150}>
+                                                <BtnSort sort="active"
+                                                         name={Lang.get('companies.labels.table_columns.active')}
+                                                         filter={this.state.filter}
+                                                         handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={150}>
                                                 <BtnSort sort="expired"
                                                          name={Lang.get('companies.labels.table_columns.expired.at')}
                                                          filter={this.state.filter}
@@ -344,6 +362,16 @@ class CompanyPage extends React.Component {
                                                             )}
                                                         </ul>
                                                     </td>
+                                                    <td className="align-middle text-center">
+                                                        {item.meta.timestamps.active.at === null ?
+                                                            <button onClick={()=>this.confirmActive(item)} type="button" className="btn btn-xs btn-block btn-outline-warning text-sm">{Lang.get('companies.labels.status.inactive')}</button>
+                                                            :
+                                                            <>
+                                                                <button onClick={()=>this.confirmActive(item)} type="button" className="btn btn-xs btn-block btn-outline-success text-sm">{Lang.get('companies.labels.status.active')}</button>
+                                                                <span className="small">{formatLocaleDate(item.meta.timestamps.active.at)}</span>
+                                                            </>
+                                                        }
+                                                    </td>
                                                     <td className="align-middle">
                                                         {item.meta.expiry === null ?
                                                             <span className="badge badge-success">Unlimited</span>
@@ -363,10 +391,13 @@ class CompanyPage extends React.Component {
                                                                 </button>
                                                                 <div className="dropdown-menu" role="menu">
                                                                     {this.state.privilege.update &&
-                                                                        <button onClick={()=>this.toggleForm(item)} className="dropdown-item text-primary"><i className="fe fe-edit mr-1"/> {Lang.get('companies.update.form')}</button>
+                                                                        <>
+                                                                            <button onClick={()=>this.toggleForm(item)} className="dropdown-item text-primary"><i className="fa fa-pen-alt mr-1"/> {Lang.get('companies.update.form')}</button>
+                                                                            <button onClick={()=>this.confirmActive(item)} className={item.meta.timestamps.active.at === null ? "dropdown-item text-success" : "dropdown-item text-warning"}><i className={item.meta.timestamps.active.at === null ? "fa fa-check-circle mr-1" : "fa fa-times-circle mr-1"}/> {item.meta.timestamps.active.at === null ? Lang.get('companies.active.status.active') : Lang.get('companies.active.status.inactive')}</button>
+                                                                        </>
                                                                     }
                                                                     {this.state.privilege.delete &&
-                                                                        <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fe fe-trash-2 mr-1"/> {Lang.get('companies.delete.form')}</button>
+                                                                        <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('companies.delete.form')}</button>
                                                                     }
                                                                 </div>
                                                             </>

@@ -15,6 +15,7 @@ class CreateClientCompaniesTable extends Migration
     {
         Schema::create('client_companies', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
+            $table->uuid('currency');
             $table->uuid('package');
             $table->string('code')->unique();
             $table->string('name');
@@ -39,6 +40,7 @@ class CreateClientCompaniesTable extends Migration
             $table->foreign('city')->on(config('laravolt.indonesia.table_prefix').'cities')->references('code')->onDelete('set null')->onUpdate('cascade');
             $table->foreign('district')->on(config('laravolt.indonesia.table_prefix').'districts')->references('code')->onDelete('set null')->onUpdate('cascade');
             $table->foreign('village')->on(config('laravolt.indonesia.table_prefix').'villages')->references('code')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('currency')->on('currencies')->references('id')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

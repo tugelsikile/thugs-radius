@@ -1,9 +1,4 @@
 {
     "/js/login.js": "/js/login.js",
-    "/js/auth/index.js": "/js/auth/index.js",
-    "/js/auth/users/index.js": "/js/auth/users/index.js",
-    "/js/auth/users/privileges.js": "/js/auth/users/privileges.js",
-    "/js/auth/companies/index.js": "/js/auth/companies/index.js",
-    "/js/auth/companies/packages.js": "/js/auth/companies/packages.js",
-    "/js/auth/companies/invoices.js": "/js/auth/companies/invoices.js"
+    "/js/auth/configs/timezones.js": "/js/auth/configs/timezones.js"
 }

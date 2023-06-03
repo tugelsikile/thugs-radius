@@ -1,4 +1,5 @@
 <?php
+/** @noinspection DuplicatedCode */
 return [
     'form_input' => [
         'name' => 'nama_client_radius',
@@ -8,6 +9,8 @@ return [
         'phone' => 'nomor_telepon_hp',
     ],
     'labels' => [
+        'no_select' => 'Tidak ada data client radius',
+        'info' => 'Informasi Client Radius',
         'menu' => 'Client Radius',
         'menu_info' => 'Manajemen client radius',
         'search' => 'Cari Client Radius ...',
@@ -18,8 +21,13 @@ return [
         'postal' => 'Kode Pos',
         'phone' => 'Nomor Telepon / HP',
         'select' => 'Pilih client radius',
+        'status' => [
+            'active' => 'Aktif',
+            'inactive' => 'Non Aktif',
+        ],
         'table_columns' => [
             'code' => 'ID',
+            'active' => 'Status Aktif',
             'name' => 'Nama Client Radius',
             'email' => 'Email',
             'expired' => [
@@ -43,6 +51,15 @@ return [
         'success' => 'Berhasil menghapus data client radius',
         'button' => 'Hapus',
         'select' => 'Hapus Client Radius Dipilih'
+    ],
+    'active' => [
+        'confirm' => 'Rubah Status Aktif Client Radius',
+        'form' => 'Rubah Status',
+        'success' => 'Berhasil merubah status aktif client radius',
+        'status' => [
+            'active' => 'Aktifasi Client Radius',
+            'inactive' => 'Nonaktifasi Client Radius',
+        ]
     ],
     'packages' => [
         'form_input' => [
@@ -140,8 +157,11 @@ return [
             ]
         ],
         'labels' => [
+            'print' => 'Cetak Tagihan',
+            'info' => 'Informasi Tagihan',
             'periode' => 'Periode Tagihan',
             'menu' => 'Tagihan Client Radius',
+            'menu_info' => 'Manajemen tagihan client radius',
             'select_periode' => 'Pilih Periode Penagihan',
             'search' => 'Cari Tagihan ...',
             'code' => 'Nomor Invoice',
@@ -196,6 +216,7 @@ return [
                 'success' => 'Pembayaran tagihan berhasil ditambahkan',
                 'error_amount' => 'Total jumlah pembayaran melebihi besar tagihan',
                 'menu' => 'Pembayaran Tagihan',
+                'menu_info' => 'Melakukan pembayaran manual tagihan client radius',
                 'button' => 'Simpan Pembayaran',
                 'add' => 'Tambah Pembayaran',
                 'code' => 'ID Pembayaran',
@@ -215,4 +236,11 @@ return [
             ]
         ]
     ],
+    'cps' => [
+        'labels' => [
+            'name' => 'Contact Person',
+            'email' => 'Email CP.',
+            'phone' => 'No. Telp. CP.'
+        ]
+    ]
 ];

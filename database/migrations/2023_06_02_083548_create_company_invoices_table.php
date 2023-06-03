@@ -19,7 +19,6 @@ class CreateCompanyInvoicesTable extends Migration
             $table->uuid('company');
             $table->date('periode');
             $table->double('discount',20,2)->default(0);
-            $table->double('vat',20,2)->default(0)->comment('other vat');
             $table->timestamps();
             $table->softDeletes();
             $table->dateTime('paid_at')->nullable();

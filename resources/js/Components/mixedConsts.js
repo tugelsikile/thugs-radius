@@ -1,6 +1,8 @@
 // noinspection DuplicatedCode
 
 import React from "react";
+import moment from "moment";
+import {guestSiteConfig} from "../Services/ConfigService";
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 export const langSelect = [
@@ -58,6 +60,64 @@ export const sumTotalPackageSingle = (item) => {
 export const CardPreloader = () => {
     return <div className="overlay"><img src={window.origin + '/preloader.svg'} style={{height:100}}/></div>
 }
+export const formatLocaleString = (number, maximumFractionDigits = 2) => {
+    let response = number;
+    switch (localStorage.getItem('locale_lang')){
+        default :
+        case 'id' :
+            response = parseFloat(number).toLocaleString('id-ID',{maximumFractionDigits:maximumFractionDigits});
+            break;
+        case 'en':
+            response = parseFloat(number).toLocaleString('en-US',{maximumFractionDigits:maximumFractionDigits});
+            break;
+    }
+    return response;
+}
+export const sortActiveCompany = (data) => {
+    return data.meta.timestamps.active.at === null ? 'x' : data.meta.timestamps.active.at;
+}
+export const sortStatusPaid = (data) => {
+    return data.meta.timestamps.paid.payments.length === 0 ? 'c' : data.meta.timestamps.paid.at === null ? 'b' : 'a';
+}
+export const formatLocalePeriode = (dateString, format = null) => {
+    let response = moment(dateString).format('MMMM yyyy');
+    if (format != null) {
+        switch (localStorage.getItem('locale_lang')) {
+            default :
+            case 'id' :
+                response = moment(dateString).locale('id-ID').format(format);
+                break;
+            case 'en' :
+                response = moment(dateString).locale('en-US').format(format);
+                break;
+        }
+
+    } else {
+        switch (localStorage.getItem('locale_lang')) {
+            default :
+            case 'id' :
+                response = moment(dateString).locale('id-ID').format("MMMM yyyy");
+                break;
+            case 'en' :
+                response = moment(dateString).locale('en-US').format("MMMM yyyy");
+                break;
+        }
+    }
+    return response;
+}
+export const formatLocaleDate = (dateString) => {
+    let response = moment(dateString).format('yyyy-MM-dd');
+    switch (localStorage.getItem('locale_lang')) {
+        default :
+        case 'id' :
+            response = moment(dateString).locale('id-ID').format(localStorage.getItem('locale_date_format'));
+            break;
+        case 'en' :
+            response = moment(dateString).locale('en-US').format(localStorage.getItem('locale_date_format'));
+            break;
+    }
+    return response;
+}
 export const parseInputFloat = (event) => {
     let currentValue = event.currentTarget.value;
     let leftValue;
@@ -78,4 +138,26 @@ export const parseInputFloat = (event) => {
     } else {
         return parseFloat(leftValue);
     }
+}
+export const CardToolMinimize = (hide = false) => {
+    return (
+        <div className="card-tools">
+            <button type="button" className="btn btn-tool" data-card-widget="collapse">
+                {hide ? <i className="fas fa-plus"/> : <i className="fas fa-minus"/> }
+
+            </button>
+        </div>
+    );
+}
+export const siteData = async () => {
+    let resp = null;
+    try {
+        let response = await guestSiteConfig();
+        if (response.data.params !== null) {
+            resp = response.data.params;
+        }
+    } catch (e) {
+        resp = null;
+    }
+    return resp;
 }

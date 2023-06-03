@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
 use App\Http\Controllers\Client\PackageController;
+use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -36,6 +37,7 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
     Route::group(['prefix' => 'companies'], function () {
         Route::any('/', [CompanyController::class, 'crud']);
+        Route::patch('/active', [CompanyController::class, 'activate']);
         Route::group(['prefix' => 'packages'], function () {
             Route::any('/', [PackageController::class, 'crud']);
         });
@@ -44,7 +46,14 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
             Route::any('/payments', [CompanyInvoiceController::class, 'payment']);
         });
     });
+    Route::group(['prefix' => 'configs'], function () {
+        Route::any('/timezones', [ConfigController::class, 'timezone']);
+    });
 });
 Route::group(['prefix' => 'regions'], function () {
     Route::post('/all', [RegionController::class, 'all']);
+});
+Route::group(['prefix' => 'configs'], function () {
+    Route::post('/site', [ConfigController::class, 'site']);
+    Route::post('/timezones', [ConfigController::class, 'timezone']);
 });

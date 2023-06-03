@@ -19,8 +19,14 @@ registerLocale("en", en);
 import moment from "moment";
 import BtnSort from "../../User/Tools/BtnSort";
 import FormInvoice from "./Tools/FormInvoice";
-import {CardPreloader, sumTotalInvoiceSingle, sumTotalPaymentSingle} from "../../../../Components/mixedConsts";
+import {
+    CardPreloader, formatLocaleString,
+    sortStatusPaid,
+    sumTotalInvoiceSingle,
+    sumTotalPaymentSingle
+} from "../../../../Components/mixedConsts";
 import FormPayment from "./Tools/FormPayment";
+import InvoiceInfo from "./Tools/InvoiceInfo";
 
 
 class InvoicePage extends React.Component {
@@ -54,6 +60,8 @@ class InvoicePage extends React.Component {
         this.togglePayment = this.togglePayment.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
         this.handleDate = this.handleDate.bind(this);
+        this.toggleInfo = this.toggleInfo.bind(this);
+        this.handlePrint = this.handlePrint.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -74,6 +82,16 @@ class InvoicePage extends React.Component {
                     });
             }
         }
+    }
+    handlePrint(event) {
+        event.preventDefault();
+        let url = getRootUrl() + '/clients/invoices/print/' + event.currentTarget.getAttribute('data-id');
+        window.open(url, '_blank');
+    }
+    toggleInfo(data = null) {
+        let modals = this.state.modals;
+        modals.info.open = ! this.state.modals.info.open;
+        modals.info.data = data; this.setState({modals});
     }
     togglePayment(data = null) {
         let modals = this.state.modals;
@@ -148,7 +166,7 @@ class InvoicePage extends React.Component {
             invoices.filtered = invoices.unfiltered.filter((f) =>
                 f.label.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
                 ||
-                f.meta.code.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
+                f.meta.company.name.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
             );
         } else {
             invoices.filtered = invoices.unfiltered;
@@ -177,16 +195,16 @@ class InvoicePage extends React.Component {
                 break;
             case 'status' :
                 if (this.state.filter.sort.dir === 'asc') {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? 1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? -1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sortStatusPaid(a) > sortStatusPaid(b)) ? 1 : ((sortStatusPaid(b) > sortStatusPaid(a)) ? -1 : 0));
                 } else {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? -1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? 1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sortStatusPaid(a) > sortStatusPaid(b)) ? -1 : ((sortStatusPaid(b) > sortStatusPaid(a)) ? 1 : 0));
                 }
                 break;
             case 'paid' :
                 if (this.state.filter.sort.dir === 'asc') {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (a.meta.timestamps.paid.at > b.meta.timestamps.paid.at) ? 1 : ((b.meta.timestamps.paid.at > a.meta.timestamps.paid.at) ? -1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? 1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? -1 : 0));
                 } else {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (a.meta.timestamps.paid.at > b.meta.timestamps.paid.at) ? -1 : ((b.meta.timestamps.paid.at > a.meta.timestamps.paid.at) ? 1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? -1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? 1 : 0));
                 }
                 break;
         }
@@ -294,6 +312,7 @@ class InvoicePage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <InvoiceInfo open={this.state.modals.info.open} data={this.state.modals.info.data} handleClose={this.toggleInfo}/>
                 <FormPayment open={this.state.modals.payment.open} data={this.state.modals.payment.data}
                              handleClose={this.togglePayment}
                              handleUpdate={this.loadInvoices}/>
@@ -388,6 +407,12 @@ class InvoicePage extends React.Component {
                                                          handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle" width={150}>
+                                                <BtnSort sort="paid"
+                                                         name={Lang.get('companies.invoices.payments.labels.amount')}
+                                                         filter={this.state.filter}
+                                                         handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={150}>
                                                 <BtnSort sort="status"
                                                          name={Lang.get('companies.invoices.labels.status')}
                                                          filter={this.state.filter}
@@ -420,6 +445,10 @@ class InvoicePage extends React.Component {
                                                             }
                                                         </span>
                                                     </td>
+                                                    <td className="align-middle">
+                                                        <span className="float-left">Rp.</span>
+                                                        <span className="float-right">{formatLocaleString(sumTotalPaymentSingle(item))}</span>
+                                                    </td>
                                                     <td className="align-middle text-center">
                                                         {
                                                             sumTotalPaymentSingle(item) === 0 ?
@@ -438,6 +467,8 @@ class InvoicePage extends React.Component {
                                                                     <span className="sr-only">Toggle Dropdown</span>
                                                                 </button>
                                                                 <div className="dropdown-menu" role="menu">
+                                                                    <a href="#" data-id={item.value} onClick={this.handlePrint} className="dropdown-item"><i className="fas fa-print mr-1"/>{Lang.get('companies.invoices.labels.print')}</a>
+                                                                    <button onClick={()=>this.toggleInfo(item)} className="dropdown-item"><i className="fas fa-info-circle mr-1"/>{Lang.get('companies.invoices.labels.info')}</button>
                                                                     {this.state.privilege.payments &&
                                                                         <button onClick={()=>this.togglePayment(item)} className="dropdown-item text-info"><i className="fas fa-cash-register mr-1"/> {Lang.get('companies.invoices.payments.labels.menu')}</button>
                                                                     }

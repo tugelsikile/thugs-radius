@@ -16,12 +16,12 @@ return [
             'menu_info' => 'Manajemen data pelanggan hotspot',
         ]
     ],
-    'invoice' => [
+    'invoices' => [
         'labels' => [
             'menu' => 'Tagihan Pelanggan',
             'menu_info' => 'Manajemen tagihan pelanggan',
         ],
-        'payment' => [
+        'payments' => [
             'labels' => [
                 'menu' => 'Pembayaran tagihan pelanggan',
                 'menu_info' => 'Melakukan pembayaran tagihan pelanggan secara manual',

@@ -3,6 +3,7 @@
 return [
     'method' => 'Undefined method',
     'ok' => 'ok',
+    'save' => 'Simpan',
     'close' => 'Tutup',
     'action' => 'Aksi',
     'no_data' => 'Sementara data tidak ada',

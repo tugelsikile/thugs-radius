@@ -42,7 +42,7 @@ function generateCompanyPackageCode(): string
 }
 function generateCompanyInvoicePaymentCode($tanggal): string
 {
-    $length = CompanyInvoicePayment::orderBy('code', 'desc')->whereDate('paid_at', Carbon::parse($tanggal)->format('Y-m-d'))->get('code');
+    $length = CompanyInvoicePayment::orderBy('code', 'desc')->whereDate('paid_at', Carbon::parse($tanggal)->format('Y-m-d'))->withTrashed()->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);
@@ -51,11 +51,11 @@ function generateCompanyInvoicePaymentCode($tanggal): string
     } else {
         $length = 1;
     }
-    return Carbon::parse($tanggal)->format('ym') . Str::padLeft($length,4,'0');
+    return Carbon::parse($tanggal)->format('Ymd') . Str::padLeft($length,4,'0');
 }
 function generateCompanyInvoiceCode(): string
 {
-    $length = CompanyInvoice::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
+    $length = CompanyInvoice::orderBy('code', 'desc')->limit(1)->offset(0)->withTrashed()->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);
@@ -68,7 +68,7 @@ function generateCompanyInvoiceCode(): string
 }
 function generateCompanyCode(): string
 {
-    $length = ClientCompany::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
+    $length = ClientCompany::orderBy('code', 'desc')->limit(1)->offset(0)->withTrashed()->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);

@@ -86,6 +86,7 @@ class LoginPage extends React.Component {
                 localStorage.setItem('user', JSON.stringify(response.data.params.user));
                 localStorage.setItem('locale_lang', response.data.params.user.meta.locale.lang);
                 localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
+                localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
                 if (response.data.params.user.meta.level.for_client) {
                     window.location.href = window.origin + '/clients';
                 } else {

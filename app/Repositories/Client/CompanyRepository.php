@@ -28,7 +28,29 @@ class CompanyRepository
     {
         $this->packageRepository = new PackageRepository();
     }
-    public function delete(Request $request) {
+    public function activate(Request $request) {
+        try {
+            $company = ClientCompany::where('id', $request->id)->first();
+            if ($company->active_at == null) {
+                $company->active_by = auth()->guard('api')->user()->id;
+                $company->active_at = Carbon::now()->format('Y-m-d H:i:s');
+            } else {
+                $company->active_at = null;
+                $company->active_by = null;
+            }
+            $company->saveOrFail();
+            return $this->table(new Request(['id' => $company->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return bool
+     * @throws Exception
+     */
+    public function delete(Request $request): bool
+    {
         try {
             ClientCompany::whereIn('id', $request->id)->delete();
             return true;
@@ -183,6 +205,12 @@ class CompanyRepository
                             'discount' => $company->discount,
                             'expiry' => $company->expired_at == null ? null : Carbon::parse($company->expired_at)->format('Y-m-d H:i:s'),
                             'packages' => $this->companyPackages($company),
+                            'timestamps' => (object) [
+                                'active' => (object) [
+                                    'at' => $company->active_at == null ? null : Carbon::parse($company->active_at)->format('Y-m-d H:i:s'),
+                                    'by' => $company->activeBy,
+                                ]
+                            ]
                         ]
                     ]);
                 }

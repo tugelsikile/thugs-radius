@@ -20,7 +20,6 @@ class CreateCompanyPackagesTable extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->double('base_price',20,2)->default(0);
-            $table->double('vat_percent',20,2)->default(0);
             $table->string('duration_string',30)->default('days');
             $table->integer('duration_ammount')->default(0);
             $table->integer('max_users')->default(0);

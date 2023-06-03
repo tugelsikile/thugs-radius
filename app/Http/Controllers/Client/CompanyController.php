@@ -8,6 +8,7 @@ use App\Validations\Client\CompanyValidation;
 use Exception;
 use Illuminate\Http\JsonResponse as JsonResponseAlias;
 use Illuminate\Http\Request;
+use Throwable;
 
 class CompanyController extends Controller
 {
@@ -22,6 +23,21 @@ class CompanyController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponseAlias
+     */
+    public function activate(Request $request): JsonResponseAlias
+    {
+        try {
+            $valid = $this->validation->activate($request);
+            $params = $this->repository->activate($valid);
+            return formatResponse(200,__('companies.active.success'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponseAlias
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponseAlias
     {

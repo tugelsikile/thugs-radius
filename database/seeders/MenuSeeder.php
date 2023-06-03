@@ -20,38 +20,55 @@ class MenuSeeder extends Seeder
         $routes = collect();
         $requests = collect();
         $requests->push((object) [
-            'name' => 'Client', 'route' => 'auth.clients', 'description' => 'Client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-building', 'lang' => 'messages.company.labels.menu',
+            'name' => 'Client', 'route' => 'auth.clients', 'description' => 'companies.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-building', 'lang' => 'companies.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Package', 'route' => 'auth.clients.packages', 'description' => 'Package for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-archive', 'lang' => 'messages.company.packages.labels.menu' ],
-                (object) [ 'name' => 'Invoice', 'route' => 'auth.clients.invoices', 'description' => 'Invoice for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-file-invoice-dollar', 'lang' => 'messages.company.invoice.labels.menu'],
-                (object) [ 'name' => 'Invoice Payment', 'route' => 'auth.clients.invoices.payments', 'description' => 'Payment Invoice for client radius', 'function' => true, 'for_client' => false, 'icon' => 'fas fa-cash-register', 'lang' => 'messages.company.invoice.labels.payment' ],
+                (object) [ 'name' => 'Package', 'route' => 'auth.clients.packages', 'description' => 'companies.packages.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-archive', 'lang' => 'companies.packages.labels.menu' ],
+                (object) [ 'name' => 'Invoice', 'route' => 'auth.clients.invoices', 'description' => 'companies.invoices.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-file-invoice-dollar', 'lang' => 'companies.invoices.labels.menu'],
+                (object) [ 'name' => 'Invoice Payment', 'route' => 'auth.clients.invoices.payments', 'description' => 'companies.invoices.payments.labels.menu_info', 'function' => true, 'for_client' => false, 'icon' => 'fas fa-cash-register', 'lang' => 'companies.invoices.payments.labels.menu' ],
             ])
         ]);
         $requests->push((object) [
-            'name' => 'User', 'route' => 'auth.users', 'description' => 'Users for client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-secret', 'lang' => 'messages.users.labels.menu',
+            'name' => 'User', 'route' => 'auth.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Privilege', 'route' => 'auth.users.privileges', 'description' => 'Manage Privileges for users client radius', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-shield', 'lang' => 'messages.privileges.labels.menu' ],
+                (object) [ 'name' => 'Privilege', 'route' => 'auth.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ],
             ])
         ]);
         $requests->push((object) [
-            'name' => 'Router [NAS]', 'route' => 'clients.routerboards', 'description' => 'Manage routerboards', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'routerboards.main.labels.menu',
+            'name' => 'Config', 'route' => 'auth.configs', 'description' => 'configs.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-tools', 'lang' => 'configs.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Pilih Routerboard', 'route' => 'clients.routerboards.select', 'description' => 'Select routerboards to manage', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-hand-pointer', 'lang' => 'routerboards.select.labels.menu' ]
+                (object) [ 'name' => 'Diskon / Promo', 'route' => 'auth.configs.discounts', 'description' => 'discounts.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-tags', 'lang' => 'discounts.labels.menu' ],
+                (object) [ 'name' => 'Pajak', 'route' => 'auth.configs.taxes', 'description' => 'taxes.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-wallet', 'lang' => 'taxes.labels.menu' ],
+                (object) [ 'name' => 'Mata Uang', 'route' => 'auth.configs.currencies', 'description' => 'currencies.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-money-bill', 'lang' => 'currencies.labels.menu' ],
+                (object) [ 'name' => 'Timezone', 'route' => 'auth.configs.timezones', 'description' => 'timezones.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-atlas', 'lang' => 'timezones.labels.menu' ],
+            ])
+        ]);
+
+        $requests->push((object) [
+            'name' => 'Router [NAS]', 'route' => 'clients.routerboards', 'description' => 'routerboards.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'routerboards.main.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Pilih Routerboard', 'route' => 'clients.routerboards.select', 'description' => 'routerboards.select.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-hand-pointer', 'lang' => 'routerboards.select.labels.menu' ]
             ])
         ]);
         $requests->push((object) [
-            'name' => 'Customer PPPoE', 'route' => 'clients.customers', 'description' => 'Manage customers', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-tie', 'lang' => 'customers.labels.menu',
+            'name' => 'Customer', 'route' => 'clients.customers', 'description' => 'customers.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-tie', 'lang' => 'customers.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'Manage customer pppoe', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],
-                (object) [ 'name' => 'Customer Hotspot', 'route' => 'clients.customers.hotspot', 'description' => 'Manage customer hotspot', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.hotspot.labels.menu'],
-                (object) [ 'name' => 'Tagihan', 'route' => 'clients.customers.invoices', 'description' => 'Manage invoice', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-file-invoice', 'lang' => 'customers.invoice.labels.menu'],
-                (object) [ 'name' => 'Pembayaran Tagihan', 'route' => 'clients.customers.invoices.payment', 'description' => 'Paid customer invoice', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'customers.invoice.payment.labels.menu'],
+                (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'customers.pppoe.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],
+                (object) [ 'name' => 'Customer Hotspot', 'route' => 'clients.customers.hotspot', 'description' => 'customers.hotspot.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.hotspot.labels.menu'],
+                (object) [ 'name' => 'Tagihan', 'route' => 'clients.customers.invoices', 'description' => 'customers.invoices.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-file-invoice', 'lang' => 'customers.invoices.labels.menu'],
+                (object) [ 'name' => 'Pembayaran Tagihan', 'route' => 'clients.customers.invoices.payment', 'description' => 'customers.invoices.payments.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'customers.invoice.payments.labels.menu'],
             ]),
         ]);
         $requests->push((object) [
-            'name' => 'User', 'route' => 'clients.users', 'description' => 'Manage users clients', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-secret', 'lang' => 'messages.users.labels.menu',
+            'name' => 'User', 'route' => 'clients.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Privileges', 'route' => 'clients.users.privileges', 'description' => 'Manage users privileges', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-shield', 'lang' => 'messages.privileges.labels.menu' ]
+                (object) [ 'name' => 'Privileges', 'route' => 'clients.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ]
+            ])
+        ]);
+        $requests->push((object) [
+            'name' => 'Config', 'route' => 'clients.configs', 'description' => 'Konfigurasi', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cog', 'lang' => 'configs.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Diskon', 'route' => 'clients.configs.discounts', 'description' => 'Manage Diskon', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-tags', 'lang' => 'discounts.labels.menu' ],
+                (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.taxes', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-tags', 'lang' => 'taxes.labels.menu' ],
             ])
         ]);
 

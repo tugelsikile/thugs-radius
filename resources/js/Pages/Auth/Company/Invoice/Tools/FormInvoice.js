@@ -6,7 +6,7 @@ import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import {crudCompanyInvoice} from "../../../../../Services/CompanyService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
-import {parseInputFloat, ucFirst} from "../../../../../Components/mixedConsts";
+import {CardPreloader, formatLocaleString, parseInputFloat, ucFirst} from "../../../../../Components/mixedConsts";
 import {NumericFormat} from "react-number-format";
 import DatePicker, {registerLocale} from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -52,8 +52,8 @@ class FormInvoice extends React.Component {
                 if (props.packages !== null) {
                     if (props.packages.length > 0) {
                         let index = -1;
-                        props.data.meta.packages.map((item,index)=>{
-                            index = props.packages.findIndex((f) => f.value === item.meta.package.id);
+                        props.data.meta.packages.map((item)=>{
+                            index = props.packages.findIndex((f) => f.value === item.meta.package.value);
                             if (index >= 0) {
                                 item.meta.package = props.packages[index];
                                 form.packages.current.push(item);
@@ -201,7 +201,7 @@ class FormInvoice extends React.Component {
                             }
                         </span>
                     </DialogTitle>
-                    <DialogContent dividers>
+                    <DialogContent className="modal-body" dividers>
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label">{Lang.get('companies.invoices.labels.periode')}</label>
                             <div className="col-sm-3">
@@ -218,7 +218,7 @@ class FormInvoice extends React.Component {
                                 {this.state.form.id !== null ?
                                     <div className="form-control text-sm">{this.state.form.company.label}</div>
                                     :
-                                    <Select className="text-sm" onChange={this.handleSelectCompany} placeholder={<small>{Lang.get('companies.labels.select')}</small>} options={this.props.companies} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies}/>
+                                    <Select noOptionsMessage={()=><small>{Lang.get('companies.labels.no_select')}</small>} className="text-sm" onChange={this.handleSelectCompany} placeholder={<small>{Lang.get('companies.labels.select')}</small>} options={this.props.companies.filter((f) => f.meta.timestamps.active.at !== null)} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies}/>
                                 }
                             </div>
                         </div>
@@ -277,47 +277,81 @@ class FormInvoice extends React.Component {
                                     </thead>
                                     <tbody>
                                     {this.state.form.packages.current.length === 0 ?
-                                        <tr><td className="align-middle text-center" colSpan={8}>{Lang.get('messages.no_data')}</td> </tr>
+                                        <tr><td className="align-middle text-center" colSpan={8}>{Lang.get('messages.no_data')}</td></tr>
                                         :
                                         this.state.form.packages.current.map((item,index)=>
                                             <tr key={index}>
                                                 <td className="align-middle text-center">
-                                                    <button data-index={index} type="button" className="btn btn-outline-warning btn-sm" onClick={this.handleRemovePackage}>
+                                                    {this.state.form.paid ?
                                                         <i className="fas fa-trash-alt"/>
-                                                    </button>
+                                                        :
+                                                        <button data-index={index} type="button" className="btn btn-outline-warning btn-sm" onClick={this.handleRemovePackage}>
+                                                            <i className="fas fa-trash-alt"/>
+                                                        </button>
+                                                    }
                                                 </td>
-                                                <td>
-                                                    <Select onChange={(e)=>this.handleSelectPackage(e, index)} className="text-sm" placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>} isDisabled={this.state.loading || this.props.loadings.packages} options={this.props.packages} value={item.meta.package}/>
+                                                <td className={this.state.form.paid ? 'align-middle' : null}>
+                                                    {this.state.form.paid ?
+                                                        item.meta.package.label
+                                                        :
+                                                        <Select onChange={(e)=>this.handleSelectPackage(e, index)} className="text-sm" placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>} isDisabled={this.state.loading || this.props.loadings.packages} options={this.props.packages} value={item.meta.package}/>
+                                                    }
                                                 </td>
-                                                <td>
-                                                    <NumericFormat disabled={this.state.loading} className="form-control text-sm"
-                                                                   value={item.meta.prices.qty} placeholder={Lang.get('companies.invoices.labels.package.qty')}
-                                                                   name="qty" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                                <td className={this.state.form.paid ? 'align-middle' : null}>
+                                                    {this.state.form.paid ?
+                                                        item.meta.prices.qty
+                                                        :
+                                                        <NumericFormat disabled={this.state.loading} className="form-control text-sm"
+                                                                       value={item.meta.prices.qty} placeholder={Lang.get('companies.invoices.labels.package.qty')}
+                                                                       name="qty" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                                    }
                                                 </td>
-                                                <td>
-                                                    <NumericFormat disabled={this.state.loading} className="form-control text-sm"
-                                                                   value={item.meta.prices.price} placeholder={Lang.get('companies.invoices.labels.package.price')}
-                                                                   name="price" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                <td className={this.state.form.paid ? 'align-middle' : null}>
+                                                    {this.state.form.paid ?
+                                                        <>
+                                                            <span className="float-left">Rp.</span>
+                                                            <span className="float-right">
+                                                                {parseFloat(item.meta.prices.price).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}
+                                                            </span>
+                                                        </>
+                                                        :
+                                                        <NumericFormat disabled={this.state.loading} className="form-control text-sm"
+                                                                       value={item.meta.prices.price} placeholder={Lang.get('companies.invoices.labels.package.price')}
+                                                                       name="price" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                    }
                                                 </td>
-                                                <td>
-                                                    <NumericFormat disabled={this.state.loading} className="form-control text-sm"
-                                                                   isAllowed={(values)=>{
-                                                                       const { floatValue } = values;
-                                                                       const MAX_LIMIT = 100;
-                                                                       return floatValue <= MAX_LIMIT;
-                                                                   }}
-                                                                   value={item.meta.prices.vat} placeholder={Lang.get('companies.invoices.labels.package.vat')}
-                                                                   name="vat" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                <td className={this.state.form.paid ? 'align-middle text-center' : null}>
+                                                    {this.state.form.paid ?
+                                                        `${parseFloat(item.meta.prices.vat).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}%`
+                                                        :
+                                                        <NumericFormat disabled={this.state.loading} className="form-control text-sm"
+                                                                       isAllowed={(values)=>{
+                                                                           const { floatValue } = values;
+                                                                           const MAX_LIMIT = 100;
+                                                                           return floatValue <= MAX_LIMIT;
+                                                                       }}
+                                                                       value={item.meta.prices.vat} placeholder={Lang.get('companies.invoices.labels.package.vat')}
+                                                                       name="vat" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                    }
                                                 </td>
-                                                <td>
-                                                    <NumericFormat disabled={this.state.loading} className="form-control text-sm"
-                                                                   isAllowed={(values)=>{
-                                                                       const { floatValue } = values;
-                                                                       const MAX_LIMIT = item.meta.prices.price;
-                                                                       return floatValue <= MAX_LIMIT;
-                                                                   }}
-                                                                   value={item.meta.prices.discount} placeholder={Lang.get('companies.invoices.labels.package.price')}
-                                                                   name="discount" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                <td className={this.state.form.paid ? 'align-middle' : null}>
+                                                    {this.state.form.paid ?
+                                                        <>
+                                                            <span className="float-left">Rp.</span>
+                                                            <span className="float-right">
+                                                                {parseFloat(item.meta.prices.discount).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}
+                                                            </span>
+                                                        </>
+                                                        :
+                                                        <NumericFormat disabled={this.state.loading} className="form-control text-sm"
+                                                                       isAllowed={(values)=>{
+                                                                           const { floatValue } = values;
+                                                                           const MAX_LIMIT = item.meta.prices.price;
+                                                                           return floatValue <= MAX_LIMIT;
+                                                                       }}
+                                                                       value={item.meta.prices.discount} placeholder={Lang.get('companies.invoices.labels.package.price')}
+                                                                       name="discount" data-index={index} data-parent="prices" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                    }
                                                 </td>
                                                 <td className="align-middle">
                                                     <span className="float-left">Rp.</span>
@@ -335,29 +369,42 @@ class FormInvoice extends React.Component {
                                         <th className="align-middle">
                                             <span className="float-left">Rp.</span>
                                             <span className="float-right">
-                                                {parseFloat(this.state.form.packages.current.reduce((a,b) => a + ( (((b.meta.prices.price * b.meta.prices.qty) * b.meta.prices.vat) / 100 ) + (b.meta.prices.price * b.meta.prices.qty))  - b.meta.prices.discount , 0)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}
+                                                {formatLocaleString(this.state.form.packages.current.reduce((a,b) => a + ( (((b.meta.prices.price * b.meta.prices.qty) * b.meta.prices.vat) / 100 ) + (b.meta.prices.price * b.meta.prices.qty))  - b.meta.prices.discount , 0))}
                                             </span>
                                         </th>
                                     </tr>
                                     <tr>
                                         <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.vat')}</th>
                                         <th className="align-middle">
-                                            <NumericFormat disabled={this.state.loading} className="form-control text-sm text-right"
-                                                           isAllowed={(values)=>{
-                                                               const { floatValue } = values;
-                                                               const MAX_LIMIT = 100;
-                                                               return floatValue <= MAX_LIMIT;
-                                                           }}
-                                                           value={this.state.form.vat} placeholder={Lang.get('companies.packages.labels.vat')}
-                                                           name="vat" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                            {this.state.form.paid ?
+                                                `${formatLocaleString(this.state.form.vat)}%`
+                                                :
+                                                <NumericFormat disabled={this.state.loading} className="form-control text-sm text-right"
+                                                               isAllowed={(values)=>{
+                                                                   const { floatValue } = values;
+                                                                   const MAX_LIMIT = 100;
+                                                                   return floatValue <= MAX_LIMIT;
+                                                               }}
+                                                               value={this.state.form.vat} placeholder={Lang.get('companies.packages.labels.vat')}
+                                                               name="vat" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                            }
                                         </th>
                                     </tr>
                                     <tr>
                                         <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.discount')}</th>
                                         <th className="align-middle">
-                                            <NumericFormat disabled={this.state.loading} className="form-control text-sm text-right"
-                                                           value={this.state.form.discount} placeholder={Lang.get('companies.packages.labels.discount')}
-                                                           name="discount" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                            {this.state.form.paid ?
+                                                <>
+                                                    <span className="float-left">Rp.</span>
+                                                    <span className="float-right">
+                                                        {formatLocaleString(this.state.form.discount)}
+                                                    </span>
+                                                </>
+                                                :
+                                                <NumericFormat disabled={this.state.loading} className="form-control text-sm text-right"
+                                                               value={this.state.form.discount} placeholder={Lang.get('companies.packages.labels.discount')}
+                                                               name="discount" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                            }
                                         </th>
                                     </tr>
                                     <tr>

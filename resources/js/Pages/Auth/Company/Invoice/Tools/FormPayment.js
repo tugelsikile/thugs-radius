@@ -14,10 +14,12 @@ import en from "date-fns/locale/en-US";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Select from "react-select";
 import {
+    formatLocaleDate,
+    formatLocaleString,
     parseInputFloat,
     sumTotalInvoiceSingle,
     sumTotalPackageSingle,
-    sumTotalPaymentSingle
+    sumTotalPaymentSingle, ucFirst
 } from "../../../../../Components/mixedConsts";
 registerLocale("id", id);
 registerLocale("en", en);
@@ -53,8 +55,14 @@ class FormPayment extends React.Component {
                 form.paid = props.data.meta.timestamps.paid.at !== null;
                 form.payments = [];
                 props.data.meta.timestamps.paid.payments.map((item,index)=>{
-                    item.meta.timestamps.paid.at = moment(item.meta.timestamps.paid.at).toDate();
-                    form.payments.push(item);
+                    form.payments.push({
+                        value : item.value,
+                        label : item.label,
+                        note : item.meta.note,
+                        amount : item.meta.amount,
+                        by : item.meta.timestamps.paid.by === null ? '' : item.meta.timestamps.paid.by.name,
+                        at : moment(item.meta.timestamps.paid.at).toDate()
+                    });
                 })
             }
         }
@@ -66,9 +74,9 @@ class FormPayment extends React.Component {
             let index = parseInt(event.currentTarget.getAttribute('data-index'));
             if (index >= 0) {
                 if (event.currentTarget.getAttribute('name') === 'note') {
-                    form.invoice.meta.timestamps.paid.payments[index].meta.note = event.target.value;
+                    form.payments[index].note = event.target.value;
                 } else {
-                    form.invoice.meta.timestamps.paid.payments[index].meta.amount = parseInputFloat(event);
+                    form.payments[index].amount = parseInputFloat(event);
                 }
             }
         }
@@ -76,32 +84,26 @@ class FormPayment extends React.Component {
     }
     handleDate(event, index) {
         let form = this.state.form;
-        form.invoice.meta.timestamps.paid.payments[index].meta.timestamps.paid.at = event;
+        form.payments.at = event;
         this.setState({form});
     }
     handleDeletePayment(index) {
         let form = this.state.form;
-        if (form.invoice.meta.timestamps.paid.payments[index].value !== null) {
-            form.deletes.push(form.invoice.meta.timestamps.paid.payments[index].value);
+        if (form.payments[index].value !== null) {
+            form.deletes.push(form.payments[index].value);
         }
-        form.invoice.meta.timestamps.paid.payments.splice(index,1);
+        form.payments.splice(index,1);
         this.setState({form});
     }
     handleAddPayment() {
         let form = this.state.form;
-        form.invoice.meta.timestamps.paid.payments.push({
-            value : null, label : Lang.get('companies.invoices.payments.labels.code_temp'),
-            meta : {
-                amount : 0, note : '',
-                timestamps : {
-                    paid : {
-                        at : new Date(),
-                        by : {
-                            name : JSON.parse(localStorage.getItem('user')).label,
-                        },
-                    }
-                }
-            }
+        form.payments.push({
+            value : null,
+            label : Lang.get('companies.invoices.payments.labels.code_temp'),
+            note : '',
+            amount : 0,
+            by : JSON.parse(localStorage.getItem('user')).label,
+            at : new Date(),
         });
         this.setState({form});
     }
@@ -112,11 +114,11 @@ class FormPayment extends React.Component {
             const formData = new FormData();
             formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
             if (this.state.form.id !== null) formData.append(Lang.get('companies.invoices.form_input.name'), this.state.form.id);
-            this.state.form.invoice.meta.timestamps.paid.payments.map((item,index)=>{
+            this.state.form.payments.map((item,index)=>{
                 if (item.value !== null) formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.id')}]`, item.value);
-                if (item.meta.timestamps.paid.at !== null) formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.date')}]`, moment(item.meta.timestamps.paid.at).format('yyyy-MM-DD HH:mm:ss'));
-                formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.note')}]`, item.meta.note);
-                formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.amount')}]`, item.meta.amount);
+                if (item.at !== null) formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.date')}]`, moment(item.at).format('yyyy-MM-DD HH:mm:ss'));
+                formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.note')}]`, item.note);
+                formData.append(`${Lang.get('companies.invoices.payments.form_input.name')}[${index}][${Lang.get('companies.invoices.payments.form_input.amount')}]`, item.amount);
             });
             this.state.form.deletes.map((item,index)=>{
                 formData.append(`${Lang.get('companies.invoices.payments.form_input.delete')}[${index}]`, item);
@@ -169,7 +171,12 @@ class FormPayment extends React.Component {
                                     <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.address')}</label>
                                     <div className="col-sm-10">
                                         <div className="form-control text-sm">
-                                            {this.state.form.invoice.meta.company.address}
+                                            {this.state.form.invoice.meta.company.address},&nbsp;
+                                            {this.state.form.invoice.meta.company.village_obj !== null && ucFirst(this.state.form.invoice.meta.company.village_obj.name)}&nbsp;
+                                            {this.state.form.invoice.meta.company.district_obj !== null && ucFirst(this.state.form.invoice.meta.company.district_obj.name)}&nbsp;
+                                            {this.state.form.invoice.meta.company.city_obj !== null && ucFirst(this.state.form.invoice.meta.company.city_obj.name)}&nbsp;
+                                            {this.state.form.invoice.meta.company.province_obj !== null && ucFirst(this.state.form.invoice.meta.company.province_obj.name)}&nbsp;
+                                            {this.state.form.invoice.meta.company.postal}
                                         </div>
                                     </div>
                                 </div>
@@ -190,21 +197,21 @@ class FormPayment extends React.Component {
                                             <tbody>
                                             {this.state.form.invoice.meta.packages.map((item)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center text-sm">{item.meta.package.code}</td>
-                                                    <td className="align-middle text-sm">{item.meta.package.name}</td>
+                                                    <td className="align-middle text-center text-sm">{item.meta.package.meta.code}</td>
+                                                    <td className="align-middle text-sm">{item.meta.package.label}</td>
                                                     <td className="align-middle text-sm">{item.meta.prices.qty}</td>
                                                     <td className="align-middle text-sm">
                                                         <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat(item.meta.prices.price).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}</span>
+                                                        <span className="float-right">{formatLocaleString(item.meta.prices.price)}</span>
                                                     </td>
-                                                    <td className="align-middle text-sm">{parseFloat(item.meta.prices.vat).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}%</td>
+                                                    <td className="align-middle text-sm">{formatLocaleString(item.meta.prices.vat)}%</td>
                                                     <td className="align-middle text-sm">
                                                         <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat(item.meta.prices.discount).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}</span>
+                                                        <span className="float-right">{formatLocaleString(item.meta.prices.discount)}</span>
                                                     </td>
                                                     <td className="align-middle text-sm">
                                                         <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat(sumTotalPackageSingle(item)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:0})}</span>
+                                                        <span className="float-right">{formatLocaleString(sumTotalPackageSingle(item),0)}</span>
                                                     </td>
                                                 </tr>
                                             )}
@@ -212,20 +219,27 @@ class FormPayment extends React.Component {
                                             <tfoot>
                                             <tr>
                                                 <th colSpan={6} className="align-middle text-right">{Lang.get('companies.invoices.labels.vat')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">
-                                                        {parseFloat(this.state.form.invoice.meta.vat).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID':'en-US',{maximumFractionDigits:0})}
-                                                    </span>
+                                                <th className="align-middle text-right">
+                                                    {this.state.form.invoice.meta.vat === 0 ?
+                                                        <span>-</span>
+                                                        :
+                                                        `${formatLocaleString(this.state.form.invoice.meta.vat,0)}%`
+                                                    }
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <th colSpan={6} className="align-middle text-right">{Lang.get('companies.invoices.labels.discount')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">
-                                                        {parseFloat(this.state.form.invoice.meta.discount).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID':'en-US',{maximumFractionDigits:0})}
-                                                    </span>
+                                                <th className={this.state.form.invoice.meta.discount === 0 ? "align-middle text-right" : "align-middle"}>
+                                                    {this.state.form.invoice.meta.discount === 0 ?
+                                                        <span>-</span>
+                                                        :
+                                                        <>
+                                                            <span className="float-left">Rp.</span>
+                                                            <span className="float-right">
+                                                                {formatLocaleString(this.state.form.invoice.meta.discount,0)}
+                                                            </span>
+                                                        </>
+                                                    }
                                                 </th>
                                             </tr>
                                             <tr>
@@ -233,7 +247,7 @@ class FormPayment extends React.Component {
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
                                                     <span className="float-right">
-                                                        {parseFloat(sumTotalInvoiceSingle(this.state.form.invoice)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID':'en-US',{maximumFractionDigits:0})}
+                                                        {formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice),0)}
                                                     </span>
                                                 </th>
                                             </tr>
@@ -263,10 +277,10 @@ class FormPayment extends React.Component {
                                             </tr>
                                             </thead>
                                             <tbody>
-                                            {this.state.form.invoice.meta.timestamps.paid.payments.length === 0 ?
-                                                <tr><td className="align-middle text-center" colSpan={6}>{Lang.get('messages.no_data')}</td> </tr>
+                                            {this.state.form.payments.length === 0 ?
+                                                <tr><td className="align-middle text-center" colSpan={6}>{Lang.get('messages.no_data')}</td></tr>
                                                 :
-                                                this.state.form.invoice.meta.timestamps.paid.payments.map((item,index)=>
+                                                this.state.form.payments.map((item,index)=>
                                                     <tr key={index}>
                                                         <td className="align-middle text-center">
                                                             <button onClick={()=>this.handleDeletePayment(index)} type="button" className="btn btn-sm btn-outline-warning" disabled={this.state.loading}>
@@ -274,21 +288,38 @@ class FormPayment extends React.Component {
                                                             </button>
                                                         </td>
                                                         <td className="align-middle">{item.value === null ? <span className="badge badge-warning">{item.label}</span> : item.label }</td>
-                                                        <td>
-                                                            <DatePicker showMonthYearDropdown
-                                                                        selected={item.meta.timestamps.paid.at} maxDate={new Date()} title={Lang.get('companies.invoices.labels.date_select')}
-                                                                        className="form-control text-sm" disabled={this.state.loading || item.value !== null}
-                                                                        locale={localStorage.getItem('locale_lang') === 'id' ? id : en }
-                                                                        onChange={(e)=>this.handleDate(e,index)} dateFormat={localStorage.getItem('locale_date_format').replaceAll('D','d')}/>
+                                                        <td className="align-middle">
+                                                            {item.value === null ?
+                                                                <DatePicker showMonthYearDropdown showTimeInput
+                                                                            selected={item.at} maxDate={new Date()} title={Lang.get('companies.invoices.labels.date_select')}
+                                                                            className="form-control text-sm" disabled={this.state.loading || item.value !== null}
+                                                                            locale={localStorage.getItem('locale_lang') === 'id' ? id : en }
+                                                                            onChange={(e)=>this.handleDate(e,index)} dateFormat={localStorage.getItem('locale_date_format').replaceAll('D','d')}/>
+                                                                :
+                                                                formatLocaleDate(item.at)
+                                                            }
                                                         </td>
-                                                        <td>
-                                                            <input name="note" onChange={this.handleChange} data-index={index} className="form-control text-sm" disabled={this.state.loading || item.value !== null} value={item.meta.note} placeholder={Lang.get('companies.invoices.payments.labels.note')}/>
+                                                        <td className="align-middle">
+                                                            {item.value === null ?
+                                                                <input name="note" onChange={this.handleChange} data-index={index} className="form-control text-sm" disabled={this.state.loading} value={item.note} placeholder={Lang.get('companies.invoices.payments.labels.note')}/>
+                                                                :
+                                                                item.note
+                                                            }
                                                         </td>
-                                                        <td className="align-middle">{item.meta.timestamps.paid.by.name}</td>
-                                                        <td>
-                                                            <NumericFormat disabled={this.state.loading || item.value !== null} className="form-control text-sm"
-                                                                           value={item.meta.amount} placeholder={Lang.get('companies.invoices.payments.labels.amount')}
-                                                                           name="price" data-index={index} onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                        <td className="align-middle">{item.by}</td>
+                                                        <td className="align-middle">
+                                                            {item.value === null ?
+                                                                <NumericFormat disabled={this.state.loading} className="form-control text-sm"
+                                                                               value={item.amount} placeholder={Lang.get('companies.invoices.payments.labels.amount')}
+                                                                               name="amount" data-index={index} onChange={this.handleChange} allowLeadingZeros={false} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                                                :
+                                                                <>
+                                                                    <span className="float-left">Rp.</span>
+                                                                    <span className="float-right">
+                                                                        {formatLocaleString(item.amount,2)}
+                                                                    </span>
+                                                                </>
+                                                            }
                                                         </td>
                                                     </tr>
                                                 )
@@ -299,21 +330,21 @@ class FormPayment extends React.Component {
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.payments.labels.subtotal')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{parseFloat(sumTotalPaymentSingle(this.state.form.invoice)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}</span>
+                                                    <span className="float-right">{formatLocaleString(this.state.form.payments.reduce((a,b) => a + b.amount, 0))}</span>
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.labels.subtotal.main')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{parseFloat(sumTotalInvoiceSingle(this.state.form.invoice)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:2})}</span>
+                                                    <span className="float-right">{formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice))}</span>
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.payments.labels.amount_left')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{parseFloat(sumTotalInvoiceSingle(this.state.form.invoice) - sumTotalPaymentSingle(this.state.form.invoice)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-UD',{maximumFractionDigits:2})}</span>
+                                                    <span className="float-right">{formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice) - this.state.form.payments.reduce((a,b) => a + b.amount, 0))}</span>
                                                 </th>
                                             </tr>
                                             </tfoot>

@@ -2,6 +2,7 @@
 
 namespace App\Models\Company;
 
+use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravolt\Indonesia\Models\City;
@@ -16,7 +17,8 @@ class ClientCompany extends Model
     public $incrementing = false;
 
     protected $casts = [
-        'discount' => 'double'
+        'discount' => 'double',
+        'active_at' => 'datetime',
     ];
 
     public function packageObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -38,5 +40,13 @@ class ClientCompany extends Model
     public function villageObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Village::class,'village','code');
+    }
+    public function userCollection(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(User::class,'company','id');
+    }
+    public function activeBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class,'active_by','id');
     }
 }

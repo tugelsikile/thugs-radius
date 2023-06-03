@@ -22,7 +22,7 @@ class CompanyInvoice extends Model
 
     public function companyObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(ClientCompany::class,'company','id');
+        return $this->belongsTo(ClientCompany::class,'company','id')->with(['provinceObj','cityObj','districtObj','villageObj','userCollection']);
     }
     public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

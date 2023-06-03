@@ -17,6 +17,12 @@ use Throwable;
 
 class InvoiceRepository
 {
+    protected $packageRepository;
+    public function __construct()
+    {
+        $this->packageRepository = new PackageRepository();
+    }
+
     /* @
      * @param Request $request
      * @return mixed
@@ -288,7 +294,7 @@ class InvoiceRepository
                         'value' => $package->id,
                         'label' => $package->package_name,
                         'meta' => (object) [
-                            'package' => $package->packageObj,
+                            'package' => $this->packageRepository->table(new Request(['id' => $package->package]))->first(),
                             'description' => (object) [
                                 'package' => $package->package_description,
                                 'user' => $package->user_note,

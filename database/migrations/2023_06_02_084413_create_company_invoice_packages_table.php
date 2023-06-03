@@ -21,8 +21,6 @@ class CreateCompanyInvoicePackagesTable extends Migration
             $table->text('package_description')->nullable();
             $table->text('user_note')->nullable();
             $table->double('price',20,2)->default(0);
-            $table->double('vat',20,2)->default(0);
-            $table->double('discount',20,2)->default(0);
             $table->integer('qty')->default(0);
             $table->timestamps();
             $table->softDeletes();

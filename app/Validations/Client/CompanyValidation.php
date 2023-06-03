@@ -13,6 +13,23 @@ class CompanyValidation
      * @return Request
      * @throws Exception
      */
+    public function activate(Request $request): Request
+    {
+        try {
+            $valid = Validator::make($request->all(),[
+                'id' => 'required|exists:client_companies,id'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function delete(Request $request): Request
     {
         try {

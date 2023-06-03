@@ -8,6 +8,8 @@ return [
         'phone' => 'nomor_telepon_hp',
     ],
     'labels' => [
+        'no_select' => 'Tidak ada data client radius',
+        'info' => 'Informasi Client Radius',
         'menu' => 'Client Radius',
         'menu_info' => 'Manajemen client radius',
         'search' => 'Cari Client Radius ...',
@@ -18,8 +20,13 @@ return [
         'postal' => 'Kode Pos',
         'phone' => 'Nomor Telepon / HP',
         'select' => 'Pilih client radius',
+        'status' => [
+            'active' => 'Aktif',
+            'inactive' => 'Non Aktif',
+        ],
         'table_columns' => [
             'code' => 'ID',
+            'active' => 'Status Aktif',
             'name' => 'Nama Client Radius',
             'email' => 'Email',
             'expired' => [
@@ -43,6 +50,15 @@ return [
         'success' => 'Berhasil menghapus data client radius',
         'button' => 'Hapus',
         'select' => 'Hapus Client Radius Dipilih'
+    ],
+    'active' => [
+        'confirm' => 'Rubah Status Aktif Client Radius',
+        'form' => 'Rubah Status',
+        'success' => 'Berhasil merubah status aktif client radius',
+        'status' => [
+            'active' => 'Aktifasi Client Radius',
+            'inactive' => 'Nonaktifasi Client Radius',
+        ]
     ],
     'packages' => [
         'form_input' => [
@@ -140,6 +156,8 @@ return [
             ]
         ],
         'labels' => [
+            'print' => 'Cetak Tagihan',
+            'info' => 'Informasi Tagihan',
             'periode' => 'Periode Tagihan',
             'menu' => 'Tagihan Client Radius',
             'select_periode' => 'Pilih Periode Penagihan',
@@ -215,4 +233,11 @@ return [
             ]
         ]
     ],
+    'cps' => [
+        'labels' => [
+            'name' => 'Contact Person',
+            'email' => 'Email CP.',
+            'phone' => 'No. Telp. CP.'
+        ]
+    ]
 ];

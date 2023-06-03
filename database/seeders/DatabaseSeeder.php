@@ -21,10 +21,12 @@ class DatabaseSeeder extends Seeder
             Artisan::call("laravolt:indonesia:seed");
         }
         $this->call([
+            ConfigSeeder::class,
             UserLevelSeeder::class,
             UserSeeder::class,
             MenuSeeder::class,
             UserPrivilegeSeeder::class,
+            CurrencySeeder::class,
         ]);
     }
 }

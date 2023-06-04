@@ -22,4 +22,5 @@ const mix = require('laravel-mix');
 //mix.js('resources/js/src/auth/companies/print-invoices.js','public/js/auth/companies');
 //mix.js('resources/js/src/auth/configs/timezones.js','public/js/auth/configs');
 //mix.js('resources/js/src/auth/configs/currencies.js','public/js/auth/configs');
-mix.js('resources/js/src/auth/configs/taxes.js','public/js/auth/configs');
+//mix.js('resources/js/src/auth/configs/taxes.js','public/js/auth/configs');
+mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');

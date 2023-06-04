@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Session;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class AuthRepository
 {
@@ -190,7 +191,7 @@ class AuthRepository
     /* @
      * @param Request $request
      * @return object
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function login(Request $request): object
     {
@@ -240,7 +241,8 @@ class AuthRepository
                         'email' => $user->email,
                         'avatar' => getAvatar($user),
                         'level' => $user->levelObj,
-                        'locale' => $user->locale
+                        'locale' => $user->locale,
+                        'company' => $user->companyObj,
                     ]
                 ]);
             }

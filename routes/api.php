@@ -50,6 +50,7 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::any('/timezones', [ConfigController::class, 'timezone']);
         Route::any('/currencies', [ConfigController::class, 'currencies']);
         Route::any('/taxes', [ConfigController::class, 'taxes']);
+        Route::any('/discounts', [ConfigController::class, 'discounts']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

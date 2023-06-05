@@ -167,8 +167,8 @@ class CurrencyPage extends React.Component {
         return (
             <React.StrictMode>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>

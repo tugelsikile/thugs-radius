@@ -12,15 +12,15 @@ const mix = require('laravel-mix');
  */
 
 //mix.sass('resources/css/captcha.scss','public/css');
-//mix.js('resources/js/src/auth/login.js','public/js');
-//mix.js('resources/js/src/auth/index.js','public/js/auth');
-//mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
-//mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
-//mix.js('resources/js/src/auth/companies/index.js','public/js/auth/companies');
-//mix.js('resources/js/src/auth/companies/packages.js','public/js/auth/companies');
-//mix.js('resources/js/src/auth/companies/invoices.js','public/js/auth/companies');
-//mix.js('resources/js/src/auth/companies/print-invoices.js','public/js/auth/companies');
-//mix.js('resources/js/src/auth/configs/timezones.js','public/js/auth/configs');
-//mix.js('resources/js/src/auth/configs/currencies.js','public/js/auth/configs');
-//mix.js('resources/js/src/auth/configs/taxes.js','public/js/auth/configs');
+mix.js('resources/js/src/auth/login.js','public/js');
+mix.js('resources/js/src/auth/index.js','public/js/auth');
+mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
+mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
+mix.js('resources/js/src/auth/companies/index.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/companies/packages.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/companies/invoices.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/companies/print-invoices.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/configs/timezones.js','public/js/auth/configs');
+mix.js('resources/js/src/auth/configs/currencies.js','public/js/auth/configs');
+mix.js('resources/js/src/auth/configs/taxes.js','public/js/auth/configs');
 mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');

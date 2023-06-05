@@ -56,4 +56,9 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/', function () { return view('clients.routerboards.index'); })->name('clients.routerboards');
         Route::get('/select', function () { return view('clients.routerboards.index'); })->name('clients.routerboards.select');
     });
+    Route::group(['prefix' => 'configs'], function () {
+        Route::get('/', function () { })->name('clients.configs');
+        Route::get('/discounts', function () { })->name('clients.configs.discounts');
+        Route::get('/taxes', function () { })->name('clients.configs.taxes');
+    });
 });

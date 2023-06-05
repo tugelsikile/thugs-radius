@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddDiscountToClientCompaniesTable extends Migration
+class AddPaymentDueToCompanyInvoicesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddDiscountToClientCompaniesTable extends Migration
      */
     public function up()
     {
-        Schema::table('client_companies', function (Blueprint $table) {
-            $table->double('discount',20,2)->default(0);
+        Schema::table('company_invoices', function (Blueprint $table) {
+            $table->dateTime('payment_due')->after('deleted_at')->nullable();
         });
     }
 
@@ -25,8 +25,8 @@ class AddDiscountToClientCompaniesTable extends Migration
      */
     public function down()
     {
-        Schema::table('client_companies', function (Blueprint $table) {
-            $table->dropColumn('discount');
+        Schema::table('company_invoices', function (Blueprint $table) {
+            $table->dropColumn('payment_due');
         });
     }
 }

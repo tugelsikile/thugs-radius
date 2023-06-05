@@ -15,8 +15,6 @@ class CompanyInvoice extends Model
     public $incrementing = false;
 
     protected $casts = [
-        'discount' => 'double',
-        'vat' => 'double',
         'periode' => 'date',
     ];
 

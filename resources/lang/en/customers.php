@@ -1,30 +1,30 @@
 <?php
 return [
     'labels' => [
-        'menu' => 'Pelanggan',
-        'menu_info' => 'Manajemen data pelanggan',
+        'menu' => 'Customers',
+        'menu_info' => 'Customers management',
     ],
     'pppoe' => [
         'labels' => [
-            'menu' => 'Pelanggan PPPoE',
-            'menu_info' => 'Manajemen data pelanggan pppoe',
+            'menu' => 'PPPoE Customers',
+            'menu_info' => 'PPPoE customer management',
         ]
     ],
     'hotspot' => [
         'labels' => [
-            'menu' => 'Pelanggan Hotspot',
-            'menu_info' => 'Manajemen data pelanggan hotspot',
+            'menu' => 'Hotspot Customers',
+            'menu_info' => 'Hotspot customers management',
         ]
     ],
-    'invoice' => [
+    'invoices' => [
         'labels' => [
-            'menu' => 'Tagihan Pelanggan',
-            'menu_info' => 'Manajemen tagihan pelanggan',
+            'menu' => 'Customers Billing',
+            'menu_info' => 'Manage customers billing',
         ],
-        'payment' => [
+        'payments' => [
             'labels' => [
-                'menu' => 'Pembayaran tagihan pelanggan',
-                'menu_info' => 'Melakukan pembayaran tagihan pelanggan secara manual',
+                'menu' => 'Customers Billings Payment',
+                'menu_info' => 'Manually paid customers billing',
             ]
         ],
     ]

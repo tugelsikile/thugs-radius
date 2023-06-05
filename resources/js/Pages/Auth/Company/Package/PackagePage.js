@@ -11,8 +11,9 @@ import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import BtnSort from "../../User/Tools/BtnSort";
-import {CardPreloader, durationBy} from "../../../../Components/mixedConsts";
+import {CardPreloader, durationBy, siteData} from "../../../../Components/mixedConsts";
 import FormPackage from "./Tools/FormPackage";
+import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
 
 class PackagePage extends React.Component {
     routers;
@@ -21,9 +22,9 @@ class PackagePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, companies : false, packages : false },
-            privilege : null, menus : [], companies : [],
+            user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
+            loadings : { privilege : false, companies : false, packages : false, discounts : false, taxes : false, site : false },
+            privilege : null, menus : [], companies : [], discounts : [], taxes : [],
             packages : { filtered : [], unfiltered : [], selected : [] },
             filter : {
                 keywords : '',
@@ -45,11 +46,14 @@ class PackagePage extends React.Component {
         this.setState({root:getRootUrl()});
         if (! this.state.loadings.privilege) {
             if (this.state.privilege === null) {
+                siteData().then((response)=>this.setState({site:response}));
                 let loadings = this.state.loadings;
                 loadings.privilege = true; this.setState({loadings});
                 getPrivileges(this.props.route)
                     .then((response) => this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>this.loadPackages().then(()=>this.loadCompanies()))
+                    .then(()=>this.loadDiscounts())
+                    .then(()=>this.loadTaxes())
                     .then(()=>{
                         loadings.privilege = false; this.setState({loadings});
                     });
@@ -147,16 +151,9 @@ class PackagePage extends React.Component {
                 break;
             case 'price' :
                 if (this.state.filter.sort.dir === 'asc') {
-                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices.base > b.meta.prices.base) ? 1 : ((b.meta.prices.base > a.meta.prices.base) ? -1 : 0));
+                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices > b.meta.prices) ? 1 : ((b.meta.prices > a.meta.prices) ? -1 : 0));
                 } else {
-                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices.base > b.meta.prices.base) ? -1 : ((b.meta.prices.base > a.meta.prices.base) ? 1 : 0));
-                }
-                break;
-            case 'vat' :
-                if (this.state.filter.sort.dir === 'asc') {
-                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices.percent > b.meta.prices.percent) ? 1 : ((b.meta.prices.percent > a.meta.prices.percent) ? -1 : 0));
-                } else {
-                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices.percent > b.meta.prices.percent) ? -1 : ((b.meta.prices.percent > a.meta.prices.percent) ? 1 : 0));
+                    packages.filtered = packages.filtered.sort((a,b) => (a.meta.prices > b.meta.prices) ? -1 : ((b.meta.prices > a.meta.prices) ? 1 : 0));
                 }
                 break;
             case 'duration':
@@ -207,6 +204,42 @@ class PackagePage extends React.Component {
         packages.filtered = packages.filtered.slice(indexFirst, indexLast);
         loadings.packages = false;
         this.setState({packages,filter,loadings});
+    }
+    async loadTaxes() {
+        if (! this.state.loadings.taxes ) {
+            let loadings = this.state.loadings;
+            loadings.taxes = true; this.setState({loadings});
+            try {
+                let response = await crudTaxes();
+                if (response.data.params === null) {
+                    loadings.taxes = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.taxes = false; this.setState({loadings,taxes:response.data.params});
+                }
+            } catch (e) {
+                loadings.taxes = false; this.setState({loadings});
+                showError(e.response.data.message);
+            }
+        }
+    }
+    async loadDiscounts() {
+        if (! this.state.loadings.discounts) {
+            let loadings = this.state.loadings;
+            loadings.discounts = true; this.setState({loadings});
+            try {
+                let response = await crudDiscounts();
+                if (response.data.params === null) {
+                    loadings.discounts = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.discounts = false; this.setState({loadings,discounts:response.data.params});
+                }
+            } catch (e) {
+                loadings.discounts = false; this.setState({loadings});
+                showError(e.response.data.message);
+            }
+        }
     }
     async loadCompanies() {
         if (! this.state.loadings.companies) {
@@ -267,11 +300,11 @@ class PackagePage extends React.Component {
         return (
             <React.StrictMode>
 
-                <FormPackage open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleForm} handleUpdate={this.loadPackages}/>
+                <FormPackage discounts={this.state.discounts} taxes={this.state.taxes} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleForm} handleUpdate={this.loadPackages}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
@@ -340,12 +373,6 @@ class PackagePage extends React.Component {
                                                          name={Lang.get('companies.packages.labels.table_columns.price')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th rowSpan={2} className="align-middle" width={70}>
-                                                <BtnSort sort="vat"
-                                                         filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.table_columns.vat')}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
                                             <th rowSpan={2} className="align-middle" width={100}>
                                                 <BtnSort sort="duration"
                                                          filter={this.state.filter}
@@ -388,7 +415,7 @@ class PackagePage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.packages.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={11}>Tidak ada data</td></tr>
+                                            <tr><td className="align-middle text-center" colSpan={10}>Tidak ada data</td></tr>
                                             :
                                             this.state.packages.filtered.map((item,index)=>
                                                 <tr key={item.value}>
@@ -406,11 +433,10 @@ class PackagePage extends React.Component {
                                                             :
                                                             <>
                                                                 <span className="float-left">Rp.</span>
-                                                                <span className="float-right">{parseFloat(item.meta.prices.base).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>
+                                                                <span className="float-right">{parseFloat(item.meta.prices).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle text-center">{parseFloat(item.meta.prices.percent).toLocaleString('id-ID',{maximumFractionDigits:2})}%</td>
                                                     <td className="align-middle text-center">
                                                         {item.meta.duration.ammount === 0 ?
                                                             <span className="badge badge-success">Unlimited</span>

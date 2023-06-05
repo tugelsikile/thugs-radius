@@ -8,20 +8,18 @@ import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import {crudPrivileges, crudUsers} from "../../../Services/UserService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
-import Select from "react-select";
-import Icon from '@mdi/react';
-import { mdiSortAlphabeticalDescending,mdiSortAlphabeticalAscending,mdiSortReverseVariant  } from '@mdi/js';
 import BtnSort from "./Tools/BtnSort";
 import FormUser from "./Tools/FormUser";
 import {crudCompany} from "../../../Services/CompanyService";
-import {CardPreloader} from "../../../Components/mixedConsts";
+import {CardPreloader, siteData} from "../../../Components/mixedConsts";
 
+// noinspection DuplicatedCode
 class UserPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privileges : false, levels : false, users : false, companies : false },
+            user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
+            loadings : { privileges : false, levels : false, users : false, companies : false, site : false },
             privileges : null, menus : [],
             levels : [], companies : [],
             users : { filtered : [], unfiltered : [], selected : [] },
@@ -49,6 +47,7 @@ class UserPage extends React.Component {
         this.setState({root:getRootUrl()});
         let loadings = this.state.loadings;
         if (! loadings.privileges) {
+            siteData().then((response)=>this.setState({site:response}));
             loadings.privileges = true; this.setState({loadings});
             if (this.state.privileges === null) {
                 getPrivileges(this.props.route)
@@ -259,8 +258,8 @@ class UserPage extends React.Component {
                           handleClose={this.toggleUser} handleUpdate={this.loadUsers}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>

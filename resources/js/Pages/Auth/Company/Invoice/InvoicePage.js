@@ -20,13 +20,14 @@ import moment from "moment";
 import BtnSort from "../../User/Tools/BtnSort";
 import FormInvoice from "./Tools/FormInvoice";
 import {
-    CardPreloader, formatLocaleString,
-    sortStatusPaid,
-    sumTotalInvoiceSingle,
+    CardPreloader, formatLocaleString, siteData,
+    sortStatusPaid, sumGrandTotalInvoiceSingle,
     sumTotalPaymentSingle
 } from "../../../../Components/mixedConsts";
 import FormPayment from "./Tools/FormPayment";
 import InvoiceInfo from "./Tools/InvoiceInfo";
+import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
+import CardStatus from "./Tools/CardStatus";
 
 
 class InvoicePage extends React.Component {
@@ -34,9 +35,9 @@ class InvoicePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, companies : false, packages : false, invoices : true },
-            privilege : null, menus : [], packages : [], companies : [],
+            user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
+            loadings : { privilege : false, companies : false, packages : false, invoices : true, discounts : false, taxes : false, site : false },
+            privilege : null, menus : [], packages : [], companies : [], taxes : [], discounts : [],
             invoices : { filtered : [], unfiltered : [], selected : [], },
             filter : {
                 keywords : '', periode : new Date(),
@@ -62,11 +63,13 @@ class InvoicePage extends React.Component {
         this.handleDate = this.handleDate.bind(this);
         this.toggleInfo = this.toggleInfo.bind(this);
         this.handlePrint = this.handlePrint.bind(this);
+        this.handleChangePage = this.handleChangePage.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
         if (! this.state.loadings.privilege) {
             if (this.state.privilege === null) {
+                siteData().then((response)=>this.setState({site:response}));
                 let loadings = this.state.loadings;
                 loadings.privilege = true; this.setState({loadings});
                 getPrivileges([
@@ -79,9 +82,18 @@ class InvoicePage extends React.Component {
                     })))
                     .then(()=>{
                         loadings.privilege = false; this.setState({loadings});
-                    });
+                    })
+                    .then(()=>this.loadDiscounts())
+                    .then(()=>this.loadTaxes())
             }
         }
+    }
+    handleChangePage(page) {
+        let filter = this.state.filter;
+        filter.page = {value:page,label:page}; this.setState({filter},()=>this.handleFilter());
+    }
+    confirmGenerate() {
+        confirmDialog(this,moment(this.state.filter.periode).format('yyyy-MM-DD'),'put',`${window.origin}/api/auth/companies/invoices/generate`,Lang.get('companies.invoices.generate.warning'),Lang.get('companies.invoices.generate.message'),'app.loadInvoices()');
     }
     handlePrint(event) {
         event.preventDefault();
@@ -188,9 +200,9 @@ class InvoicePage extends React.Component {
                 break;
             case 'total' :
                 if (this.state.filter.sort.dir === 'asc') {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalInvoiceSingle(a) > sumTotalInvoiceSingle(b)) ? 1 : ((sumTotalInvoiceSingle(b) > sumTotalInvoiceSingle(a)) ? -1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sumGrandTotalInvoiceSingle(a) > sumGrandTotalInvoiceSingle(b)) ? 1 : ((sumGrandTotalInvoiceSingle(b) > sumGrandTotalInvoiceSingle(a)) ? -1 : 0));
                 } else {
-                    invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalInvoiceSingle(a) > sumTotalInvoiceSingle(b)) ? -1 : ((sumTotalInvoiceSingle(b) > sumTotalInvoiceSingle(a)) ? 1 : 0));
+                    invoices.filtered = invoices.filtered.sort((a,b) => (sumGrandTotalInvoiceSingle(a) > sumGrandTotalInvoiceSingle(b)) ? -1 : ((sumGrandTotalInvoiceSingle(b) > sumGrandTotalInvoiceSingle(a)) ? 1 : 0));
                 }
                 break;
             case 'status' :
@@ -205,6 +217,13 @@ class InvoicePage extends React.Component {
                     invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? 1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? -1 : 0));
                 } else {
                     invoices.filtered = invoices.filtered.sort((a,b) => (sumTotalPaymentSingle(a) > sumTotalPaymentSingle(b)) ? -1 : ((sumTotalPaymentSingle(b) > sumTotalPaymentSingle(a)) ? 1 : 0));
+                }
+                break;
+            case 'remaining' :
+                if (this.state.filter.sort.dir === 'asc') {
+                    invoices.filtered = invoices.filtered.sort((a,b) => ((sumGrandTotalInvoiceSingle(a) - sumTotalPaymentSingle(a)) > (sumGrandTotalInvoiceSingle(b) - sumTotalPaymentSingle(b))) ? 1 : (((sumGrandTotalInvoiceSingle(b)-sumTotalPaymentSingle(b)) > (sumGrandTotalInvoiceSingle(a)-sumTotalPaymentSingle(a))) ? -1 : 0));
+                } else {
+                    invoices.filtered = invoices.filtered.sort((a,b) => ((sumGrandTotalInvoiceSingle(a) - sumTotalPaymentSingle(a)) > (sumGrandTotalInvoiceSingle(b) - sumTotalPaymentSingle(b))) ? -1 : (((sumGrandTotalInvoiceSingle(b)-sumTotalPaymentSingle(b)) > (sumGrandTotalInvoiceSingle(a) - sumTotalPaymentSingle(a))) ? 1 : 0));
                 }
                 break;
         }
@@ -226,6 +245,62 @@ class InvoicePage extends React.Component {
     handleDate(event) {
         let filter = this.state.filter;
         filter.periode = event; this.setState({filter},()=>this.loadInvoices());
+    }
+    async loadTaxes() {
+        if (! this.state.loadings.taxes ) {
+            if (this.state.taxes.length === 0 ) {
+                let loadings = this.state.loadings;
+                loadings.taxes = true; this.setState({loadings});
+                try {
+                    let response = await crudTaxes();
+                    if (response.data.params === null) {
+                        loadings.taxes = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        let taxes = [];
+                        if (response.data.params.length > 0) {
+                            response.data.params.map((item)=>{
+                                item.meta.name = item.label;
+                                item.label = item.meta.code;
+                                taxes.push(item);
+                            });
+                        }
+                        loadings.taxes = false; this.setState({loadings,taxes});
+                    }
+                } catch (e) {
+                    loadings.taxes = false; this.setState({loadings});
+                    showError(e.response.data.message);
+                }
+            }
+        }
+    }
+    async loadDiscounts() {
+        if (! this.state.loadings.discounts) {
+            if (this.state.discounts.length === 0) {
+                let loadings = this.state.loadings;
+                loadings.discounts = true; this.setState({loadings});
+                try {
+                    let response = await crudDiscounts();
+                    if (response.data.params === null) {
+                        loadings.discounts = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        let discounts = [];
+                        if (response.data.params.length > 0) {
+                            response.data.params.map((item)=>{
+                                item.meta.label = item.label;
+                                item.label = item.meta.code;
+                                discounts.push(item);
+                            })
+                        }
+                        loadings.discounts = false; this.setState({loadings,discounts});
+                    }
+                } catch (e) {
+                    loadings.discounts = false; this.setState({loadings});
+                    showError(e.response.data.message);
+                }
+            }
+        }
     }
     async loadCompanies() {
         if (! this.state.loadings.companies) {
@@ -317,15 +392,17 @@ class InvoicePage extends React.Component {
                              handleClose={this.togglePayment}
                              handleUpdate={this.loadInvoices}/>
                 <FormInvoice open={this.state.modals.invoice.open} data={this.state.modals.invoice.data}
-                             loadings={this.state.loadings}
+                             loadings={this.state.loadings} invoices={this.state.invoices.unfiltered}
+                             discounts={this.state.discounts}
+                             taxes={this.state.taxes}
                              companies={this.state.companies} periode={this.state.filter.periode}
                              packages={this.state.packages}
                              handleClose={this.toggleForm}
                              handleUpdate={this.loadInvoices}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
@@ -338,6 +415,8 @@ class InvoicePage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
+
+                            <CardStatus loading={this.state.loadings.invoices} invoices={this.state.invoices.filtered}/>
 
                             <div className="card card-outline card-secondary">
                                 {this.state.loadings.invoices &&
@@ -357,7 +436,10 @@ class InvoicePage extends React.Component {
                                                 {this.state.privilege !== null &&
                                                     <>
                                                         {this.state.privilege.create &&
-                                                            <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.invoices} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('companies.invoices.create.form')}</button>
+                                                            <>
+                                                                <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.invoices} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('companies.invoices.create.form')}</button>
+                                                                <button onClick={()=>this.confirmGenerate()} disabled={this.state.loadings.invoices} className="btn btn-tool"><i className="fas fa-cash-register"/> {Lang.get('companies.invoices.generate.form')}</button>
+                                                            </>
                                                         }
                                                         {this.state.privilege.delete &&
                                                             this.state.invoices.selected.length > 0 &&
@@ -400,19 +482,25 @@ class InvoicePage extends React.Component {
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={150}>
+                                            <th className="align-middle" width={130}>
                                                 <BtnSort sort="total"
                                                          name={Lang.get('companies.invoices.labels.subtotal.main')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={150}>
+                                            <th className="align-middle" width={130}>
                                                 <BtnSort sort="paid"
                                                          name={Lang.get('companies.invoices.payments.labels.amount')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={150}>
+                                            <th className="align-middle" width={130}>
+                                                <BtnSort sort="remaining"
+                                                         name={Lang.get('companies.invoices.labels.remaining')}
+                                                         filter={this.state.filter}
+                                                         handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={130}>
                                                 <BtnSort sort="status"
                                                          name={Lang.get('companies.invoices.labels.status')}
                                                          filter={this.state.filter}
@@ -427,7 +515,7 @@ class InvoicePage extends React.Component {
                                         {this.state.invoices.filtered.length === 0 ?
                                             <tr><td className="align-middle text-center" colSpan={6}>{Lang.get('messages.no_data')}</td></tr>
                                             :
-                                            this.state.invoices.filtered.map((item, index) =>
+                                            this.state.invoices.filtered.map((item) =>
                                                 <tr key={item.value}>
                                                     <td className="align-middle text-center">
                                                         <div className="custom-control custom-checkbox">
@@ -440,21 +528,23 @@ class InvoicePage extends React.Component {
                                                     <td className="align-middle">
                                                         <span className="float-left">Rp.</span>
                                                         <span className="float-right">
-                                                            {
-                                                                parseFloat(sumTotalInvoiceSingle(item)).toLocaleString(localStorage.getItem('locale_lang') === 'id' ? 'id-ID' : 'en-US',{maximumFractionDigits:0})
-                                                            }
+                                                            {formatLocaleString(sumGrandTotalInvoiceSingle(item),2)}
                                                         </span>
                                                     </td>
                                                     <td className="align-middle">
                                                         <span className="float-left">Rp.</span>
                                                         <span className="float-right">{formatLocaleString(sumTotalPaymentSingle(item))}</span>
                                                     </td>
+                                                    <td className="align-middle">
+                                                        <span className="float-left">Rp.</span>
+                                                        <span className="float-right">{formatLocaleString(sumGrandTotalInvoiceSingle(item) - sumTotalPaymentSingle(item))}</span>
+                                                    </td>
                                                     <td className="align-middle text-center">
                                                         {
                                                             sumTotalPaymentSingle(item) === 0 ?
                                                                 <span className="badge badge-secondary btn-block">{Lang.get('companies.invoices.payments.labels.status.pending')}</span>
                                                                 :
-                                                                sumTotalPaymentSingle(item) >= sumTotalInvoiceSingle(item) ?
+                                                                sumTotalPaymentSingle(item) >= sumGrandTotalInvoiceSingle(item) ?
                                                                     <span className="badge badge-success btn-block">{Lang.get('companies.invoices.payments.labels.status.success')}</span>
                                                                     :
                                                                     <span className="badge badge-warning btn-block">{Lang.get('companies.invoices.payments.labels.status.partial')}</span>
@@ -488,7 +578,32 @@ class InvoicePage extends React.Component {
                                         </tbody>
                                     </table>
                                 </div>
+                                {this.state.invoices.filtered.length > 0 &&
+                                    <div className="card-footer clearfix row">
+                                        <div className="col-sm-2">
 
+                                        </div>
+                                        <div className="col-sm-10">
+                                            <ul className="pagination pagination-sm m-0 float-right">
+                                                {this.state.filter.page.value > 1 &&
+                                                    <li className="page-item">
+                                                        <a onClick={()=>this.handleChangePage(1)} className="page-link" href="#">«</a>
+                                                    </li>
+                                                }
+                                                {this.state.filter.paging.map((item)=>
+                                                    <li key={item} onClick={()=>this.handleChangePage(item)} className={item === this.state.filter.page.value ? "page-item active" : "page-item"}>
+                                                        <a className="page-link" href="#">{item}</a>
+                                                    </li>
+                                                )}
+                                                {this.state.filter.paging.length > 1 &&
+                                                    <li className="page-item">
+                                                        <a onClick={()=>this.handleChangePage(this.state.filter.paging[this.state.filter.paging.length - 1])} className="page-link" href="#">»</a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
                             </div>
 
                         </div>

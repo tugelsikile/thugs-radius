@@ -1,7 +1,7 @@
 // noinspection JSValidateTypes,CommaExpressionJS
 
 import React from "react";
-import {durationType} from "../../../../../Components/mixedConsts";
+import {durationType, parseInputFloat} from "../../../../../Components/mixedConsts";
 import {crudCompanyPackage} from "../../../../../Services/CompanyService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
@@ -19,7 +19,7 @@ class FormPackage extends React.Component {
             form : {
                 id : null, name : '', description : '',
                 prices : { base : 0, vat : 0 },
-                duration : { type : durationType[0], ammount : 0 },
+                duration : { type : durationType[0], amount : 0 },
                 max : {
                     customer : 0, user : 0, voucher : 0, router : 0,
                 },
@@ -33,15 +33,15 @@ class FormPackage extends React.Component {
         let form = this.state.form;
         if (! props.open) {
             form.id = null, form.name = '', form.name = '', form.description = '',
-                form.prices.base = 0, form.prices.vat = 0, form.duration.type = durationType[0], form.duration.ammount = 0,
+                form.prices.base = 0, form.duration.type = durationType[0], form.duration.amount = 0,
                 form.max.customer = 0, form.max.user = 0, form.max.voucher = 0, form.max.router = 0;
         } else {
             if (props.data !== null) {
                 form.id = props.data.value,
                     form.name = props.data.label, form.description = props.data.meta.description,
-                    form.prices.base = props.data.meta.prices.base, form.prices.vat = props.data.meta.prices.percent,
+                    form.prices.base = props.data.meta.prices,
                     form.duration.type = durationType[durationType.findIndex((f) => f.value === props.data.meta.duration.string)],
-                    form.duration.ammount = props.data.meta.duration.ammount,
+                    form.duration.amount = props.data.meta.duration.amount,
                     form.max.customer = props.data.meta.max.customers, form.max.user = props.data.meta.max.users,
                     form.max.voucher = props.data.meta.max.vouchers, form.max.router = props.data.meta.max.routers;
             }
@@ -57,25 +57,7 @@ class FormPackage extends React.Component {
         if (event.target.getAttribute('name') === 'name' || event.target.getAttribute('name') === 'description') {
             form[event.target.name] = event.target.value;
         } else {
-            let currentValue = event.currentTarget.value;
-            let leftValue;
-            let rightValue = 0;
-            let decimalValue = currentValue.split(',');
-            if (decimalValue.length === 2) {
-                leftValue = decimalValue[0];
-                if (decimalValue[1].length > 0) {
-                    rightValue = decimalValue[1];
-                }
-            } else {
-                leftValue = currentValue;
-            }
-            leftValue = leftValue.replaceAll('.','');
-            leftValue = parseInt(leftValue);
-            if (parseFloat(rightValue) > 0) {
-                form[event.target.getAttribute('data-type')][event.target.getAttribute('name')] = parseFloat(leftValue + '.' + parseFloat(rightValue));
-            } else {
-                form[event.target.getAttribute('data-type')][event.target.getAttribute('name')] = parseFloat(leftValue);
-            }
+            form[event.target.getAttribute('data-type')][event.target.getAttribute('name')] = parseInputFloat(event);
         }
         this.setState({form});
     }
@@ -89,9 +71,8 @@ class FormPackage extends React.Component {
             formData.append(Lang.get('companies.packages.form_input.name'), this.state.form.name);
             formData.append(Lang.get('companies.packages.form_input.description'), this.state.form.description);
             formData.append(Lang.get('companies.packages.form_input.price'), this.state.form.prices.base);
-            formData.append(Lang.get('companies.packages.form_input.vat'), this.state.form.prices.vat);
             if (this.state.form.duration.type !== null) formData.append(Lang.get('companies.packages.form_input.duration_type'), this.state.form.duration.type.value);
-            formData.append(Lang.get('companies.packages.form_input.duration_ammount'), this.state.form.duration.ammount);
+            formData.append(Lang.get('companies.packages.form_input.duration_amount'), this.state.form.duration.amount);
             formData.append(Lang.get('companies.packages.form_input.max_customer'), this.state.form.max.customer);
             formData.append(Lang.get('companies.packages.form_input.max_user'), this.state.form.max.user);
             formData.append(Lang.get('companies.packages.form_input.max_voucher'), this.state.form.max.voucher);
@@ -147,30 +128,16 @@ class FormPackage extends React.Component {
                                 <NumericFormat disabled={this.state.loading} id="inputPrice" className="form-control text-sm text-right"
                                                name="base" data-type="prices" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.prices.base} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
                             </div>
-                            <label className="col-sm-2 col-form-label" htmlFor="inputVat">{Lang.get('companies.packages.labels.vat')}</label>
-                            <div className="col-sm-1">
-                                <NumericFormat disabled={this.state.loading} id="inputVat" className="form-control text-sm text-right" isAllowed={(values) => {
-                                    const { floatValue } = values;
-                                    const MAX_LIMIT = 100;
-                                    return floatValue <= MAX_LIMIT;
-                                }} name="vat" data-type="prices" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.prices.vat} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                            <label className="col-sm-2 col-form-label">{Lang.get('messages.users.labels.date_format.preview')}</label>
-                            <div className="col-sm-3">
-                                <div className="form-control text-sm text-right">
-                                    {parseFloat(((this.state.form.prices.base * this.state.form.prices.vat) / 100) + this.state.form.prices.base).toLocaleString('id-ID',{maximumFractionDigits:2}) }
-                                </div>
-                            </div>
                         </div>
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label" htmlFor="inputDurationType">{Lang.get('companies.packages.labels.duration_type')}</label>
                             <div className="col-sm-2">
                                 <Select onChange={(e)=>this.handleSelect(e,'type')} options={durationType} value={this.state.form.duration.type} isDisabled={this.state.loading} placeholder={<small>{Lang.get('companies.packages.labels.duration_type_select')}</small>}/>
                             </div>
-                            <label className="col-sm-2 col-form-label" htmlFor="inputDuration">{Lang.get('companies.packages.labels.duration_ammount')}</label>
+                            <label className="col-sm-2 col-form-label" htmlFor="inputDuration">{Lang.get('companies.packages.labels.duration_amount')}</label>
                             <div className="col-sm-2">
                                 <NumericFormat disabled={this.state.loading} id="inputDuration" className="form-control text-sm text-right"
-                                               name="ammount" data-type="duration" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.duration.ammount} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                               name="amount" data-type="duration" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.duration.amount} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
                             </div>
                         </div>
                         <div className="form-group row">

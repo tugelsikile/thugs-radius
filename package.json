@@ -31,6 +31,7 @@
         "@mdi/react": "^1.6.1",
         "@mui/icons-material": "^5.11.16",
         "@mui/material": "^5.13.1",
+        "@uiw/react-watermark": "^0.0.5",
         "ckeditor-youtube-plugin": "^2.1.19",
         "ckeditor4-react": "^4.1.2",
         "date-fns": "^2.30.0",

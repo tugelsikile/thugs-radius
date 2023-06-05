@@ -48,8 +48,145 @@ export const durationBy = (ammount, type) => {
     }
     return response;
 }
+export const sumTotalTaxes = (data) => {
+    let response = 0;
+    data.map((item)=>{
+        if (sumTotalPaymentSingle(item) >= sumGrandTotalInvoiceSingle(item)) {
+            response += sumSubtotalTaxInvoiceSingle(item);
+        }
+    });
+    return response;
+}
+export const sumTotalPaid = (data) => {
+    let response = 0;
+    data.map((item)=>{
+        response += sumTotalPaymentSingle(item);
+    })
+    return response;
+}
+export const sumTotalInvoices = (data) => {
+    let response = 0;
+    data.map((item)=>{
+        response += sumGrandTotalInvoiceSingle(item);
+    });
+    return response;
+}
+export const sumTotalPaidFormPayment = (data) => {
+    let response = 0;
+    data.payments.map((item)=>{
+        response += item.amount;
+    })
+    return response;
+}
+export const sumGrandTotalInvoiceSingle = (data) => {
+    let subtotal = sumSubtotalInvoiceSingle(data);
+    let taxtotal = sumSubtotalTaxInvoiceSingle(data);
+    let discount = sumSubtotalDiscountInvoiceSingle(data);
+    return subtotal + taxtotal - discount;
+}
+export const sumSubtotalDiscountInvoiceSingle = (data) => {
+    let response = 0;
+    data.meta.discounts.map((item)=>{
+        if (item.meta.discount !== null) {
+            response += item.meta.discount.amount;
+        }
+    });
+    return response;
+}
+export const sumSubtotalTaxInvoiceSingle = (data) => {
+    let response = 0;
+    let subtotal = sumSubtotalInvoiceSingle(data);
+    data.meta.taxes.map((item)=>{
+        if (item.meta.tax !== null) {
+            response += ( item.meta.tax.percent * subtotal ) / 100;
+        }
+    })
+    return response;
+}
+export const sumTaxInvoiceSingle = (data, index) => {
+    let response = 0;
+    let subtotal = sumSubtotalInvoiceSingle(data);
+    if (data.meta.taxes[index].meta.tax !== null) {
+        response = ( subtotal * data.meta.taxes[index].meta.tax.percent) / 100;
+    }
+    return response;
+}
+export const sumSubtotalInvoiceSingle = (data) => {
+    let response = 0;
+    data.meta.packages.map((item)=>{
+        response += (item.meta.prices.qty * item.meta.prices.price);
+    });
+    return response;
+}
+export const sumGrandTotalFormInvoice = (form) => {
+    let response = sumSubtotalFormInvoice(form);
+    let taxes = sumSubtotalTaxFormInvoice(form);
+    let discounts = sumSubtotalDiscountFormInvoice(form);
+    response = response + taxes - discounts;
+    return response;
+}
+export const sumSubtotalDiscountFormInvoice = (form) => {
+    let response = 0;
+    form.discounts.current.map((item)=>{
+        if (item.discount != null) {
+            response += item.discount.meta.amount;
+        }
+    });
+    return response;
+}
+export const sumSubtotalTaxFormInvoice = (form) => {
+    let response = 0;
+    let subtotal = sumSubtotalFormInvoice(form);
+    form.taxes.current.map((item)=>{
+        if (item.tax != null) {
+            response += ( subtotal * item.tax.meta.percent ) / 100;
+        }
+    });
+    return response;
+}
+export const sumTaxPriceFormInvoice = (form, index) => {
+    let subtotal = sumSubtotalFormInvoice(form);
+    let response = 0;
+    if (form.taxes.current[index].tax !== null) {
+        response = ( form.taxes.current[index].tax.meta.percent * subtotal) / 100;
+    }
+    return response;
+}
+export const sumSubtotalFormInvoice = (form) => {
+    let response = 0;
+    form.packages.current.map((item)=>{
+        if (item.package !== null) {
+            response += (item.qty * item.price);
+        }
+    })
+    return response;
+}
+export const sumSubtotalInvoicePackage = (data) => {
+    return data.meta.prices.qty * data.meta.prices.price;
+}
 export const sumTotalInvoiceSingle = (data) => {
-    return ( ( ( data.meta.packages.reduce((a,b) => a + ( ( ( ( b.meta.prices.price * b.meta.prices.qty ) * b.meta.prices.vat ) / 100 ) + (b.meta.prices.price * b.meta.prices.qty) ) - b.meta.prices.discount , 0 ) * data.meta.vat ) / 100 ) + data.meta.packages.reduce((a,b) => a + ( ( ( ( b.meta.prices.price * b.meta.prices.qty ) * b.meta.prices.vat ) / 100 ) + (b.meta.prices.price * b.meta.prices.qty) ) - b.meta.prices.discount , 0 ) ) - data.meta.discount;
+    let response;
+    let subtotalPackage = 0;
+    let subtotalTax = 0;
+    let subtotalDiscount = 0;
+    data.meta.packages.map((item)=>{
+        subtotalPackage += sumSubtotalInvoicePackage(item);
+    });
+    data.meta.discounts.map((item)=>{
+        if (item.meta.discount !== null) {
+            subtotalDiscount += item.meta.discount.amount;
+        }
+    });
+    data.meta.taxes.map((item)=>{
+        if (item.meta.tax !== null) {
+            subtotalTax += item.meta.tax.percent;
+        }
+    })
+    response = ( subtotalPackage * subtotalTax ) / 100;
+    response = response + subtotalPackage;
+    response = response - subtotalDiscount;
+    return response;
+    //return ( ( ( data.meta.packages.reduce((a,b) => a + ( ( ( ( b.meta.prices.price * b.meta.prices.qty ) * b.meta.prices.vat ) / 100 ) + (b.meta.prices.price * b.meta.prices.qty) ) - b.meta.prices.discount , 0 ) * data.meta.vat ) / 100 ) + data.meta.packages.reduce((a,b) => a + ( ( ( ( b.meta.prices.price * b.meta.prices.qty ) * b.meta.prices.vat ) / 100 ) + (b.meta.prices.price * b.meta.prices.qty) ) - b.meta.prices.discount , 0 ) ) - data.meta.discount;
 }
 export const sumTotalPaymentSingle = (data) => {
     return data.meta.timestamps.paid.payments.reduce((a,b) => a + b.meta.amount, 0);
@@ -71,6 +208,68 @@ export const formatLocaleString = (number, maximumFractionDigits = 2) => {
             response = parseFloat(number).toLocaleString('en-US',{maximumFractionDigits:maximumFractionDigits});
             break;
     }
+    return response;
+}
+export const subtotalFormCompany = (form) => {
+    let response = 0;
+    form.packages.map((item)=>{
+        if (item.package !== null) {
+            response += ( item.package.meta.prices * item.qty );
+        }
+    });
+    return response;
+}
+export const subtotalDiscountFormCompany = (form) => {
+    let response = 0;
+    form.discounts.map((item)=>{
+        if (item.discount !== null) {
+            response += item.discount.meta.amount;
+        }
+    });
+    return response;
+}
+export const subtotalAfterTaxFormCompany = (form) => {
+    let subtotal = subtotalFormCompany(form);
+    let taxsubtotal = subtotalTaxFormCompany(form);
+    return subtotal + taxsubtotal;
+}
+export const subtotalTaxFormCompany = (form) => {
+    let response = subtotalFormCompany(form);
+    let taxTotal = 0;
+    form.taxes.map((item)=>{
+        if (item.tax !== null) {
+            taxTotal += item.tax.meta.percent;
+        }
+    });
+    response = ( (taxTotal * response) / 100 );
+    return response;
+}
+export const grandTotalCompanyForm = (form) => {
+    let subtotal = subtotalAfterTaxFormCompany(form);
+    let discount = subtotalDiscountFormCompany(form);
+    return subtotal - discount;
+}
+export const sumTotalAfterTaxCompanyPackageForm = (form) => {
+    return sumTotalTaxCompanyPackageForm(form) + form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+}
+export const sumTaxCompanyPackageForm = (form, currentTax) => {
+    let response = 0;
+    let subtotal = form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    if (currentTax.tax !== null) {
+        response = ( currentTax.tax.meta.percent * subtotal ) / 100;
+    }
+    return response;
+}
+export const sumTotalTaxCompanyPackageForm = (form) => {
+    let response = 0;
+    let totalTax = 0;
+    let subtotal = form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    form.taxes.map((item)=>{
+        if (item.tax !== null) {
+            totalTax += item.tax.meta.percent;
+        }
+    });
+    response = ( subtotal * totalTax ) / 100;
     return response;
 }
 export const sortByCompany = (data) => {
@@ -163,4 +362,7 @@ export const siteData = async () => {
         resp = null;
     }
     return resp;
+}
+export const customPreventDefault = (event) => {
+    event.preventDefault();
 }

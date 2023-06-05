@@ -9,19 +9,20 @@ import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../User/Tools/BtnSort";
-import {CardPreloader, formatLocaleDate, sortActiveCompany, ucFirst} from "../../../Components/mixedConsts";
+import {CardPreloader, formatLocaleDate, siteData, sortActiveCompany, ucFirst} from "../../../Components/mixedConsts";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCompany from "./Tools/FormCompany";
 import moment from "moment";
+import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
 
 // noinspection DuplicatedCode
 class CompanyPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, companies : false, packages : false, provinces : false },
-            privilege : null, menus : [], packages : [], provinces : [],
+            user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
+            loadings : { privilege : false, companies : false, packages : false, provinces : false, taxes : false, discounts : false, site : false },
+            privilege : null, menus : [], packages : [], provinces : [], taxes : [], discounts : [],
             companies : { filtered : [], unfiltered : [], selected : [] },
             filter : {
                 keywords : '',
@@ -43,10 +44,13 @@ class CompanyPage extends React.Component {
         this.setState({root:getRootUrl()});
         if (! this.state.loadings.privilege) {
             if (this.state.privilege === null) {
+                siteData().then((response)=>this.setState({site:response}));
                 let loadings = this.state.loadings;
                 loadings.privilege = true; this.setState({loadings});
                 getPrivileges(this.props.route)
                     .then((response) => this.setState({privilege:response.privileges,menus:response.menus}))
+                    .then(()=>this.loadTaxes())
+                    .then(()=>this.loadDiscounts())
                     .then(()=>this.loadCompanies().then(()=>this.loadPackages().then(()=>this.loadProvinces())))
                     .then(()=>{
                         loadings.privilege = false; this.setState({loadings});
@@ -166,6 +170,62 @@ class CompanyPage extends React.Component {
         }
         this.setState({companies});
     }
+    async loadTaxes() {
+        if (! this.state.loadings.taxes ) {
+            if (this.state.taxes.length === 0 ) {
+                let loadings = this.state.loadings;
+                loadings.taxes = true; this.setState({loadings});
+                try {
+                    let response = await crudTaxes();
+                    if (response.data.params === null) {
+                        loadings.taxes = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        let taxes = [];
+                        if (response.data.params.length > 0) {
+                            response.data.params.map((item)=>{
+                                item.meta.name = item.label;
+                                item.label = item.meta.code;
+                                taxes.push(item);
+                            });
+                        }
+                        loadings.taxes = false; this.setState({loadings,taxes});
+                    }
+                } catch (e) {
+                    loadings.taxes = false; this.setState({loadings});
+                    showError(e.response.data.message);
+                }
+            }
+        }
+    }
+    async loadDiscounts() {
+        if (! this.state.loadings.discounts) {
+            if (this.state.discounts.length === 0) {
+                let loadings = this.state.loadings;
+                loadings.discounts = true; this.setState({loadings});
+                try {
+                    let response = await crudDiscounts();
+                    if (response.data.params === null) {
+                        loadings.discounts = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        let discounts = [];
+                        if (response.data.params.length > 0) {
+                            response.data.params.map((item)=>{
+                                item.meta.label = item.label;
+                                item.label = item.meta.code;
+                                discounts.push(item);
+                            })
+                        }
+                        loadings.discounts = false; this.setState({loadings,discounts});
+                    }
+                } catch (e) {
+                    loadings.discounts = false; this.setState({loadings});
+                    showError(e.response.data.message);
+                }
+            }
+        }
+    }
     async loadProvinces() {
         if (! this.state.loadings.provinces) {
             if (this.state.provinces.length === 0) {
@@ -246,11 +306,11 @@ class CompanyPage extends React.Component {
         return (
             <React.StrictMode>
 
-                <FormCompany open={this.state.modal.open} data={this.state.modal.data} loadings={this.state.loadings} provinces={this.state.provinces} packages={this.state.packages} handleClose={this.toggleForm} handleUpdate={this.loadCompanies}/>
+                <FormCompany taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.open} data={this.state.modal.data} loadings={this.state.loadings} provinces={this.state.provinces} packages={this.state.packages} handleClose={this.toggleForm} handleUpdate={this.loadCompanies}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
@@ -337,7 +397,7 @@ class CompanyPage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.companies.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={6}>Tidak ada data</td></tr>
+                                            <tr><td className="align-middle text-center" colSpan={8}>Tidak ada data</td></tr>
                                             :
                                             this.state.companies.filtered.map((item)=>
                                                 <tr key={item.value}>
@@ -358,7 +418,7 @@ class CompanyPage extends React.Component {
                                                     <td className="align-middle">
                                                         <ul className="list-unstyled">
                                                             {item.meta.packages.map((pack)=>
-                                                                <li key={pack.package.value}><i className="fas fa-minus mr-1"/> {pack.package.label}</li>
+                                                                <li key={pack.value}><i className="fas fa-minus mr-1"/> {pack.meta.package.label}</li>
                                                             )}
                                                         </ul>
                                                     </td>

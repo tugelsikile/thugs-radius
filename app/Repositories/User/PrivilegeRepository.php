@@ -211,8 +211,10 @@ class PrivilegeRepository
                         'value' => $privilege->id,
                         'label' => $menu->name,
                         'meta' => (object) [
-                            'description' => $menu->description,
-                            'lang' => $menu->lang,
+                            'langs' => (object) [
+                                'menu' => $menu->lang,
+                                'description' => $menu->description,
+                            ],
                             'route' => $menu->route,
                             'url' => route($menu->route),
                             'icon' => $menu->icon,
@@ -253,8 +255,10 @@ class PrivilegeRepository
                         'value' => $privilege->id,
                         'label' => $menu->name,
                         'meta' => (object) [
-                            'description' => $menu->description,
-                            'lang' => $menu->lang,
+                            'langs' => (object) [
+                                'menu' => $menu->lang,
+                                'description' => $menu->description,
+                            ],
                             'route' => $menu->route,
                             'url' => route($menu->route),
                             'icon' => $menu->icon,

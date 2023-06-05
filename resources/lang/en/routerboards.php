@@ -3,13 +3,13 @@ return [
     'main' => [
         'labels' => [
             'menu' => 'Router [NAS]',
-            'menu_info' => 'Manajemen router [NAS]'
+            'menu_info' => 'Router [NAS] Management'
         ],
     ],
     'select' => [
         'labels' => [
-            'menu' => 'Pilih Router [NAS]',
-            'menu_info' => 'Bisa memilih router [NAS] untuk melihat statusnya'
+            'menu' => 'Router [NAS] Selection',
+            'menu_info' => 'Can select router [NAS] to view and manage'
         ],
     ]
 ];

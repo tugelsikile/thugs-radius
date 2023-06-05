@@ -4,10 +4,13 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
 use App\Http\Controllers\Client\PackageController;
+use App\Http\Controllers\Config\DiscountController;
+use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -44,19 +47,23 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::group(['prefix' => 'invoices'], function () {
             Route::any('/', [CompanyInvoiceController::class, 'crud']);
             Route::any('/payments', [CompanyInvoiceController::class, 'payment']);
+            Route::put('/generate',[CompanyInvoiceController::class, 'generate']);
         });
     });
     Route::group(['prefix' => 'configs'], function () {
         Route::any('/timezones', [ConfigController::class, 'timezone']);
         Route::any('/currencies', [ConfigController::class, 'currencies']);
-        Route::any('/taxes', [ConfigController::class, 'taxes']);
-        Route::any('/discounts', [ConfigController::class, 'discounts']);
+        Route::any('/taxes', [TaxController::class, 'crud']);
+        Route::any('/discounts', [DiscountController::class, 'crud']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {
     Route::post('/all', [RegionController::class, 'all']);
 });
 Route::group(['prefix' => 'configs'], function () {
+    Route::get('/times', function () {
+        return formatResponse(200,'ok', Carbon::now()->format('Y-m-d H:i:s'));
+    });
     Route::post('/site', [ConfigController::class, 'site']);
     Route::post('/timezones', [ConfigController::class, 'timezone']);
 });

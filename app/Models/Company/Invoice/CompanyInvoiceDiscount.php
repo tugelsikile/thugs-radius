@@ -3,6 +3,7 @@
 namespace App\Models\Company\Invoice;
 
 use App\Models\Company\ClientCompany;
+use App\Models\Discount;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,7 +17,10 @@ class CompanyInvoiceDiscount extends Model
     protected $casts = [
         'amount' => 'double'
     ];
-
+    public function discountObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Discount::class,'discount','id');
+    }
     public function companyObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(ClientCompany::class,'company','id');

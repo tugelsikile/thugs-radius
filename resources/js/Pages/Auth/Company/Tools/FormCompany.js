@@ -2,7 +2,17 @@ import React from "react";
 import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {crudCompany} from "../../../../Services/CompanyService";
-import {durationType} from "../../../../Components/mixedConsts";
+import {
+    durationType,
+    formatLocaleString,
+    grandTotalCompanyForm,
+    parseInputFloat, subtotalAfterTaxFormCompany, subtotalDiscountFormCompany,
+    subtotalFormCompany,
+    subtotalTaxFormCompany,
+    sumTaxCompanyPackageForm,
+    sumTotalAfterTaxCompanyPackageForm,
+    sumTotalTaxCompanyPackageForm
+} from "../../../../Components/mixedConsts";
 import Select from "react-select";
 import { NumericFormat } from 'react-number-format';
 
@@ -13,9 +23,10 @@ class FormCompany extends React.Component {
         this.state = {
             loading : false,
             form : {
-                id : null, packages : [], email : '', name : '', address : '', discount : 0,
+                id : null, packages : [], email : '', name : '', address : '', discounts : [],
                 postal : '', village : null, district : null, city : null, province : null,
-                phone : '', deleted : [],
+                phone : '', deleted : [], taxes : [],
+                delete_taxes : [], delete_discounts : [],
             }
         };
         this.handleSave = this.handleSave.bind(this);
@@ -24,11 +35,19 @@ class FormCompany extends React.Component {
         this.handleAddPackage = this.handleAddPackage.bind(this);
         this.handleDeletePackage = this.handleDeletePackage.bind(this);
         this.handleSelectTable = this.handleSelectTable.bind(this);
+        this.handleCheckOTP = this.handleCheckOTP.bind(this);
+        this.handleAddTax = this.handleAddTax.bind(this);
+        this.handleSelectTax = this.handleSelectTax.bind(this);
+        this.handleRemoveTax = this.handleRemoveTax.bind(this);
+        this.handleAddDiscount = this.handleAddDiscount.bind(this);
+        this.handleRemoveDiscount = this.handleRemoveDiscount.bind(this);
+        this.handleSelectDiscount = this.handleSelectDiscount.bind(this);
     }
     componentWillReceiveProps(props) {
         let form = this.state.form;
         if (! props.open) {
-            form.id = null, form.packages = [], form.email = '', form.name = '', form.address = '', form.discount = 0,
+            form.id = null, form.packages = [], form.email = '', form.name = '', form.address = '', form.discounts = [],
+                form.taxes = [], form.delete_taxes = [], form.delete_discounts = [],
                 form.postal = '', form.village = null, form.district = null, form.city = null, form.province = null,
                 form.phone = '', form.deleted = [];
         } else {
@@ -36,7 +55,22 @@ class FormCompany extends React.Component {
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.address = props.data.meta.address.street,
                     form.phone = props.data.meta.address.phone, form.email = props.data.meta.address.email,
-                    form.postal = props.data.meta.address.postal, form.discount = props.data.meta.discount;
+                    form.postal = props.data.meta.address.postal, form.discounts = [], form.taxes = [],
+                    form.delete_taxes = [], form.delete_discounts = [];
+                if (props.data.meta.discounts.length > 0) {
+                    props.data.meta.discounts.map((item)=>{
+                        item.meta.discount.meta.label = item.meta.discount.label;
+                        item.meta.discount.label = item.meta.discount.meta.code;
+                        form.discounts.push({value:item.value,discount:item.meta.discount});
+                    });
+                }
+                if (props.data.meta.taxes.length > 0) {
+                    props.data.meta.taxes.map((item)=>{
+                        item.meta.tax.meta.label = item.meta.tax.label;
+                        item.meta.tax.label = item.meta.tax.meta.code;
+                        form.taxes.push({value:item.value,tax:item.meta.tax});
+                    })
+                }
                 if (props.provinces.length > 0) {
                     if (props.data.meta.address.province !== null) {
                         let index = props.provinces.findIndex((f) => f.value === props.data.meta.address.province.code);
@@ -66,16 +100,21 @@ class FormCompany extends React.Component {
                 if (props.packages.length > 0) {
                     let indexPackage = -1;
                     props.data.meta.packages.map((item)=>{
-                        if (item.package !== null) {
-                            indexPackage = props.packages.findIndex((f) => f.value === item.package.value);
+                        if (item.meta.package !== null) {
+                            indexPackage = props.packages.findIndex((f) => f.value === item.meta.package.value);
                             if (indexPackage >= 0) {
+                                let durType = null;
+                                let durIndex = durationType.findIndex((f) => f.value === item.meta.duration.type);
+                                if (durIndex >= 0) {
+                                    durType = durationType[durIndex];
+                                }
                                 form.packages.push({
-                                    package : props.packages[indexPackage], value : item.value,
-                                    otp : item.every.otp,
-                                    duration : {
-                                        type : durationType[durationType.findIndex((f) => f.value === item.every.type)],
-                                        ammount : item.every.ammount
-                                    }
+                                    package : props.packages[indexPackage],
+                                    value : item.value,
+                                    qty : item.meta.qty,
+                                    otp : item.meta.duration.otp,
+                                    duration_type : durType,
+                                    duration_amount : item.meta.duration.amount,
                                 });
                             }
                         }
@@ -86,6 +125,57 @@ class FormCompany extends React.Component {
             }
         }
         this.setState({form});
+    }
+    handleAddDiscount() {
+        if (this.props.discounts.length === 0) {
+            showError(Lang.get('discounts.labels.not_found'));
+        } else {
+            let form = this.state.form;
+            form.discounts.push({value:null,discount:this.props.discounts[0]});
+            this.setState({form});
+        }
+    }
+    handleSelectDiscount(event, index) {
+        let form = this.state.form;
+        form.discounts[index].discount = event; this.setState({form});
+    }
+    handleRemoveDiscount(index) {
+        let form = this.state.form;
+        if (form.discounts[index].value !== null) {
+            form.delete_discounts.push(form.discounts[index].value);
+        }
+        form.discounts.splice(index,1);
+        this.setState({form});
+    }
+    handleSelectTax(event, index) {
+        let form = this.state.form;
+        form.taxes[index].tax = event; this.setState({form});
+    }
+    handleCheckOTP(event) {
+        if (event.currentTarget.getAttribute('data-index') !== null) {
+            let index = parseInt(event.currentTarget.getAttribute('data-index'));
+            if (index >= 0) {
+                let form = this.state.form;
+                form.packages[index].otp = ! this.state.form.packages[index].otp;
+                this.setState({form});
+            }
+        }
+    }
+    handleAddTax(){
+        if (this.props.taxes.length === 0) {
+            showError(Lang.get('taxes.labels.not_found'));
+        } else {
+            let form = this.state.form;
+            form.taxes.push({value:null,tax:this.props.taxes[0]});
+            this.setState({form});
+        }
+    }
+    handleRemoveTax(index) {
+        let form = this.state.form;
+        if (form.taxes[index].value !== null) {
+            form.delete_taxes.push(form.taxes[index].value);
+        }
+        form.taxes.splice(index,1); this.setState({form});
     }
     handleSelectTable(event, name, index) {
         let form = this.state.form;
@@ -107,40 +197,22 @@ class FormCompany extends React.Component {
         form.packages.push({
             package : this.props.packages.length === 0 ? null : this.props.packages[0],
             value : null,
+            qty : 1,
             otp : false,
-            duration : {
-                type : durationType[4],
-                ammount : 1
-            }
+            duration_type : durationType[4],
+            duration_amount : 1,
         });
         this.setState({form});
     }
     handleChange(event) {
         let form = this.state.form;
-        if (event.currentTarget.getAttribute('name') === 'discount') {
-            if (event.currentTarget.value.length > 0) {
-                let currentValue = event.currentTarget.value;
-                let leftValue;
-                let rightValue = 0;
-                let decimalValue = currentValue.split(',');
-                if (decimalValue.length === 2) {
-                    leftValue = decimalValue[0];
-                    if (decimalValue[1].length > 0) {
-                        rightValue = decimalValue[1];
-                    }
-                } else {
-                    leftValue = currentValue;
-                }
-                leftValue = leftValue.replaceAll('.','');
-                leftValue = parseInt(leftValue);
-                if (parseFloat(rightValue) > 0) {
-                    form.discount = parseFloat(leftValue + '.' + parseFloat(rightValue));
-                } else {
-                    form.discount = parseFloat(leftValue);
-                }
+        if (event.currentTarget.name === 'qty') {
+            let index = parseInt(event.currentTarget.getAttribute('data-index'));
+            if (index >= 0) {
+                form.packages[index][event.currentTarget.name] = parseInputFloat(event);
             }
         } else {
-            form[event.currentTarget.getAttribute('name')] = event.currentTarget.value;
+            form[event.currentTarget.name] = event.currentTarget.value;
         }
         this.setState({form});
     }
@@ -193,22 +265,37 @@ class FormCompany extends React.Component {
             if (this.state.form.city !== null) formData.append(Lang.get('regions.city.form_input'), this.state.form.city.value);
             if (this.state.form.province !== null) formData.append(Lang.get('regions.province.form_input'), this.state.form.province.value);
             formData.append(Lang.get('companies.form_input.phone'), this.state.form.phone);
-            formData.append(Lang.get('companies.packages.form_input.discount'), this.state.form.discount);
             formData.append(Lang.get('companies.form_input.postal'), this.state.form.postal);
             this.state.form.packages.map((item, index) => {
                 if (index === 0) {
                     if (item.package !== null) formData.append(Lang.get('companies.packages.form_input.main_package'), item.package.value);
                 } else {
                     if (item.package !== null) {
-                        if (item.value !== null) formData.append(`${Lang.get('companies.packages.form_input.additional')}[${index}][id]`, item.value);
+                        if (item.value !== null) formData.append(`${Lang.get('companies.packages.form_input.additional')}[${index}][${Lang.get('companies.packages.form_input.id')}]`, item.value);
                         formData.append(`${Lang.get('companies.packages.form_input.additional')}[${index}][${Lang.get('companies.packages.form_input.name')}]`, item.package.value);
                         formData.append(`${Lang.get('companies.packages.form_input.additional')}[${index}][${Lang.get('companies.packages.form_input.otp')}]`, item.otp ? 1 : 0);
+                        formData.append(`${Lang.get('companies.packages.form_input.additional')}[${index}][${Lang.get('companies.packages.form_input.qty')}]`, item.qty);
                     }
                 }
             });
             this.state.form.deleted.map((item,index)=>{
                 formData.append(`${Lang.get('companies.packages.form_input.additional_deleted')}[${index}]`, item);
             });
+            this.state.form.taxes.map((item,index)=>{
+                if (item.value !== null) formData.append(`${Lang.get('companies.form_input.taxes.array_input')}[${index}][${Lang.get('companies.form_input.taxes.id')}]`, item.value);
+                if (item.tax !== null) formData.append(`${Lang.get('companies.form_input.taxes.array_input')}[${index}][${Lang.get('companies.form_input.taxes.name')}]`, item.tax.value);
+            });
+            this.state.form.delete_taxes.map((item,index)=>{
+                formData.append(`${Lang.get('companies.form_input.taxes.array_delete')}[${index}]`, item);
+            });
+            this.state.form.discounts.map((item,index)=>{
+                if (item.value !== null) formData.append(`${Lang.get('companies.form_input.discounts.array_input')}[${index}][${Lang.get('companies.form_input.discounts.id')}]`, item.value);
+                if (item.discount !== null) formData.append(`${Lang.get('companies.form_input.discounts.array_input')}[${index}][${Lang.get('companies.form_input.discounts.name')}]`, item.discount.value);
+            });
+            this.state.form.delete_discounts.map((item,index)=>{
+                formData.append(`${Lang.get('companies.form_input.discounts.array_delete')}[${index}]`, item);
+            })
+            formData.append(Lang.get('companies.form_input.grand_total'), grandTotalCompanyForm(this.state.form));
             let response = await crudCompany(formData);
             if (response.data.params === null) {
                 this.setState({loading:false});
@@ -297,7 +384,7 @@ class FormCompany extends React.Component {
                                     {Lang.get('companies.packages.labels.menu')}
                                 </h3>
                                 <div className="card-tools">
-                                    <button onClick={this.handleAddPackage} type="button" className="btn btn-tool" disabled={this.state.loading || this.props.loadings.packages}><i className="fas fa-plus mr-1"/> {Lang.get('companies.packages.labels.add')} </button>
+                                    <button onClick={this.handleAddPackage} type="button" className="btn btn-tool" disabled={this.state.loading || this.props.loadings.packages || this.props.loadings.provinces}><i className="fas fa-plus mr-1"/> {Lang.get('companies.packages.labels.add')} </button>
                                 </div>
                             </div>
                             <div className="card-body p-0">
@@ -310,19 +397,16 @@ class FormCompany extends React.Component {
                                         <th className="align-middle text-center">{Lang.get('companies.packages.labels.menu')}</th>
                                         <th width={50} className="align-middle text-center" title={Lang.get('messages.otp')}>OTP</th>
                                         <th width={100} className="align-middle text-center">{Lang.get('companies.packages.labels.duration')}</th>
-                                        <th className="align-middle text-right" width={120}>{Lang.get('companies.packages.labels.price')}</th>
-                                        <th className="align-middle text-center" width={50}>{Lang.get('companies.packages.labels.vat')}</th>
-                                        <th className="align-middle text-right" width={120}>{Lang.get('companies.packages.labels.vat_price')}</th>
-                                        <th className="align-middle text-right" width={150}>{Lang.get('companies.packages.labels.sub_total')}</th>
+                                        <th width={70} className="align-middle text-center">{Lang.get('companies.packages.labels.qty')}</th>
+                                        <th className="align-middle text-center" width={120}>{Lang.get('companies.packages.labels.price')}</th>
+                                        <th className="align-middle text-center" width={150}>{Lang.get('companies.packages.labels.sub_total')}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     {this.state.form.packages.map((item, index)=>
                                         <tr key={index}>
                                             <td className="align-middle text-center">
-                                                {index === 0 ?
-                                                    <i className="fas fa-trash-alt"/>
-                                                    :
+                                                {index === 0 ? <i className="fas fa-trash-alt"/> :
                                                     <button className="btn btn-outline-warning btn-sm" type="button" onClick={()=>this.handleDeletePackage(index)} disabled={this.state.loading || this.props.loadings.provinces}>
                                                         <i className="fas fa-trash-alt"/>
                                                     </button>
@@ -331,103 +415,162 @@ class FormCompany extends React.Component {
                                             <td>
                                                 <Select options={this.props.packages}
                                                         onChange={(e)=>this.handleSelectTable(e,'package',index)}
-                                                        value={item.package} className="text-sm"
+                                                        value={item.package} className="text-sm" noOptionsMessage={()=>Lang.get('companies.packages.labels.no_select')}
                                                         isLoading={this.props.loadings.packages} placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>}
                                                         isDisabled={this.props.loadings.packages || this.state.loading}/>
                                             </td>
                                             <td className="align-middle text-center">
-                                                {index === 0 ?
-                                                    <span className="fas fa-times text-muted"/>
-                                                    :
+                                                {index === 0 ? <span className="fas fa-times text-muted"/> :
                                                     <div className="custom-control custom-checkbox">
-                                                        <input onChange={()=>{
-                                                            let form = this.state.form;
-                                                            form.packages[index].otp = ! this.state.form.packages[index].otp; this.setState({form});
-                                                        }}
-                                                               checked={item.otp} id={`otp_${index}`} data-id={item.value} disabled={this.state.loading} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
+                                                        <input onChange={this.handleCheckOTP}
+                                                               checked={item.otp} id={`otp_${index}`} data-index={index} data-id={item.value} disabled={this.state.loading} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor={`otp_${index}`} className="custom-control-label"/>
                                                     </div>
                                                 }
                                             </td>
                                             <td className="align-middle text-center">
                                                 {item.package !== null &&
-                                                    `${item.package.meta.duration.ammount} ${Lang.get(`durations.${durationType[durationType.findIndex((f) => f.value === item.package.meta.duration.string)].value}`)}`
+                                                    `${item.package.meta.duration.amount} ${Lang.get(`durations.${durationType[durationType.findIndex((f) => f.value === item.package.meta.duration.string)].value}`)}`
+                                                }
+                                            </td>
+                                            <td className="align-middle text-center">
+                                                {index === 0 ? 1 :
+                                                    <NumericFormat className="form-control form-control-sm text-center text-sm text-right"
+                                                                   value={item.qty} data-index={index}
+                                                                   name="qty" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
                                                 }
                                             </td>
                                             <td className="align-middle text-right">
                                                 {item.package !== null &&
                                                     <span>
                                                         <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat(item.package.meta.prices.base).toLocaleString('id-ID',{maximumFractionDigits:2})}</span>
+                                                        <span className="float-right">{formatLocaleString(item.package.meta.prices)}</span>
                                                     </span>
                                                 }
                                             </td>
-                                            <td className="align-middle text-right">
-                                                {item.package !== null &&
-                                                    parseFloat(item.package.meta.prices.percent).toLocaleString('id-ID', {maximumFractionDigits:2}) + '%'
-                                                }
-                                            </td>
-                                            <td className="align-middle text-right">
-                                                {item.package !== null &&
-                                                    <span>
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat(( item.package.meta.prices.percent * item.package.meta.prices.base ) / 100).toLocaleString('id-ID',{maximumFractionDigits:2})}</span>
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td className="align-middle text-right">
-                                                {item.package !== null &&
-                                                    <span>
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{parseFloat((( item.package.meta.prices.percent * item.package.meta.prices.base ) / 100) + item.package.meta.prices.base).toLocaleString('id-ID',{maximumFractionDigits:2})}</span>
-                                                    </span>
-                                                }
+                                            <td className="align-middle">
+                                                <span className="float-left">Rp.</span>
+                                                <span className="float-right">
+                                                    {item.package === null ? '-' :
+                                                        formatLocaleString(item.package.meta.prices * item.qty)
+                                                    }
+                                                </span>
                                             </td>
                                         </tr>
                                     )}
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <th className="align-middle text-right" colSpan={7}>{Lang.get('companies.packages.labels.sub_total_before')}</th>
+                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total')}</th>
                                         <th className="align-middle">
                                             <span className="float-left">Rp.</span>
                                             <span className="float-right">
-                                                {parseFloat(this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + b.package.meta.prices.base ,0 )).toLocaleString('id-ID',{maximumFractionDigits:2})}
+                                                {formatLocaleString(subtotalFormCompany(this.state.form),0)}
                                             </span>
                                         </th>
                                     </tr>
+                                    {this.state.form.taxes.length === 0 ?
+                                        <tr>
+                                            <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.vat')}</th>
+                                            <th className="align-middle">
+                                                <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.props.loadings.taxes} className="btn-block btn btn-tool btn-sm"><i className="fas fa-plus mr-1"/>{Lang.get('taxes.create.button')}</button>
+                                            </th>
+                                        </tr>
+                                        :
+                                        <>
+                                            {
+                                                this.state.form.taxes.map((item,index)=>
+                                                    <tr key={index.value === null ? index : item.value}>
+                                                        <th className="align-middle text-right" colSpan={3}>
+                                                            {Lang.get('companies.packages.labels.vat')}
+                                                            <button onClick={this.handleAddTax} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-sm"><i className="fas fa-plus"/></button>
+                                                            <button title={Lang.get('taxes.delete.form_company')} onClick={()=>this.handleRemoveTax(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-sm"><i className="fas fa-trash-alt"/></button>
+                                                        </th>
+                                                        <th colSpan={2} className="align-middle">
+                                                            <Select noOptionsMessage={()=>Lang.get('taxes.labels.not_found')}
+                                                                    onChange={(e)=>this.handleSelectTax(e,index)}
+                                                                    options={this.props.taxes}
+                                                                    isLoading={this.props.loadings.taxes} isDisabled={this.state.loading || this.props.loadings.taxes} value={item.tax}/>
+                                                        </th>
+                                                        <th className="align-middle text-right">
+                                                            {item.tax === null ? '-' :
+                                                                `${formatLocaleString(item.tax.meta.percent,2)}%`
+                                                            }
+                                                        </th>
+                                                        <th className="align-middle">
+                                                            {item.tax === null ? '-' :
+                                                                <>
+                                                                    <span className="float-left">Rp.</span>
+                                                                    <span className="float-right">{formatLocaleString(sumTaxCompanyPackageForm(this.state.form, item),2)}</span>
+                                                                </>
+                                                            }
+                                                        </th>
+                                                    </tr>
+                                                )
+                                            }
+                                            <tr>
+                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_vat')}</th>
+                                                <th className="align-middle">
+                                                    <span className="float-left">Rp.</span>
+                                                    <span className="float-right">{formatLocaleString(subtotalTaxFormCompany(this.state.form),2)}</span>
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_after')}</th>
+                                                <th className="align-middle">
+                                                    <span className="float-left">Rp.</span>
+                                                    <span className="float-right">{formatLocaleString(subtotalAfterTaxFormCompany(this.state.form),2)}</span>
+                                                </th>
+                                            </tr>
+                                        </>
+                                    }
+
+                                    {this.state.form.discounts.length === 0 ?
+                                        <tr>
+                                            <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.discount')}</th>
+                                            <th className="align-middle">
+                                                <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading || this.props.loadings.discounts} className="btn-block btn btn-tool btn-sm text-xs"><i className="fas fa-plus mr-1"/>{Lang.get('discounts.create.button')}</button>
+                                            </th>
+                                        </tr>
+                                        :
+                                        <>
+                                            {this.state.form.discounts.map((item,index)=>
+                                                <tr key={item.value === null ? index : item.value}>
+                                                    <th className="align-middle text-right" colSpan={4}>
+                                                        {Lang.get('companies.packages.labels.discount')}
+                                                        <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-sm"><i className="fas fa-plus"/></button>
+                                                        <button title={Lang.get('discounts.delete.form_company')} onClick={()=>this.handleRemoveDiscount(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-sm"><i className="fas fa-trash-alt"/></button>
+                                                    </th>
+                                                    <th colSpan={2} className="align-middle">
+                                                        <Select noOptionsMessage={()=>Lang.get('discounts.labels.not_found')}
+                                                                onChange={(e)=>this.handleSelectDiscount(e,index)}
+                                                                options={this.props.discounts} aria-label={item.discount !== null ? item.discount.meta.label : ''}
+                                                                isLoading={this.props.loadings.discounts} isDisabled={this.state.loading || this.props.loadings.discounts} value={item.discount}/>
+                                                    </th>
+                                                    <th className="align-middle">
+                                                        {item.discount === null ? '-' :
+                                                            <>
+                                                                <span className="float-left">Rp.</span>
+                                                                <span className="float-right">{formatLocaleString(item.discount.meta.amount,2)}</span>
+                                                            </>
+                                                        }
+                                                    </th>
+                                                </tr>
+                                            )}
+                                            <tr>
+                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.discount_total')}</th>
+                                                <th className="align-middle">
+                                                    <span className="float-left">Rp.</span>
+                                                    <span className="float-right">{formatLocaleString(subtotalDiscountFormCompany(this.state.form),2)}</span>
+                                                </th>
+                                            </tr>
+                                        </>
+                                    }
                                     <tr>
-                                        <th className="align-middle text-right" colSpan={7}>{Lang.get('companies.packages.labels.sub_total_vat')}</th>
+                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.grand_total')}</th>
                                         <th className="align-middle">
                                             <span className="float-left">Rp.</span>
-                                            <span className="float-right">
-                                                {parseFloat(this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + ( ( b.package.meta.prices.percent * b.package.meta.prices.base) / 100 ) ,0 )).toLocaleString('id-ID',{maximumFractionDigits:2})}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={7}>{Lang.get('companies.packages.labels.sub_total_after')}</th>
-                                        <th className="align-middle">
-                                            <span className="float-left">Rp.</span>
-                                            <span className="float-right">
-                                                {parseFloat(this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + ( ( b.package.meta.prices.percent * b.package.meta.prices.base ) / 100 ) + b.package.meta.prices.base ,0 )).toLocaleString('id-ID',{maximumFractionDigits:2})}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={7}>{Lang.get('companies.packages.labels.discount')}</th>
-                                        <th className="align-middle">
-                                            <NumericFormat className={(this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + ( ( b.package.meta.prices.percent * b.package.meta.prices.base ) / 100 ) + b.package.meta.prices.base ,0 )) - this.state.form.discount < 0 ? "form-control form-control-sm text-sm text-right is-invalid" : "form-control form-control-sm text-sm text-right"}
-                                                           name="discount" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.discount} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={7}>{Lang.get('companies.packages.labels.grand_total')}</th>
-                                        <th className="align-middle">
-                                            <span className="float-left">Rp.</span>
-                                            <span className="float-right">
-                                                {parseFloat((this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + ( ( b.package.meta.prices.percent * b.package.meta.prices.base ) / 100 ) + b.package.meta.prices.base ,0 )) - this.state.form.discount).toLocaleString('id-ID',{maximumFractionDigits:0})}
-                                            </span>
+                                            <span className="float-right">{formatLocaleString(grandTotalCompanyForm(this.state.form))}</span>
                                         </th>
                                     </tr>
                                     </tfoot>
@@ -436,7 +579,7 @@ class FormCompany extends React.Component {
                         </div>
                     </DialogContent>
                     <DialogActions className="justify-content-between">
-                        <button type="submit" className="btn btn-success" disabled={this.state.loading || (this.state.form.packages.reduce((a,b) => b.package === null ? 0 : a + ( ( b.package.meta.prices.percent * b.package.meta.prices.base ) / 100 ) + b.package.meta.prices.base ,0 )) - this.state.form.discount < 0}>
+                        <button type="submit" className="btn btn-success" disabled={this.state.loading}>
                             {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
                             {this.state.form.id === null ? Lang.get('companies.create.button') : Lang.get('companies.update.button',null, 'id')}
                         </button>

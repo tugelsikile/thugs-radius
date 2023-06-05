@@ -23,6 +23,20 @@ class CompanyInvoiceController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function generate(Request $request): JsonResponse
+    {
+        try {
+            $valid = $this->validation->generate($request);
+            $params = $this->repository->generate($valid);
+            return formatResponse(200, $params ? __('companies.invoices.generate.success') : __('companies.invoices.generate.failure'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
      * @throws Throwable
      */
     public function payment(Request $request): JsonResponse

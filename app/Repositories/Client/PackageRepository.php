@@ -29,9 +29,8 @@ class PackageRepository
             $package->name = $request[__('companies.packages.form_input.name')];
             $package->description = $request[__('companies.packages.form_input.description')];
             $package->base_price = $request[__('companies.packages.form_input.price')];
-            $package->vat_percent = $request[__('companies.packages.form_input.vat')];
             $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
-            $package->duration_ammount = $request[__('companies.packages.form_input.duration_ammount')];
+            $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
             $package->max_users = $request[__('companies.packages.form_input.max_user')];
             $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
             $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
@@ -55,9 +54,8 @@ class PackageRepository
             $package->name = $request[__('companies.packages.form_input.name')];
             $package->description = $request[__('companies.packages.form_input.description')];
             $package->base_price = $request[__('companies.packages.form_input.price')];
-            $package->vat_percent = $request[__('companies.packages.form_input.vat')];
             $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
-            $package->duration_ammount = $request[__('companies.packages.form_input.duration_ammount')];
+            $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
             $package->max_users = $request[__('companies.packages.form_input.max_user')];
             $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
             $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
@@ -105,13 +103,10 @@ class PackageRepository
                         'meta' => (object) [
                             'code' => $package->code,
                             'description' => $package->description,
-                            'prices' => (object) [
-                                'base' => $package->base_price,
-                                'percent' => $package->vat_percent
-                            ],
+                            'prices' => $package->base_price,
                             'duration' => (object) [
                                 'string' => $package->duration_string,
-                                'ammount' => $package->duration_ammount,
+                                'amount' => $package->duration_ammount,
                             ],
                             'max' => (object) [
                                 'users' => $package->max_users,

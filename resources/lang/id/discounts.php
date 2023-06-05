@@ -9,9 +9,12 @@ return [
         'delete' => 'hapus_diskon',
     ],
     'labels' => [
+        'not_found' => 'Tidak ada data diskon',
         'menu' => 'Diskon',
         'menu_info' => 'Manajemen diskon',
+        'select' => 'Pilih Diskon',
         'search' => 'Cari Diskon ...',
+        'subtotal' => 'Total Diskon',
         'code' => 'Kode Diskon',
         'name' => 'Nama Diskon',
         'description' => 'Keterangan Diskon',
@@ -30,6 +33,7 @@ return [
         'btn' => 'Rubah Data Diskon',
     ],
     'delete' => [
+        'form_company' => 'Hapus Diskon',
         'success' => 'Berhasil menghapus data diskon',
         'btn' => 'Hapus Data Diskon',
         'warning' => 'Warning',

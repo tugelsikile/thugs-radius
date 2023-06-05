@@ -4,13 +4,14 @@ import {ToastContainer} from "react-toastify";
 import {LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha} from "react-simple-captcha";
 import {showError, showSuccess} from "../../../Components/Toaster";
 import {loginSubmit} from "../../../Services/AuthService";
+import {siteData} from "../../../Components/mixedConsts";
 
 // noinspection JSUnresolvedVariable
 class LoginPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading : false,
+            loading : false, site : null,
             form : {
                 email : '', kode_keamanan : '',
                 password : {
@@ -25,6 +26,7 @@ class LoginPage extends React.Component {
         this.validateCaptcha = this.validateCaptcha.bind(this);
     }
     componentDidMount() {
+        siteData().then((response)=>this.setState({site:response}));
         if (localStorage.getItem('token') !== null) {
             if (localStorage.getItem('token').length > 0) {
                 if (JSON.parse(localStorage.getItem('user')) !== null) {

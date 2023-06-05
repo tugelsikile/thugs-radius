@@ -49,3 +49,9 @@ export const crudDiscounts = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const getServerTime = async () => {
+    let request = Axios({
+        headers : { "Accept" : "application/json" }, method : "get", url : window.origin + "/api/configs/times",
+    });
+    return Promise.resolve(request);
+}

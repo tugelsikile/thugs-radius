@@ -2,11 +2,25 @@
 /** @noinspection DuplicatedCode */
 return [
     'form_input' => [
+        'id' => 'paket',
         'name' => 'nama_client_radius',
         'address' => 'alamat_client_radius',
         'email' => 'email_client_radius',
         'postal' => 'kode_pos',
         'phone' => 'nomor_telepon_hp',
+        'grand_total' => 'grand_total_layanan',
+        'taxes' => [
+            'array_input' => 'pajak',
+            'array_delete' => 'hapus_pajak',
+            'id' => 'data_pajak',
+            'name' => 'nama_pajak',
+        ],
+        'discounts' => [
+            'array_input' => 'diskon',
+            'array_delete' => 'hapus_diskon',
+            'id' => 'data_diskon',
+            'name' => 'nama_diskon',
+        ]
     ],
     'labels' => [
         'no_select' => 'Tidak ada data client radius',
@@ -63,17 +77,19 @@ return [
     ],
     'packages' => [
         'form_input' => [
+            'id' => 'paket_client_radius',
             'discount' => 'diskon',
             'main_package' => 'paket_utama',
             'additional' => 'paket_tambahan',
             'additional_deleted' => 'hapus_paket_tambahan',
             'name' => 'nama_paket',
             'otp' => 'otp',
+            'qty' => 'jumlah_paket',
             'description' => 'keterangan_paket',
             'price' => 'harga_paket',
             'vat' => 'persen_pajak',
             'duration_type' => 'jenis_durasi',
-            'duration_ammount' => 'lama_durasi',
+            'duration_amount' => 'lama_durasi',
             'max_user' => 'max_pengguna',
             'max_customer' => 'max_pelanggan',
             'max_voucher' => 'max_voucher',
@@ -90,8 +106,10 @@ return [
             'search' => 'Cari Paket Client Radius ...',
             'add' => 'Tambah Paket',
             'select' => 'Pilih paket client radius',
+            'no_select' => 'Tidak ada data paket',
             'price' => 'Harga Paket',
-            'vat' => '% pajak',
+            'vat' => 'pajak',
+            'qty' => 'Jumlah',
             'vat_price' => 'Harga Pajak',
             'sub_total' => 'Subtotal',
             'sub_total_before' => 'Subtotal Sebelum Pajak',
@@ -99,8 +117,10 @@ return [
             'sub_total_after' => 'Subtotal Setelah Pajak',
             'total' => 'Grand Total',
             'duration' => 'Durasi',
-            'duration_ammount' => 'Lama Durasi',
-            'discount' => 'Diskon',
+            'duration_amount' => 'Lama Durasi',
+            'discount' => 'Diskon / Promo',
+            'discount_total' => 'Total Diskon / Promo',
+            'subtotal_discount' => 'Subtotal Setelah Diskon / Promo',
             'grand_total' => 'Grand Total',
             'max_user' => 'Max Pengguna',
             'max_customer' => 'Max Pelanggan',
@@ -141,13 +161,28 @@ return [
     ],
     'invoices' => [
         'form_input' => [
+            'id' => 'data_tagihan',
             'name' => 'tagihan',
             'periode' => 'periode_tagihan',
             'discount' => 'diskon_tagihan',
             'vat' => 'pajak_tagihan',
             'code' => 'nomor_invoice',
+            'grand_total' => 'grand_total_tagihan',
+            'taxes' => [
+                'input' => 'pajak',
+                'id' => 'data_pajak',
+                'name' => 'nama_pajak',
+                'delete' => 'hapus_pajak',
+            ],
+            'discounts' => [
+                'input' => 'diskon',
+                'id' => 'data_diskon',
+                'name' => 'nama_diskon',
+                'delete' => 'hapus_diskon',
+            ],
             'package' => [
                 'input' => 'paket',
+                'id' => 'data_paket',
                 'name' => 'nama_paket',
                 'price' => 'harga_layanan',
                 'vat' => 'pajak_layanan',
@@ -157,6 +192,13 @@ return [
             ]
         ],
         'labels' => [
+            'cards' => [
+                'total' => 'Total Tagihan',
+                'paid' => 'Tagihan Dibayar',
+                'unpaid' => 'Tagihan Pending',
+                'tax' => 'Pajak Tagihan',
+                'tax_info' => 'Hanya tagihan dengan status lunas yang dihitung',
+            ],
             'print' => 'Cetak Tagihan',
             'info' => 'Informasi Tagihan',
             'periode' => 'Periode Tagihan',
@@ -165,12 +207,16 @@ return [
             'select_periode' => 'Pilih Periode Penagihan',
             'search' => 'Cari Tagihan ...',
             'code' => 'Nomor Invoice',
+            'code_generate' => 'Otomatis Diisi ...',
             'vat' => 'Pajak Tagihan',
+            'remaining' => 'Sisa Pembayaran',
             'status' => 'Status Tagihan',
             'discount' => 'Diskon Tagihan',
             'subtotal' => [
                 'main' => 'Besar Tagihan',
                 'item' => 'Subtotal',
+                'tax' => 'Total Pajak',
+                'discount' => 'Total Diskon',
             ],
             'package' => [
                 'add' => 'Tambah Paket',
@@ -184,6 +230,10 @@ return [
         ],
         'generate' => [
             'form' => 'Generate Tagihan',
+            'warning' => 'Warning',
+            'message' => 'Lanjutkan Generate Tagihan ?',
+            'success' => 'Berhasil melakukan generate tagihan',
+            'failure' => 'Tidak dapat melakukan generate tagihan karena tidak ada tagihan yang perlu dibuat',
         ],
         'create' => [
             'form' => 'Tambah Tagihan',

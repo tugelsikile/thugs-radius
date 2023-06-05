@@ -11,15 +11,15 @@ class MainSidebar extends React.Component {
             <React.Fragment>
                 <aside className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
                     <a href={this.props.root} className="brand-link bg-navy">
-                        <img src={window.origin + '/theme/adminlte/img/AdminLTELogo.png'} alt="AdminLTE Logo" className="brand-image img-circle elevation-3" style={{opacity:.8}}/>
-                        <span className="brand-text font-weight-light">AdminLTE 3</span>
+                        <img src={window.origin + '/theme/adminlte/img/AdminLTELogo.png'} alt={this.props.site !== null ? this.props.site.name : 'app-name'} className="brand-image img-circle elevation-3" style={{opacity:.8}}/>
+                        <span className="brand-text font-weight-light">{this.props.site !== null && this.props.site.name}</span>
                     </a>
 
                     <div className="sidebar">
                         {this.props.user !== null &&
                             <div className="user-panel mt-3 pb-3 mb-3 d-flex">
                                 <div className="image">
-                                    <img src={this.props.user.meta.avatar} className="img-circle elevation-2" alt="User Image"/>
+                                    <img src={this.props.user.meta.avatar} className="img-circle elevation-2" alt={ this.props.user.label}/>
                                 </div>
                                 <div className="info">
                                     <a href={window.origin + '/profile/' + this.props.user.value} className="d-block">{this.props.user.label}</a>

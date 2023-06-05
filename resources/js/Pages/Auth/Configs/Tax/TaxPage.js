@@ -191,7 +191,8 @@ class TaxPage extends React.Component {
                     taxes.unfiltered.push(data);
                 }
             }
-            this.setState({taxes},()=>this.handleFilter())
+            loadings.taxes = false;
+            this.setState({taxes,loadings},()=>this.handleFilter())
         } else {
             try {
                 let response = await crudTaxes();
@@ -216,8 +217,8 @@ class TaxPage extends React.Component {
                 <FormTax open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadTaxes} companies={this.state.companies} loadings={this.state.loadings}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>

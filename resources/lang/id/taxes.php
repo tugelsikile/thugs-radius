@@ -9,6 +9,8 @@ return [
         'delete' => 'hapus_pajak',
     ],
     'labels' => [
+        'select' => 'Pilih Pajak',
+        'not_found' => 'Tidak ada data pajak',
         'menu' => 'Pajak',
         'menu_info' => 'Manajemen jenis pajak',
         'search' => 'Cari pajak ...',
@@ -32,6 +34,7 @@ return [
     'delete' => [
         'success' => 'Berhasil menghapus data pajak',
         'btn' => 'Hapus Data Pajak',
+        'form_company' => 'Hapus Pajak',
         'warning' => 'Perhatian !!',
         'select' => 'Hapus Pajak Dipilih'
     ]

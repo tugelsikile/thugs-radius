@@ -11,15 +11,15 @@ import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudPrivileges, setPrivileges} from "../../../../Services/UserService";
 import {crudCompany} from "../../../../Services/CompanyService";
 import FormPrivilege from "./Tools/FormPrivilege";
-import {CardPreloader} from "../../../../Components/mixedConsts";
+import {CardPreloader, siteData} from "../../../../Components/mixedConsts";
 
 // noinspection DuplicatedCode
 class PrivilegePage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, levels : false, companies : false },
+            user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
+            loadings : { privilege : false, levels : false, companies : false, site : false },
             privilege : null, menus : [], companies : [],
             levels : {
                 filtered : [], unfiltered : [], selected : [],
@@ -46,6 +46,7 @@ class PrivilegePage extends React.Component {
         this.setState({root:getRootUrl()});
         let loadings = this.state.loadings;
         if (! loadings.privilege) {
+            siteData().then((response)=>this.setState({site:response}));
             loadings.privilege = true; this.setState({loadings});
             if (this.state.privilege === null) {
                 getPrivileges(this.props.route)
@@ -309,8 +310,8 @@ class PrivilegePage extends React.Component {
                 <FormPrivilege open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadLevels}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
+                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
@@ -475,8 +476,8 @@ class PrivilegePage extends React.Component {
                                                                         <tr key={menu.value}>
                                                                             <td>
                                                                                 <i className={`${menu.meta.icon} mr-1`}/>
-                                                                                {Lang.get(`${menu.meta.lang}`)}
-                                                                                <br/><span className="small text-muted ml-3">{Lang.get(`${menu.meta.lang}_info`)}</span>
+                                                                                {Lang.get(menu.meta.langs.menu)}
+                                                                                <br/><span className="small text-muted ml-3">{Lang.get(menu.meta.langs.description)}</span>
                                                                             </td>
                                                                             {menu.meta.function ?
                                                                                 <td className="align-middle text-left" colSpan={4}>
@@ -550,8 +551,8 @@ class PrivilegePage extends React.Component {
                                                                             <tr key={child.value}>
                                                                                 <td>
                                                                                     <i className={`${child.meta.icon} ml-3 mr-1`}/>
-                                                                                    {Lang.get(`${child.meta.lang}`)}
-                                                                                    <br/><span className="small text-muted ml-3">{Lang.get(`${child.meta.lang}_info`)}</span>
+                                                                                    {Lang.get(child.meta.langs.menu)}
+                                                                                    <br/><span className="small text-muted ml-3">{Lang.get(child.meta.langs.description)}</span>
                                                                                 </td>
                                                                                 {child.meta.function ?
                                                                                     <td className="align-middle text-left" colSpan={4}>

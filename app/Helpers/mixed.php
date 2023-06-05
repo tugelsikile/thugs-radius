@@ -68,7 +68,7 @@ function generateCompanyInvoiceCode(): string
 }
 function generateCompanyCode(): string
 {
-    $length = ClientCompany::orderBy('code', 'desc')->limit(1)->offset(0)->withTrashed()->get('code');
+    $length = ClientCompany::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);

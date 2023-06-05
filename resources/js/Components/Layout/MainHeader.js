@@ -2,6 +2,8 @@ import React from "react";
 import {ToastContainer} from "react-toastify";
 import {showError} from "../Toaster";
 import {updateLang} from "../../Services/AuthService";
+import DigitalClock from "./DigitalClock";
+import {customPreventDefault} from "../mixedConsts";
 
 class MainHeader extends React.Component {
     constructor(props) {
@@ -49,15 +51,15 @@ class MainHeader extends React.Component {
                             <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars"/></a>
                         </li>
                         <li className="nav-item d-none d-sm-inline-block">
-                            <a href={this.props.root} className="nav-link">Home</a>
+                            <a title="Server Time (LIVE)" href="#" onClick={customPreventDefault} className="nav-link pl-0"><DigitalClock/></a>
                         </li>
-                        <li className="nav-item d-none d-sm-inline-block">
+                        {/*<li className="nav-item d-none d-sm-inline-block">
                             <a href={window.origin} className="nav-link">Contact</a>
-                        </li>
+                        </li>*/}
                     </ul>
 
                     <ul className="navbar-nav ml-auto">
-                        <li className="nav-item dropdown">
+                        {/*<li className="nav-item dropdown">
                             <a className="nav-link" data-toggle="dropdown" href="#">
                                 <i className="far fa-comments"/>
                                 <span className="badge badge-danger navbar-badge">3</span>
@@ -134,7 +136,7 @@ class MainHeader extends React.Component {
                                 <div className="dropdown-divider"/>
                                 <a href="#" className="dropdown-item dropdown-footer">See All Notifications</a>
                             </div>
-                        </li>
+                        </li>*/}
                         <li className="nav-item">
                             <a className="nav-link" data-widget="fullscreen" href="#" role="button">
                                 <i className="fas fa-expand-arrows-alt"/>

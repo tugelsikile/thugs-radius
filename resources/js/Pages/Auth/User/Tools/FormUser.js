@@ -164,7 +164,7 @@ class FormUser extends React.Component {
                                                 <ul className="list-unstyled">
                                                     {this.state.form.level.meta.privileges.filter((f) => f.meta.client === this.state.form.level.meta.client).map((menu)=>
                                                         <li key={menu.value}><i className="fe fe-list mr-1"/>
-                                                            {Lang.get(`messages.${menu.meta.lang}`)}
+                                                            {Lang.get(menu.meta.langs.menu)}
                                                             <span className="float-right">
                                                                 {menu.meta.function ?
                                                                     menu.meta.can.read ?
@@ -201,7 +201,7 @@ class FormUser extends React.Component {
                                                                     {menu.meta.childrens.map((child)=>
                                                                         <li key={child.value}>
                                                                             <i className="fe fe-corner-down-right mr-1 ml-2"/>
-                                                                            {Lang.get(`messages.${child.meta.lang}`)}
+                                                                            {Lang.get(child.meta.langs.menu)}
                                                                             <span className="float-right">
                                                                                 {child.meta.function ?
                                                                                     <span

@@ -3,12 +3,19 @@ import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     CardToolMinimize,
-    formatLocaleDate, formatLocalePeriode,
-    formatLocaleString,
+    formatLocaleDate,
+    formatLocalePeriode,
+    formatLocaleString, sumGrandTotalInvoiceSingle, sumSubtotalDiscountInvoiceSingle,
+    sumSubtotalFormInvoice,
+    sumSubtotalInvoiceSingle,
+    sumSubtotalTaxInvoiceSingle,
+    sumTaxInvoiceSingle,
     sumTotalInvoiceSingle,
-    sumTotalPackageSingle, sumTotalPaymentSingle,
+    sumTotalPackageSingle,
+    sumTotalPaymentSingle,
     ucFirst
 } from "../../../../../Components/mixedConsts";
+import TableInvoicePackage from "./TableInvoicePackage";
 
 // noinspection DuplicatedCode
 class InvoiceInfo extends React.Component {
@@ -104,79 +111,8 @@ class InvoiceInfo extends React.Component {
                                 }
                             </div>
                         </div>
-                        <div className="card card-info card-outline">
-                            <div className="card-header">
-                                <h3 className="card-title">{Lang.get('companies.packages.labels.menu')}</h3>
-                                <div className="card-tools">
-                                    <button type="button" className="btn btn-tool" data-card-widget="collapse"><i className="fas fa-minus"/></button>
-                                </div>
-                            </div>
-                            <div className="card-body p-0">
-                                <table className="table table-sm table-striped">
-                                    <thead>
-                                    <tr>
-                                        <th width={100} className="align-middle">{Lang.get('companies.packages.labels.code')}</th>
-                                        <th className="align-middle">{Lang.get('companies.invoices.labels.package.name')}</th>
-                                        <th width={50} className="align-middle">{Lang.get('companies.invoices.labels.package.qty')}</th>
-                                        <th width={120} className="align-middle">{Lang.get('companies.invoices.labels.package.price')}</th>
-                                        <th width={70} className="align-middle">{Lang.get('companies.invoices.labels.package.vat')}</th>
-                                        <th width={120} className="align-middle">{Lang.get('companies.invoices.labels.package.discount')}</th>
-                                        <th width={150} className="align-middle">{Lang.get('companies.invoices.labels.subtotal.item')}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {this.props.data.meta.packages.map((item)=>
-                                        <tr key={item.value}>
-                                            <td className="align-middle text-center">{item.meta.package.meta.code}</td>
-                                            <td className="align-middle">{item.label}</td>
-                                            <td className="align-middle text-center">{item.meta.prices.qty}</td>
-                                            <td className="align-middle">
-                                                <span className="float-left">Rp.</span>
-                                                <span className="float-right">{formatLocaleString(item.meta.prices.price)}</span>
-                                            </td>
-                                            <td className="align-middle text-center">{formatLocaleString(item.meta.prices.vat)}%</td>
-                                            <td className="align-middle">
-                                                <span className="float-left">Rp.</span>
-                                                <span className="float-right">{formatLocaleString(item.meta.prices.discount)}</span>
-                                            </td>
-                                            <td className="align-middle">
-                                                <span className="float-left">Rp.</span>
-                                                <span className="float-right">{formatLocaleString(sumTotalPackageSingle(item))}</span>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.invoices.labels.discount')}</th>
-                                        <th className="align-middle text-right">
-                                            {this.props.data.meta.discount === 0 ?
-                                                '-'
-                                                :
-                                                <>
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(this.props.data.meta.discount)}</span>
-                                                </>
-                                            }
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.invoices.labels.vat')}</th>
-                                        <th className="align-middle text-right">
-                                            {this.props.data.meta.vat === 0 ? '-' : `${formatLocaleString(this.props.data.meta.vat)}%`}
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.invoices.labels.subtotal.main')}</th>
-                                        <th className="align-middle">
-                                            <span className="float-left">Rp.</span>
-                                            <span className="float-right">{formatLocaleString(sumTotalInvoiceSingle(this.props.data),0)}</span>
-                                        </th>
-                                    </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                        </div>
+                        <TableInvoicePackage data={this.props.data}/>
+
                         <div className="card card-success card-outline">
                             <div className="card-header">
                                 <h3 className="card-title">{Lang.get('companies.invoices.payments.labels.menu')}</h3>
@@ -197,7 +133,7 @@ class InvoiceInfo extends React.Component {
                                     </thead>
                                     <tbody>
                                     {this.props.data.meta.timestamps.paid.payments.length === 0 ?
-                                        <tr><td className="text-center align-middle">{Lang.get('messages.no_data')}</td></tr>
+                                        <tr><td colSpan={5} className="text-center align-middle">{Lang.get('messages.no_data')}</td></tr>
                                         : this.props.data.meta.timestamps.paid.payments.map((item)=>
                                             <tr key={item.value}>
                                                 <td className="align-middle text-center">{item.label}</td>

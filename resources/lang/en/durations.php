@@ -1,9 +1,9 @@
 <?php
 return [
-    'minutes' => 'Menit',
-    'hours' => 'Jam',
-    'days' => 'Hari',
-    'weeks' => 'Minggu',
-    'months' => 'Bulan',
-    'years' => 'Tahun'
+    'minutes' => 'Minutes',
+    'hours' => 'Hours',
+    'days' => 'Days',
+    'weeks' => 'Weeks',
+    'months' => 'Months',
+    'years' => 'Years'
 ];

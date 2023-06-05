@@ -55,7 +55,7 @@ class MenuSeeder extends Seeder
                 (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'customers.pppoe.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],
                 (object) [ 'name' => 'Customer Hotspot', 'route' => 'clients.customers.hotspot', 'description' => 'customers.hotspot.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.hotspot.labels.menu'],
                 (object) [ 'name' => 'Tagihan', 'route' => 'clients.customers.invoices', 'description' => 'customers.invoices.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-file-invoice', 'lang' => 'customers.invoices.labels.menu'],
-                (object) [ 'name' => 'Pembayaran Tagihan', 'route' => 'clients.customers.invoices.payment', 'description' => 'customers.invoices.payments.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'customers.invoice.payments.labels.menu'],
+                (object) [ 'name' => 'Pembayaran Tagihan', 'route' => 'clients.customers.invoices.payment', 'description' => 'customers.invoices.payments.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'customers.invoices.payments.labels.menu'],
             ]),
         ]);
         $requests->push((object) [

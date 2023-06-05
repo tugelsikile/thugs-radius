@@ -16,11 +16,12 @@ import Select from "react-select";
 import {
     formatLocaleDate,
     formatLocaleString,
-    parseInputFloat,
+    parseInputFloat, sumGrandTotalInvoiceSingle,
     sumTotalInvoiceSingle,
-    sumTotalPackageSingle,
+    sumTotalPackageSingle, sumTotalPaidFormPayment,
     sumTotalPaymentSingle, ucFirst
 } from "../../../../../Components/mixedConsts";
+import TableInvoicePackage from "./TableInvoicePackage";
 registerLocale("id", id);
 registerLocale("en", en);
 
@@ -84,7 +85,7 @@ class FormPayment extends React.Component {
     }
     handleDate(event, index) {
         let form = this.state.form;
-        form.payments.at = event;
+        form.payments[index].at = event;
         this.setState({form});
     }
     handleDeletePayment(index) {
@@ -180,81 +181,9 @@ class FormPayment extends React.Component {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card card-outline card-info">
-                                    <div className="card-body p-0">
-                                        <table className="table table-sm table-striped">
-                                            <thead>
-                                            <tr>
-                                                <th width={100} className="align-middle">{Lang.get('companies.packages.labels.code')}</th>
-                                                <th className="align-middle">{Lang.get('companies.invoices.labels.package.name')}</th>
-                                                <th width={70} className="align-middle">{Lang.get('companies.invoices.labels.package.qty')}</th>
-                                                <th width={120} className="align-middle">{Lang.get('companies.invoices.labels.package.price')}</th>
-                                                <th width={100} className="align-middle">{Lang.get('companies.invoices.labels.package.vat')}</th>
-                                                <th width={100} className="align-middle">{Lang.get('companies.invoices.labels.package.discount')}</th>
-                                                <th width={150} className="align-middle text-right">{Lang.get('companies.invoices.labels.subtotal.item')}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {this.state.form.invoice.meta.packages.map((item)=>
-                                                <tr key={item.value}>
-                                                    <td className="align-middle text-center text-sm">{item.meta.package.meta.code}</td>
-                                                    <td className="align-middle text-sm">{item.meta.package.label}</td>
-                                                    <td className="align-middle text-sm">{item.meta.prices.qty}</td>
-                                                    <td className="align-middle text-sm">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(item.meta.prices.price)}</span>
-                                                    </td>
-                                                    <td className="align-middle text-sm">{formatLocaleString(item.meta.prices.vat)}%</td>
-                                                    <td className="align-middle text-sm">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(item.meta.prices.discount)}</span>
-                                                    </td>
-                                                    <td className="align-middle text-sm">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(sumTotalPackageSingle(item),0)}</span>
-                                                    </td>
-                                                </tr>
-                                            )}
-                                            </tbody>
-                                            <tfoot>
-                                            <tr>
-                                                <th colSpan={6} className="align-middle text-right">{Lang.get('companies.invoices.labels.vat')}</th>
-                                                <th className="align-middle text-right">
-                                                    {this.state.form.invoice.meta.vat === 0 ?
-                                                        <span>-</span>
-                                                        :
-                                                        `${formatLocaleString(this.state.form.invoice.meta.vat,0)}%`
-                                                    }
-                                                </th>
-                                            </tr>
-                                            <tr>
-                                                <th colSpan={6} className="align-middle text-right">{Lang.get('companies.invoices.labels.discount')}</th>
-                                                <th className={this.state.form.invoice.meta.discount === 0 ? "align-middle text-right" : "align-middle"}>
-                                                    {this.state.form.invoice.meta.discount === 0 ?
-                                                        <span>-</span>
-                                                        :
-                                                        <>
-                                                            <span className="float-left">Rp.</span>
-                                                            <span className="float-right">
-                                                                {formatLocaleString(this.state.form.invoice.meta.discount,0)}
-                                                            </span>
-                                                        </>
-                                                    }
-                                                </th>
-                                            </tr>
-                                            <tr>
-                                                <th colSpan={6} className="align-middle text-right">{Lang.get('companies.invoices.labels.subtotal.main')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">
-                                                        {formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice),0)}
-                                                    </span>
-                                                </th>
-                                            </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
+
+                                <TableInvoicePackage data={this.props.data}/>
+
                                 <div className="card card-outline card-success mt-5">
                                     <div className="card-header">
                                         <h3 className="card-title">{Lang.get('companies.invoices.payments.labels.menu')}</h3>
@@ -330,21 +259,21 @@ class FormPayment extends React.Component {
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.payments.labels.subtotal')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(this.state.form.payments.reduce((a,b) => a + b.amount, 0))}</span>
+                                                    <span className="float-right">{formatLocaleString(sumTotalPaidFormPayment(this.state.form),2)}</span>
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.labels.subtotal.main')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice))}</span>
+                                                    <span className="float-right">{formatLocaleString(sumGrandTotalInvoiceSingle(this.state.form.invoice))}</span>
                                                 </th>
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={5}>{Lang.get('companies.invoices.payments.labels.amount_left')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(sumTotalInvoiceSingle(this.state.form.invoice) - this.state.form.payments.reduce((a,b) => a + b.amount, 0))}</span>
+                                                    <span className="float-right">{formatLocaleString(sumGrandTotalInvoiceSingle(this.props.data) - sumTotalPaidFormPayment(this.state.form),2)}</span>
                                                 </th>
                                             </tr>
                                             </tfoot>

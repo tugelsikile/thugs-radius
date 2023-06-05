@@ -1,23 +1,23 @@
 <?php
 return [
     'village' => [
-        'label' => 'Kelurahan / Desa',
-        'form_input' => 'kelurahan_desa',
-        'select' => 'Pilih kelurahan / desa',
+        'label' => 'Village',
+        'form_input' => 'village',
+        'select' => 'Select village',
     ],
     'district' => [
-        'label' => 'Kecamatan',
-        'form_input' => 'kecamatan',
-        'select' => 'Pilih kecamatan',
+        'label' => 'District',
+        'form_input' => 'district',
+        'select' => 'Select district',
     ],
     'city' => [
-        'label' => 'Kabupaten / Kota',
-        'form_input' => 'kabupaten_kota',
-        'select' => 'Pilih kabupaten / kota',
+        'label' => 'City',
+        'form_input' => 'city',
+        'select' => 'Select City',
     ],
     'province' => [
-        'label' => 'Provinsi',
-        'form_input' => 'provinsi',
-        'select' => 'Pilih provinsi',
+        'label' => 'Province',
+        'form_input' => 'province',
+        'select' => 'Select Province',
     ],
 ];

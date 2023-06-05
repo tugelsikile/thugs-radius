@@ -58,7 +58,7 @@ Route::group(['prefix' => 'clients'], function () {
     });
     Route::group(['prefix' => 'configs'], function () {
         Route::get('/', function () { })->name('clients.configs');
-        Route::get('/discounts', function () { })->name('clients.configs.discounts');
-        Route::get('/taxes', function () { })->name('clients.configs.taxes');
+        Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
+        Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });
 });

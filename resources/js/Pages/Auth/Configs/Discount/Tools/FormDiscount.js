@@ -29,7 +29,7 @@ class FormDiscount extends React.Component {
             if (props.user !== null) {
                 if (props.companies !== null) {
                     if (props.companies.length > 0) {
-                        let index = props.companies.findIndex((f) => f.value === props.user.meta.company);
+                        let index = props.companies.findIndex((f) => f.value === props.user.meta.company.id);
                         if (index >= 0) {
                             form.company = props.companies[index];
                         }
@@ -38,8 +38,16 @@ class FormDiscount extends React.Component {
             }
             if (props.data != null) {
                 form.id = props.data.value, form.name = props.data.label,
-                    form.code = props.data.meta.code, form.company = props.data.meta.company,
+                    form.code = props.data.meta.code, form.company = null,
                     form.amount = props.data.meta.amount;
+                if (props.companies !== null) {
+                    if (props.companies.length > 0) {
+                        let index = props.companies.findIndex((f) => f.value === props.data.meta.company.id);
+                        if (index >= 0) {
+                            form.company = props.companies[index];
+                        }
+                    }
+                }
             }
         }
         this.setState({form});
@@ -131,7 +139,7 @@ class FormDiscount extends React.Component {
                     <DialogActions className="justify-content-between">
                         <button type="submit" className="btn btn-success" disabled={this.state.loading || this.props.loadings.companies}>
                             {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
-                            {this.state.form.id === null ? Lang.get('discounts.create.button') : Lang.get('discounts.update.button',null, 'id')}
+                            {this.state.form.id === null ? Lang.get('discounts.create.button') : Lang.get('discounts.update.button')}
                         </button>
                         <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
                             <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}

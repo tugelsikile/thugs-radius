@@ -18,7 +18,7 @@ class TaxValidation
         try {
             $valid = Validator::make($request->all(),[
                 __('companies.form_input.name') => 'nullable|exists:client_companies,id',
-                __('taxes.form_input.code') => 'required|string|min:1|max:60|unique:taxes,code',
+                __('taxes.form_input.code') => 'required|string|min:1|max:60|unique:taxes,code,null,null,company,' . $request[__('companies.form_input.name')],
                 __('taxes.form_input.name') => 'required|string|min:1|max:199',
                 __('taxes.form_input.description') => 'nullable',
                 __('taxes.form_input.percent') => 'required|numeric|min:0|max:100',
@@ -41,7 +41,7 @@ class TaxValidation
             $valid = Validator::make($request->all(),[
                 __('taxes.form_input.id') => 'required|exists:taxes,id',
                 __('companies.form_input.name') => 'nullable|exists:client_companies,id',
-                __('taxes.form_input.code') => 'required|string|min:1|max:60|unique:taxes,code,' . $request[__('taxes.form_input.id')] . ',id',
+                __('taxes.form_input.code') => 'required|string|min:1|max:60|unique:taxes,code,' . $request[__('taxes.form_input.id')] . ',id,company,'  . $request[__('companies.form_input.name')],
                 __('taxes.form_input.name') => 'required|string|min:1|max:199',
                 __('taxes.form_input.description') => 'nullable',
                 __('taxes.form_input.percent') => 'required|numeric|min:0|max:100',

@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,7 +16,7 @@ class CreateTaxesTable extends Migration
         Schema::create('taxes', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('company')->nullable();
-            $table->string('code',60)->unique();
+            $table->string('code',60);
             $table->string('name');
             $table->text('description')->nullable();
             $table->double('percent',20,2)->default(0);

@@ -93,7 +93,9 @@ class TaxRepository
             $taxes = Tax::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $taxes = $taxes->where('id', $request->id);
             if ($me != null) {
-                if ($me->company != null) $taxes = $taxes->orWhere('company', $me->company);
+                if ($me->company != null) $taxes = $taxes->where('company', $me->company);
+            } else {
+                $taxes = $taxes->whereNull('companies');
             }
             $taxes = $taxes->get();
             if ($taxes->count() > 0) {

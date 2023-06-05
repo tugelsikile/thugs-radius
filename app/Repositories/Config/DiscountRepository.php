@@ -35,7 +35,7 @@ class DiscountRepository
             $discount->updated_by = $me->id;
             $discount->saveOrFail();
 
-            return $this->discounts(new Request(['id' => $discount->id]))->first();
+            return $this->table(new Request(['id' => $discount->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -62,7 +62,7 @@ class DiscountRepository
             $discount->created_by = $me->id;
             $discount->saveOrFail();
 
-            return $this->discounts(new Request(['id' => $discount->id]))->first();
+            return $this->table(new Request(['id' => $discount->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -97,6 +97,8 @@ class DiscountRepository
             if (strlen($request->id) > 0) $discounts = $discounts->where('id', $request->id);
             if ($me != null) {
                 if ($me->company != null) $discounts = $discounts->where('company', $me->company);
+            } else {
+                $discounts = $discounts->whereNull('company');
             }
             $discounts = $discounts->get();
             if ($discounts->count() > 0) {

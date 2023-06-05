@@ -27,11 +27,33 @@ class FormTax extends React.Component {
             form.id = null, form.name = '', form.description = '', form.company = null,
                 form.percent = 0, form.code = '';
         } else {
-            if (props.data !== null) {
+            let index;
+            if (props.data === null) {
+                if (props.user !== null) {
+                    if (props.user.meta.company !== null) {
+                        if (props.companies !== null) {
+                            if (props.companies.length > 0) {
+                                index = props.companies.findIndex((f) => f.value === props.user.meta.company.id);
+                                if (index >= 0) {
+                                    form.company = props.companies[index];
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
                 form.id = props.data.value,
                     form.name = props.data.label, form.description = props.data.meta.description,
-                    form.company = props.data.meta.company, form.percent = props.data.meta.percent,
+                    form.percent = props.data.meta.percent, form.company = null,
                     form.code = props.data.meta.code;
+                if (props.companies !== null) {
+                    if (props.companies.length > 0) {
+                        index = props.companies.findIndex((f) => f.value === props.data.meta.company.id);
+                        if (index >= 0) {
+                            form.company = props.companies[index];
+                        }
+                    }
+                }
             }
         }
         this.setState({form});
@@ -79,7 +101,7 @@ class FormTax extends React.Component {
     }
     render() {
         return (
-            <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+            <Dialog fullWidth maxWidth="sm" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
                     <DialogTitle>
                         <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
@@ -90,12 +112,15 @@ class FormTax extends React.Component {
                         </span>
                     </DialogTitle>
                     <DialogContent dividers>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
-                            <div className="col-sm-4">
-                                <Select noOptionsMessage={()=>Lang.get('companies.labels.no_select')} value={this.state.form.company} onChange={this.handleSelect} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies} isClearable placeholder={<small>{Lang.get('companies.labels.name')}</small>}/>
-                            </div>
-                        </div>
+                        {this.props.user === null ? null :
+                            this.props.user.meta.company !== null ? null :
+                                <div className="form-group row">
+                                    <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
+                                    <div className="col-sm-4">
+                                        <Select noOptionsMessage={()=>Lang.get('companies.labels.no_select')} value={this.state.form.company} onChange={this.handleSelect} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies} isClearable placeholder={<small>{Lang.get('companies.labels.name')}</small>}/>
+                                    </div>
+                                </div>
+                        }
                         <div className="form-group row">
                             <label htmlFor="inputCode" className="col-sm-2 col-form-label">{Lang.get('taxes.labels.code')}</label>
                             <div className="col-sm-4">
@@ -108,22 +133,25 @@ class FormTax extends React.Component {
                                 <input id="inputName" placeholder={Lang.get('taxes.labels.name')} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.name} name="name" onChange={this.handleChange}/>
                             </div>
                         </div>
-                        <div className="form-group row">
+                        {/*<div className="form-group row">
                             <label htmlFor="inputDescription" className="col-sm-2 col-form-label">{Lang.get('taxes.labels.description')}</label>
                             <div className="col-sm-10">
                                 <textarea style={{resize:'none'}} id="inputDescription" placeholder={Lang.get('taxes.labels.description')} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.description} name="description" onChange={this.handleChange}/>
                             </div>
-                        </div>
+                        </div>*/}
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label" htmlFor="inputPercent">{Lang.get('taxes.labels.percent')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading || this.props.loadings.companies} id="inputPercent" className="form-control text-sm text-right"
-                                               isAllowed={(values) => {
-                                                   const { floatValue } = values;
-                                                   const MAX_VALUE = 100;
-                                                   return floatValue <= MAX_VALUE;
-                                               }} placeholder={Lang.get('taxes.labels.percent')}
-                                               name="percent" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.percent} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                            <div className="col-sm-3">
+                                <div className="input-group">
+                                    <NumericFormat disabled={this.state.loading || this.props.loadings.companies} id="inputPercent" className="form-control text-sm text-right"
+                                                   isAllowed={(values) => {
+                                                       const { floatValue } = values;
+                                                       const MAX_VALUE = 100;
+                                                       return floatValue <= MAX_VALUE;
+                                                   }} placeholder={Lang.get('taxes.labels.percent')}
+                                                   name="percent" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.percent} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                    <div className="input-group-append"><span className="input-group-text">%</span></div>
+                                </div>
                             </div>
                         </div>
                     </DialogContent>

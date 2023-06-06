@@ -3,6 +3,8 @@
 return [
     'method' => 'Undefined method',
     'ok' => 'ok',
+    '404' => '404 Page Not Found',
+    'undefined' => 'Undefined message',
     'save' => 'Simpan',
     'close' => 'Tutup',
     'action' => 'Aksi',

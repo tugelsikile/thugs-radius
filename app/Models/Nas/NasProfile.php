@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Models\Nas;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class NasProfile extends Model
+{
+    use HasFactory;
+    protected $keyType = 'string';
+    public $incrementing = false;
+
+    protected $casts = [
+        'price' => 'double',
+        'is_additional' => 'boolean',
+    ];
+}

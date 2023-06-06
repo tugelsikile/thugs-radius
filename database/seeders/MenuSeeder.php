@@ -44,9 +44,12 @@ class MenuSeeder extends Seeder
         ]);
 
         $requests->push((object) [
-            'name' => 'Router [NAS]', 'route' => 'clients.routerboards', 'description' => 'routerboards.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'routerboards.main.labels.menu',
+            'name' => 'Router [NAS]', 'route' => 'clients.nas', 'description' => 'nas.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'nas.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Pilih Routerboard', 'route' => 'clients.routerboards.select', 'description' => 'routerboards.select.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-hand-pointer', 'lang' => 'routerboards.select.labels.menu' ]
+                (object) [ 'name' => 'Pilih Routerboard', 'route' => 'clients.nas.select', 'description' => 'nas.select.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-hand-pointer', 'lang' => 'nas.select.labels.menu' ],
+                (object) [ 'name' => 'Pool', 'route' => 'clients.nas.pools', 'description' => 'nas.pools.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-poll-h', 'lang' => 'nas.pools.labels.menu' ],
+                (object) [ 'name' => 'Bandwidth', 'route' => 'clients.nas.bandwidths', 'description' => 'nas.bandwidths.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-wifi', 'lang' => 'nas.bandwidths.labels.menu' ],
+                (object) [ 'name' => 'Profile', 'route' => 'clients.nas.profiles', 'description' => 'nas.profiles.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-concierge-bell', 'lang' => 'nas.profiles.labels.menu' ],
             ])
         ]);
         $requests->push((object) [

@@ -27,5 +27,6 @@ const mix = require('laravel-mix');
 
 
 /*---------- CLIENTS ----------*/
-mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
-mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
+//mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
+//mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
+mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');

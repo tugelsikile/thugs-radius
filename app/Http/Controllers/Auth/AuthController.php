@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection SpellCheckingInspection */
 
 namespace App\Http\Controllers\Auth;
 
@@ -8,6 +8,7 @@ use App\Validations\Auth\AuthValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -43,6 +44,7 @@ class AuthController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function login(Request $request): JsonResponse
     {

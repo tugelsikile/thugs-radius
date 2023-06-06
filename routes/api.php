@@ -7,6 +7,7 @@ use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -55,6 +56,13 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::any('/currencies', [ConfigController::class, 'currencies']);
         Route::any('/taxes', [TaxController::class, 'crud']);
         Route::any('/discounts', [DiscountController::class, 'crud']);
+    });
+});
+Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
+    Route::group(['prefix' => 'nas'], function () {
+        Route::any('/', [NasController::class, 'crud']);
+        Route::post('/test-connection', [NasController::class, 'testConnection']);
+        Route::post('/decrypt-encrypt', [NasController::class, 'encryptDecrypt']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

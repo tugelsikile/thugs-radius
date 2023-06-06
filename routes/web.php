@@ -52,9 +52,12 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/', function () { return view('clients.users.index'); })->name('clients.users');
         Route::get('/privileges', function () { return view('clients.users.privileges.index'); })->name('clients.users.privileges');
     });
-    Route::group(['prefix' => 'routerboards'], function () {
-        Route::get('/', function () { return view('clients.routerboards.index'); })->name('clients.routerboards');
-        Route::get('/select', function () { return view('clients.routerboards.index'); })->name('clients.routerboards.select');
+    Route::group(['prefix' => 'nas'], function () {
+        Route::get('/', function () { return view('clients.nas.index'); })->name('clients.nas');
+        Route::get('/pools', function () { })->name('clients.nas.pools');
+        Route::get('/bandwidths', function () { })->name('clients.nas.bandwidths');
+        Route::get('/profiles', function () { })->name('clients.nas.profiles');
+        Route::get('/select', function () { abort(404); })->name('clients.nas.select');
     });
     Route::group(['prefix' => 'configs'], function () {
         Route::get('/', function () { })->name('clients.configs');

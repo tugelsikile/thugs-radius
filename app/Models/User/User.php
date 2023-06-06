@@ -50,7 +50,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(UserLevel::class,'level','id');
     }
-    public function companyObj() {
-        return $this->belongsTo(ClientCompany::class,'company','id');
+    public function companyObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj']);
     }
 }

@@ -11,12 +11,12 @@ class BtnSort extends React.Component {
                 <span className="text-dark">{this.props.name}</span>
                 <span className="float-right ml-1">
                     {this.props.filter.sort.by !== this.props.sort ?
-                        <FontAwesomeIcon icon="fas fa-sort fa-2xs" className="text-muted"/>
+                        <FontAwesomeIcon size="2xs" icon="fa-sort" className="text-muted fa-2xs"/>
                         :
                         this.props.filter.sort.dir === 'asc' ?
-                            <FontAwesomeIcon icon="fas fa-sort-down fa-2xs" className="text-dark"/>
+                            <FontAwesomeIcon size="2xs" icon="fa-sort-down" className="text-dark fa-2xs"/>
                             :
-                            <FontAwesomeIcon icon="fas fa-sort-up fa-2xs" className="text-dark"/>
+                            <FontAwesomeIcon size="2xs" icon="fa-sort-up" className="text-dark fa-2xs"/>
                     }
                 </span>
             </a>

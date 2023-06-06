@@ -1,8 +1,10 @@
-// noinspection DuplicatedCode
+// noinspection DuplicatedCode,SpellCheckingInspection
 
 import React from "react";
 import moment from "moment";
 import {guestSiteConfig} from "../Services/ConfigService";
+import {showError} from "./Toaster";
+import {logout} from "./Authentication";
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 export const langSelect = [
@@ -366,3 +368,34 @@ export const siteData = async () => {
 export const customPreventDefault = (event) => {
     event.preventDefault();
 }
+export const responseMessage = (event) => {
+    let message = Lang.get('messages.method');
+    try {
+        if (typeof event.response !== 'undefined') {
+            switch (event.response.status) {
+                case 401 :
+                    showError("Unauthenticated");
+                    logout();
+                break;
+                case 404 :
+                    showError(Lang.get('messages.404'));
+                    break;
+            }
+            if (typeof event.response.data === 'undefined') {
+                showError(Lang.get('messages.undefined'));
+            } else if (typeof event.response.data.message === 'undefined') {
+                showError(Lang.get('messages.undefined'));
+            } else if (event.response.data.message.length > 0){
+                showError(event.response.data.message);
+            }
+        } else {
+            showError(message);
+        }
+    } catch (e) {
+        showError(e.message);
+    }
+}
+export const routerConnectionType = [
+    { value : 'api', label : 'Koneksi API' },
+    { value : 'ssl', label : 'Koneksi SSL (https)' }
+];

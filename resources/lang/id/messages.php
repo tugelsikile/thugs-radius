@@ -4,6 +4,7 @@ return [
     'method' => 'Undefined method',
     'ok' => 'ok',
     '404' => '404 Page Not Found',
+    'required' => 'Harus diisi / dipilih',
     'undefined' => 'Undefined message',
     'save' => 'Simpan',
     'close' => 'Tutup',

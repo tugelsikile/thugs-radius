@@ -17,7 +17,9 @@ return [
     'labels' => [
         'menu' => 'Router [NAS]',
         'menu_info' => 'Router [NAS] Management',
+        'not_found' => 'Router Not Found',
         'search' => 'Search Router ...',
+        'select' => 'Select Router [NAS]',
         'name' => 'Router Name',
         'description' => 'Router Description',
         'type' => 'Router Type',
@@ -55,6 +57,10 @@ return [
         'expire_url' => 'Expired URL',
         'check_connection' => 'Check Connection',
         'connection' => [
+            'type' => [
+                'api' => 'API Connection',
+                'ssl' => 'SSL Connection (https)',
+            ],
             'failed' => 'Could not connect to router',
             'success' => 'Successfully connected to ',
         ]
@@ -85,9 +91,47 @@ return [
         ],
     ],
     'pools' => [
+        'form_input' => [
+            'id' => 'ip_pool_data',
+            'name' => 'ip_pool_name',
+            'description' => 'ip_pool_description',
+            'upload' => 'upload_to_router',
+            'address' => [
+                'first' => 'first_ip',
+                'last' => 'last_ip',
+            ]
+        ],
         'labels' => [
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',
+            'not_found' => 'IP Pool Not Found !!',
+            'search' => 'Search Pool ...',
+            'name' => 'IP Pool Name',
+            'description' => 'IP Pool Description',
+            'address' => [
+                'first' => 'First IP',
+                'last' => 'Last IP',
+                'error' => 'Last IP :ip block number :index (:block) is not less than first ip :ip2 block number :index2 (:block2)'
+            ],
+            'upload' => [
+                'true' => 'Upload IP Pool to router [NAS]',
+                'false' => 'Don\'t upload IP Pool to router [NAS]'
+            ],
+            'invalid_name' => 'IP Pool cannot contain white space'
+        ],
+        'create' => [
+            'form' => 'Add IP Pool Form',
+            'button' => 'Add IP Pool',
+            'success' => 'IP Pool successfully added',
+        ],
+        'update' => [
+            'form' => 'Update IP Pool Form',
+            'button' => 'Update IP Pool',
+            'success' => 'IP Pool successfully updated',
+        ],
+        'delete' => [
+            'button' => 'Delete IP Pool',
+            'select' => 'Delete Selected Pool',
         ]
     ],
     'bandwidths' => [

@@ -15,6 +15,7 @@ class CreateNasProfilesTable extends Migration
     {
         Schema::create('nas_profiles', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
+            $table->string('profile_id')->nullable();
             $table->uuid('company');
             $table->uuid('nas')->nullable();
             $table->uuid('pool')->nullable();
@@ -22,6 +23,8 @@ class CreateNasProfilesTable extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('type',50)->default('pppoe')->comment('pppoe,hotspot, and or static');
+            $table->ipAddress('local_address')->nullable();
+            $table->text('dns_servers')->nullable();
             $table->integer('validity')->default(0);
             $table->string('validity_unit',50)->default('minutes');
             $table->integer('shared_users')->default(1);

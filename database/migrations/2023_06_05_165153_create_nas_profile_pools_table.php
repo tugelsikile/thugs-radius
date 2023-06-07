@@ -15,15 +15,13 @@ class CreateNasProfilePoolsTable extends Migration
     {
         Schema::create('nas_profile_pools', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
+            $table->string('pool_id')->nullable();
             $table->uuid('company');
             $table->uuid('nas');
             $table->string('name');
             $table->text('description')->nullable();
-            $table->string('type',50)->default('pppoe')->comment('pppoe,hotspot, and or static');
-            $table->ipAddress('local_address')->nullable();
             $table->ipAddress('first_address')->nullable();
             $table->ipAddress('last_address')->nullable();
-            $table->text('dns_servers')->nullable();
             $table->timestamps();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

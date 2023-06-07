@@ -330,7 +330,7 @@ class NasPage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.nas.filtered.length === 0 ?
-                                            <tr><td colSpan={7} className="align-middle text-center">{Lang.get('messages.no_data')}</td></tr>
+                                            <tr><td colSpan={8} className="align-middle text-center">{Lang.get('messages.no_data')}</td></tr>
                                             :
                                             this.state.nas.filtered.map((item)=>
                                                 <tr key={item.value}>

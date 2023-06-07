@@ -1,5 +1,4 @@
 <?php
-/** @noinspection SpellCheckingInspection */
 return [
     'form_input' => [
         'id' => 'data_router',
@@ -18,6 +17,8 @@ return [
     'labels' => [
         'menu' => 'Router [NAS]',
         'menu_info' => 'Manajemen Router [NAS]',
+        'not_found' => 'Tidak ada data Router',
+        'select' => 'Pilih Router [NAS]',
         'search' => 'Cari Router ...',
         'name' => 'Nama Router',
         'description' => 'Keterangan Router',
@@ -34,7 +35,7 @@ return [
         ],
         'ip' => [
             'label' => 'IP Router Koneksi',
-            'short' => 'IP'
+            'short' => 'IP / Hostname'
         ],
         'port' => [
             'label' => 'Port Router Koneksi',
@@ -56,6 +57,10 @@ return [
         'expire_url' => 'URL Expire',
         'check_connection' => 'Periksa Sambungan',
         'connection' => [
+            'type' => [
+                'api' => 'Koneksi API',
+                'ssl' => 'Koneksi SSL (https)',
+            ],
             'failed' => 'Tidak dapat terhubung ke router',
             'success' => 'Berhasil terhubung ke ',
         ]
@@ -86,9 +91,47 @@ return [
         ],
     ],
     'pools' => [
+        'form_input' => [
+            'id' => 'data_ip_pool',
+            'name' => 'nama_ip_pool',
+            'description' => 'keterangan_ip_pool',
+            'upload' => 'upload_ke_router',
+            'address' => [
+                'first' => 'ip_pertama',
+                'last' => 'ip_terakhir',
+            ]
+        ],
         'labels' => [
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',
+            'not_found' => 'IP Pool Tidak Ditemukan !!',
+            'search' => 'Cari IP Pool ...',
+            'name' => 'Nama IP Pool',
+            'description' => 'Keterangan IP Pool',
+            'address' => [
+                'first' => 'IP Pertama',
+                'last' => 'IP Terakhir',
+                'error' => 'IP Terakhir :ip blok ke :index (:block) tidak boleh kurang dari IP Pertama :ip2 blok ke :index2 (:block2)'
+            ],
+            'upload' => [
+                'true' => 'Upload IP Pool ke router [NAS]',
+                'false' => 'Jangan upload IP Pool ke router [NAS]'
+            ],
+            'invalid_name' => 'Nama IP Pool tidak boleh ada spasi'
+        ],
+        'create' => [
+            'form' => 'Formulir Tambah IP Pool',
+            'button' => 'Tambah IP Pool',
+            'success' => 'IP Pool berhasil ditambahkan',
+        ],
+        'update' => [
+            'form' => 'Formulir Rubah IP Pool',
+            'button' => 'Rubah IP Pool',
+            'success' => 'IP Pool berhasil dirubah',
+        ],
+        'delete' => [
+            'button' => 'Hapus IP Pool',
+            'select' => 'Hapus IP Pool Terpilih',
         ]
     ],
     'bandwidths' => [

@@ -1,10 +1,56 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php /** @noinspection PhpUndefinedMethodInspection */
+
+/** @noinspection PhpUndefinedFieldInspection */
 
 use App\Models\Nas\Nas;
+use App\Models\Nas\NasIpAvailable;
+use App\Models\Nas\NasProfilePool;
+use Illuminate\Support\Collection;
+use Ramsey\Uuid\Uuid;
 use RouterOS\Client;
 use RouterOS\Query;
 
-function testConnection(Nas $nas) {
+/* @
+ * @param NasProfilePool $nasProfilePool
+ * @return void
+ * @throws Throwable
+ */
+function generateIPAvailable(NasProfilePool $nasProfilePool) {
+    try {
+        ini_set('memory_limit',"5120M");
+        $start = ip2long($nasProfilePool->first_address);
+        $end = ip2long($nasProfilePool->last_address);
+        $pools = collect(array_map('long2ip', range($start, $end)));
+        $pools = fixHostIP($pools);
+        foreach ($pools as $pool) {
+            $avail = NasIpAvailable::where('ip', $pool)->where('nas', $nasProfilePool->nas)->where('pool', $nasProfilePool->id)->first();
+            if ($avail == null) {
+                $avail = new NasIpAvailable();
+                $avail->id = Uuid::uuid4()->toString();
+                $avail->nas = $nasProfilePool->nas;
+                $avail->pool = $nasProfilePool->id;
+                $avail->ip = $pool;
+                $avail->saveOrFail();
+            }
+        }
+        NasIpAvailable::whereNotIn('pool', $pools->toArray())->delete();
+    } catch (Exception $exception) {
+        return;
+    }
+}
+function fixHostIP($pools): Collection
+{
+    $response = collect();
+    foreach ($pools as $pool) {
+        $xpl = explode('.', $pool);
+        if ($xpl[3] <= 254 && $xpl[3] >= 1) {
+            $response->push($pool);
+        }
+    }
+    return $response;
+}
+function testConnection(Nas $nas): object
+{
     $response = null;
     switch ($nas->method) {
         default :

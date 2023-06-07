@@ -396,6 +396,9 @@ export const responseMessage = (event) => {
     }
 }
 export const routerConnectionType = [
-    { value : 'api', label : 'Koneksi API' },
-    { value : 'ssl', label : 'Koneksi SSL (https)' }
+    { value : 'api', label : Lang.get('nas.labels.connection.type.api') },
+    { value : 'ssl', label : Lang.get('nas.labels.connection.type.ssl') }
 ];
+export const hasWhiteSpace = (string) => {
+    return /\s/g.test(string);
+}

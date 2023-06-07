@@ -4,10 +4,14 @@ import MaskedInput from 'react-text-mask';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import ReactHtmlParser from "react-html-parser";
 
+export const LabelRequired = () => {
+    return <sup title={Lang.get('messages.required')} className="float-left mr-1"><FontAwesomeIcon icon="asterisk" className="text-danger fa-xs"/></sup>
+}
 export const InputText = (props) => {
     return (
         <div className="form-group row">
             <label className={`col-form-label ${props.labels.cols.label}`} htmlFor={props.input.id}>
+                {props.required ? <LabelRequired/> : null }
                 {props.labels.name}
             </label>
             <div className={props.labels.cols.input}>
@@ -74,6 +78,7 @@ export const InputResponse = (props) => {
                                  return value;
                              }}
                              disabled={props.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                             placeholder={props.labels.placeholder}
                              value={props.input.value} className="form-control text-sm"/>
             )
             break;

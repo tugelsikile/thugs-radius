@@ -25,5 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         require_once app_path() . '/Helpers/mixed.php';
         require_once app_path() . '/Helpers/routerHelpers.php';
+        require_once app_path() . '/Helpers/routerUploadAPI.php';
+        require_once app_path() . '/Helpers/routerUploadSSL.php';
     }
 }

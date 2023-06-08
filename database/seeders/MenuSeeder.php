@@ -49,7 +49,7 @@ class MenuSeeder extends Seeder
                 (object) [ 'name' => 'Pilih Routerboard', 'route' => 'clients.nas.select', 'description' => 'nas.select.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-hand-pointer', 'lang' => 'nas.select.labels.menu' ],
                 (object) [ 'name' => 'Pool', 'route' => 'clients.nas.pools', 'description' => 'nas.pools.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-poll-h', 'lang' => 'nas.pools.labels.menu' ],
                 (object) [ 'name' => 'Bandwidth', 'route' => 'clients.nas.bandwidths', 'description' => 'bandwidths.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-wifi', 'lang' => 'bandwidths.labels.menu' ],
-                (object) [ 'name' => 'Profile', 'route' => 'clients.nas.profiles', 'description' => 'nas.profiles.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-concierge-bell', 'lang' => 'nas.profiles.labels.menu' ],
+                (object) [ 'name' => 'Profile', 'route' => 'clients.nas.profiles', 'description' => 'profiles.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-concierge-bell', 'lang' => 'profiles.labels.menu' ],
             ])
         ]);
         $requests->push((object) [

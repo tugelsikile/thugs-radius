@@ -134,10 +134,4 @@ return [
             'select' => 'Hapus IP Pool Terpilih',
         ]
     ],
-    'profiles' => [
-        'labels' => [
-            'menu' => 'Layanan',
-            'menu_info' => 'Manage layanan pelanggan',
-        ]
-    ],
 ];

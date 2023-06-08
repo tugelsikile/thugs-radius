@@ -134,16 +134,4 @@ return [
             'select' => 'Delete Selected Pool',
         ]
     ],
-    'bandwidths' => [
-        'labels' => [
-            'menu' => 'Profile Bandwidth',
-            'menu_info' => 'Manage profile bandwidths ',
-        ]
-    ],
-    'profiles' => [
-        'labels' => [
-            'menu' => 'Service',
-            'menu_info' => 'Manage customer services',
-        ]
-    ],
 ];

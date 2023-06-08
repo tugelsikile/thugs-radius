@@ -89,3 +89,9 @@ function deleteIPPoolSSL(NasProfilePool $nasProfilePool) {
     }
     $client->request('delete', $url, headerAuth($nasProfilePool->nasObj));
 }
+function parentQueueSSL(Nas $nas) {
+    $client = client();
+    $url = hostname($nas) . '/rest/queue/simple?parent=none';
+    $req = $client->request('get', $url, headerAuth($nas));
+    return collect(json_decode($req->getBody()->getContents()));
+}

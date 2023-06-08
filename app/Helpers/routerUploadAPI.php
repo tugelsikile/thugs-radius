@@ -98,7 +98,14 @@ function updateIPPoolAPI(NasProfilePool $nasProfilePool, $defaultName) {
         uploadIPPool($nasProfilePool);
     }
 }
-
+function getParentQueue(Nas $nas) {
+    $routerOsClient = RouterOSClient($nas);
+    if ($routerOsClient->connect()) {
+        $query = (new RosQuery("/queue/simple/print"))->where('parent','none');
+        return collect($routerOsClient->query($query)->read());
+    }
+    return collect();
+}
 /* @
  * @param NasProfilePool $nasProfilePool
  * @param null $defaultName

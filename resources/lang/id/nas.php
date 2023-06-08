@@ -134,12 +134,6 @@ return [
             'select' => 'Hapus IP Pool Terpilih',
         ]
     ],
-    'bandwidths' => [
-        'labels' => [
-            'menu' => 'Profile Bandwidth',
-            'menu_info' => 'Manage profile bandwidths ',
-        ]
-    ],
     'profiles' => [
         'labels' => [
             'menu' => 'Layanan',

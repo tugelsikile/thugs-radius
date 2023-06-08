@@ -33,6 +33,7 @@ class CreateNasProfilesTable extends Migration
             $table->string('limit_type',50)->default('time')->comment('time or data');
             $table->bigInteger('limit_rate')->default(0);
             $table->string('limit_rate_unit')->nullable()->comment('data = mb, dll. time = minutes, dll.');
+            $table->text('parent_queue')->nullable();
             $table->timestamps();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

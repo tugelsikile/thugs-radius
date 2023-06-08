@@ -7,6 +7,7 @@ use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\RegionController;
@@ -64,10 +65,10 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::any('/', [NasController::class, 'crud']);
         Route::post('/test-connection', [NasController::class, 'testConnection']);
         Route::post('/decrypt-encrypt', [NasController::class, 'encryptDecrypt']);
+        Route::post('/parent-queues', [NasController::class, 'parentQueue']);
         Route::group(['prefix' => 'profiles'], function () {
-            Route::group(['prefix' => 'pools'], function () {
-                Route::any('/', [PoolController::class, 'crud']);
-            });
+            Route::any('/bandwidths', [BandwidthController::class, 'crud']);
+            Route::any('/pools', [PoolController::class, 'crud']);
         });
     });
 });

@@ -402,3 +402,24 @@ export const routerConnectionType = [
 export const hasWhiteSpace = (string) => {
     return /\s/g.test(string);
 }
+export const priorityList = [
+    { value : 8, label : 8 },
+    { value : 7, label : 7 },
+    { value : 6, label : 6 },
+    { value : 5, label : 5 },
+    { value : 4, label : 4 },
+    { value : 3, label : 3 },
+    { value : 2, label : 2 },
+    { value : 1, label : 1 },
+]
+export const formatBytes = (bytes, decimals = 0) => {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}

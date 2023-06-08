@@ -15,6 +15,23 @@ class NasValidation
      * @return Request
      * @throws Exception
      */
+    public function parentQueue(Request $request): Request
+    {
+        try {
+            $valid = Validator::make($request->all(),[
+                __('nas.form_input.name') => 'required|exists:nas,id'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function encryptDecrypt(Request $request): Request
     {
         try {

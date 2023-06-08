@@ -23,6 +23,20 @@ class NasController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function parentQueue(Request $request): JsonResponse
+    {
+        try {
+            $valid = $this->validation->parentQueue($request);
+            $params = $this->repository->parentQueue($valid);
+            return formatResponse(200, __('messages.ok'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
      * @throws Exception
      */
     public function encryptDecrypt(Request $request): JsonResponse

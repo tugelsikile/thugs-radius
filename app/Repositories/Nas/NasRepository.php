@@ -23,6 +23,47 @@ class NasRepository
 {
     /* @
      * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function parentQueue(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $nas = Nas::where('id', $request[__('nas.form_input.name')])->first();
+            if ($nas != null) {
+                switch (strtolower($nas->method)) {
+                    case 'api' :
+                        $queues = getParentQueue($nas);
+                        break;
+                    case 'ssl' :
+                        $queues = parentQueueSSL($nas);
+                        break;
+                }
+                if ($queues != null) {
+                    if ($queues->count() > 0) {
+                        foreach ($queues as $queue) {
+                            if (! is_array($queue)) $queue = (array) $queue;
+                            if ($queue['disabled'] == 'false') {
+                                $response->push((object) [
+                                    'value' => $queue['.id'],
+                                    'label' => $queue['name'],
+                                    'meta' => (object) [
+                                        'data' => $queue
+                                    ]
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
      * @return mixed
      * @throws GuzzleException
      * @throws Throwable

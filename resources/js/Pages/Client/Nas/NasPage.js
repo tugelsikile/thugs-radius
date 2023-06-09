@@ -13,6 +13,7 @@ import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {crudCompany} from "../../../Services/CompanyService";
 import FormNas from "./Tools/FormNas";
+import StatusNas from "./Tools/StatusNas";
 
 // noinspection DuplicatedCode
 class NasPage extends React.Component {
@@ -279,6 +280,8 @@ class NasPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
+
+                            <StatusNas loading={this.state.loadings.nas} nas={this.state.nas}/>
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.nas && <CardPreloader/>}

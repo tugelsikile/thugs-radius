@@ -1,5 +1,6 @@
 import React from "react";
 import {logout} from "../Authentication";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 // noinspection JSUnresolvedVariable,SpellCheckingInspection
 class MainSidebar extends React.Component {
@@ -31,7 +32,7 @@ class MainSidebar extends React.Component {
                             <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
                                 <li className={this.props.route === 'auth' || this.props.route === 'clients' ? 'nav-item active' : 'nav-item'}>
                                     <a href={this.props.root} className={this.props.route === 'auth' || this.props.route === 'clients' ? 'nav-link active' : 'nav-link'}>
-                                        <i className="nav-icon fas fa-tachometer-alt"/>
+                                        <FontAwesomeIcon icon="tachometer-alt" className="nav-icon mr-1"/>
                                         <p>Dashboard</p>
                                     </a>
                                 </li>

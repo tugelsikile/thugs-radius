@@ -13,7 +13,7 @@ class CreateCustomerTaxesTable extends Migration
      */
     public function up()
     {
-        Schema::create('customer_taxes', function (Blueprint $table) {
+        Schema::connection("radius")->create('customer_taxes', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('customer');
             $table->uuid('tax');
@@ -22,9 +22,9 @@ class CreateCustomerTaxesTable extends Migration
             $table->uuid('updated_by')->nullable();
 
             $table->foreign('customer')->on('customers')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('tax')->on('taxes')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('created_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
-            $table->foreign('updated_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('tax')->on(config('database.connections.mysql.database').'.taxes')->references('id')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('created_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('updated_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
         });
     }
 
@@ -35,6 +35,6 @@ class CreateCustomerTaxesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('customer_taxes');
+        Schema::connection("radius")->dropIfExists('customer_taxes');
     }
 }

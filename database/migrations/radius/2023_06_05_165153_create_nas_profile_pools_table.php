@@ -13,10 +13,9 @@ class CreateNasProfilePoolsTable extends Migration
      */
     public function up()
     {
-        Schema::create('nas_profile_pools', function (Blueprint $table) {
+        Schema::connection("radius")->create('nas_profile_pools', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->string('pool_id')->nullable();
-            $table->uuid('company');
             $table->uuid('nas');
             $table->string('name');
             $table->text('description')->nullable();
@@ -26,10 +25,9 @@ class CreateNasProfilePoolsTable extends Migration
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
 
-            $table->foreign('company')->on('client_companies')->references('id')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('nas')->on('nas')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('created_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
-            $table->foreign('updated_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('created_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('updated_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
         });
     }
 
@@ -40,6 +38,6 @@ class CreateNasProfilePoolsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('nas_profile_pools');
+        Schema::connection("radius")->dropIfExists('nas_profile_pools');
     }
 }

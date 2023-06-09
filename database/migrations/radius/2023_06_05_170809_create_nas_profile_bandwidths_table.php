@@ -13,9 +13,8 @@ class CreateNasProfileBandwidthsTable extends Migration
      */
     public function up()
     {
-        Schema::create('nas_profile_bandwidths', function (Blueprint $table) {
+        Schema::connection("radius")->create('nas_profile_bandwidths', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
-            $table->uuid('company');
             $table->string('name');
             $table->text('description')->nullable();
             $table->bigInteger('max_limit_up')->default(0);
@@ -39,9 +38,8 @@ class CreateNasProfileBandwidthsTable extends Migration
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();
 
-            $table->foreign('company')->on('client_companies')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('created_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
-            $table->foreign('updated_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('created_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('updated_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
         });
     }
 
@@ -52,6 +50,6 @@ class CreateNasProfileBandwidthsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('nas_profile_bandwidths');
+        Schema::connection("radius")->dropIfExists('nas_profile_bandwidths');
     }
 }

@@ -1,11 +1,15 @@
 import React from "react";
-import {parseInputFloat, responseMessage, routerConnectionType} from "../../../../Components/mixedConsts";
+import {parseInputFloat, pipeIp, responseMessage, routerConnectionType} from "../../../../Components/mixedConsts";
 import {crudNas, decryptEncryptPass, testNasConnection} from "../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
 import {InputText} from "../../../../Components/CustomInput";
 import {ModalFooter, ModalHeader} from "../../../../Components/ModalComponent";
+import MaskedInput from "react-text-mask/dist/reactTextMask";
+import {NumericFormat} from "react-number-format";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {TutorialAPI, TutorialSSL} from "./TutorialConnectionType";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,JSUnresolvedVariable,DuplicatedCode,JSValidateTypes
 class FormNas extends React.Component {
@@ -14,7 +18,7 @@ class FormNas extends React.Component {
         this.state = {
             loading : false,
             form : {
-                id : null, company : null, name : '', description : '',
+                id : null, company : null, name : '', description : '', domain : '',
                 ip : 'https://', port : 443, type : routerConnectionType[0],
                 url : '',
                 pass : {
@@ -32,13 +36,14 @@ class FormNas extends React.Component {
         this.handleInputType = this.handleInputType.bind(this);
         this.testConnection = this.testConnection.bind(this);
         this.checkNext = this.checkNext.bind(this);
+        this.handleSyntax = this.handleSyntax.bind(this);
     }
     componentWillReceiveProps(props) {
         this.setState({loading:true});
         let form = this.state.form;
         if (!props.open) {
             form.id = null, form.company = null, form.name = '', form.description = '',
-                form.ip = 'https://', form.port = 443, form.type = routerConnectionType[1],
+                form.ip = '0.0.0.0', form.domain = 'https://', form.port = 443, form.type = routerConnectionType[1],
                 form.pass.user.value = '', form.pass.user.type = 'password',
                 form.url = '', form.next = true,
                 form.pass.current.value = '', form.pass.current.type = 'password',
@@ -56,24 +61,31 @@ class FormNas extends React.Component {
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.description = props.data.meta.description,
                     form.company = null, form.type = null, form.next = true,
-                    form.ip = props.data.meta.auth.host, form.port = props.data.meta.auth.port,
+                    form.ip = props.data.meta.auth.ip, form.port = props.data.meta.auth.port,
+                    form.domain = props.data.meta.auth.host,
                     form.pass.user.value = '', form.pass.user.type = 'password',
                     form.pass.current.value = '', form.pass.current.type = 'password',
                     form.pass.confirm.value = '', form.pass.confirm.type = 'password',
                     form.url = props.data.meta.url;
                 let index = routerConnectionType.findIndex((f) => f.value === props.data.meta.auth.method);
                 if (index >= 0) form.type = routerConnectionType[index];
-                if (props.data.meta.company !== null) {
+                /*if (props.data.meta.company !== null) {
                     form.company = {
                         value : props.data.meta.company.id,
                         label : props.data.meta.company.name,
                         max : props.data.meta.company.package_obj === null ? 1 : props.data.meta.company.package_obj.max_routerboards,
                     };
-                }
+                }*/
             }
 
         }
-        this.setState({form,loading:false},()=>this.tryDecrypt());
+        this.setState({form,loading:false},()=>{
+            this.handleSyntax();
+            this.tryDecrypt();
+        });
+    }
+    handleSyntax() {
+
     }
     handleInputType(event) {
         let form = this.state.form;
@@ -85,9 +97,13 @@ class FormNas extends React.Component {
         form[name] = event;
         if (form.type !== null) {
             form.port = form.type.value === 'api' ? 8728 : 443;
-            form.ip = form.type.value === 'api' ? '0.0.0.0' : 'https://';
+            //form.ip = form.type.value === 'api' ? '0.0.0.0' : 'https://';
         }
-        this.setState({form});
+        this.setState({form},()=> {
+            if (name === 'type') {
+                this.handleSyntax();
+            }
+        });
     }
     handleIp(event) {
         let form = this.state.form;
@@ -165,7 +181,7 @@ class FormNas extends React.Component {
                 if (this.state.form.type.value === 'api') {
                     formData.append(Lang.get('nas.form_input.ip'), this.state.form.ip);
                 } else {
-                    formData.append(Lang.get('nas.form_input.domain'), this.state.form.ip);
+                    formData.append(Lang.get('nas.form_input.domain'), this.state.form.domain);
                 }
             }
             formData.append(Lang.get('nas.form_input.port'), this.state.form.port);
@@ -201,11 +217,8 @@ class FormNas extends React.Component {
                 formData.append(Lang.get('nas.form_input.port'), this.state.form.port);
                 if (this.state.form.type !== null) {
                     formData.append(Lang.get('nas.form_input.method'), this.state.form.type.value);
-                    if (this.state.form.type.value === 'api') {
-                        formData.append(Lang.get('nas.form_input.ip'), this.state.form.ip);
-                    } else {
-                        formData.append(Lang.get('nas.form_input.domain'), this.state.form.ip);
-                    }
+                    formData.append(Lang.get('nas.form_input.ip'), this.state.form.ip);
+                    formData.append(Lang.get('nas.form_input.domain'), this.state.form.domain);
                 }
                 if (this.state.form.pass.user.value.length > 0) formData.append(Lang.get('nas.form_input.user'), this.state.form.pass.user.value);
                 if (this.state.form.pass.current.value.length > 0) formData.append(Lang.get('nas.form_input.pass'), this.state.form.pass.current.value);
@@ -246,55 +259,112 @@ class FormNas extends React.Component {
                                     </div>
                                 </div>
                         }
-                        <InputText labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
-                            placeholder : Lang.get('nas.labels.name'), name : Lang.get('nas.labels.name') }}
-                                   input={{ name : 'name', value : this.state.form.name, id : 'name', }} handleChange={this.handleChange} loading={this.state.loading}/>
-
-                        <InputText type="textarea" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
-                            placeholder : Lang.get('nas.labels.description'), name : Lang.get('nas.labels.description') }}
-                                   input={{ name : 'description', value : this.state.form.description, id : 'description', }} handleChange={this.handleChange} loading={this.state.loading}/>
-
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('nas.labels.method.label')}</label>
-                            <div className="col-sm-3">
-                                <Select isDisabled={this.state.loading}
-                                        options={routerConnectionType} className="text-sm"
-                                        onChange={(e)=>this.handleSelect(e,'type')}
-                                        value={this.state.form.type}/>
+                            <label className="col-sm-2 col-form-label" htmlFor="input-name">{Lang.get('nas.labels.name')}</label>
+                            <div className="col-sm-10">
+                                <input className="form-control text-sm" name="name" value={this.state.form.name} onChange={this.handleChange} placeholder={Lang.get('nas.labels.name')} disabled={this.state.loading}/>
                             </div>
                         </div>
-                        {this.state.form.type === null ? null :
-                            this.state.form.type.value === 'api' ?
-                                <InputText type="ip" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-3' },
-                                    placeholder : Lang.get('nas.labels.ip.label'), name : Lang.get('nas.labels.ip.label') }}
-                                           input={{ name : 'ip', value : this.state.form.ip, id : 'ip', }} handleChange={this.handleIp} loading={this.state.loading}/>
-                                :
-                                <InputText type="text" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-3' },
-                                    placeholder : Lang.get('nas.labels.domain.label'), name : Lang.get('nas.labels.domain.label') }} info={Lang.get('nas.labels.domain.info')}
-                                           input={{ name : 'ip', value : this.state.form.ip, id : 'ip', }} handleChange={this.handleChange} loading={this.state.loading}/>
-                        }
 
-                        <InputText type="numeric" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-2' },
-                            placeholder : Lang.get('nas.labels.port.label'), name : Lang.get('nas.labels.port.label') }}
-                                   input={{ name : 'port', value : this.state.form.port, id : 'port', decimal : 0 }} decimalSeparator="." thousandSeparator=""
-                                   handleChange={this.handleChange} loading={this.state.loading}/>
+                        <div className="form-group row">
+                            <label className="col-sm-2 col-form-label" htmlFor="input-description">{Lang.get('nas.labels.description')}</label>
+                            <div className="col-sm-10">
+                                <textarea style={{resize:'none'}} className="form-control text-sm" name="description" value={this.state.form.description} onChange={this.handleChange} placeholder={Lang.get('nas.labels.description')} disabled={this.state.loading}/>
+                            </div>
+                        </div>
 
-                        <InputText type="password" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-3' },
-                            placeholder : Lang.get('nas.labels.user.label'), name : Lang.get('nas.labels.user.label') }}
-                                   input={{ name : 'user', value : this.state.form.pass.user.value, id : 'user', type : this.state.form.pass.user.type }}
-                                   handleInputType={this.handleInputType}
-                                   handleChange={this.handleChange} loading={this.state.loading}/>
+                        <div className="row">
+                            <div className="col-sm-6">
 
-                        <InputText type="password" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-3' },
-                            placeholder : Lang.get('nas.labels.pass.label'), name : Lang.get('nas.labels.pass.label') }}
-                                   input={{ name : 'current', value : this.state.form.pass.current.value, id : 'current', type : this.state.form.pass.current.type }}
-                                   handleInputType={this.handleInputType}
-                                   handleChange={this.handleChange} loading={this.state.loading}/>
-                        <InputText type="password" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-3' },
-                            placeholder : Lang.get('nas.labels.pass.confirm'), name : Lang.get('nas.labels.pass.confirm') }}
-                                   input={{ name : 'confirm', value : this.state.form.pass.confirm.value, id : 'confirm', type : this.state.form.pass.confirm.type }}
-                                   handleInputType={this.handleInputType}
-                                   handleChange={this.handleChange} loading={this.state.loading}/>
+                                <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label">{Lang.get('nas.labels.method.label')}</label>
+                                    <div className="col-sm-8">
+                                        <Select isDisabled={this.state.loading}
+                                                options={routerConnectionType} className="text-sm"
+                                                onChange={(e)=>this.handleSelect(e,'type')}
+                                                value={this.state.form.type}/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label htmlFor="input-ip" className="col-sm-4 col-form-label">{Lang.get('nas.labels.ip.label')}</label>
+                                    <div className="col-sm-4">
+                                        <MaskedInput name="ip" id="input-ip" guide={false} placeholderChar={'\u2000'} onChange={this.handleChange}
+                                                     mask={value => Array(value.length).fill(/[\d.]/)}
+                                                     pipe={value => pipeIp(value)} disabled={this.state.loading} placeholder={Lang.get('nas.labels.ip.label')}
+                                                     value={this.state.form.ip} className="form-control text-sm"/>
+                                    </div>
+                                </div>
+                                {this.state.form.type === null ? null :
+                                    this.state.form.type.value === 'api' ? null
+                                        :
+                                        <div className="form-group row">
+                                            <label htmlFor="input-domain" className="col-sm-4 col-form-label">{Lang.get('nas.labels.domain.label')}</label>
+                                            <div className="col-sm-8">
+                                                <input className="form-control text-sm" value={this.state.form.domain} onChange={this.handleChange} name="domain" id="input-domain" disabled={this.state.loading} placeholder={Lang.get('nas.labels.domain.label')}/>
+                                            </div>
+                                        </div>
+                                }
+
+                                <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label" htmlFor="input-port">{Lang.get('nas.labels.port.label')}</label>
+                                    <div className="col-sm-3">
+                                        <NumericFormat className="form-control text-sm" decimalScale={0} decimalSeparator="," thousandSeparator="" name="port" value={this.state.form.port} onChange={this.handleChange} id="input-port" placeholder={Lang.get('nas.labels.port.label')} disabled={this.state.loading}/>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label" htmlFor="input-user">{Lang.get('nas.labels.user.label')}</label>
+                                    <div className="col-sm-8">
+                                        <div className="input-group">
+                                            <input type={this.state.form.pass.user.type} className="form-control text-sm" value={this.state.form.pass.user.value} onChange={this.handleChange} name="user" id="input-user" disabled={this.state.loading} placeholder={Lang.get('nas.labels.user.label')}/>
+                                            <span className="input-group-append">
+                                                <button disabled={this.state.loading} name="user" onClick={this.handleInputType} type="button" className="btn btn-default">
+                                                    {this.state.form.pass.user.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label" htmlFor="input-password">{Lang.get('nas.labels.pass.label')}</label>
+                                    <div className="col-sm-8">
+                                        <div className="input-group">
+                                            <input type={this.state.form.pass.current.type} className="form-control text-sm" value={this.state.form.pass.current.value} onChange={this.handleChange} name="current" id="input-password" disabled={this.state.loading} placeholder={Lang.get('nas.labels.pass.label')}/>
+                                            <span className="input-group-append">
+                                                <button disabled={this.state.loading} name="current" onClick={this.handleInputType} type="button" className="btn btn-default">
+                                                    {this.state.form.pass.current.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label" htmlFor="input-confirm">{Lang.get('nas.labels.pass.confirm')}</label>
+                                    <div className="col-sm-8">
+                                        <div className="input-group">
+                                            <input type={this.state.form.pass.confirm.type} className="form-control text-sm" value={this.state.form.pass.confirm.value} onChange={this.handleChange} name="confirm" id="input-confirm" disabled={this.state.loading} placeholder={Lang.get('nas.labels.pass.confirm')}/>
+                                            <span className="input-group-append">
+                                                <button disabled={this.state.loading} name="confirm" onClick={this.handleInputType} type="button" className="btn btn-default">
+                                                    {this.state.form.pass.confirm.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div className="col-sm-6">
+                                {this.state.form.type === null ? null :
+                                    this.state.form.type.value === 'ssl' ?
+                                        <TutorialSSL domain={this.state.form.domain}/>
+                                        :
+                                        <TutorialAPI/>
+
+                                }
+                            </div>
+                        </div>
 
                     </DialogContent>
                     <ModalFooter

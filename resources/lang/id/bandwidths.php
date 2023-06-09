@@ -27,6 +27,12 @@ return [
         'priority' => 'priority',
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Memuat data profile bandwidth',
+            'success' => 'Berhasil memuat data profile bandwidth',
+            'error' => 'Gagal memuat data profile bandwidth',
+        ],
+        'select' => 'Pilih Profile Bandwidth',
         'menu' => 'Profile Bandwidth',
         'menu_info' => 'Manage profile bandwidths ',
         'name' => 'Nama Profile Bandwidth',

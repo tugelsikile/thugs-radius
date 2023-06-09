@@ -19,16 +19,20 @@ export const InputText = (props) => {
                 {props.labels.name}
             </label>
             <div className={props.labels.cols.input}>
-                <InputResponse type={props.type}
-                               loading={props.loading}
-                               handleChange={props.handleChange}
-                               handleInputType={props.handleInputType} inputProps={props.inputProps}
-                               thousandSeparator={props.thousandSeparator}
-                               decimalSeparator={props.decimalSeparator}
-                               inputAppends={props.inputAppends}
-                               invalid={props.invalid}
-                               inv_message={props.inv_message}
-                               labels={props.labels} input={props.input}/>
+                {['text','textarea','numeric','ip','password'].indexOf(props.type) === -1 ?
+                    props
+                    :
+                    <InputResponse type={props.type}
+                                   loading={props.loading}
+                                   handleChange={props.handleChange}
+                                   handleInputType={props.handleInputType} inputProps={props.inputProps}
+                                   thousandSeparator={props.thousandSeparator}
+                                   decimalSeparator={props.decimalSeparator}
+                                   inputAppends={props.inputAppends}
+                                   invalid={props.invalid}
+                                   inv_message={props.inv_message}
+                                   labels={props.labels} input={props.input}/>
+                }
                 {props.info === null ? null :
                     <span className="small text-info">{ReactHtmlParser(props.info)}</span>
                 }
@@ -48,17 +52,21 @@ export const InputText = (props) => {
                                 {item.props.labels.name}
                             </label>
                             <div className={item.props.labels.cols.input}>
-                                <InputResponse type={item.props.type}
-                                               inputGroups={item.props.inputGroups}
-                                               loading={item.props.loading}
-                                               handleChange={item.props.handleChange}
-                                               thousandSeparator={props.thousandSeparator}
-                                               decimalSeparator={props.decimalSeparator}
-                                               handleInputType={item.props.handleInputType}
-                                               inputAppends={item.props.inputAppends}
-                                               invalid={item.props.invalid}
-                                               inv_message={item.props.inv_message}
-                                               labels={item.props.labels} input={item.props.input}/>
+                                {['text','textarea','numeric','ip','password'].indexOf(item.props.type) !== -1 ?
+                                    <InputResponse type={item.props.type}
+                                                   inputGroups={item.props.inputGroups}
+                                                   loading={item.props.loading}
+                                                   handleChange={item.props.handleChange}
+                                                   thousandSeparator={props.thousandSeparator}
+                                                   decimalSeparator={props.decimalSeparator}
+                                                   handleInputType={item.props.handleInputType}
+                                                   inputAppends={item.props.inputAppends}
+                                                   invalid={item.props.invalid}
+                                                   inv_message={item.props.inv_message}
+                                                   labels={item.props.labels} input={item.props.input}/>
+                                    :
+                                    item
+                                }
                                 {item.props.info === null ? null :
                                     <span className="small text-info">{ReactHtmlParser(item.props.info)}</span>
                                 }
@@ -90,7 +98,6 @@ export const InputResponse = (props) => {
             );
             break;
         case 'textarea' :
-            autosize(document.querySelectorAll('textarea'));
             response = (
                 <textarea
                     onChange={props.handleChange} name={props.input.name}
@@ -101,7 +108,7 @@ export const InputResponse = (props) => {
             );
             break;
         case 'numeric' :
-            if (props.inputAppends !== null) {
+            if (typeof props.inputAppends !== 'undefined') {
                 response = (
                     <div className="input-group">
                         <NumericFormat disabled={props.loading} id={props.input.id}

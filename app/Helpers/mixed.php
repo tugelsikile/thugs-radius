@@ -11,7 +11,12 @@ use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-
+function randomString($length = 5) {
+    return collect(array_merge(range('a', 'z'), range('A', 'Z')))
+        ->shuffle()
+        ->take($length)
+        ->implode('');
+}
 function generateCompanyExpired($current, $durString, $durAmmount) {
     $response = null;
     if ($durAmmount > 0) {

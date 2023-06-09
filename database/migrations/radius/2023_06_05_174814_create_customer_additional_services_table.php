@@ -13,7 +13,7 @@ class CreateCustomerAdditionalServicesTable extends Migration
      */
     public function up()
     {
-        Schema::create('customer_additional_services', function (Blueprint $table) {
+        Schema::connection("radius")->create('customer_additional_services', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('customer');
             $table->uuid('profile');
@@ -23,8 +23,8 @@ class CreateCustomerAdditionalServicesTable extends Migration
 
             $table->foreign('customer')->on('customers')->references('id')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('profile')->on('nas_profiles')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('created_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
-            $table->foreign('updated_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('created_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
+            $table->foreign('updated_by')->on(config('database.connections.mysql.database').'.users')->references('id')->onDelete('set null')->onUpdate('cascade');
         });
     }
 
@@ -35,6 +35,6 @@ class CreateCustomerAdditionalServicesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('customer_additional_services');
+        Schema::connection("radius")->dropIfExists('customer_additional_services');
     }
 }

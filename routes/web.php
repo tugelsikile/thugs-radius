@@ -56,7 +56,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/', function () { return view('clients.nas.index'); })->name('clients.nas');
         Route::get('/pools', function () { return view('clients.nas.profiles.pools'); })->name('clients.nas.pools');
         Route::get('/bandwidths', function () { return view('clients.nas.profiles.bandwidths'); })->name('clients.nas.bandwidths');
-        Route::get('/profiles', function () { })->name('clients.nas.profiles');
+        Route::get('/profiles', function () { return view('clients.nas.profiles.index'); })->name('clients.nas.profiles');
         Route::get('/select', function () { abort(404); })->name('clients.nas.select');
     });
     Route::group(['prefix' => 'configs'], function () {

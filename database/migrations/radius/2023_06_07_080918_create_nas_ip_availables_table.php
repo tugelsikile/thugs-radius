@@ -13,7 +13,7 @@ class CreateNasIpAvailablesTable extends Migration
      */
     public function up()
     {
-        Schema::create('nas_ip_availables', function (Blueprint $table) {
+        Schema::connection("radius")->create('nas_ip_availables', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('nas');
             $table->uuid('pool');
@@ -34,6 +34,6 @@ class CreateNasIpAvailablesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('nas_ip_availables');
+        Schema::connection("radius")->dropIfExists('nas_ip_availables');
     }
 }

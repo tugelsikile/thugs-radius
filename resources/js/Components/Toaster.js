@@ -1,4 +1,6 @@
-// noinspection JSCheckFunctionSignatures
+// noinspection JSCheckFunctionSignatures,JSIgnoredPromiseFromCall
+// noinspection JSIgnoredPromiseFromCall
+
 import Axios from "axios";
 import React from "react";
 import 'react-toastify/dist/ReactToastify.css';
@@ -15,13 +17,16 @@ export const sanitizeMessage = (message) => {
         </ul>
     );
 }
+export const showPromise = (message, promise) => {
+    toast.promise(promise, message,{autoClose : 1000});
+}
 export const showError = (message) => {
     toast.error(sanitizeMessage(message));
 }
 export const showSuccess = (message) => {
     toast.success(sanitizeMessage(message));
 }
-export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null) => {
+export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question") => {
     if (message === null) message = "Anda yakin akan melakukan aksi ini ?";
     if (title === null) title = "Konfirmasi";
     const  formData = new FormData();
@@ -29,16 +34,17 @@ export const confirmDialog = (app, ids, method = 'delete', url = null, title = n
     if (ids !== null) {
         if (typeof ids === 'object') {
             ids.map((item, index) => {
-                formData.append('id[]', item);
+                formData.append(`id[${index}]`, item);
             });
         } else {
             formData.append('id', ids);
         }
+        message = message.replaceAll("\n",'<br>');
         Swal.fire({
-            title : title, html : message, icon : "question", showCancelButton : true,
-            confirmButtonText : "Konfirmasi", cancelButtonText : "Batal", closeOnConfigm : false,
+            title : title, html : message, icon : icon, showCancelButton : true,
+            confirmButtonText : Lang.get('messages.confirm'), cancelButtonText : Lang.get('messages.cancel'), closeOnConfigm : false,
             showLoaderOnConfirm : true, allowOutsideClick : () => !Swal.isLoading(), allowEscapeKey : () => ! Swal.isLoading(),
-            preConfirm(inputValue) {
+            preConfirm() {
                 let response = Axios({headers : {"Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}`}, method : "post", data : formData, url : url});
                 return Promise.resolve(response)
                     .then((response) => {

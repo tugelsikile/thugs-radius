@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import {CardPreloader, responseMessage, siteData} from "../../../Components/mixedConsts";
-import {crudNas} from "../../../Services/NasService";
+import {crudNas, reloadNasStatus} from "../../../Services/NasService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import PageLoader from "../../../Components/PageLoader";
 import MainHeader from "../../../Components/Layout/MainHeader";
@@ -37,6 +37,7 @@ class NasPage extends React.Component {
         this.toggleModal = this.toggleModal.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
+        this.reloadRouterStatus = this.reloadRouterStatus.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -167,6 +168,35 @@ class NasPage extends React.Component {
         loadings.nas = false;
         this.setState({loadings,nas});
     }
+    async reloadRouterStatus(data) {
+        let nas = this.state.nas;
+        let index = nas.unfiltered.findIndex((f) => f.value === data.value);
+        if (index >= 0) {
+            nas.unfiltered[index].loading = true;
+            this.setState({nas},()=>this.handleFilter());
+            try {
+                const formData = new FormData();
+                formData.append(Lang.get('nas.form_input.name'), data.value);
+                let response = await reloadNasStatus(formData);
+                if (response.data.params === null) {
+                    nas.unfiltered[index].meta.status.success = false;
+                    nas.unfiltered[index].meta.status.message = response.data.message;
+                    nas.unfiltered[index].loading = false; this.setState({nas},()=>this.handleFilter());
+                    showError(response.data.message);
+                } else {
+                    nas.unfiltered[index].loading = false;
+                    nas.unfiltered[index].meta.status = response.data.params;
+                    this.setState({nas},()=>this.handleFilter());
+                }
+            } catch (e) {
+                nas.unfiltered[index].meta.status.message = e.response.data.message;
+                nas.unfiltered[index].meta.status.success = false;
+                nas.unfiltered[index].loading = false;
+                this.setState({nas},()=>this.handleFilter());
+                responseMessage(e);
+            }
+        }
+    }
     async loadCompanies() {
         if (! this.state.loadings.companies) {
             if (this.state.companies.length === 0) {
@@ -200,7 +230,9 @@ class NasPage extends React.Component {
                     let index = nas.unfiltered.findIndex((f) => f.value === data.value);
                     if (index >= 0) {
                         nas.unfiltered[index] = data;
+                        nas.unfiltered[index].loading = false;
                     } else {
+                        data.loading = false;
                         nas.unfiltered.push(data);
                     }
                 }
@@ -215,6 +247,9 @@ class NasPage extends React.Component {
                     } else {
                         loadings.nas = false;
                         nas.unfiltered = response.data.params;
+                        nas.unfiltered.map((item, index)=>{
+                            nas.unfiltered[index].loading = false;
+                        });
                         this.setState({loadings,nas},()=>this.handleFilter());
                     }
                 } catch (e) {
@@ -342,15 +377,23 @@ class NasPage extends React.Component {
                                                     </td>
                                                     <td className="align-middle">{item.label}</td>
                                                     <td className="align-middle">{item.meta.auth.method}</td>
-                                                    <td className="align-middle">{item.meta.auth.host}</td>
+                                                    <td className="align-middle">
+                                                        {item.meta.auth.method === 'api' ? item.meta.auth.ip : item.meta.auth.host}
+                                                    </td>
                                                     <td className="align-middle">{item.meta.auth.port}</td>
                                                     <td className="align-middle text-center">*****</td>
                                                     <td className="align-middle text-center">*****</td>
                                                     <td className="align-middle text-center">
                                                         {item.meta.status.success ?
-                                                            <span title={item.meta.status.message} className="badge badge-success">CONNECTED</span>
+                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-success">
+                                                                {item.loading && <FontAwesomeIcon icon="circle-notch" spin={true} className="mr-1"/> }
+                                                                CONNECTED
+                                                            </span>
                                                             :
-                                                            <span title={item.meta.status.message} className="badge badge-warning">NOT CONNECTED</span>
+                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-warning">
+                                                                {item.loading && <FontAwesomeIcon icon="circle-notch" spin={true} className="mr-1"/> }
+                                                                NOT CONNECTED
+                                                            </span>
                                                         }
                                                     </td>
                                                     <td className="align-middle text-center">

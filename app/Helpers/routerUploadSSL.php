@@ -17,16 +17,21 @@ function hostname(Nas $nas) {
     return $hostname;
 }
 function getIPPoolSSL(NasProfilePool $nasProfilePool, $defaultName) {
-    $client = client();
-    $url = hostname($nasProfilePool->nasObj) . '/rest/ip/pool';
-    if ($nasProfilePool->pool_id != null) {
-        $url .= '/' . $nasProfilePool->pool_id;
+    try {
+        $client = client();
+        $url = hostname($nasProfilePool->nasObj) . '/rest/ip/pool';
+        if ($nasProfilePool->pool_id != null) {
+            $url .= '/' . $nasProfilePool->pool_id;
+        }
+        $request = $client->request('get', $url, headerAuth($nasProfilePool->nasObj));
+        $response = collect(json_decode($request->getBody()->getContents()));
+        if ($response->count() == 3) {
+            return $response->toArray();
+        }
+    } catch (Exception $exception) {
+        return null;
     }
-    $request = $client->request('get', $url, headerAuth($nasProfilePool->nasObj));
-    $response = collect(json_decode($request->getBody()->getContents()));
-    if ($response->count() == 3) {
-        return $response->toArray();
-    }/* elseif ($response->count() > 3) {
+    /* elseif ($response->count() > 3) {
         foreach ($response as $item) {
             if ($item->name == $defaultName) {
                 return $item;

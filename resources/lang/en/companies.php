@@ -23,6 +23,11 @@ return [
         ]
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Loading client radius data',
+            'success' => 'Client radius data successfully loaded',
+            'error' => 'Failed to load client radius data',
+        ],
         'no_select' => 'Client radius not found',
         'info' => 'Client Radius Information',
         'menu' => 'Client Radius',
@@ -96,6 +101,11 @@ return [
             'max_router' => 'max_nas_router',
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Loading client radius package data',
+                'success' => 'Client radius package data successfully loaded',
+                'error' => 'Failed to load client radius package data',
+            ],
             'duration_type' => 'Duration Type',
             'duration_type_select' => 'Select Duration Type',
             'description' => 'Package Description',
@@ -192,6 +202,11 @@ return [
             ]
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Loading client radius invoices data',
+                'success' => 'Client radius invoices data successfully loaded',
+                'error' => 'Failed to load client radius invoices data',
+            ],
             'cards' => [
                 'total' => 'Billing Total',
                 'paid' => 'Billing Paid',
@@ -263,7 +278,12 @@ return [
                 'max_amount' => 'paid_maximum',
             ],
             'labels' => [
-                'success' => 'Paymen successfully added',
+                'loading' => [
+                    'pending' => 'Loading client radius invoices payments data',
+                    'success' => 'Client radius invoices payments data successfully loaded',
+                    'error' => 'Failed to load client radius invoices payments data',
+                ],
+                'success' => 'Payment successfully added',
                 'error_amount' => 'Payment amount is exceeded billing amount',
                 'menu' => 'Billing Payment',
                 'menu_info' => 'Manually paid client radius billing',

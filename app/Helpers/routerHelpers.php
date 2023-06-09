@@ -67,7 +67,7 @@ function testConnectionSSL(Nas $nas): object
 {
     $response = (object) [ 'success' => false, 'message' => __('nas.labels.connection.failed') ];
     try {
-        $client = new \GuzzleHttp\Client();
+        $client = new \GuzzleHttp\Client(['verify' => false]);
         $hostname = $nas->hostname;
         if (strlen($nas->port) > 0) {
             if ($nas->port != 443) $hostname .= ":" . $nas->port;

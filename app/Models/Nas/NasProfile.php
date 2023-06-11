@@ -12,6 +12,7 @@ class NasProfile extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = "radius";
 
     protected $casts = [
         'price' => 'double',
@@ -20,10 +21,6 @@ class NasProfile extends Model
         'parent_queue' => 'object',
     ];
 
-    public function companyObj(): BelongsTo
-    {
-        return $this->belongsTo(ClientCompany::class,'company','id');
-    }
     public function nasObj(): BelongsTo
     {
         return $this->belongsTo(Nas::class,'nas','id');

@@ -5,6 +5,9 @@
 
 namespace App\Repositories\Nas;
 
+use App\Helpers\MikrotikAPI;
+use App\Helpers\MiktorikSSL;
+use App\Helpers\SwitchDB;
 use App\Models\Nas\NasProfilePool;
 use Exception;
 use Illuminate\Http\Request;
@@ -26,7 +29,8 @@ class PoolRepository
             foreach ($pools as $pool) {
                 switch ($pool->nasObj->method) {
                     case 'api' :
-                        deleteIPPool($pool);
+                        $api = new MikrotikAPI($pool->nasObj);
+                        $api->deleteIPPool($pool);
                         break;
                     case 'ssl' :
                         deleteIPPoolSSL($pool);
@@ -65,20 +69,19 @@ class PoolRepository
             }
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->updated_by = $me->id;
+            /*switch ($pool->nasObj->method) {
+                case 'api' :
+                    $api = new MikrotikAPI($pool->nasObj);
+                    $api->saveIPPool($pool, $defaultName);
+                    break;
+                case 'ssl' :
+                    $ssl = new MiktorikSSL($pool->nasObj);
+                    $ssl->saveIPPool($pool, $defaultName);
+                    break;
+            }*/
             $pool->saveOrFail();
             if ($regenerate) {
                 @generateIPAvailable($pool);
-            }
-            if ($request[__('nas.pools.form_input.upload')] == 1) {
-                switch ($pool->nasObj->method) {
-                    case 'api' :
-                        @uploadIPPool($pool, $defaultName);
-                        break;
-                    case 'ssl' :
-                        @uploadIPPoolSSL($pool, $defaultName);
-                        break;
-                }
-
             }
             return $this->table(new Request(['id' => $pool->id]))->first();
         } catch (Exception $exception) {
@@ -104,18 +107,21 @@ class PoolRepository
             $pool->first_address = $request[__('nas.pools.form_input.address.first')];
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->created_by = $me->id;
+
+            /*switch ($pool->nasObj->method) {
+                case 'api' :
+                    $api = new MikrotikAPI($pool->nasObj);
+                    $api->saveIPPool($pool, $pool->name);
+                    break;
+                case 'ssl' :
+                    $ssl = new MiktorikSSL($pool->nasObj);
+                    $ssl->saveIPPool($pool, $pool->name);
+                    break;
+            }*/
+
             $pool->saveOrFail();
+
             @generateIPAvailable($pool);
-            if ($request[__('nas.pools.form_input.upload')] == 1) {
-                switch ($pool->nasObj->method) {
-                    case 'api' :
-                        @uploadIPPool($pool);
-                        break;
-                    case 'ssl' :
-                        @uploadIPPoolSSL($pool, $pool->name);
-                        break;
-                }
-            }
             return $this->table(new Request(['id' => $pool->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -129,14 +135,11 @@ class PoolRepository
     public function table(Request $request): Collection
     {
         try {
-            $me = auth()->guard('api')->user();
+            new SwitchDB();
             $response = collect();
             $pools = NasProfilePool::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $pools = $pools->where('id', $request->id);
             if (strlen($request->nas) > 0) $pools = $pools->where('nas', $request->nas);
-            if ($me != null) {
-                if ($me->company != null) $pools = $pools->where('company', $me->company);
-            }
             $pools = $pools->get();
             if ($pools->count() > 0) {
                 foreach ($pools as $pool) {
@@ -145,7 +148,6 @@ class PoolRepository
                         'label' => $pool->name,
                         'meta' => (object) [
                             'description' => $pool->description,
-                            'company' => $pool->companyObj,
                             'nas' => $pool->nasObj,
                             'address' => (object) [
                                 'id' =>$pool->mikrotik_id,

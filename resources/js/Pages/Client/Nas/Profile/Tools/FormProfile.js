@@ -1,19 +1,20 @@
 import React from "react";
 import {
     durationType, durationTypeByte,
-    formatBytes,
+    formatBytes, hasWhiteSpace,
     limitType,
-    parseInputFloat,
+    parseInputFloat, pipeIp,
     responseMessage, serviceType
 } from "../../../../../Components/mixedConsts";
 import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
-import {Dialog, DialogContent,Popover} from "@mui/material";
+import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
 import {InputText} from "../../../../../Components/CustomInput";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {crudProfile, getParentQueue} from "../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {NumericFormat} from "react-number-format";
+import MaskedInput from "react-text-mask";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode
 class FormProfile extends React.Component {
@@ -25,7 +26,7 @@ class FormProfile extends React.Component {
                 id : null, company : null, pool : null, bandwidth : null, nas : null,
                 description : '', name : '', type : serviceType[0],
                 additional : false, price : 0,
-                address : { local : '', dns : [] },
+                address : { local : '', dns : [{label:''}] },
                 limit : { type : null, rate : 0, unit : null },
                 queue : null,
             }
@@ -35,6 +36,8 @@ class FormProfile extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
         this.loadParentQueue = this.loadParentQueue.bind(this);
+        this.handleAddDns = this.handleAddDns.bind(this);
+        this.handleRemoveDns = this.handleRemoveDns.bind(this);
     }
     componentWillReceiveProps(props) {
         this.setState({loading:true});
@@ -47,14 +50,9 @@ class FormProfile extends React.Component {
                 form.nas = null,
                 form.additional = false, form.price = 0,
                 form.description = '',
-                form.address.local = '', form.address.dns = [],
+                form.address.local = '', form.address.dns = [{label:''}],
                 form.queue = null;
         } else {
-            if (props.user !== null) {
-                if (props.user.meta.company !== null) {
-                    form.company = { value : props.user.meta.company.id, label : props.user.meta.company.name }
-                }
-            }
             if (props.data !== null) {
                 if (props.nas !== null) {
                     if (props.nas.length > 0) {
@@ -90,13 +88,24 @@ class FormProfile extends React.Component {
                     form.description = props.data.meta.description,
                     form.additional = props.data.meta.additional,
                     form.limit.rate = props.data.meta.limit.rate,
-                    form.price = props.data.meta.price,
-                    form.company = { value : props.data.meta.company.id, label : props.data.meta.company.name };
-                index = limitType.findIndex((f) => f.value === props.data.meta.limit.unit);
+                    form.price = props.data.meta.price;
+                index = limitType.findIndex((f) => f.value === props.data.meta.limit.type);
                 if (index >= 0) {
                     form.limit.type = limitType[index];
                 }
+                if (props.data.meta.limit.type === 'time') {
+                    index = durationType.findIndex((f) => f.value === props.data.meta.limit.unit);
+                    if (index >= 0) {
+                        form.limit.unit = durationType[index];
+                    }
+                } else if (props.data.meta.limit.type === 'data') {
+                    index = durationTypeByte.findIndex((f) => f.value === props.data.meta.limit.unit);
+                    if (index >= 0) {
+                        form.limit.unit = durationTypeByte[index];
+                    }
+                }
                 if (props.data.meta.dns !== null) {
+                    form.address.dns = [];
                     if (props.data.meta.dns.length > 0) {
                         props.data.meta.dns.map((item)=>{
                             form.address.dns.push({label:item});
@@ -109,17 +118,25 @@ class FormProfile extends React.Component {
             }
         }
         this.setState({form,loading:false}, ()=>{
-            if (dataParentQueue != null) {
+            if (form.nas !== null) {
                 this.loadParentQueue(dataParentQueue);
             }
         });
+    }
+    handleRemoveDns(index) {
+        let form = this.state.form;
+        form.address.dns.splice(index,1); this.setState({form});
+    }
+    handleAddDns() {
+        let form = this.state.form;
+        form.address.dns.push({label:''});
+        this.setState({form});
     }
     handleCheck(event) {
         let form = this.state.form;
         form.additional = event.target.checked;
         form.queue = null, form.limit.rate = 0,
-        form.nas = null, form.pool = null, form.bandwidth = null,
-            form.address.local = '', form.address.dns = [];
+        form.nas = null, form.pool = null, form.bandwidth = null,form.address.dns = [{label:''}];
         this.setState({form,queues:[]});
     }
     handleChange(event) {
@@ -203,48 +220,52 @@ class FormProfile extends React.Component {
     }
     async handleSave(e) {
         e.preventDefault();
-        this.setState({loading:true});
-        try {
-            const formData = new FormData();
-            formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
-            if (this.state.form.id !== null) formData.append(Lang.get('profiles.form_input.id'), this.state.form.id);
-            formData.append(Lang.get('profiles.form_input.is_additional'), this.state.form.additional ? 1 : 0);
-            if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
-            if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
-            if (this.state.form.pool !== null) formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.pool.value);
-            if (this.state.form.bandwidth !== null) formData.append(Lang.get('bandwidths.form_input.name'), this.state.form.bandwidth.value);
-            if (this.state.form.type !== null) formData.append(Lang.get('profiles.form_input.type'), this.state.form.type.value);
+        if (hasWhiteSpace(this.state.form.name)) {
+            showError(Lang.get('profiles.labels.name_invalid'));
+        } else {
+            this.setState({loading:true});
+            try {
+                const formData = new FormData();
+                formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
+                if (this.state.form.id !== null) formData.append(Lang.get('profiles.form_input.id'), this.state.form.id);
+                formData.append(Lang.get('profiles.form_input.is_additional'), this.state.form.additional ? 1 : 0);
+                if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
+                if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
+                if (this.state.form.pool !== null) formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.pool.value);
+                if (this.state.form.bandwidth !== null) formData.append(Lang.get('bandwidths.form_input.name'), this.state.form.bandwidth.value);
+                if (this.state.form.type !== null) formData.append(Lang.get('profiles.form_input.type'), this.state.form.type.value);
 
-            if (this.state.form.queue !== null) {
-                formData.append(Lang.get('profiles.form_input.queue.name'), this.state.form.queue.label);
-                formData.append(Lang.get('profiles.form_input.queue.id'), this.state.form.queue.value);
-                formData.append(Lang.get('profiles.form_input.queue.target'), this.state.form.queue.meta.data.target);
-            }
-            formData.append(Lang.get('profiles.form_input.name'), this.state.form.name);
-            formData.append(Lang.get('profiles.form_input.description'), this.state.form.description);
-            formData.append(Lang.get('profiles.form_input.price'), this.state.form.price);
-            if (this.state.form.limit.type !== null) {
-                formData.append(Lang.get('profiles.form_input.limitation.type'), this.state.form.limit.type.value);
-                formData.append(Lang.get('profiles.form_input.limitation.rate'), this.state.form.limit.rate);
-                if (this.state.form.limit.unit !== null) formData.append(Lang.get('profiles.form_input.limitation.unit'), this.state.form.limit.unit.value);
-            }
-            this.state.form.address.dns.map((item,index)=>{
-                formData.append(`${Lang.get('profiles.form_input.address.dns')}[${index}]`, item.label);
-            });
+                if (this.state.form.queue !== null) {
+                    formData.append(Lang.get('profiles.form_input.queue.name'), this.state.form.queue.label);
+                    formData.append(Lang.get('profiles.form_input.queue.id'), this.state.form.queue.value);
+                    formData.append(Lang.get('profiles.form_input.queue.target'), this.state.form.queue.meta.data.target);
+                }
+                formData.append(Lang.get('profiles.form_input.name'), this.state.form.name);
+                formData.append(Lang.get('profiles.form_input.description'), this.state.form.description);
+                formData.append(Lang.get('profiles.form_input.price'), this.state.form.price);
+                if (this.state.form.limit.type !== null) {
+                    formData.append(Lang.get('profiles.form_input.limitation.type'), this.state.form.limit.type.value);
+                    formData.append(Lang.get('profiles.form_input.limitation.rate'), this.state.form.limit.rate);
+                    if (this.state.form.limit.unit !== null) formData.append(Lang.get('profiles.form_input.limitation.unit'), this.state.form.limit.unit.value);
+                }
+                this.state.form.address.dns.map((item,index)=>{
+                    formData.append(`${Lang.get('profiles.form_input.address.dns')}[${index}]`, item.label);
+                });
 
-            let response = await crudProfile(formData,true);
-            if (response.data.params === null) {
+                let response = await crudProfile(formData,true);
+                if (response.data.params === null) {
+                    this.setState({loading:false});
+                    showError(response.data.message);
+                } else {
+                    this.setState({loading:false});
+                    showSuccess(response.data.message);
+                    this.props.handleUpdate(response.data.params);
+                    this.props.handleClose();
+                }
+            } catch (e) {
                 this.setState({loading:false});
-                showError(response.data.message);
-            } else {
-                this.setState({loading:false});
-                showSuccess(response.data.message);
-                this.props.handleUpdate(response.data.params);
-                this.props.handleClose();
+                responseMessage(e);
             }
-        } catch (e) {
-            this.setState({loading:false});
-            responseMessage(e);
         }
     }
     render() {
@@ -253,15 +274,6 @@ class FormProfile extends React.Component {
                 <form onSubmit={this.handleSave}>
                     <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('profiles.create.form'),update:Lang.get('profiles.update.form')}}/>
                     <DialogContent dividers>
-                        {this.props.user === null ? null :
-                            this.props.user.meta.company !== null ? null :
-                                <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
-                                    <div className="col-sm-4">
-                                        <Select onChange={(e)=>this.handleSelect(e,'company')} placeholder={Lang.get('companies.labels.name')} options={this.props.companies} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies}/>
-                                    </div>
-                                </div>
-                        }
                         {this.state.form.id === null &&
                             <div className="form-group row">
                                 <div className="col-sm-10 offset-2">
@@ -290,7 +302,7 @@ class FormProfile extends React.Component {
                                         <>
                                             <label className="col-sm-2 col-form-label">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
                                             <div className="col-sm-4">
-                                                <div className="form-control text-sm">{this.state.form.nas.meta.auth.host}</div>
+                                                <div className="form-control text-sm">{this.state.form.nas.meta.auth.method === 'api' ? this.state.form.nas.meta.auth.ip : this.state.form.nas.meta.auth.host}</div>
                                             </div>
                                         </>
                                     }
@@ -432,6 +444,53 @@ class FormProfile extends React.Component {
                         <InputText type="numeric" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-2' }, placeholder : Lang.get('profiles.labels.price'), name : Lang.get('profiles.labels.price') }}
                                    decimalScale={2} decimalSeparator="," thousandSeparator="."
                                    input={{ name : 'price', value : this.state.form.price, id : 'price', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
+
+                        {this.state.form.additional ? null :
+                            <>
+                                <div className="form-group row">
+                                    <label className="col-sm-2 col-form-label">{Lang.get('profiles.labels.address.dns')}</label>
+                                    <div className="col-sm-3">
+                                        {this.state.form.address.dns.length === 0 ? null :
+                                            <MaskedInput name="dns"
+                                                         id="dns" data-index={0}
+                                                         guide={false} placeholderChar={'\u2000'}
+                                                         onChange={this.handleChange}
+                                                         pipe={pipeIp}
+                                                         disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                         placeholder={Lang.get('profiles.labels.address.dns')}
+                                                         value={this.state.form.address.dns[0].label} className="form-control text-sm"/>
+                                        }
+                                    </div>
+                                    <div className="col-sm-3">
+                                        <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon="plus"/></button>
+                                        {this.state.form.address.dns.length > 0 &&
+                                            <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon="trash-alt" className="mr-1"/></button>
+                                        }
+                                    </div>
+                                </div>
+                                {this.state.form.address.dns.length === 1 ? null :
+                                    this.state.form.address.dns.map((item,index)=>
+                                        index === 0 ? null :
+                                            <div key={index} className="form-group row">
+                                                <div className="col-sm-3 offset-2">
+                                                    <MaskedInput name="dns"
+                                                                 id="dns" data-index={index}
+                                                                 guide={false} placeholderChar={'\u2000'}
+                                                                 onChange={this.handleChange}
+                                                                 pipe={pipeIp}
+                                                                 disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                                 placeholder={Lang.get('profiles.labels.address.dns')}
+                                                                 value={item.label} className="form-control text-sm"/>
+                                                </div>
+                                                <div className="col-sm-3">
+                                                    <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon="plus"/></button>
+                                                    <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon="trash-alt" className="mr-1"/></button>
+                                                </div>
+                                            </div>
+                                    )
+                                }
+                            </>
+                        }
                     </DialogContent>
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}

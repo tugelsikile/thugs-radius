@@ -5,7 +5,9 @@
 
 namespace App\Repositories\Nas;
 
+use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
+use App\Helpers\SwitchDB;
 use App\Models\Nas\NasProfile;
 use Exception;
 use Illuminate\Http\Request;
@@ -41,6 +43,7 @@ class ProfileRepository
      */
     public function update(Request $request) {
         try {
+            new SwitchDB();
             $profile = NasProfile::where('id', $request[__('profiles.form_input.id')])->first();
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
@@ -77,24 +80,40 @@ class ProfileRepository
                     $profile->dns_servers = $dns->toArray();
                 }
             }
+            $defaultName = $profile->name;
             $profile->name = $request[__('profiles.form_input.name')];
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->created_by = $this->me->id;
-            $profile->saveOrFail();
 
-            if ($profile->nasObj != null) {
+
+            /*if ($profile->nasObj != null) {
                 switch ($profile->nasObj->method) {
                     case 'ssl' :
-                        if ($profile->type === 'pppoe') {
-                            $ssl = new MiktorikSSL($profile->nasObj,'patch');
-                            $ssl->updateProfilePPPoE($profile);
+                        $ssl = new MiktorikSSL($profile->nasObj,'put');
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $ssl->saveProfilePPPoE($profile, $defaultName);
+                                break;
+                            case 'hotspot' :
+                                $ssl->saveProfileHotspot($profile, $defaultName);
+                                break;
                         }
                         break;
                     case 'api' :
+                        $api = new MikrotikAPI($profile->nasObj);
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $api->saveProfilePPPoE($profile, $defaultName);
+                                break;
+                            case 'hotspot' :
+                                $api->saveProfileHotspot($profile, $defaultName);
+                                break;
+                        }
                         break;
                 }
-            }
+            }*/
+            $profile->saveOrFail();
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -107,9 +126,9 @@ class ProfileRepository
      */
     public function create(Request $request) {
         try {
+            new SwitchDB();
             $profile = new NasProfile();
             $profile->id = Uuid::uuid4()->toString();
-            $profile->company = $request[__('companies.form_input.name')];
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
                 $profile->type = $request[__('profiles.form_input.type')];
@@ -145,20 +164,35 @@ class ProfileRepository
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->created_by = $this->me->id;
-            $profile->saveOrFail();
 
-            if ($profile->nasObj != null) {
+
+            /*if ($profile->nasObj != null) {
                 switch ($profile->nasObj->method) {
                     case 'ssl' :
-                        if ($profile->type === 'pppoe') {
-                            $ssl = new MiktorikSSL($profile->nasObj,'put');
-                            $ssl->createProfilePPPoE($profile);
+                        $ssl = new MiktorikSSL($profile->nasObj,'put');
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $ssl->saveProfilePPPoE($profile, $profile->name);
+                                break;
+                            case 'hotspot' :
+                                $ssl->saveProfileHotspot($profile, $profile->name);
+                                break;
                         }
                         break;
                     case 'api' :
+                        $api = new MikrotikAPI($profile->nasObj);
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $api->saveProfilePPPoE($profile, $profile->name);
+                                break;
+                            case 'hotspot' :
+                                $api->saveProfileHotspot($profile, $profile->name);
+                                break;
+                        }
                         break;
                 }
-            }
+            }*/
+            $profile->saveOrFail();
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -173,11 +207,9 @@ class ProfileRepository
     {
         try {
             $response = collect();
+            new SwitchDB();
             $profiles = NasProfile::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $profiles = $profiles->where('id', $request->id);
-            if ($this->me != null) {
-                if ($this->me->company != null) $profiles = $profiles->where('company', $this->me->company);
-            }
             $profiles = $profiles->get();
             if ($profiles->count() > 0) {
                 foreach ($profiles as $profile) {
@@ -185,7 +217,6 @@ class ProfileRepository
                         'value' => $profile->id,
                         'label' => $profile->name,
                         'meta' => (object) [
-                            'company' => $profile->companyObj,
                             'nas' => $profile->nasObj,
                             'pool' => $profile->poolObj,
                             'bandwidth' => $profile->bandwidthObj,

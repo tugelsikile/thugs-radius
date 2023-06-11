@@ -38,6 +38,7 @@ class NasValidation
     public function parentQueue(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 __('nas.form_input.name') => 'required|exists:nas,id'
             ]);

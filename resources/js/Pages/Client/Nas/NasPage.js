@@ -148,13 +148,19 @@ class NasPage extends React.Component {
                 break;
             case 'status' :
                 if (filter.sort.dir === 'asc') {
-                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? 1 : ((b.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? -1 : 0));
+                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? 1 : ((b.meta.status.success ? 1 : 0 > a.meta.status.success ? 1 : 0) ? -1 : 0));
                 } else {
-                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? -1 : ((b.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? 1 : 0));
+                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.status.success ? 1 : 0 > b.meta.status.success ? 1 : 0) ? -1 : ((b.meta.status.success ? 1 : 0 > a.meta.status.success ? 1 : 0) ? 1 : 0));
+                }
+                break;
+            case 'host' :
+                if (filter.sort.dir === 'asc') {
+                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.auth.method === 'api' ? a.meta.auth.ip : a.meta.auth.host > b.meta.auth.method === 'api' ? b.meta.auth.ip : b.meta.auth.host) ? 1 : ((b.meta.auth.method === 'api' ? b.meta.auth.ip : b.meta.auth.host > a.meta.auth.method === 'api' ? a.meta.auth.ip : a.meta.auth.host) ? -1 : 0));
+                } else {
+                    nas.filtered = nas.filtered.sort((a,b) => (a.meta.auth.method === 'api' ? a.meta.auth.ip : a.meta.auth.host > b.meta.auth.method === 'api' ? b.meta.auth.ip : b.meta.auth.host) ? -1 : ((b.meta.auth.method === 'api' ? b.meta.auth.ip : b.meta.auth.host > a.meta.auth.method === 'api' ? a.meta.auth.ip : a.meta.auth.host) ? 1 : 0));
                 }
                 break;
             case 'method' :
-            case 'host' :
             case 'port' :
             case 'user' :
             case 'pass' :

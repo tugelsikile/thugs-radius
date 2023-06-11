@@ -1,5 +1,7 @@
 {
     "/js/auth/companies/index.js": "/js/auth/companies/index.js",
     "/js/clients/nas/index.js": "/js/clients/nas/index.js",
+    "/js/clients/nas/profiles/pools.js": "/js/clients/nas/profiles/pools.js",
+    "/js/clients/nas/profiles/bandwidths.js": "/js/clients/nas/profiles/bandwidths.js",
     "/js/clients/nas/profiles/index.js": "/js/clients/nas/profiles/index.js"
 }

@@ -11,13 +11,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class NasProfilePool extends Model
 {
     use HasFactory;
+    protected $connection = "radius";
     protected $keyType = 'string';
     public $incrementing = false;
 
-    public function companyObj(): BelongsTo
-    {
-        return $this->belongsTo(ClientCompany::class,'company','id');
-    }
     public function nasObj(): BelongsTo
     {
         return $this->belongsTo(Nas::class,'nas','id');

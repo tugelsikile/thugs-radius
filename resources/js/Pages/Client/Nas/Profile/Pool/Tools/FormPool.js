@@ -17,7 +17,7 @@ class FormPool extends React.Component {
         this.state = {
             loading : false,
             form : {
-                id : null, company : null, name : '', description : '', nas : null,
+                id : null, name : '', description : '', nas : null,
                 first : '', last : '', upload : true,
             },
             name_invalid : false,
@@ -31,28 +31,20 @@ class FormPool extends React.Component {
         this.setState({loading:true});
         let form = this.state.form;
         if (! props.open) {
-            form.id = null, form.company = null, form.name = '', form.description = '', form.first = '', form.last = '',
+            form.id = null, form.name = '', form.description = '', form.first = '', form.last = '',
                 form.nas = null, form.upload = true;
         } else {
-            if (props.user !== null) {
-                if (props.user.meta.company !== null) {
-                    form.company = {
-                        label : props.user.meta.company.name,
-                        value : props.user.meta.company.id,
-                    };
-                }
-            }
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.description = props.data.meta.description,
                     form.upload = true,
-                    form.company = props.data.meta.company === null ? null : { value : props.data.meta.company.id, label : props.data.meta.company.name },
                     form.first = props.data.meta.address.first, form.last = props.data.meta.address.last,
                     form.nas = props.data.meta.nas === null ? null : {
-                        value : props.data.meta.nas.id, label : props.data.meta.nas.name,
+                        value : props.data.meta.nas.id, label : props.data.meta.nas.shortname,
                         meta : {
                             auth : {
-                                host : props.data.meta.nas.hostname,
-                                port : props.data.meta.nas.port,
+                                host : props.data.meta.nas.method_domain,
+                                ip : props.data.meta.nas.nasname,
+                                port : props.data.meta.nas.method_port,
                                 method : props.data.meta.nas.method,
                                 user : props.data.meta.nas.user,
                                 pass : props.data.meta.nas.password
@@ -91,7 +83,6 @@ class FormPool extends React.Component {
             const formData = new FormData();
             formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
             if (this.state.form.id !== null) formData.append(Lang.get('nas.pools.form_input.id'), this.state.form.id);
-            if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
             if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
             formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.name);
             formData.append(Lang.get('nas.pools.form_input.description'), this.state.form.description);
@@ -119,22 +110,6 @@ class FormPool extends React.Component {
                 <form onSubmit={this.handleSave}>
                     <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('nas.pools.create.form'),update:Lang.get('nas.pools.update.form')}}/>
                     <DialogContent dividers>
-                        {this.props.user === null ? null :
-                            this.props.user.meta.company !== null ? null :
-                            <div className="form-group row">
-                                <label className="col-sm-2 col-form-label">
-                                    {this.state.form.id === null ? <LabelRequired/> : null}
-                                    {Lang.get('companies.labels.name')}
-                                </label>
-                                <div className="col-sm-4">
-                                    {this.state.form.id !== null ?
-                                        <div className="form-control text-sm">{this.state.form.company.label}</div>
-                                        :
-                                        <Select onChange={(e)=>this.handleSelect(e,'company')} noOptionsMessage={()=>Lang.get('companies.labels.not_found')} options={this.props.companies} value={this.state.form.company} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.state.loadings.companies}/>
-                                    }
-                                </div>
-                            </div>
-                        }
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label">
                                 {this.state.form.id === null ? <LabelRequired/> : null}
@@ -147,6 +122,14 @@ class FormPool extends React.Component {
                                     <div className="form-control text-sm">{this.state.form.nas.label}</div>
                                 }
                             </div>
+                            {this.state.form.nas === null ? null :
+                                <>
+                                    <label className="col-sm-2 col-form-label">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
+                                    <div className="col-sm-4">
+                                        <div className="form-control text-sm">{this.state.form.nas.meta.auth.method === 'api' ? `${this.state.form.nas.meta.auth.ip}:${this.state.form.nas.meta.auth.port}` : `${this.state.form.nas.meta.auth.host}:${this.state.form.nas.meta.auth.port}`}</div>
+                                    </div>
+                                </>
+                            }
                         </div>
                         <InputText type="text" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
                             placeholder : Lang.get('nas.pools.labels.name'), name : Lang.get('nas.pools.labels.name') }}
@@ -171,16 +154,6 @@ class FormPool extends React.Component {
                             placeholder : Lang.get('nas.pools.labels.address.last'), name : Lang.get('nas.pools.labels.address.last') }}
                                    input={{ name : 'last', value : this.state.form.last, id : 'last', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
-                        <div className="form-group row">
-                            <div className="col-sm-10 offset-2">
-                                <div className="custom-control custom-checkbox">
-                                    <input checked={this.state.form.upload} onChange={this.handleCheck} className="custom-control-input" type="checkbox" id="upload"/>
-                                    <label htmlFor="upload" className="custom-control-label">
-                                        {this.state.form.upload ? Lang.get('nas.pools.labels.upload.true') : Lang.get('nas.pools.labels.upload.false')}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
                     </DialogContent>
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}

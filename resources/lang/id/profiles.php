@@ -32,6 +32,7 @@ return [
         'not_found' => 'Tidak ada data layanan',
         'search' => 'Cari Layanan ...',
         'name' => 'Nama Layanan',
+        'name_invalid' => 'Nama Layanan tidak boleh ada spasi',
         'price' => 'Harga Layanan',
         'type' => 'Jenis Layanan',
         'description' => 'Keterangan Layanan',
@@ -54,6 +55,8 @@ return [
         'address' => [
             'local' => 'Local Address',
             'dns' => 'DNS Servers',
+            'add_dns' => 'Tambah DNS Server',
+            'remove_dns' => 'Hapus DNS Server',
         ],
         'customers' => [
             'length' => 'Jml. Pelanggan',

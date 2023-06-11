@@ -10,6 +10,7 @@ namespace App\Repositories\Nas;
 
 use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
+use App\Helpers\SwitchDB;
 use App\Models\Nas\Nas;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -75,14 +76,17 @@ class NasRepository
     {
         try {
             $response = collect();
+            new SwitchDB();
             $nas = Nas::where('id', $request[__('nas.form_input.name')])->first();
             if ($nas != null) {
                 switch (strtolower($nas->method)) {
                     case 'api' :
-                        $queues = getParentQueue($nas);
+                        $api = new MikrotikAPI($nas);
+                        $queues = $api->getParentQueue();
                         break;
                     case 'ssl' :
-                        $queues = parentQueueSSL($nas);
+                        $ssl = new MiktorikSSL($nas);
+                        $queues = $ssl->getParentQueue();
                         break;
                 }
                 if ($queues != null) {
@@ -115,6 +119,7 @@ class NasRepository
      */
     public function create(Request $request) {
         try {
+            new SwitchDB();
             $me = auth()->guard('api')->user();
             $nas = new Nas();
             $nas->id = Uuid::uuid4()->toString();
@@ -147,6 +152,7 @@ class NasRepository
      */
     public function update(Request $request) {
         try {
+            new SwitchDB();
             $this->testConnection($request);
             $me = auth()->guard('api')->user();
             $nas = Nas::where('id', $request[__('nas.form_input.id')])->first();
@@ -200,6 +206,7 @@ class NasRepository
     {
         try {
             $response = collect();
+            new SwitchDB();
             $nass = Nas::orderBy('shortname', 'asc');
             if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
             if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();

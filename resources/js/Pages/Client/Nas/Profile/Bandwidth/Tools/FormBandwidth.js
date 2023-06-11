@@ -49,15 +49,9 @@ class FormBandwidth extends React.Component {
                 form.priority = { value : 8, label : 8 },
                 form.max_limit.up.value = 0, form.max_limit.down.value = 0;
         } else {
-            if (props.user !== null) {
-                if (props.user.meta.company !== null) {
-                    form.company = { value : props.user.meta.company.id, label : props.user.meta.company.name }
-                }
-            }
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label,
                     form.description = props.data.meta.description,
-                    form.company = props.data.meta.company === null ? null : { value : props.data.meta.company.id, label : props.data.meta.company.name },
                     form.max_limit.up.value = props.data.meta.max_limit.up,
                     form.max_limit.down.value = props.data.meta.max_limit.down,
                     form.burst_limit.up.value = props.data.meta.burst.up,
@@ -166,7 +160,6 @@ class FormBandwidth extends React.Component {
                 const formData = new FormData();
                 formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
                 if (this.state.form.id !== null) formData.append(Lang.get('bandwidths.form_input.id'), this.state.form.id);
-                if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
                 formData.append(Lang.get('bandwidths.form_input.name'), this.state.form.name);
                 formData.append(Lang.get('bandwidths.form_input.description'), this.state.form.description);
                 formData.append(Lang.get('bandwidths.form_input.max_limit.up'), this.state.form.max_limit.up.value);

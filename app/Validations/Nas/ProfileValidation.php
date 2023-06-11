@@ -2,6 +2,7 @@
 
 namespace App\Validations\Nas;
 
+use App\Helpers\SwitchDB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,9 +17,9 @@ class ProfileValidation
     public function create(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 __('profiles.form_input.is_additional') => 'required|boolean',
-                __('companies.form_input.name') => 'required|exists:client_companies,id',
                 __('profiles.form_input.type') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|in:pppoe,hotspot',
                 __('nas.form_input.name') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|exists:nas,id',
                 __('nas.pools.form_input.name') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|exists:nas_profile_pools,id',
@@ -50,6 +51,7 @@ class ProfileValidation
     public function delete(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 'id' => 'required|array|min:1',
                 'id.*' => 'required|exists:nas_profiles,id'
@@ -69,10 +71,10 @@ class ProfileValidation
     public function update(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 __('profiles.form_input.id') => 'required|exists:nas_profiles,id',
                 __('profiles.form_input.is_additional') => 'required|boolean',
-                __('companies.form_input.name') => 'required|exists:client_companies,id',
                 __('profiles.form_input.type') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|in:pppoe,hotspot',
                 __('nas.form_input.name') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|exists:nas,id',
                 __('nas.pools.form_input.name') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|exists:nas_profile_pools,id',

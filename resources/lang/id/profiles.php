@@ -30,6 +30,7 @@ return [
         'menu' => 'Layanan',
         'menu_info' => 'Manage layanan pelanggan',
         'not_found' => 'Tidak ada data layanan',
+        'select' => 'Pilih Layanan',
         'search' => 'Cari Layanan ...',
         'name' => 'Nama Layanan',
         'name_invalid' => 'Nama Layanan tidak boleh ada spasi',

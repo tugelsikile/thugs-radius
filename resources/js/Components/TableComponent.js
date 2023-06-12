@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
@@ -43,5 +45,34 @@ export const TableCheckBox = (props) => {
                 <label htmlFor={`cbx_${props.item.value}`} className="custom-control-label"/>
             </div>
         </td>
+    );
+}
+export const TablePaging = (props) => {
+    return (
+        props.customers.filtered.length === 0 ? null :
+            <div className="card-footer clearfix row">
+                <div className="col-sm-2">
+
+                </div>
+                <div className="col-sm-10">
+                    <ul className="pagination pagination-sm m-0 float-right">
+                        {props.filter.page.value > 1 &&
+                            <li className="page-item">
+                                <a onClick={()=>props.handleChangePage(1)} className="page-link" href="#">«</a>
+                            </li>
+                        }
+                        {props.filter.paging.map((item)=>
+                            <li key={item} onClick={()=>props.handleChangePage(item)} className={item === props.filter.page.value ? "page-item active" : "page-item"}>
+                                <a className="page-link" href="#">{item}</a>
+                            </li>
+                        )}
+                        {props.filter.paging.length > 1 &&
+                            <li className="page-item">
+                                <a onClick={()=>props.handleChangePage(props.filter.paging[props.filter.paging.length - 1])} className="page-link" href="#">»</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
     );
 }

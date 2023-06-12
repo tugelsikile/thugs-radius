@@ -22,11 +22,12 @@ export const ModalFooter = (props) => {
                                  icon={props.loading ? 'circle-notch' : 'save'}/>
                 {props.form.id === null ? props.langs.create : props.langs.update}
             </button>
-            {props.buttons === null ? null :
-                props.buttons.length === 0 ? null :
-                    props.buttons.map((item,index)=>
-                        <React.Fragment key={index}>{item}</React.Fragment>
-                    )
+            {typeof props.buttons === 'undefined' ? null :
+                props.buttons === null ? null :
+                    props.buttons.length === 0 ? null :
+                        props.buttons.map((item,index)=>
+                            <React.Fragment key={index}>{item}</React.Fragment>
+                        )
             }
             <button type="button" className="btn btn-default" disabled={props.loading} onClick={()=>props.loading ? null : props.handleClose()}>
                 <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}

@@ -21,6 +21,8 @@ import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../Components/TableComponent";
 import FormProfile from "./Tools/FormProfile";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {Popover} from "@mui/material";
+import {DetailBandwidth, DetailNas, DetailPool} from "./Tools/DetailCard";
 
 // noinspection DuplicatedCode
 class ProfilePage extends React.Component {
@@ -33,6 +35,7 @@ class ProfilePage extends React.Component {
             profiles : { filtered : [], unfiltered : [], selected : [] },
             filter : { keywords : '', sort : { by : 'code', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : { open : false, data : null },
+            popover : { open : false, anchorEl : null, data : null },
         };
         this.handleFilter = this.handleFilter.bind(this);
         this.handleSort = this.handleSort.bind(this);
@@ -41,6 +44,7 @@ class ProfilePage extends React.Component {
         this.confirmDelete = this.confirmDelete.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
         this.loadProfiles = this.loadProfiles.bind(this);
+        this.handlePopOver = this.handlePopOver.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -76,6 +80,33 @@ class ProfilePage extends React.Component {
                     });
             }
         }
+    }
+    handlePopOver(e) {
+        let popover = this.state.popover;
+        popover.open = ! this.state.popover.open;
+        popover.anchorEl = e.currentTarget;
+        popover.data = null;
+        let index = this.state.profiles.unfiltered.findIndex((f) => f.value === e.currentTarget.getAttribute('data-value'));
+        if (index >= 0) {
+            switch (e.currentTarget.getAttribute('data-type')) {
+                case 'nas' :
+                    if (this.state.profiles.unfiltered[index].meta.nas !== null) {
+                        popover.data = <DetailNas data={this.state.profiles.unfiltered[index]} />
+                    }
+                break;
+                case 'pool' :
+                    if (this.state.profiles.unfiltered[index].meta.pool !== null) {
+                        popover.data = <DetailPool data={this.state.profiles.unfiltered[index]} />
+                    }
+                break;
+                case 'bandwidth' :
+                    if (this.state.profiles.unfiltered[index].meta.bandwidth !== null) {
+                        popover.data = <DetailBandwidth data={this.state.profiles.unfiltered[index]} />
+                    }
+                break;
+            }
+        }
+        this.setState({popover});
     }
     confirmDelete(data = null) {
         let ids = [];
@@ -158,9 +189,9 @@ class ProfilePage extends React.Component {
                 break;
             case 'nas' :
                 if (filter.sort.dir === 'asc') {
-                    profiles.filtered = profiles.filtered.sort((a,b) => ((a.meta.nas === null ? 'z' : a.meta.nas.name) > (b.meta.nas === null ? 'z' : b.meta.nas.name)) ? 1 : (((b.meta.nas === null ? 'z' : b.meta.nas.name) > (a.meta.nas === null ? 'z' : a.meta.nas.name)) ? -1 : 0));
+                    profiles.filtered = profiles.filtered.sort((a,b) => ((a.meta.nas === null ? 'z' : a.meta.nas.shortname) > (b.meta.nas === null ? 'z' : b.meta.nas.shortname)) ? 1 : (((b.meta.nas === null ? 'z' : b.meta.nas.shortname) > (a.meta.nas === null ? 'z' : a.meta.nas.shortname)) ? -1 : 0));
                 } else {
-                    profiles.filtered = profiles.filtered.sort((a,b) => ((a.meta.nas === null ? 'z' : a.meta.nas.name) > (b.meta.nas === null ? 'z' : b.meta.nas.name)) ? -1 : (((b.meta.nas === null ? 'z' : b.meta.nas.name) > (a.meta.nas === null ? 'z' : a.meta.nas.name)) ? 1 : 0));
+                    profiles.filtered = profiles.filtered.sort((a,b) => ((a.meta.nas === null ? 'z' : a.meta.nas.shortname) > (b.meta.nas === null ? 'z' : b.meta.nas.shortname)) ? -1 : (((b.meta.nas === null ? 'z' : b.meta.nas.shortname) > (a.meta.nas === null ? 'z' : a.meta.nas.shortname)) ? 1 : 0));
                 }
                 break;
             case 'pool' :
@@ -322,6 +353,12 @@ class ProfilePage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <Popover
+                    sx={{ pointerEvents: 'none', }} open={this.state.popover.open}
+                    anchorEl={this.state.popover.anchorEl}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left', }}
+                    onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
                 <FormProfile user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} nas={this.state.nas} pools={this.state.pools} bandwidths={this.state.bandwidths} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadProfiles}/>
                 <PageLoader/>
                 <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
@@ -416,9 +453,30 @@ class ProfilePage extends React.Component {
                                                     </td>
                                                     {! item.meta.additional &&
                                                         <>
-                                                            <td className="align-middle">{item.meta.nas === null ? null : item.meta.nas.name}</td>
-                                                            <td className="align-middle">{item.meta.pool === null ? null : item.meta.pool.name}</td>
-                                                            <td className="align-middle">{item.meta.bandwidth === null ? null : item.meta.bandwidth.name}</td>
+                                                            <td className="align-middle">
+                                                                {item.meta.nas === null ? null :
+                                                                    <>
+                                                                        <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        {item.meta.nas.shortname}
+                                                                    </>
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle">
+                                                                {item.meta.pool === null ? null :
+                                                                    <>
+                                                                        <FontAwesomeIcon size="xs" data-type="pool" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        {item.meta.pool.name}
+                                                                    </>
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle">
+                                                                {item.meta.bandwidth === null ? null :
+                                                                    <>
+                                                                        <FontAwesomeIcon size="xs" data-type="bandwidth" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        {item.meta.bandwidth.name}
+                                                                    </>
+                                                                }
+                                                            </td>
                                                         </>
                                                     }
                                                     <td className="align-middle">

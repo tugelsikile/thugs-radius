@@ -40,7 +40,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'clients'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });
     Route::group(['prefix' => 'customers'], function () {
-        Route::get('/', function () { })->name('clients.customers');
+        Route::get('/', function () { return view('clients.customers.index'); })->name('clients.customers');
         Route::get('/pppoe', function () { })->name('clients.customers.pppoe');
         Route::get('/hotspot', function () { })->name('clients.customers.hotspot');
         Route::group(['prefix' => 'invoices'], function () {

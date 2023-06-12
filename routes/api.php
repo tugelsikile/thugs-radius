@@ -7,6 +7,7 @@ use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
@@ -73,6 +74,9 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/bandwidths', [BandwidthController::class, 'crud']);
             Route::any('/pools', [PoolController::class, 'crud']);
         });
+    });
+    Route::group(['prefix' => 'customers'], function () {
+        Route::any('/', [CustomerController::class, 'crud']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

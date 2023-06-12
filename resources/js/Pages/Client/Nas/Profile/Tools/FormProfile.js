@@ -26,7 +26,7 @@ class FormProfile extends React.Component {
                 id : null, company : null, pool : null, bandwidth : null, nas : null,
                 description : '', name : '', type : serviceType[0],
                 additional : false, price : 0,
-                address : { local : '', dns : [{label:''}] },
+                address : { local : '', dns : [] },
                 limit : { type : null, rate : 0, unit : null },
                 queue : null,
             }
@@ -50,7 +50,7 @@ class FormProfile extends React.Component {
                 form.nas = null,
                 form.additional = false, form.price = 0,
                 form.description = '',
-                form.address.local = '', form.address.dns = [{label:''}],
+                form.address.local = '', form.address.dns = [],
                 form.queue = null;
         } else {
             if (props.data !== null) {
@@ -136,7 +136,7 @@ class FormProfile extends React.Component {
         let form = this.state.form;
         form.additional = event.target.checked;
         form.queue = null, form.limit.rate = 0,
-        form.nas = null, form.pool = null, form.bandwidth = null,form.address.dns = [{label:''}];
+        form.nas = null, form.pool = null, form.bandwidth = null,form.address.dns = [];
         this.setState({form,queues:[]});
     }
     handleChange(event) {
@@ -220,7 +220,7 @@ class FormProfile extends React.Component {
     }
     async handleSave(e) {
         e.preventDefault();
-        if (hasWhiteSpace(this.state.form.name)) {
+        if (hasWhiteSpace(this.state.form.name) && ! this.state.form.additional) {
             showError(Lang.get('profiles.labels.name_invalid'));
         } else {
             this.setState({loading:true});

@@ -7,9 +7,11 @@ use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
+use App\Http\Controllers\Nas\ProfileController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -63,13 +65,20 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);
+        Route::post('/reload-status', [NasController::class, 'reloadStatus']);
         Route::post('/test-connection', [NasController::class, 'testConnection']);
         Route::post('/decrypt-encrypt', [NasController::class, 'encryptDecrypt']);
         Route::post('/parent-queues', [NasController::class, 'parentQueue']);
         Route::group(['prefix' => 'profiles'], function () {
+            Route::any('/', [ProfileController::class, 'crud']);
             Route::any('/bandwidths', [BandwidthController::class, 'crud']);
             Route::any('/pools', [PoolController::class, 'crud']);
         });
+    });
+    Route::group(['prefix' => 'customers'], function () {
+        Route::any('/', [CustomerController::class, 'crud']);
+        Route::patch('/active', [CustomerController::class, 'statusActive']);
+        Route::put('/generate', [CustomerController::class, 'generate']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

@@ -63,6 +63,17 @@ return [
             ]) : [],
         ],
 
+        'radius' => [
+            'driver' => 'mysql',
+            'host' => env('DB_RADIUS_HOST', '127.0.0.1'),
+            'port' => env('DB_RADIUS_PORT', '3306'),
+            'database' => env('DB_RADIUS_DB', 'forge'),
+            'username' => env('DB_RADIUS_USERNAME', 'forge'),
+            'password' => env('DB_RADIUS_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

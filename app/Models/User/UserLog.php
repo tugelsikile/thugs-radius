@@ -9,6 +9,7 @@ class UserLog extends Model
 {
     use HasFactory;
     protected $keyType = 'string';
+    protected $connection = "mysql";
     public $incrementing = false;
 
     protected $casts = [

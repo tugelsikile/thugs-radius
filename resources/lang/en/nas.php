@@ -15,6 +15,11 @@ return [
         'expire_url' => 'expired_url',
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Loading Router [NAS] data',
+            'success' => 'Router [NAS] successfully loaded',
+            'error' => 'Failed to load Router [NAS] data',
+        ],
         'menu' => 'Router [NAS]',
         'menu_info' => 'Router [NAS] Management',
         'not_found' => 'Router Not Found',
@@ -57,6 +62,11 @@ return [
         'expire_url' => 'Expired URL',
         'check_connection' => 'Check Connection',
         'connection' => [
+            'loading' => [
+                'pending' => 'Trying to connect to router',
+                'success' => 'Router successfully connected',
+                'error' => 'Failed to connect to router',
+            ],
             'type' => [
                 'api' => 'API Connection',
                 'ssl' => 'SSL Connection (https)',
@@ -102,6 +112,12 @@ return [
             ]
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Loading IP Pool Profile',
+                'success' => 'IP Pool Profile successfully loaded',
+                'error' => 'Failed to load IP Pool Profile data',
+            ],
+            'select' => 'Select IP Pool',
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',
             'not_found' => 'IP Pool Not Found !!',
@@ -109,6 +125,7 @@ return [
             'name' => 'IP Pool Name',
             'description' => 'IP Pool Description',
             'address' => [
+                'full' => 'IP Range',
                 'first' => 'First IP',
                 'last' => 'Last IP',
                 'error' => 'Last IP :ip block number :index (:block) is not less than first ip :ip2 block number :index2 (:block2)'
@@ -134,4 +151,7 @@ return [
             'select' => 'Delete Selected Pool',
         ]
     ],
+    'tutorials' => [
+
+    ]
 ];

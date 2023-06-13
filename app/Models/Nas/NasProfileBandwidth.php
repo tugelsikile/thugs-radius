@@ -12,11 +12,8 @@ class NasProfileBandwidth extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = "radius";
 
-    public function companyObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(ClientCompany::class,'company','id');
-    }
     public function createdBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class,'created_by','id');

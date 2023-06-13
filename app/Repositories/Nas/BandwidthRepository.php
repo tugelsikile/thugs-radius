@@ -4,6 +4,10 @@
 
 namespace App\Repositories\Nas;
 
+use App\Helpers\MikrotikAPI;
+use App\Helpers\MiktorikSSL;
+use App\Helpers\SwitchDB;
+use App\Models\Nas\NasProfile;
 use App\Models\Nas\NasProfileBandwidth;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,6 +31,7 @@ class BandwidthRepository
     public function delete(Request $request): bool
     {
         try {
+            new SwitchDB();
             NasProfileBandwidth::whereIn('id', $request->id)->delete();
             /**** TODO ***
              * hapus juga di routerboards / nas
@@ -38,8 +43,8 @@ class BandwidthRepository
     }
     public function update(Request $request) {
         try {
+            new SwitchDB();
             $bandwidth = NasProfileBandwidth::where('id', $request[__('bandwidths.form_input.id')])->first();
-            $bandwidth->company = $request[__('companies.form_input.name')];
             $bandwidth->name = $request[__('bandwidths.form_input.name')];
             $bandwidth->description = $request[__('bandwidths.form_input.description')];
             $bandwidth->max_limit_up = $request[__('bandwidths.form_input.max_limit.up')];
@@ -55,6 +60,34 @@ class BandwidthRepository
             $bandwidth->priority = $request[__('bandwidths.form_input.priority')];
             $bandwidth->updated_by = $this->me->id;
             $bandwidth->saveOrFail();
+
+            /*$profiles = NasProfile::where('bandwidth', $bandwidth->id)->get();
+            foreach ($profiles as $profile) {
+                switch ($profile->nasObj->method) {
+                    case 'ssl' :
+                        $ssl = new MiktorikSSL($profile->nasObj,'put');
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $ssl->saveProfilePPPoE($profile, $profile->name);
+                                break;
+                            case 'hotspot' :
+                                $ssl->saveProfileHotspot($profile, $profile->name);
+                                break;
+                        }
+                        break;
+                    case 'api' :
+                        $api = new MikrotikAPI($profile->nasObj);
+                        switch ($profile->type) {
+                            case 'pppoe' :
+                                $api->saveProfilePPPoE($profile, $profile->name);
+                                break;
+                            case 'hotspot' :
+                                $api->saveProfileHotspot($profile, $profile->name);
+                                break;
+                        }
+                        break;
+                }
+            }*/
             return $this->table(new Request(['id' => $bandwidth->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -68,9 +101,9 @@ class BandwidthRepository
      */
     public function create(Request $request) {
         try {
+            new SwitchDB();
             $bandwidth = new NasProfileBandwidth();
             $bandwidth->id = Uuid::uuid4()->toString();
-            $bandwidth->company = $request[__('companies.form_input.name')];
             $bandwidth->name = $request[__('bandwidths.form_input.name')];
             $bandwidth->description = $request[__('bandwidths.form_input.description')];
             $bandwidth->max_limit_up = $request[__('bandwidths.form_input.max_limit.up')];
@@ -99,12 +132,10 @@ class BandwidthRepository
     public function table(Request $request): Collection
     {
         try {
+            new SwitchDB();
             $response = collect();
             $bandwidths = NasProfileBandwidth::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $bandwidths = $bandwidths->where('id', $request->id);
-            if ($this->me != null) {
-                if ($this->me->company != null) $bandwidths = $bandwidths->where('company', $this->me->company);
-            }
             $bandwidths = $bandwidths->get();
             if ($bandwidths->count() > 0) {
                 foreach ($bandwidths as $bandwidth) {
@@ -112,8 +143,7 @@ class BandwidthRepository
                         'value' => $bandwidth->id,
                         'label' => $bandwidth->name,
                         'meta' => (object) [
-                            'description' => $bandwidth->description,
-                            'company' => $bandwidth->companyObj,
+                            'description' => $bandwidth->description == null ? '' : $bandwidth->description,
                             'max_limit' => (object) [
                                 'up' => $bandwidth->max_limit_up,
                                 'down' => $bandwidth->max_limit_down,

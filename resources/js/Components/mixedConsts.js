@@ -5,6 +5,8 @@ import moment from "moment";
 import {guestSiteConfig} from "../Services/ConfigService";
 import {showError} from "./Toaster";
 import {logout} from "./Authentication";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faAsterisk} from "@fortawesome/free-solid-svg-icons";
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 export const langSelect = [
@@ -30,6 +32,19 @@ export const ucFirst = (string) => {
         return letter.toUpperCase();
     })
 }
+export const serviceType = [
+    { value : 'pppoe', label : 'PPPoE' },
+    { value : 'hotspot', label : 'Hotspot' }
+];
+export const limitType = [
+    { value : 'time', label : Lang.get('limits.time') },
+    { value : 'data', label : Lang.get('limits.data') },
+]
+export const durationTypeByte = [
+    { value : 'K', label : 'KB' },
+    { value : 'M', label : 'MB' },
+    { value : 'G', label : 'GB' },
+];
 export const durationType = [
     { value : 'minutes', label : Lang.get('durations.minutes') },
     { value : 'hours', label : Lang.get('durations.hours') },
@@ -353,6 +368,17 @@ export const CardToolMinimize = (hide = false) => {
         </div>
     );
 }
+export const pipeIp = (value) => {
+    if (value === '.' || value.endsWith('..')) return false;
+    const parts = value.split('.');
+    if (
+        parts.length > 4 ||
+        parts.some(part => part === '00' || part < 0 || part > 255)
+    ) {
+        return false;
+    }
+    return value;
+}
 export const siteData = async () => {
     let resp = null;
     try {
@@ -368,11 +394,11 @@ export const siteData = async () => {
 export const customPreventDefault = (event) => {
     event.preventDefault();
 }
-export const responseMessage = (event) => {
+export const responseMessage = (error) => {
     let message = Lang.get('messages.method');
     try {
-        if (typeof event.response !== 'undefined') {
-            switch (event.response.status) {
+        if (typeof error.response !== 'undefined') {
+            switch (error.response.status) {
                 case 401 :
                     showError("Unauthenticated");
                     logout();
@@ -381,12 +407,12 @@ export const responseMessage = (event) => {
                     showError(Lang.get('messages.404'));
                     break;
             }
-            if (typeof event.response.data === 'undefined') {
+            if (typeof error.response.data === 'undefined') {
                 showError(Lang.get('messages.undefined'));
-            } else if (typeof event.response.data.message === 'undefined') {
+            } else if (typeof error.response.data.message === 'undefined') {
                 showError(Lang.get('messages.undefined'));
-            } else if (event.response.data.message.length > 0){
-                showError(event.response.data.message);
+            } else if (error.response.data.message.length > 0){
+                showError(error.response.data.message);
             }
         } else {
             showError(message);
@@ -423,3 +449,9 @@ export const formatBytes = (bytes, decimals = 0) => {
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
+export const LabelRequired = () => {
+    return (
+        <sup className="float-left text-danger"><FontAwesomeIcon size="2xs" icon={faAsterisk}/></sup>
+    );
+}
+

@@ -24,6 +24,20 @@ class NasController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function reloadStatus(Request $request): JsonResponse
+    {
+        try {
+            $valid = $this->validation->reloadStatus($request);
+            $params = $this->repository->reloadStatus($valid);
+            return formatResponse(200,__('messages.ok'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function parentQueue(Request $request): JsonResponse
     {
         try {

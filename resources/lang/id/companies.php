@@ -23,6 +23,11 @@ return [
         ]
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Memuat data client radius',
+            'success' => 'Berhasil memuat data client radius',
+            'error' => 'Gagal memuat data client radius',
+        ],
         'no_select' => 'Tidak ada data client radius',
         'info' => 'Informasi Client Radius',
         'menu' => 'Client Radius',
@@ -96,6 +101,11 @@ return [
             'max_router' => 'max_nas_router',
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Memuat data paket client radius',
+                'success' => 'Berhasil memuat data paket client radius',
+                'error' => 'Gagal memuat data paket client radius',
+            ],
             'duration_type' => 'Jenis Durasi',
             'duration_type_select' => 'Pilih Jenis Durasi',
             'description' => 'Keterangan Paket',
@@ -192,6 +202,11 @@ return [
             ]
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Memuat data tagihan client radius',
+                'success' => 'Berhasil memuat data tagihan client radius',
+                'error' => 'Gagal memuat data tagihan client radius',
+            ],
             'cards' => [
                 'total' => 'Total Tagihan',
                 'paid' => 'Tagihan Dibayar',
@@ -263,6 +278,11 @@ return [
                 'max_amount' => 'maksimal_pembayaran',
             ],
             'labels' => [
+                'loading' => [
+                    'pending' => 'Memuat data pembayaran tagihan client radius',
+                    'success' => 'Berhasil memuat data pembayaran tagihan client radius',
+                    'error' => 'Gagal memuat data pembayaran tagihan client radius',
+                ],
                 'success' => 'Pembayaran tagihan berhasil ditambahkan',
                 'error_amount' => 'Total jumlah pembayaran melebihi besar tagihan',
                 'menu' => 'Pembayaran Tagihan',

@@ -22,7 +22,11 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -61,7 +65,17 @@ class CompanyRepository
     public function delete(Request $request): bool
     {
         try {
-            ClientCompany::whereIn('id', $request->id)->delete();
+            $companies = ClientCompany::whereIn('id', $request->id)->get();
+            foreach ($companies as $company) {
+                Config::set("database.connections.radius.host", $company->radius_db_host);
+                Config::set("database.connections.radius.username", $company->radius_db_user);
+                Config::set("database.connections.radius.password", $company->radius_db_pass);
+                DB::connection("radius")->unprepared(
+                    "DROP DATABASE $company->radius_db_name;"
+                    . "DROP USER '$company->radius_db_user'@'%'"
+                );
+                $company->delete();
+            }
             return true;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -177,6 +191,10 @@ class CompanyRepository
             $company->postal = $request[__('companies.form_input.postal')];
             $company->phone = $request[__('companies.form_input.phone')];
             $company->currency = Currency::orderBy('code', 'asc')->first()->id;
+            $company->radius_db_host = config('database.connections.radius.host');
+            $company->radius_db_name = 'radius_' . strtolower(randomString(7));
+            $company->radius_db_user = Str::random(5);
+            $company->radius_db_pass = Str::random(5);
             $company->saveOrFail();
             if ($request->has(__('companies.packages.form_input.additional'))) {
                 foreach ($request[__('companies.packages.form_input.additional')] as $item) {
@@ -228,12 +246,65 @@ class CompanyRepository
                 $user->locale = (object) [ 'lang' => 'id', 'date_format' => 'DD/MM/yyyy HH:mm:ss', 'time_zone' => 'Asia/Jakarta' ];
                 $user->saveOrFail();
             }
+            $this->generateDatabase($company);
             return $this->table(new Request(['id' => $company->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
     }
 
+    /* @
+     * @param ClientCompany $clientCompany
+     * @return void
+     * @throws Exception
+     */
+    private function generateDatabase(ClientCompany $clientCompany): void
+    {
+        try {
+            /*$configs = [
+                'host' => $clientCompany->radius_db_host,
+                'port' => config('database.connections.radius.port'),
+                'database' => $clientCompany->radius_db_name,
+                'username' => $clientCompany->radius_db_user,
+                'password' => $clientCompany->radius_db_pass,
+                'charset' => 'utf8mb4',
+                'collation' => 'utf8mb4_unicode_ci',
+            ];*/
+            Config::set("database.connections.radius.host", env('DB_RADIUS_HOST'));
+            Config::set("database.connections.radius.port", env('DB_RADIUS_PORT'));
+            Config::set("database.connections.radius.username", env('DB_RADIUS_USERNAME'));
+            Config::set("database.connections.radius.password", env('DB_RADIUS_PASSWORD'));
+
+            $newDB = DB::connection("radius")->unprepared(
+                "CREATE DATABASE {$clientCompany->radius_db_name};"
+                . "CREATE USER '$clientCompany->radius_db_user'@'%' IDENTIFIED BY '$clientCompany->radius_db_pass';"
+                . "GRANT ALL PRIVILEGES ON *.* TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
+                . "FLUSH PRIVILEGES;"
+            );
+            DB::purge('radius');
+
+            if ($newDB) {
+                Config::set("database.connections.radius", [
+                    'charset' => 'utf8mb4',
+                    'collation' => 'utf8mb4_unicode_ci',
+                    'driver' => 'mysql',
+                    'host' => $clientCompany->radius_db_host,
+                    'port' => env('DB_RADIUS_PORT'),
+                    'database' => $clientCompany->radius_db_name,
+                    'username' => $clientCompany->radius_db_user,
+                    'password' => $clientCompany->radius_db_pass
+                ]);
+                Artisan::call('migrate', [
+                    '--database' => 'radius',
+                    '--path' => 'database/migrations/radius'
+                ]);
+                DB::purge('radius');
+                return;
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return Collection

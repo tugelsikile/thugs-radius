@@ -147,9 +147,9 @@ class PoolPage extends React.Component {
                 break;
             case 'nas' :
                 if (this.state.filter.sort.dir === 'asc') {
-                    pools.filtered = pools.filtered.sort((a,b) => (a.meta.nas.name > b.meta.nas.name) ? 1 : ((b.meta.nas.name > a.meta.nas.name) ? -1 : 0));
+                    pools.filtered = pools.filtered.sort((a,b) => (a.meta.nas.shortname > b.meta.nas.shortname) ? 1 : ((b.meta.nas.shortname > a.meta.nas.shortname) ? -1 : 0));
                 } else {
-                    pools.filtered = pools.filtered.sort((a,b) => (a.meta.nas.name > b.meta.nas.name) ? -1 : ((b.meta.nas.name > a.meta.nas.name) ? 1 : 0));
+                    pools.filtered = pools.filtered.sort((a,b) => (a.meta.nas.shortname > b.meta.nas.shortname) ? -1 : ((b.meta.nas.shortname > a.meta.nas.shortname) ? 1 : 0));
                 }
                 break;
             case 'first' :
@@ -314,7 +314,7 @@ class PoolPage extends React.Component {
                                                                    checked={this.state.pools.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.pools} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.nas === null ? '-' : item.meta.nas.name}</td>
+                                                    <td className="align-middle">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
                                                     <td className="align-middle">{item.meta.address.first}</td>
                                                     <td className="align-middle">{item.meta.address.last}</td>
                                                     <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>

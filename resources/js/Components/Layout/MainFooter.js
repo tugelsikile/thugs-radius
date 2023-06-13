@@ -11,7 +11,7 @@ class MainFooter extends React.Component {
                 <div className="float-right d-none d-sm-block">
                     <b>Version</b> {process.env.MIX_APP_VERSION}
                 </div>
-                <strong>Copyright © {moment().format('yyyy')} <a href="https://github.com/tugelsikile">Tugelsikile</a>.</strong> All rights reserved.
+                <strong>Copyright © {moment().format('yyyy')} <a target="_blank" href="https://github.com/tugelsikile">Tugelsikile</a>.</strong> All rights reserved.
             </footer>
         )
     }

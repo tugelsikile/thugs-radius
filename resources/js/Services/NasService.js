@@ -1,17 +1,24 @@
 import Axios from "axios";
+import {showPromise} from "../Components/Toaster";
 
-export const crudNas = async (data) => {
+export const crudNas = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas", data : data
     });
+    if (show) {
+        showPromise({pending : Lang.get('nas.labels.loading.pending'), success : Lang.get('nas.labels.loading.success'), error : Lang.get('nas.labels.loading.error') }, request);
+    }
     return Promise.resolve(request);
 }
-export const testNasConnection = async (data) => {
+export const testNasConnection = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas/test-connection", data : data
     });
+    if (show) {
+        showPromise({pending : Lang.get('nas.labels.connection.loading.pending'), success : Lang.get('nas.labels.connection.loading.success'), error : Lang.get('nas.labels.connection.loading.error') }, request);
+    }
     return Promise.resolve(request);
 }
 export const decryptEncryptPass = async (data) => {
@@ -21,31 +28,50 @@ export const decryptEncryptPass = async (data) => {
     });
     return Promise.resolve(request);
 }
-export const crudProfilePools = async (data) => {
+export const crudProfilePools = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas/profiles/pools", data : data
     });
+    if (show) {
+        showPromise({pending : Lang.get('nas.pools.labels.loading.pending'), success : Lang.get('nas.pools.labels.loading.success'), error : Lang.get('nas.pools.labels.loading.error') }, request);
+    }
     return Promise.resolve(request);
 }
-export const crudProfileBandwidth = async (data) => {
+export const crudProfileBandwidth = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas/profiles/bandwidths", data : data
     });
+    if (show) {
+        showPromise({pending : Lang.get('bandwidths.labels.loading.pending'), success : Lang.get('bandwidths.labels.loading.success'), error : Lang.get('bandwidths.labels.loading.error') }, request);
+    }
     return Promise.resolve(request);
 }
-export const crudProfile = async (data) => {
+export const crudProfile = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas/profiles", data : data
     });
+    if (show) {
+        showPromise({pending : Lang.get('profiles.labels.loading.pending'), success : Lang.get('profiles.labels.loading.success'), error : Lang.get('profiles.labels.loading.error') }, request);
+    }
     return Promise.resolve(request);
 }
-export const getParentQueue = async (data) => {
+export const getParentQueue = async (data, show = false) => {
     let request = Axios({
         headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
         method : "post", url : window.origin + "/api/clients/nas/parent-queues", data : data
+    });
+    if (show) {
+        showPromise({pending : Lang.get('queue.labels.loading.pending'), success : Lang.get('queue.labels.loading.success'), error : Lang.get('queue.labels.loading.error') }, request);
+    }
+    return Promise.resolve(request);
+}
+export const reloadNasStatus = async (data) => {
+    let request = Axios({
+        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        method : "post", url : window.origin + "/api/clients/nas/reload-status", data : data
     });
     return Promise.resolve(request);
 }

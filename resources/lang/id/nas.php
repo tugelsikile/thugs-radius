@@ -15,6 +15,11 @@ return [
         'expire_url' => 'url_expire',
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Memuat data Router [NAS]',
+            'success' => 'Data Router [NAS] berhasil dimuat',
+            'error' => 'Gagal memuat data Router [NAS]',
+        ],
         'menu' => 'Router [NAS]',
         'menu_info' => 'Manajemen Router [NAS]',
         'not_found' => 'Tidak ada data Router',
@@ -57,6 +62,11 @@ return [
         'expire_url' => 'URL Expire',
         'check_connection' => 'Periksa Sambungan',
         'connection' => [
+            'loading' => [
+                'pending' => 'Mencoba menghubungkan ke router',
+                'success' => 'Router berhasil terhubung',
+                'error' => 'Gagal terhubung ke router',
+            ],
             'type' => [
                 'api' => 'Koneksi API',
                 'ssl' => 'Koneksi SSL (https)',
@@ -102,6 +112,12 @@ return [
             ]
         ],
         'labels' => [
+            'loading' => [
+                'pending' => 'Memuat data Profile IP Pool',
+                'success' => 'Profile IP Pool berhasil dimuat',
+                'error' => 'Gagal memuat data Profile IP Pool',
+            ],
+            'select' => 'Pilih Profile IP Pool',
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',
             'not_found' => 'IP Pool Tidak Ditemukan !!',
@@ -109,6 +125,7 @@ return [
             'name' => 'Nama IP Pool',
             'description' => 'Keterangan IP Pool',
             'address' => [
+                'full' => 'Rentang IP',
                 'first' => 'IP Pertama',
                 'last' => 'IP Terakhir',
                 'error' => 'IP Terakhir :ip blok ke :index (:block) tidak boleh kurang dari IP Pertama :ip2 blok ke :index2 (:block2)'
@@ -134,4 +151,7 @@ return [
             'select' => 'Hapus IP Pool Terpilih',
         ]
     ],
+    'tutorial' => [
+        'title' => 'Cara Setting SSL Pada Mikrotik',
+    ]
 ];

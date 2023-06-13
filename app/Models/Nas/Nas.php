@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Nas extends Model
 {
     use HasFactory, softDeletes;
+    protected $connection = "radius";
     protected $table = 'nas';
     protected $keyType = 'string';
     public $incrementing = false;
@@ -22,10 +23,6 @@ class Nas extends Model
         'salt_hash',
     ];
 
-    public function companyObj(): BelongsTo
-    {
-        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj']);
-    }
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class,'created_by','id');

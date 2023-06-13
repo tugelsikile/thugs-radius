@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'confirm' => 'Konfirmasi',
+    'cancel' => 'Batal',
     'method' => 'Undefined method',
     'ok' => 'ok',
     '404' => '404 Page Not Found',

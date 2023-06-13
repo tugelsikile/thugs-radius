@@ -40,7 +40,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'clients'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });
     Route::group(['prefix' => 'customers'], function () {
-        Route::get('/', function () { })->name('clients.customers');
+        Route::get('/', function () { return view('clients.customers.index'); })->name('clients.customers');
         Route::get('/pppoe', function () { })->name('clients.customers.pppoe');
         Route::get('/hotspot', function () { })->name('clients.customers.hotspot');
         Route::group(['prefix' => 'invoices'], function () {
@@ -56,7 +56,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/', function () { return view('clients.nas.index'); })->name('clients.nas');
         Route::get('/pools', function () { return view('clients.nas.profiles.pools'); })->name('clients.nas.pools');
         Route::get('/bandwidths', function () { return view('clients.nas.profiles.bandwidths'); })->name('clients.nas.bandwidths');
-        Route::get('/profiles', function () { })->name('clients.nas.profiles');
+        Route::get('/profiles', function () { return view('clients.nas.profiles.index'); })->name('clients.nas.profiles');
         Route::get('/select', function () { abort(404); })->name('clients.nas.select');
     });
     Route::group(['prefix' => 'configs'], function () {

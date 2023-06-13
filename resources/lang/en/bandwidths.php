@@ -27,6 +27,12 @@ return [
         'priority' => 'priority',
     ],
     'labels' => [
+        'loading' => [
+            'pending' => 'Loading Bandwidth Profile data',
+            'success' => 'Bandwidth Profile data successfully loaded',
+            'error' => 'Failed to load Bandwidth Profile data',
+        ],
+        'select' => 'Select Bandwidth Profile',
         'menu' => 'Bandwidth Profile',
         'menu_info' => 'Manage bandwidths profiles',
         'name' => 'Bandwidth Profile Name',

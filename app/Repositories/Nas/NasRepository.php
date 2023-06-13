@@ -8,11 +8,15 @@
 
 namespace App\Repositories\Nas;
 
+use App\Helpers\MikrotikAPI;
+use App\Helpers\MiktorikSSL;
+use App\Helpers\SwitchDB;
 use App\Models\Nas\Nas;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Crypt;
 use Ramsey\Uuid\Uuid;
 use RouterOS\Client;
@@ -21,6 +25,48 @@ use Throwable;
 
 class NasRepository
 {
+    protected $mikrotikAPI;
+    protected $mikrotikSSL;
+    public function __construct()
+    {
+        $me = auth()->guard('api')->user();
+        if ($me != null) {
+            if ($me->company != null) {
+                Config::set("database.connections.radius", [
+                    'charset' => 'utf8mb4',
+                    'collation' => 'utf8mb4_unicode_ci',
+                    'driver' => 'mysql',
+                    'host' => $me->companyObj->radius_db_host,
+                    'port' => env('DB_RADIUS_PORT'),
+                    'database' => $me->companyObj->radius_db_name,
+                    'username' => $me->companyObj->radius_db_user,
+                    'password' => $me->companyObj->radius_db_pass
+                ]);
+            }
+        }
+    }
+
+    public function reloadStatus(Request $request) {
+        try {
+            $response = null;
+            $nas = Nas::where('id', $request[__('nas.form_input.name')])->first();
+            if ($nas != null) {
+                switch ($nas->method) {
+                    case 'api':
+                        $api = new MikrotikAPI($nas);
+                        $response = $api->testConnection();
+                        break;
+                    case 'ssl' :
+                        $ssl = new MiktorikSSL($nas);
+                        $response = $ssl->testConnection();
+                        break;
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return Collection
@@ -30,14 +76,17 @@ class NasRepository
     {
         try {
             $response = collect();
+            new SwitchDB();
             $nas = Nas::where('id', $request[__('nas.form_input.name')])->first();
             if ($nas != null) {
                 switch (strtolower($nas->method)) {
                     case 'api' :
-                        $queues = getParentQueue($nas);
+                        $api = new MikrotikAPI($nas);
+                        $queues = $api->getParentQueue();
                         break;
                     case 'ssl' :
-                        $queues = parentQueueSSL($nas);
+                        $ssl = new MiktorikSSL($nas);
+                        $queues = $ssl->getParentQueue();
                         break;
                 }
                 if ($queues != null) {
@@ -70,27 +119,23 @@ class NasRepository
      */
     public function create(Request $request) {
         try {
-            $this->testConnection($request);
+            new SwitchDB();
             $me = auth()->guard('api')->user();
             $nas = new Nas();
             $nas->id = Uuid::uuid4()->toString();
-            if ($request->has(__('companies.form_input.name'))) {
-                $nas->company = $request[__('companies.form_input.name')];
-            }
-            $nas->name = $request[__('nas.form_input.name')];
+            $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->type = 'other';
             $nas->community = "default";
             $nas->method = $request[__('nas.form_input.method')];
+            $nas->nasname = $request[__('nas.form_input.ip')];
             if ($nas->method == 'api') {
-                $nas->hostname = $request[__('nas.form_input.ip')];
             } else {
-                $nas->hostname = $request[__('nas.form_input.domain')];
+                $nas->method_domain = $request[__('nas.form_input.domain')];
             }
-            $nas->port = $request[__('nas.form_input.port')];
+            $nas->method_port = $request[__('nas.form_input.port')];
             $nas->user = $request[__('nas.form_input.user')];
             $nas->password = $request[__('nas.form_input.pass')];
-            $nas->salt_hash = Uuid::uuid4()->toString();
             $nas->created_by = $me->id;
             $nas->saveOrFail();
             return $this->table(new Request(['id' => $nas->id]))->first();
@@ -107,21 +152,20 @@ class NasRepository
      */
     public function update(Request $request) {
         try {
+            new SwitchDB();
             $this->testConnection($request);
             $me = auth()->guard('api')->user();
             $nas = Nas::where('id', $request[__('nas.form_input.id')])->first();
-            if ($request->has(__('companies.form_input.name'))) {
-                $nas->company = $request[__('companies.form_input.name')];
-            }
-            $nas->name = $request[__('nas.form_input.name')];
+            $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->method = $request[__('nas.form_input.method')];
-            if ($nas->method == 'api') {
-                $nas->hostname = $request[__('nas.form_input.ip')];
+            $nas->nasname = $request[__('nas.form_input.ip')];
+            if ($nas->method == 'ssl') {
+                $nas->method_domain = $request[__('nas.form_input.domain')];
             } else {
-                $nas->hostname = $request[__('nas.form_input.domain')];
+                $nas->method_domain = null;
             }
-            $nas->port = $request[__('nas.form_input.port')];
+            $nas->method_port = $request[__('nas.form_input.port')];
             $nas->user = $request[__('nas.form_input.user')];
             $nas->password = $request[__('nas.form_input.pass')];
             $nas->updated_by = $me->id;
@@ -131,77 +175,24 @@ class NasRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
-    /* @
-     * @param Request $request
-     * @return string|void
-     * @throws GuzzleException
-     * @throws Exception
-     */
-    public function testConnectionSSL(Request $request) {
+    public function testConnection(Request $request) {
         try {
-            $client = new \GuzzleHttp\Client();
-            $hostname = $request[__('nas.form_input.domain')];
-            if ($request->has(__('nas.form_input.port'))) {
-                if ($request[__('nas.form_input.port')] != 443) $hostname .= ":" . $request[__('nas.form_input.port')];
-            }
-            $url = $hostname . "/rest/system/identity";
-            try {
-                $res = $client->request('get', $url, [
-                    'auth' => [$request[__('nas.form_input.user')], $request[__('nas.form_input.pass')] ]
-                ]);
-                $response = json_decode($res->getBody()->getContents());
-                if (isset($response->name)) return __('nas.labels.connection.success') . $response->name;
-            } catch (GuzzleException $exception) {
-                throw new Exception($exception->getMessage(),500);
-            }
-        } catch (Exception $exception ) {
-            return null;
-            //throw new Exception($exception->getMessage(),500);
-        }
-    }
-    /* @
-     * @param Request $request
-     * @return string|null
-     * @throws Exception
-     */
-    private function testConnectionAPI(Request $request): ?string
-    {
-        try {
-            $hostname = $request[__('nas.form_input.ip')];
-            if ($request->has(__('nas.form_input.port'))) {
-                $hostname .= ":" . $request[__('nas.form_input.port')];
-            }
-            $routerOsClient = new Client([
-                "host" => $hostname, "user" => $request[__('nas.form_input.user')], "pass" => $request[__('nas.form_input.pass')], "timeout" => 1, "attempts" => 1
-            ]);
-            if (! $routerOsClient->connect()) throw new Exception(__('nas.labels.connection.failed'),400);
-            $query = (new Query("/system/identity/print"));
-            return __('nas.labels.connection.success') . collect($routerOsClient->query($query)->read())->first()['name'];
-        } catch (Exception $exception) {
-            return null;
-            //throw new Exception($exception->getMessage(),500);
-        }
-    }
-
-    /* @
-     * @param Request $request
-     * @return string|null
-     * @throws GuzzleException
-     */
-    public function testConnection(Request $request): ?string
-    {
-        try {
-            $response = null;
             switch ($request[__('nas.form_input.method')]) {
-                default :
                 case 'api' :
-                    $response = $this->testConnectionAPI($request);
+                    $api = new MikrotikAPI();
+                    $r = $api->testConnection($request);
+                    if ($r != null) {
+                        return __('nas.labels.connection.success') . $r->message;
+                    }
                     break;
                 case 'ssl' :
-                    $response = $this->testConnectionSSL($request);
+                    $ssl = new MiktorikSSL();
+                    $r = $ssl->testConnection($request);
+                    if ($r != null) {
+                        return __('nas.labels.connection.success') . $r->message;
+                    }
                     break;
             }
-            return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -209,27 +200,37 @@ class NasRepository
     /* @
      * @param Request $request
      * @return Collection
-     * @throws Exception
+     * @throws Exception|GuzzleException
      */
     public function table(Request $request): Collection
     {
         try {
             $response = collect();
-            $me = auth()->guard('api')->user();
-            $nass = Nas::orderBy('name', 'asc');
+            new SwitchDB();
+            $nass = Nas::orderBy('shortname', 'asc');
             if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
             if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();
-            if ($me != null) {
+            /*if ($me != null) {
                 if ($me->company != null) $nass = $nass->where('company', $me->company);
-            }
+            }*/
             $nass = $nass->get();
             if ($nass->count() > 0) {
                 foreach ($nass as $nas) {
+                    $status = (object) ['message' => null, 'success' => false ];
+                    switch ($nas->method) {
+                        case 'api' :
+                            $this->mikrotikAPI = new MikrotikAPI($nas);
+                            $status = $this->mikrotikAPI->testConnection();
+                            break;
+                        case 'ssl' :
+                            $this->mikrotikSSL = new MiktorikSSL($nas);
+                            $status = $this->mikrotikSSL->testConnection();
+                            break;
+                    }
                     $response->push((object) [
                         'value' => $nas->id,
-                        'label' => $nas->name,
+                        'label' => $nas->shortname,
                         'meta' => (object) [
-                            'company' => $nas->companyObj,
                             'description' => $nas->description == null ? '' : $nas->description,
                             'type' => $nas->type,
                             'community' => $nas->community,
@@ -238,14 +239,16 @@ class NasRepository
                                 'acc' => $nas->acc_port,
                             ],
                             'auth' => (object) [
-                                'host' => $nas->hostname,
-                                'port' => $nas->port,
+                                'host' => $nas->method_domain,
+                                'ip' => $nas->nasname,
+                                'port' => $nas->method_port,
                                 'method' => $nas->method,
                                 'user' => Crypt::encryptString($nas->user),
                                 'pass' => Crypt::encryptString($nas->password),
+                                'secret' => $nas->secret,
                             ],
                             'url' => $nas->expire_url,
-                            'status' => testConnection($nas),
+                            'status' => $status,
                             'timestamps' => (object) [
                                 'create' => (object) [
                                     'at' => $nas->created_at,

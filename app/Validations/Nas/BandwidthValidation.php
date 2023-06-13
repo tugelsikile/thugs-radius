@@ -2,6 +2,7 @@
 
 namespace App\Validations\Nas;
 
+use App\Helpers\SwitchDB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,6 +17,7 @@ class BandwidthValidation
     public function delete(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 'id' => 'required|array|min:1',
                 'id.*' => 'required|exists:nas_profile_bandwidths,id'
@@ -35,7 +37,6 @@ class BandwidthValidation
     {
         try {
             $valid = Validator::make($request->all(),[
-                __('companies.form_input.name') => 'required|exists:client_companies,id',
                 __('bandwidths.form_input.name') => 'required|string:min:2|max:50',
                 __('bandwidths.form_input.description') => 'nullable',
                 __('bandwidths.form_input.max_limit.up') => 'required|numeric|min:0',
@@ -65,9 +66,9 @@ class BandwidthValidation
     public function update(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 __('bandwidths.form_input.id') => 'required|exists:nas_profile_bandwidths,id',
-                __('companies.form_input.name') => 'required|exists:client_companies,id',
                 __('bandwidths.form_input.name') => 'required|string:min:2|max:50',
                 __('bandwidths.form_input.description') => 'nullable',
                 __('bandwidths.form_input.max_limit.up') => 'required|numeric|min:0',

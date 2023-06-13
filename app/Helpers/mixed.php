@@ -7,11 +7,17 @@ use App\Models\Company\ClientCompany;
 use App\Models\Company\CompanyPackage;
 use App\Models\Company\Invoice\CompanyInvoice;
 use App\Models\Company\Invoice\CompanyInvoicePayment;
+use App\Models\Customer\Customer;
 use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-
+function randomString($length = 5) {
+    return collect(array_merge(range('a', 'z'), range('A', 'Z')))
+        ->shuffle()
+        ->take($length)
+        ->implode('');
+}
 function generateCompanyExpired($current, $durString, $durAmmount) {
     $response = null;
     if ($durAmmount > 0) {
@@ -52,6 +58,18 @@ function generateCompanyInvoicePaymentCode($tanggal): string
         $length = 1;
     }
     return Carbon::parse($tanggal)->format('Ymd') . Str::padLeft($length,4,'0');
+}
+function generateCustomerCode() {
+    $length = Customer::orderBy('code', 'desc')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->limit(1)->offset(0)->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return Carbon::now()->format('ymd') . Str::padLeft($length,4,'0');
 }
 function generateCompanyInvoiceCode(): string
 {

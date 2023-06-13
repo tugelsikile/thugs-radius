@@ -3,6 +3,7 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {DialogActions, DialogTitle} from "@mui/material";
 import React from "react";
+import {faSave,faClose,faCircleNotch} from "@fortawesome/free-solid-svg-icons";
 
 export const ModalHeader = (props) => {
     return (
@@ -19,17 +20,19 @@ export const ModalFooter = (props) => {
         <DialogActions className="justify-content-between">
             <button type="submit" className="btn btn-success" disabled={props.loading}>
                 <FontAwesomeIcon spin={props.loading} className="mr-1"
-                                 icon={props.loading ? 'circle-notch' : 'save'}/>
+                                 icon={props.loading ? faCircleNotch : faSave}/>
                 {props.form.id === null ? props.langs.create : props.langs.update}
             </button>
-            {props.buttons === null ? null :
-                props.buttons.length === 0 ? null :
-                    props.buttons.map((item,index)=>
-                        <React.Fragment key={index}>{item}</React.Fragment>
-                    )
+            {typeof props.buttons === 'undefined' ? null :
+                props.buttons === null ? null :
+                    props.buttons.length === 0 ? null :
+                        props.buttons.map((item,index)=>
+                            <React.Fragment key={index}>{item}</React.Fragment>
+                        )
             }
             <button type="button" className="btn btn-default" disabled={props.loading} onClick={()=>props.loading ? null : props.handleClose()}>
-                <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
+                <FontAwesomeIcon icon={faClose} className="mr-1"/>
+                {Lang.get('messages.close')}
             </button>
         </DialogActions>
     )

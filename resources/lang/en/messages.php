@@ -1,10 +1,12 @@
 <?php
 
 return [
+    'confirm' => 'Confirm',
+    'cancel' => 'Cancel',
     'method' => 'Undefined method',
     'ok' => 'ok',
     '404' => '404 Page Not Found',
-    'required' => 'Harus diisi / dipilih',
+    'required' => 'Must be filled',
     'undefined' => 'Undefined message',
     'save' => 'Save',
     'close' => 'Close',

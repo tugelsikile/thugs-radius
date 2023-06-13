@@ -4,6 +4,8 @@ import {showError} from "../Toaster";
 import {updateLang} from "../../Services/AuthService";
 import DigitalClock from "./DigitalClock";
 import {customPreventDefault} from "../mixedConsts";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExpandArrowsAlt,faBars} from "@fortawesome/free-solid-svg-icons";
 
 class MainHeader extends React.Component {
     constructor(props) {
@@ -48,7 +50,7 @@ class MainHeader extends React.Component {
                 <nav className="main-header navbar layout-navbar-fixed navbar-expand navbar-white navbar-light">
                     <ul className="navbar-nav">
                         <li className="nav-item">
-                            <a className="nav-link" data-widget="pushmenu" href="#" role="button"><i className="fas fa-bars"/></a>
+                            <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon={faBars}/></a>
                         </li>
                         <li className="nav-item d-none d-sm-inline-block">
                             <a title="Server Time (LIVE)" href="#" onClick={customPreventDefault} className="nav-link pl-0"><DigitalClock/></a>
@@ -139,16 +141,16 @@ class MainHeader extends React.Component {
                         </li>*/}
                         <li className="nav-item">
                             <a className="nav-link" data-widget="fullscreen" href="#" role="button">
-                                <i className="fas fa-expand-arrows-alt"/>
+                                <FontAwesomeIcon icon={faExpandArrowsAlt}/>
                             </a>
                         </li>
                         <li className="nav-item">
                             <a title="Set Language" onClick={this.setLocaleLang} className="nav-link" href="#" role="button">
                                 {
                                     localStorage.getItem('locale_lang') === 'id' ?
-                                        <img src={window.origin + '/flag_indonesia.png'} style={{height:20}}/>
+                                        <img alt="id" src={window.origin + '/flag_indonesia.png'} style={{height:20}}/>
                                         :
-                                        <img src={window.origin + '/flag_usa.png'} style={{height:20}}/>
+                                        <img alt="en" src={window.origin + '/flag_usa.png'} style={{height:20}}/>
                                 }
                             </a>
                         </li>

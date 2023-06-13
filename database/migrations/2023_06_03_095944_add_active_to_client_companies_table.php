@@ -15,7 +15,7 @@ class AddActiveToClientCompaniesTable extends Migration
     {
         Schema::table('client_companies', function (Blueprint $table) {
             $table->dateTime('active_at')->nullable()->after('expired_at');
-            $table->uuid('active_by')->after('discount')->nullable();
+            $table->uuid('active_by')->after('radius_db_pass')->nullable();
 
             $table->foreign('active_by')->on('users')->references('id')->onDelete('set null')->onUpdate('cascade');
         });

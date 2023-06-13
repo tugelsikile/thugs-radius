@@ -131,6 +131,8 @@ class PoolRepository
      * @param Request $request
      * @return Collection
      * @throws Exception
+     * AItot
+     * NJLTWOlo-_
      */
     public function table(Request $request): Collection
     {

@@ -126,6 +126,7 @@ class NasRepository
             $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->type = 'other';
+            $nas->secret = 'asd';
             $nas->community = "default";
             $nas->method = $request[__('nas.form_input.method')];
             $nas->nasname = $request[__('nas.form_input.ip')];

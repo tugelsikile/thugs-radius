@@ -9,6 +9,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class NasController extends Controller
 {
@@ -78,9 +79,12 @@ class NasController extends Controller
             return formatResponse($exception->getCode(), $exception->getMessage());
         }
     }
+
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws GuzzleException
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

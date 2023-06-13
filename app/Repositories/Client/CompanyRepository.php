@@ -68,11 +68,11 @@ class CompanyRepository
             $companies = ClientCompany::whereIn('id', $request->id)->get();
             foreach ($companies as $company) {
                 Config::set("database.connections.radius.host", $company->radius_db_host);
-                Config::set("database.connections.radius.username", $company->radius_db_user);
-                Config::set("database.connections.radius.password", $company->radius_db_pass);
+                Config::set("database.connections.radius.username", config('database.connections.mysql.username'));
+                Config::set("database.connections.radius.password", config('database.connections.mysql.password'));
                 DB::connection("radius")->unprepared(
-                    "DROP DATABASE $company->radius_db_name;"
-                    . "DROP USER '$company->radius_db_user'@'%'"
+                    "DROP USER '$company->radius_db_user'@'%';"
+                    . "DROP DATABASE $company->radius_db_name;"
                 );
                 $company->delete();
             }
@@ -192,9 +192,9 @@ class CompanyRepository
             $company->phone = $request[__('companies.form_input.phone')];
             $company->currency = Currency::orderBy('code', 'asc')->first()->id;
             $company->radius_db_host = config('database.connections.radius.host');
-            $company->radius_db_name = 'radius_' . strtolower(randomString(7));
-            $company->radius_db_user = Str::random(5);
-            $company->radius_db_pass = Str::random(5);
+            $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
+            $company->radius_db_user = Str::slug($company->name,'_');
+            $company->radius_db_pass = Str::random(8) . '-_';
             $company->saveOrFail();
             if ($request->has(__('companies.packages.form_input.additional'))) {
                 foreach ($request[__('companies.packages.form_input.additional')] as $item) {
@@ -278,9 +278,12 @@ class CompanyRepository
             $newDB = DB::connection("radius")->unprepared(
                 "CREATE DATABASE {$clientCompany->radius_db_name};"
                 . "CREATE USER '$clientCompany->radius_db_user'@'%' IDENTIFIED BY '$clientCompany->radius_db_pass';"
-                . "GRANT ALL PRIVILEGES ON *.* TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
+                . "GRANT ALL PRIVILEGES ON $clientCompany->radius_db_name.*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
+                . "GRANT ALL PRIVILEGES ON ".config('database.connections.mysql.database').".*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
+                . "GRANT ALL PRIVILEGES ON *.*  TO '".config('database.connections.mysql.username')."'@'%' WITH GRANT OPTION;"
                 . "FLUSH PRIVILEGES;"
             );
+            //. "GRANT ALL PRIVILEGES ON $clientCompany->radius_db_name.*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;";
             DB::purge('radius');
 
             if ($newDB) {

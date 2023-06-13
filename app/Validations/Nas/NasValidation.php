@@ -127,7 +127,7 @@ class NasValidation
     public function create(Request $request): Request
     {
         try {
-            new SwitchDB();
+            new SwitchDB("mysql");
             $valid = Validator::make($request->all(),[
                 __('companies.form_input.name') => 'required|exists:client_companies,id',
                 __('nas.form_input.name') => 'required|string|min:1|max:50',

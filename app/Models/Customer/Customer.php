@@ -24,6 +24,9 @@ class Customer extends Model
         'nas_username',
         'nas_password',
     ];
+    protected $casts = [
+        'is_voucher' => 'boolean',
+    ];
     public function userObj(): BelongsTo
     {
         return $this->setConnection("mysql")->belongsTo(User::class,'user','id');
@@ -59,5 +62,11 @@ class Customer extends Model
     public function updatedBy(): BelongsTo
     {
         return $this->setConnection("mysql")->belongsTo(User::class,'updated_by','id');
+    }
+    public function activeBy(): BelongsTo {
+        return $this->setConnection("mysql")->belongsTo(User::class,'active_by','id');
+    }
+    public function inactiveBy(): BelongsTo {
+        return $this->setConnection("mysql")->belongsTo(User::class,'inactive_by','id');
     }
 }

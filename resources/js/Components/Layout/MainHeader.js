@@ -5,6 +5,7 @@ import {updateLang} from "../../Services/AuthService";
 import DigitalClock from "./DigitalClock";
 import {customPreventDefault} from "../mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExpandArrowsAlt,faBars} from "@fortawesome/free-solid-svg-icons";
 
 class MainHeader extends React.Component {
     constructor(props) {
@@ -49,7 +50,7 @@ class MainHeader extends React.Component {
                 <nav className="main-header navbar layout-navbar-fixed navbar-expand navbar-white navbar-light">
                     <ul className="navbar-nav">
                         <li className="nav-item">
-                            <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon="bars"/></a>
+                            <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon={faBars}/></a>
                         </li>
                         <li className="nav-item d-none d-sm-inline-block">
                             <a title="Server Time (LIVE)" href="#" onClick={customPreventDefault} className="nav-link pl-0"><DigitalClock/></a>
@@ -140,7 +141,7 @@ class MainHeader extends React.Component {
                         </li>*/}
                         <li className="nav-item">
                             <a className="nav-link" data-widget="fullscreen" href="#" role="button">
-                                <FontAwesomeIcon icon="expand-arrows-alt"/>
+                                <FontAwesomeIcon icon={faExpandArrowsAlt}/>
                             </a>
                         </li>
                         <li className="nav-item">

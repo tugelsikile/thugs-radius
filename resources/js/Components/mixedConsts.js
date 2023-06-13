@@ -6,6 +6,7 @@ import {guestSiteConfig} from "../Services/ConfigService";
 import {showError} from "./Toaster";
 import {logout} from "./Authentication";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faAsterisk} from "@fortawesome/free-solid-svg-icons";
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 export const langSelect = [
@@ -450,49 +451,7 @@ export const formatBytes = (bytes, decimals = 0) => {
 }
 export const LabelRequired = () => {
     return (
-        <sup className="float-left text-danger"><FontAwesomeIcon size="2xs" icon="asterisk"/></sup>
+        <sup className="float-left text-danger"><FontAwesomeIcon size="2xs" icon={faAsterisk}/></sup>
     );
 }
-export const sumCustomerSubtotalForm = (form) => {
-    let response = 0;
-    if (form.profile !== null) {
-        response += form.profile.meta.price;
-    }
-    if (form.services.current.length > 0) {
-        form.services.current.map((item)=>{
-            if (item.package !== null) {
-                response += item.package.meta.price;
-            }
-        });
-    }
-    return response;
-}
-export const sumCustomerTaxLineForm = (form, index) => {
-    let response = 0;
-    let subtotal = sumCustomerSubtotalForm(form);
-    if (form.taxes.current.length > 0) {
-        if (form.taxes.current[index].tax !== null) {
-            response = ( form.taxes.current[index].tax.meta.percent * subtotal ) / 100;
-        }
-    }
-    return response;
-}
-export const sumCustomerTaxForm = (form) => {
-    let subtotal = sumCustomerSubtotalForm(form);
-    let response = 0;
-    form.taxes.current.map((item)=>{
-        if (item.tax !== null) {
-            response += ( (subtotal * item.tax.meta.percent) / 100 );
-        }
-    });
-    return response;
-}
-export const sumCustomerDiscountForm = (form) => {
-    let response = 0;
-    form.discounts.current.map((item)=>{
-        if (item.discount !== null) {
-            response += item.discount.meta.amount;
-        }
-    })
-    return response;
-}
+

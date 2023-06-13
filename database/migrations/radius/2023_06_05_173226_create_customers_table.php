@@ -18,7 +18,7 @@ class CreateCustomersTable extends Migration
         Schema::connection("radius")->create('customers', function (Blueprint $table) {
             $table->uuid('id')->primary()->unique();
             $table->uuid('profile');
-            $table->uuid('user');
+            $table->uuid('user')->nullable();
             $table->string('code',50)->comment('unique berdasarkan company');
             $table->text('address')->nullable();
             $table->char('province',2)->nullable();

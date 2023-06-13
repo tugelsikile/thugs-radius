@@ -21,6 +21,7 @@ import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../Components/TableComponent";
 import FormProfile from "./Tools/FormProfile";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faBriefcase,faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Popover} from "@mui/material";
 import {DetailBandwidth, DetailNas, DetailPool} from "./Tools/DetailCard";
 
@@ -447,7 +448,7 @@ class ProfilePage extends React.Component {
                                                                    loading={this.state.loadings.profiles} handleCheck={this.handleCheck}/>
                                                     <td colSpan={item.meta.additional ? 4 : 1} className="align-middle">
                                                         {item.meta.additional &&
-                                                            <FontAwesomeIcon icon="briefcase" className="mr-1 text-info" title={Lang.get('profiles.labels.additional.info_true')}/>
+                                                            <FontAwesomeIcon icon={faBriefcase} className="mr-1 text-info" title={Lang.get('profiles.labels.additional.info_true')}/>
                                                         }
                                                         {item.label}
                                                     </td>
@@ -456,7 +457,7 @@ class ProfilePage extends React.Component {
                                                             <td className="align-middle">
                                                                 {item.meta.nas === null ? null :
                                                                     <>
-                                                                        <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
                                                                         {item.meta.nas.shortname}
                                                                     </>
                                                                 }
@@ -464,7 +465,7 @@ class ProfilePage extends React.Component {
                                                             <td className="align-middle">
                                                                 {item.meta.pool === null ? null :
                                                                     <>
-                                                                        <FontAwesomeIcon size="xs" data-type="pool" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        <FontAwesomeIcon size="xs" data-type="pool" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
                                                                         {item.meta.pool.name}
                                                                     </>
                                                                 }
@@ -472,7 +473,7 @@ class ProfilePage extends React.Component {
                                                             <td className="align-middle">
                                                                 {item.meta.bandwidth === null ? null :
                                                                     <>
-                                                                        <FontAwesomeIcon size="xs" data-type="bandwidth" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                        <FontAwesomeIcon size="xs" data-type="bandwidth" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
                                                                         {item.meta.bandwidth.name}
                                                                     </>
                                                                 }

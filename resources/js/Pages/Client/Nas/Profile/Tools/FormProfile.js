@@ -11,6 +11,7 @@ import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
 import {InputText} from "../../../../../Components/CustomInput";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faPlus, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import {crudProfile, getParentQueue} from "../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {NumericFormat} from "react-number-format";
@@ -462,9 +463,9 @@ class FormProfile extends React.Component {
                                         }
                                     </div>
                                     <div className="col-sm-3">
-                                        <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon="plus"/></button>
+                                        <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
                                         {this.state.form.address.dns.length > 0 &&
-                                            <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon="trash-alt" className="mr-1"/></button>
+                                            <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
                                         }
                                     </div>
                                 </div>
@@ -483,8 +484,8 @@ class FormProfile extends React.Component {
                                                                  value={item.label} className="form-control text-sm"/>
                                                 </div>
                                                 <div className="col-sm-3">
-                                                    <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon="plus"/></button>
-                                                    <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon="trash-alt" className="mr-1"/></button>
+                                                    <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
+                                                    <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
                                                 </div>
                                             </div>
                                     )

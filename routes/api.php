@@ -77,6 +77,8 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
     });
     Route::group(['prefix' => 'customers'], function () {
         Route::any('/', [CustomerController::class, 'crud']);
+        Route::patch('/active', [CustomerController::class, 'statusActive']);
+        Route::put('/generate', [CustomerController::class, 'generate']);
     });
 });
 Route::group(['prefix' => 'regions'], function () {

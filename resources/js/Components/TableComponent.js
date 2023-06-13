@@ -2,6 +2,7 @@
 
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExclamationTriangle, faPencilAlt, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 
 export const TableAction = (props) => {
     return (
@@ -10,11 +11,21 @@ export const TableAction = (props) => {
                 <>
                     <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown"><span className="sr-only">Toggle Dropdown</span></button>
                     <div className="dropdown-menu" role="menu">
+                        {typeof props.others === 'undefined' ? null :
+                            props.others === null ? null :
+                                props.others.map((item,index)=>
+                                    item === null ? null :
+                                        <button key={`otherPriv_${index}`} type="button" onClick={item.handle} className={`dropdown-item ${typeof item.color === null ? '' : item.color}`}>
+                                            {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1"/> }
+                                            {item.lang}
+                                        </button>
+                                )
+                        }
                         {props.privilege.update &&
-                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-primary"><i className="fa fa-pencil-alt mr-1"/> {props.langs.update}</button>
+                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
                         }
                         {props.privilege.delete &&
-                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {props.langs.delete}</button>
+                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
                         }
                     </div>
                 </>
@@ -26,7 +37,7 @@ export const DataNotFound = (props) => {
     return (
         <tr>
             <td colSpan={props.colSpan} className="align-middle text-center">
-                <FontAwesomeIcon icon="exclamation-triangle" className="mr-2 text-warning"/>
+                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2 text-warning"/>
                 <strong>{props.message}</strong>
             </td>
         </tr>

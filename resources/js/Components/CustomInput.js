@@ -4,12 +4,13 @@ import React from "react";
 import {NumericFormat} from "react-number-format";
 import MaskedInput from 'react-text-mask';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faAsterisk} from "@fortawesome/free-solid-svg-icons";
 import ReactHtmlParser from "react-html-parser";
 import {formatBytes} from "./mixedConsts";
 import autosize from "autosize/dist/autosize";
 
 export const LabelRequired = () => {
-    return <sup title={Lang.get('messages.required')} className="float-left mr-1"><FontAwesomeIcon icon="asterisk" className="text-danger fa-xs"/></sup>
+    return <sup title={Lang.get('messages.required')} className="float-left mr-1"><FontAwesomeIcon icon={faAsterisk} className="text-danger fa-xs"/></sup>
 }
 export const InputText = (props) => {
     return (

@@ -8,6 +8,7 @@ use App\Validations\Customer\CustomerValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class CustomerController extends Controller
 {
@@ -22,6 +23,36 @@ class CustomerController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
+     */
+    public function generate(Request $request): JsonResponse
+    {
+        try {
+            $valid = $this->validation->generate($request);
+            $params = $this->repository->generate($valid);
+            return formatResponse(200,__('customers.hotspot.generate.success'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function statusActive(Request $request): JsonResponse
+    {
+        try {
+             $valid = $this->validation->statusActive($request);
+             $params = $this->repository->statusActive($valid);
+             return formatResponse(200,__('customers.labels.status.success'), $params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

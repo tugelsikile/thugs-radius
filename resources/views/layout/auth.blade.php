@@ -11,6 +11,7 @@
     <script src="https://kit.fontawesome.com/4678f997d7.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="{{asset('theme/adminlte/css/feather.css')}}">
     <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link rel="stylesheet" href="{{asset('css/progress-animation.css')}}">
     <link rel="stylesheet" href="{{asset('theme/adminlte/css/adminlte.min.css')}}">
     <link rel="stylesheet" href="{{asset('theme/adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css')}}">
     @yield('css')

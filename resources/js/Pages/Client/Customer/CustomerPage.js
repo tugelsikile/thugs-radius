@@ -3,7 +3,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
-import {CardPreloader, formatLocalePeriode, responseMessage, siteData} from "../../../Components/mixedConsts";
+import {CardPreloader, responseMessage, siteData} from "../../../Components/mixedConsts";
 import {crudNas, crudProfile} from "../../../Services/NasService";
 import {crudCustomers} from "../../../Services/CustomerService";
 import {confirmDialog} from "../../../Components/Toaster";
@@ -15,10 +15,19 @@ import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
 import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import moment from "moment";
+import {faCheckCircle, faInfoCircle, faRefresh, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCustomer from "./Tools/FormCustomer";
 import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
+import {
+    CustomerTypeIcon,
+    DueAtCustomer,
+    PriceCustomerPage,
+    sortStatus,
+    StatusCustomer,
+    sumGrandtotalCustomer
+} from "./Tools/Mixed";
+import FormGenerate from "./Tools/FormGenerate";
 
 class CustomerPage extends React.Component {
     constructor(props) {
@@ -31,6 +40,7 @@ class CustomerPage extends React.Component {
             filter : { keywords : '', sort : { by : 'code', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
                 customer : { open : false, data : null },
+                generate : { open : false },
             },
             popover : { open : false, anchorEl : null, data : null },
         };
@@ -43,6 +53,8 @@ class CustomerPage extends React.Component {
         this.handleChangePage = this.handleChangePage.bind(this);
         this.handlePopOver = this.handlePopOver.bind(this);
         this.loadCustomers = this.loadCustomers.bind(this);
+        this.confirmActive = this.confirmActive.bind(this);
+        this.toggleGenerate = this.toggleGenerate.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -82,6 +94,11 @@ class CustomerPage extends React.Component {
             }
         }
     }
+    toggleGenerate() {
+        let modal = this.state.modal;
+        modal.generate.open = ! this.state.modal.generate.open;
+        this.setState({modal});
+    }
     handlePopOver(e) {
         let popover = this.state.popover;
         popover.open = ! this.state.popover.open;
@@ -93,6 +110,9 @@ class CustomerPage extends React.Component {
             }
         }
         this.setState({popover});
+    }
+    confirmActive(data) {
+        confirmDialog(this,data.value,'patch',`${window.origin}/api/clients/customers/active`, Lang.get('customers.labels.status.warning'), data.meta.timestamps.inactive.at !== null ? Lang.get('customers.labels.status.message_activate') : Lang.get('customers.labels.status.message_inactivate'),'app.loadCustomers(response.data.params)');
     }
     confirmDelete(data = null) {
         let ids = [];
@@ -175,6 +195,55 @@ class CustomerPage extends React.Component {
                     customers.filtered = customers.filtered.sort((a,b) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0));
                 } else {
                     customers.filtered = customers.filtered.sort((a,b)=> (a.label > b.label) ? -1 : ((b.label > a.label) ? 1 : 0));
+                }
+                break;
+            case 'code' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.code > b.meta.code) ? 1 : ((b.meta.code > a.meta.code) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.code > b.meta.code) ? -1 : ((b.meta.code > a.meta.code) ? 1 : 0));
+                }
+                break;
+            case 'price' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (sumGrandtotalCustomer(a) > sumGrandtotalCustomer(b)) ? 1 : ((sumGrandtotalCustomer(b) > sumGrandtotalCustomer(a)) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (sumGrandtotalCustomer(a) > sumGrandtotalCustomer(b)) ? -1 : ((sumGrandtotalCustomer(b) > sumGrandtotalCustomer(a)) ? 1 : 0));
+                }
+                break;
+            case 'due' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.timestamps.due.at === null ? 'z' : a.meta.timestamps.due.at > b.meta.timestamps.due.at === null ? 'z' : b.meta.timestamps.due.at) ? 1 : ((b.meta.timestamps.due.at === null ? 'z' : b.meta.timestamps.due.at > a.meta.timestamps.due.at === null ? 'z' : a.meta.timestamps.due.at) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.timestamps.due.at === null ? 'z' : a.meta.timestamps.due.at > b.meta.timestamps.due.at === null ? 'z' : b.meta.timestamps.due.at) ? -1 : ((b.meta.timestamps.due.at === null ? 'z' : b.meta.timestamps.due.at > a.meta.timestamps.due.at === null ? 'z' : a.meta.timestamps.due.at) ? 1 : 0));
+                }
+                break;
+            case 'nas' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.nas === null ? 'z' : a.meta.nas.shortname > b.meta.nas === null ? 'z' : b.meta.nas.shortname) ? 1 : ((b.meta.nas === null ? 'z' : b.meta.nas.shortname > a.meta.nas === null ? 'z' : a.meta.nas.shortname) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.nas === null ? 'z' : a.meta.nas.shortname > b.meta.nas === null ? 'z' : b.meta.nas.shortname) ? -1 : ((b.meta.nas === null ? 'z' : b.meta.nas.shortname > a.meta.nas === null ? 'z' : a.meta.nas.shortname) ? 1 : 0));
+                }
+                break;
+            case 'profile' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile === null ? 'z' : a.meta.profile.name > b.meta.profile === null ? 'z' : b.meta.profile.name) ? 1 : ((b.meta.profile === null ? 'z' : b.meta.profile.name > a.meta.profile === null ? 'z' : a.meta.profile.name) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile === null ? 'z' : a.meta.profile.name > b.meta.profile === null ? 'z' : b.meta.profile.name) ? -1 : ((b.meta.profile === null ? 'z' : b.meta.profile.name > a.meta.profile === null ? 'z' : a.meta.profile.name) ? 1 : 0));
+                }
+                break;
+            case 'type' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.auth.type > b.meta.auth.type) ? 1 : ((b.meta.auth.type > a.meta.auth.type) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.auth.type > b.meta.auth.type) ? -1 : ((b.meta.auth.type > a.meta.auth.type) ? 1 : 0));
+                }
+                break;
+            case 'status' :
+                if (filter.sort.dir === 'asc') {
+                    customers.filtered = customers.filtered.sort((a,b) => (sortStatus(a) > sortStatus(b)) ? 1 : ((sortStatus(b) > sortStatus(a)) ? -1 : 0));
+                } else {
+                    customers.filtered = customers.filtered.sort((a,b) => (sortStatus(a) > sortStatus(b)) ? -1 : ((sortStatus(b) > sortStatus(a)) ? 1 : 0));
                 }
                 break;
         }
@@ -336,6 +405,13 @@ class CustomerPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <FormGenerate open={this.state.modal.generate.open}
+                              profiles={this.state.profiles}
+                              nas={this.state.nas}
+                              loadings={this.state.loadings}
+                              customers={this.state.customers.unfiltered}
+                              handleClose={this.toggleGenerate}
+                              handleUpdate={this.loadCustomers}/>
                 <FormCustomer open={this.state.modal.customer.open} data={this.state.modal.customer.data}
                               loadings={this.state.loadings}
                               provinces={this.state.provinces}
@@ -364,7 +440,10 @@ class CustomerPage extends React.Component {
                                                    langs={{create:Lang.get('customers.create.button'),delete:Lang.get('customers.delete.button')}}
                                                    selected={this.state.customers.selected}
                                                    handleModal={this.toggleModal}
-                                                   confirmDelete={this.confirmDelete}/>
+                                                   confirmDelete={this.confirmDelete}
+                                                   others={[
+                                                       {lang : Lang.get('customers.hotspot.generate.button'), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
+                                                   ]}/>
                                     <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('customers.labels.search')}/>
                                 </div>
                                 <div className="card-body p-0">
@@ -379,9 +458,14 @@ class CustomerPage extends React.Component {
                                                     </div>
                                                 </th>
                                             }
-                                            <th className="align-middle" width={100}>
+                                            <th className="align-middle" width={80}>
                                                 <BtnSort sort="code"
                                                          name={Lang.get('customers.labels.code')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={50}>
+                                                <BtnSort sort="type"
+                                                         name={Lang.get('customers.labels.type_short')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle">
@@ -399,9 +483,19 @@ class CustomerPage extends React.Component {
                                                          name={Lang.get('profiles.labels.name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={150}>
+                                            <th className="align-middle" width={110}>
                                                 <BtnSort sort="price"
                                                          name={Lang.get('profiles.labels.price')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={100}>
+                                                <BtnSort sort="status" center={true}
+                                                         name={Lang.get('customers.labels.status.label')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={150}>
+                                                <BtnSort sort="due"
+                                                         name={Lang.get('customers.labels.due.at')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
@@ -417,11 +511,12 @@ class CustomerPage extends React.Component {
                                                                    checked={this.state.customers.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.customers} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-center">{item.meta.code}</td>
-                                                    <td className="align-middle">{item.meta.user.name}</td>
+                                                    <td className="align-middle text-center"><CustomerTypeIcon customer={item}/></td>
+                                                    <td className="align-middle">{item.label}</td>
                                                     <td className="align-middle">
                                                         {item.meta.nas === null ? null :
                                                             <>
-                                                                <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
                                                                 {item.meta.nas.shortname}
                                                             </>
                                                         }
@@ -429,22 +524,25 @@ class CustomerPage extends React.Component {
                                                     <td className="align-middle">
                                                         {item.meta.profile === null ? null :
                                                             <>
-                                                                <FontAwesomeIcon size="xs" data-type="profile" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon="info-circle" className="mr-1 text-info"/>
+                                                                <FontAwesomeIcon size="xs" data-type="profile" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
                                                                 {item.meta.profile.name}
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle">
-                                                        {item.meta.timestamps.due.at === null ?
-                                                            <span className="badge badge-success">UNLIMITED</span>
-                                                            :
-                                                            moment().isAfter(item.meta.timestamps.due.at) ?
-                                                                <span className="badge badge-danger">{formatLocalePeriode(item.meta.timestamps.due.at)}</span>
-                                                                :
-                                                                <span className="badge badge-primary">{formatLocalePeriode(item.meta.timestamps.due.at)}</span>
-                                                        }
-                                                    </td>
-                                                    <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('customers.update.button'),delete:Lang.get('customers.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    <td className="align-middle"><PriceCustomerPage customer={item}/></td>
+                                                    <td className="align-middle text-center"><StatusCustomer customer={item}/></td>
+                                                    <td className="align-middle"><DueAtCustomer customer={item}/> </td>
+                                                    <TableAction others={[
+                                                        this.state.privilege === null ? null :
+                                                            item.meta.voucher.is ? null :
+                                                                item.meta.timestamps.inactive.at !== null ?
+                                                                    {lang : Lang.get('customers.labels.status.activate'), icon : faCheckCircle, color : 'text-success', handle : ()=> this.confirmActive(item) }
+                                                                    :
+                                                                    item.meta.timestamps.active.at === null ?
+                                                                        {lang : Lang.get('customers.labels.status.activate'), icon : faCheckCircle, color : 'text-success', handle : ()=> this.confirmActive(item) }
+                                                                        :
+                                                                        {lang : Lang.get('customers.labels.status.inactivate'),icon : faTimesCircle, color : 'text-warning', handle : ()=> this.confirmActive(item) }
+                                                    ]} privilege={this.state.privilege} item={item} langs={{update:item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.update') : Lang.get('customers.update.button'), delete: item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.delete') : Lang.get('customers.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

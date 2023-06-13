@@ -10,7 +10,71 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomerValidation
 {
-    public function update(Request $request) {
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
+    public function generate(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                __('nas.form_input.name') => 'required|exists:nas,id',
+                __('profiles.form_input.name') => 'required|exists:nas_profiles,id',
+                __('customers.hotspot.form_input.username') => 'required|min:1|max:70unique:customers,nas_username',
+                __('customers.hotspot.form_input.password') => 'required|min:1|max:70',
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
+    public function delete(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                'id' => 'required|array|min:1',
+                'id.*' => 'required|exists:customers,id'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
+    public function statusActive(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                'id' => 'required|exists:customers,id'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
+    public function update(Request $request): Request
+    {
         try {
             new SwitchDB();
             $valid = Validator::make($request->all(),[
@@ -22,9 +86,15 @@ class CustomerValidation
                 __('customers.form_input.address.street') => 'nullable',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request->has(__('customers.form_input.email'))) {
+                $valid = Validator::make($request->all(),[
+                    __('customers.form_input.email') => 'email'
+                ]);
+                if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            }
             new SwitchDB("mysql");
             $valid = Validator::make($request->all(),[
-                __('customers.form_input.email') => 'required|email|unique:users,email,' . $request[__('customers.form_input.id')] . ',id',
+                __('customers.form_input.email') => 'nullable|unique:users,email,' . $request[__('customers.form_input.id')] . ',id',
                 __('customers.form_input.address.village') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'villages,code',
                 __('customers.form_input.address.district') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'districts,code',
                 __('customers.form_input.address.city') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'cities,code',
@@ -81,9 +151,15 @@ class CustomerValidation
                 __('customers.form_input.address.street') => 'nullable',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request->has(__('customers.form_input.email'))) {
+                $valid = Validator::make($request->all(),[
+                    __('customers.form_input.email') => 'email'
+                ]);
+                if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            }
             new SwitchDB("mysql");
             $valid = Validator::make($request->all(),[
-                __('customers.form_input.email') => 'required|email|unique:users,email',
+                __('customers.form_input.email') => 'nullable|unique:users,email',
                 __('customers.form_input.address.village') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'villages,code',
                 __('customers.form_input.address.district') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'districts,code',
                 __('customers.form_input.address.city') => 'nullable|exists:' . config('laravolt.indonesia.table_prefix') . 'cities,code',

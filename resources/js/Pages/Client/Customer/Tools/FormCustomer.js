@@ -1,11 +1,11 @@
 import React from "react";
 import {
-    durationType,
-    durationTypeByte,
-    formatLocaleString, hasWhiteSpace,
-    LabelRequired, responseMessage,
-    serviceType, sumCustomerDiscountForm, sumCustomerSubtotalForm, sumCustomerTaxForm, sumCustomerTaxLineForm
+    durationType, durationTypeByte, formatLocaleString, hasWhiteSpace, LabelRequired, responseMessage, serviceType
 } from "../../../../Components/mixedConsts";
+import {
+    FormatPrice,
+    sumCustomerDiscountForm, sumCustomerSubtotalForm, sumCustomerTaxForm, sumCustomerTaxLineForm, sumGrandTotalForm
+} from "./Mixed";
 import {ModalFooter, ModalHeader} from "../../../../Components/ModalComponent";
 import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
@@ -13,6 +13,7 @@ import {DetailBandwidth} from "../../Nas/Profile/Tools/DetailCard";
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {crudCustomers} from "../../../../Services/CustomerService";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faHome, faConciergeBell, faStreetView, faPlus, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode
 class FormCustomer extends React.Component {
@@ -361,19 +362,17 @@ class FormCustomer extends React.Component {
                             <div className="card-header p-0 pt-1 border-bottom-0">
                                 <ul className="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
                                     <li className="nav-item">
-                                        <a className="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true"><FontAwesomeIcon icon="home"/></a>
+                                        <a className="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true"><FontAwesomeIcon icon={faHome}/></a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" id="custom-tabs-three-service-tab" data-toggle="pill" href="#custom-tabs-three-service" role="tab" aria-controls="custom-tabs-three-service" aria-selected="false"><FontAwesomeIcon icon="concierge-bell" className="mr-1"/> {Lang.get('customers.labels.service.tab')}</a>
+                                        <a className="nav-link" id="custom-tabs-three-service-tab" data-toggle="pill" href="#custom-tabs-three-service" role="tab" aria-controls="custom-tabs-three-service" aria-selected="false"><FontAwesomeIcon icon={faConciergeBell} className="mr-1"/> {Lang.get('customers.labels.service.tab')}</a>
                                     </li>
                                     <li className="nav-item">
-                                        <a className="nav-link" id="custom-tabs-three-address-tab" data-toggle="pill" href="#custom-tabs-three-address" role="tab" aria-controls="custom-tabs-three-address" aria-selected="false"><FontAwesomeIcon icon="street-view" className="mr-1"/> {Lang.get('customers.labels.address.tab')}</a>
-                                    </li>
-                                    <li className="nav-item">
-                                        <a className="nav-link" id="custom-tabs-three-settings-tab" data-toggle="pill" href="#custom-tabs-three-settings" role="tab" aria-controls="custom-tabs-three-settings" aria-selected="false">Settings</a>
+                                        <a className="nav-link" id="custom-tabs-three-address-tab" data-toggle="pill" href="#custom-tabs-three-address" role="tab" aria-controls="custom-tabs-three-address" aria-selected="false"><FontAwesomeIcon icon={faStreetView} className="mr-1"/> {Lang.get('customers.labels.address.tab')}</a>
                                     </li>
                                 </ul>
                             </div>
+
                             <div className="card-body">
                                 <div className="tab-content" id="custom-tabs-three-tabContent">
                                     <div className="tab-pane fade active show" id="custom-tabs-three-home" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
@@ -487,11 +486,11 @@ class FormCustomer extends React.Component {
                                     </div>
 
                                     <div className="tab-pane fade p-0" id="custom-tabs-three-service" role="tabpanel" aria-labelledby="custom-tabs-three-service-tab">
-                                        <button type="button" disabled={this.state.loading} onClick={this.handleAddAdditional} className="btn btn-outline-primary mb-3"><FontAwesomeIcon icon="plus" className="mr-1"/> {Lang.get('customers.labels.service.add_btn')}</button>
+                                        <button type="button" disabled={this.state.loading} onClick={this.handleAddAdditional} className="btn btn-outline-primary mb-3"><FontAwesomeIcon icon={faPlus} className="mr-1"/> {Lang.get('customers.labels.service.add_btn')}</button>
                                         <table className="table table-sm table-striped mb-0">
                                             <thead>
                                             <tr>
-                                                <th className="align-middle text-center" width={30}><FontAwesomeIcon icon="trash-alt"/></th>
+                                                <th className="align-middle text-center" width={30}><FontAwesomeIcon icon={faTrashAlt}/></th>
                                                 <th className="align-middle" width={100}>{Lang.get('customers.labels.service.type')}</th>
                                                 <th colSpan={3} className="align-middle">{Lang.get('customers.labels.service.name')}</th>
                                                 <th className="align-middle" width={150}>{Lang.get('customers.labels.service.price')}</th>
@@ -500,7 +499,7 @@ class FormCustomer extends React.Component {
                                             <tbody>
                                             {this.state.form.profile === null ? null :
                                                 <tr>
-                                                    <td className="align-middle text-center"><FontAwesomeIcon icon="trash-alt"/></td>
+                                                    <td className="align-middle text-center"><FontAwesomeIcon icon={faTrashAlt}/></td>
                                                     <td className="align-middle text-center">{Lang.get('customers.labels.service.main')}</td>
                                                     <td colSpan={3} className="align-middle">{this.state.form.profile.label}</td>
                                                     <td className="align-middle">
@@ -521,7 +520,7 @@ class FormCustomer extends React.Component {
                                                 this.state.form.services.current.map((item,index)=>
                                                     <tr key={`sv_${index}`}>
                                                         <td className="align-middle text-center">
-                                                            <button type="button" className="btn btn-outline-warning btn-xs" disabled={this.state.loading} onClick={()=>this.handleRemoveAdditional(index)}><FontAwesomeIcon size="xs" icon="trash-alt"/></button>
+                                                            <button type="button" className="btn btn-outline-warning btn-xs" disabled={this.state.loading} onClick={()=>this.handleRemoveAdditional(index)}><FontAwesomeIcon size="xs" icon={faTrashAlt}/></button>
                                                         </td>
                                                         <td className="align-middle text-center">{Lang.get('customers.labels.service.add')}</td>
                                                         <td colSpan={3} className="align-middle">
@@ -558,7 +557,7 @@ class FormCustomer extends React.Component {
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={3}>
                                                     {Lang.get('customers.labels.service.taxes.label')}
-                                                    <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon="plus" size="sm"/></button>
+                                                    <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                 </th>
                                                 <th width={150} className="align-middle">
                                                     <Select onChange={(e)=>this.handleSelect(e,'taxes',0)}
@@ -592,7 +591,7 @@ class FormCustomer extends React.Component {
                                                             <tr key={`tax_${index}`}>
                                                                 <th className="align-middle text-right" colSpan={3}>
                                                                     {Lang.get('customers.labels.service.taxes.label')} #{index+1}
-                                                                    <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon="plus" size="sm"/></button>
+                                                                    <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                                 </th>
                                                                 <th width={150} className="align-middle">
                                                                     <Select onChange={(e)=>this.handleSelect(e,'taxes',index)}
@@ -631,7 +630,7 @@ class FormCustomer extends React.Component {
                                             <tr>
                                                 <th className="align-middle text-right" colSpan={4}>
                                                     {Lang.get('customers.labels.service.discount.label')}
-                                                    <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon="plus" size="sm"/></button>
+                                                    <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                 </th>
                                                 <th className="align-middle">
                                                     <Select onChange={(e)=>this.handleSelect(e,'discount',0)} value={this.state.form.discounts.current.length === 0 ? null : this.state.form.discounts.current[0].discount} options={this.props.discounts} isLoading={this.props.loadings.discounts} isDisabled={this.state.loading} placeholder={Lang.get('customers.labels.service.discount.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.discount.select.not_found')} isClearable/>
@@ -654,7 +653,7 @@ class FormCustomer extends React.Component {
                                                             <tr key={`disc_${index}`}>
                                                                 <th colSpan={4} className="align-middle text-right">
                                                                     {Lang.get('customers.labels.service.discount.label')}
-                                                                    <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon="plus" size="sm"/></button>
+                                                                    <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                                 </th>
                                                                 <th className="align-middle">
                                                                     <Select onChange={(e)=>this.handleSelect(e,'discount', index)} value={item.discount} options={this.props.discounts} isLoading={this.props.loadings.discounts} isDisabled={this.state.loading} placeholder={Lang.get('customers.labels.service.discount.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.discount.select.not_found')} isClearable/>
@@ -687,6 +686,10 @@ class FormCustomer extends React.Component {
                                                     </tr>
                                                 </>
                                             }
+                                            <tr>
+                                                <th className="align-middle text-right text-md text-success" colSpan={5}>{Lang.get('customers.labels.service.grand_total.label')}</th>
+                                                <th className="align-middle text-right text-md text-success">{sumGrandTotalForm(this.state.form)}</th>
+                                            </tr>
                                             </tfoot>
                                         </table>
                                     </div>
@@ -750,16 +753,6 @@ class FormCustomer extends React.Component {
                                         </div>
                                     </div>
 
-                                    <div className="tab-pane fade" id="custom-tabs-three-settings" role="tabpanel"
-                                         aria-labelledby="custom-tabs-three-settings-tab">
-                                        Pellentesque vestibulum commodo nibh nec blandit. Maecenas neque magna, iaculis
-                                        tempus turpis ac, ornare sodales tellus. Mauris eget blandit dolor. Quisque
-                                        tincidunt venenatis vulputate. Morbi euismod molestie tristique. Vestibulum
-                                        consectetur dolor a vestibulum pharetra. Donec interdum placerat urna nec
-                                        pharetra. Etiam eget dapibus orci, eget aliquet urna. Nunc at consequat diam.
-                                        Nunc et felis ut nisl commodo dignissim. In hac habitasse platea dictumst.
-                                        Praesent imperdiet accumsan ex sit amet facilisis.
-                                    </div>
                                 </div>
                             </div>
 

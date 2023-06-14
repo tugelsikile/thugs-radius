@@ -149,6 +149,10 @@ return [
         'labels' => [
             'menu' => 'Pelanggan Hotspot',
             'menu_info' => 'Manajemen data pelanggan hotspot',
+            'status' => [
+                'generated' => 'GENERATED',
+                'used' => 'DIPAKAI'
+            ]
         ],
         'generate' => [
             'success' => 'Berhasil generate voucher hotspot',

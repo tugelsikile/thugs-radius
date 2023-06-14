@@ -454,4 +454,14 @@ export const LabelRequired = () => {
         <sup className="float-left text-danger"><FontAwesomeIcon size="2xs" icon={faAsterisk}/></sup>
     );
 }
-
+export const listDataPerPage = [
+    { value : 10, label : 10 },
+    { value : 20, label : 20 },
+    { value : 30, label : 30 },
+    { value : 50, label : 50 },
+    { value : 100, label : 100 },
+    { value : 500, label : 500 },
+    { value : 1000, label : formatLocaleString(1000) },
+    { value : 2000, label : formatLocaleString(2000) },
+    { value : 5000, label : formatLocaleString(5000) },
+];

@@ -1,5 +1,11 @@
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {
+    faCheckCircle,
+    faCircleNotch, faCrosshairs,
+    faSign,
+    faTimesCircle, faDigitalTachograph
+} from "@fortawesome/free-solid-svg-icons";
 
 class StatusNas extends React.Component {
     constructor(props) {
@@ -15,7 +21,7 @@ class StatusNas extends React.Component {
                             <p>Total NAS</p>
                         </div>
                         <div className="icon">
-                            <FontAwesomeIcon spin={this.props.loading} icon="server"/>
+                            <FontAwesomeIcon spin={this.props.loading} icon={this.props.loading ? faCircleNotch : faDigitalTachograph}/>
                         </div>
                     </div>
                 </div>
@@ -26,7 +32,7 @@ class StatusNas extends React.Component {
                             <p>Online Nas</p>
                         </div>
                         <div className="icon">
-                            <FontAwesomeIcon spin={this.props.loading} icon="server"/>
+                            <FontAwesomeIcon spin={this.props.loading} icon={this.props.loading ? faCircleNotch : faDigitalTachograph }/>
                         </div>
                     </div>
                 </div>
@@ -37,7 +43,7 @@ class StatusNas extends React.Component {
                             <p>Offline Nas</p>
                         </div>
                         <div className="icon">
-                            <FontAwesomeIcon spin={this.props.loading} icon="server"/>
+                            <FontAwesomeIcon spin={this.props.loading} icon={this.props.loading ? faCircleNotch : faDigitalTachograph}/>
                         </div>
                     </div>
                 </div>
@@ -48,7 +54,7 @@ class StatusNas extends React.Component {
                             <p>Max NAS</p>
                         </div>
                         <div className="icon">
-                            <FontAwesomeIcon spin={this.props.loading} icon="server"/>
+                            <FontAwesomeIcon spin={this.props.loading} icon={this.props.loading ? faCircleNotch : faDigitalTachograph}/>
                         </div>
                     </div>
                 </div>

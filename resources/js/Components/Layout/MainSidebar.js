@@ -11,7 +11,7 @@ class MainSidebar extends React.Component {
     render() {
         return (
             <React.Fragment>
-                <aside className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
+                <aside id="app-main-sidebar" className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
                     <a href={this.props.root} className="brand-link bg-navy">
                         <img src={window.origin + '/theme/adminlte/img/AdminLTELogo.png'} alt={this.props.site !== null ? this.props.site.name : 'app-name'} className="brand-image img-circle elevation-3" style={{opacity:.8}}/>
                         <span className="brand-text font-weight-light">{this.props.site !== null && this.props.site.name}</span>

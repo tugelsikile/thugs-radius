@@ -42,7 +42,7 @@ class CustomerRepository
             $customer->id = Uuid::uuid4()->toString();
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
-            $customer->code = $request[__('customers.hotspot.form_input.username')];
+            $customer->code = generateCustomerCode();
             $customer->method_type = 'voucher';
             $customer->nas_username = $request[__('customers.hotspot.form_input.username')];
             $customer->nas_password = $request[__('customers.hotspot.form_input.password')];

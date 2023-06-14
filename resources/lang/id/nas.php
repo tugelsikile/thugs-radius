@@ -26,6 +26,7 @@ return [
         'select' => 'Pilih Router [NAS]',
         'search' => 'Cari Router ...',
         'name' => 'Nama Router',
+        'short_name' => 'Router',
         'description' => 'Keterangan Router',
         'type' => 'Jenis Router',
         'method' => [

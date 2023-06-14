@@ -6,10 +6,18 @@ import {faSign, faSignal, faTicketAlt, faWifi} from "@fortawesome/free-solid-svg
 
 export const StatusCustomer = (props) => {
     let response = <span className="badge badge-secondary">{Lang.get('customers.labels.status.register')}</span>
-    if (props.customer.meta.timestamps.inactive.at !== null) {
-        response = <span className="badge badge-warning">{Lang.get('customers.labels.status.inactive')}</span>
-    } else if (props.customer.meta.timestamps.active.at !== null) {
-        response = <span className="badge badge-success">{Lang.get('customers.labels.status.active')}</span>
+    if (props.customer.meta.auth.type === 'voucher') {
+        if (props.customer.meta.timestamps.active.at === null) {
+            response = <span className="badge badge-secondary">{Lang.get('customers.hotspot.labels.status.generated')}</span>
+        } else {
+            response = <span className="badge badge-secondary">{Lang.get('customers.hotspot.labels.status.used')}</span>
+        }
+    } else {
+        if (props.customer.meta.timestamps.inactive.at !== null) {
+            response = <span className="badge badge-warning">{Lang.get('customers.labels.status.inactive')}</span>
+        } else if (props.customer.meta.timestamps.active.at !== null) {
+            response = <span className="badge badge-success">{Lang.get('customers.labels.status.active')}</span>
+        }
     }
     return response;
 }

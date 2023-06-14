@@ -3,6 +3,9 @@
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle, faPencilAlt, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import Select from "react-select";
+import {formatLocaleString, listDataPerPage} from "./mixedConsts";
+import Pagination from '@atlaskit/pagination';
 
 export const TableAction = (props) => {
     return (
@@ -46,7 +49,7 @@ export const DataNotFound = (props) => {
 export const TableCheckBox = (props) => {
     return (
         <td className="align-middle text-center">
-            <div className="custom-control custom-checkbox">
+            <div style={{zIndex:0}} className="custom-control custom-checkbox">
                 <input id={`cbx_${props.item.value}`}
                        data-id={props.item.value}
                        checked={props.checked}
@@ -60,30 +63,66 @@ export const TableCheckBox = (props) => {
 }
 export const TablePaging = (props) => {
     return (
-        props.customers.filtered.length === 0 ? null :
-            <div className="card-footer clearfix row">
-                <div className="col-sm-2">
-
+        <div className="card-footer clearfix row">
+            <div className="col-sm-6">
+                <div className="row">
+                    {typeof props.showDataPerPage === 'undefined' ? null :
+                        props.showDataPerPage === null ? null :
+                            typeof props.handelSelectDataPerPage === 'undefined' ? null :
+                                props.handelSelectDataPerPage === null ? null :
+                                    <div className="col-sm-3">
+                                        <Select value={props.filter.data_length === null ? null : { value : props.filter.data_length, label : formatLocaleString(props.filter.data_length)}}
+                                                onChange={props.handelSelectDataPerPage} options={listDataPerPage} isLoading={props.loading}/>
+                                    </div>
+                    }
+                    <label className="col-sm-9 col-form-label text-muted text-xs">
+                        {props.customers.unfiltered.length === 0 ? null :
+                            Lang.get('pagination.labels.showing',{
+                                dataFirst : ( ( parseInt(props.filter.page.value)  - 1 ) * parseInt(props.filter.data_length) ) + 1,
+                                dataLast : parseInt(props.filter.page.value) * parseInt(props.filter.data_length),
+                                max : props.customers.unfiltered.length
+                            })
+                        }
+                    </label>
                 </div>
-                <div className="col-sm-10">
-                    <ul className="pagination pagination-sm m-0 float-right">
+            </div>
+            <div className="col-sm-6">
+                <div className="float-right">
+                    <Pagination onChange={(event, page)=>props.handleChangePage(page)}
+                                max={7}
+                                pages={props.filter.paging}/>
+                </div>
+
+                {/*<ul className="pagination pagination-sm m-0 float-right">
                         {props.filter.page.value > 1 &&
                             <li className="page-item">
                                 <a onClick={()=>props.handleChangePage(1)} className="page-link" href="#">«</a>
                             </li>
                         }
-                        {props.filter.paging.map((item)=>
-                            <li key={item} onClick={()=>props.handleChangePage(item)} className={item === props.filter.page.value ? "page-item active" : "page-item"}>
-                                <a className="page-link" href="#">{item}</a>
-                            </li>
-                        )}
+                        {props.filter.paging.length < 10 &&
+                            props.filter.paging.map((item)=>
+                                <li key={item} onClick={()=>props.handleChangePage(item)} className={item === props.filter.page.value ? "page-item active" : "page-item"}>
+                                    <a className="page-link" href="#">{item}</a>
+                                </li>
+                            )
+                        }
+                        {props.filter.paging.length > 10 &&
+                            props.filter.paging
+                                .splice(props.filter.page.value + 6, props.filter.page.value + 12)
+                                .map((item)=>
+                                    <li key={item} onClick={()=>props.handleChangePage(item)} className={item === props.filter.page.value ? "page-item active" : "page-item"}>
+                                        <a className="page-link" href="#">{item}</a>
+                                    </li>
+                            )
+                        }
+
                         {props.filter.paging.length > 1 &&
                             <li className="page-item">
                                 <a onClick={()=>props.handleChangePage(props.filter.paging[props.filter.paging.length - 1])} className="page-link" href="#">»</a>
                             </li>
                         }
-                    </ul>
-                </div>
+                    </ul>*/}
             </div>
+        </div>
     );
 }

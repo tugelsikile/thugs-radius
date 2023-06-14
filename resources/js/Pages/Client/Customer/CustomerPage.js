@@ -55,6 +55,7 @@ class CustomerPage extends React.Component {
         this.loadCustomers = this.loadCustomers.bind(this);
         this.confirmActive = this.confirmActive.bind(this);
         this.toggleGenerate = this.toggleGenerate.bind(this);
+        this.handleDataPerPage = this.handleDataPerPage.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -93,6 +94,37 @@ class CustomerPage extends React.Component {
                     });
             }
         }
+        window.addEventListener('scroll', this.handleScrollPage);
+    }
+    componentWillUnmount() {
+        window.removeEventListener('scroll', this.handleScrollPage);
+    }
+    handleScrollPage(event) {
+        const element = document.getElementById('page-card-header');
+        const sidebar = document.getElementById('app-main-sidebar');
+        if (element !== null && sidebar !== null) {
+            if (window.scrollY > 230) {
+                element.style.position = 'fixed';
+                element.style.background = '#fff';
+                element.style.top = '0px';
+                element.style.right = '0px';
+                element.style.left = `${sidebar.offsetWidth}px`;
+                element.style.zIndex = '1';
+            } else {
+                element.style.position = null;
+                element.style.background = null;
+                element.style.right = null;
+                element.style.left = null;
+                element.style.zIndex = null;
+            }
+        }
+    }
+    handleDataPerPage(event) {
+        let filter = this.state.filter;
+        if (event !== null) {
+            filter.data_length = event.value;
+        }
+        this.setState({filter},()=>this.handleFilter());
     }
     toggleGenerate() {
         let modal = this.state.modal;
@@ -432,9 +464,9 @@ class CustomerPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
-                            <div className="card card-outline card-primary">
+                            <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.customers}
                                                    langs={{create:Lang.get('customers.create.button'),delete:Lang.get('customers.delete.button')}}
@@ -448,11 +480,11 @@ class CustomerPage extends React.Component {
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
-                                        <thead>
+                                        <thead id="main-table-header">
                                         <tr>
                                             {this.state.customers.filtered.length > 0 &&
                                                 <th className="align-middle text-center" width={30}>
-                                                    <div className="custom-control custom-checkbox">
+                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
                                                         <input id="checkAll" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor="checkAll" className="custom-control-label"/>
                                                     </div>
@@ -475,12 +507,12 @@ class CustomerPage extends React.Component {
                                             </th>
                                             <th className="align-middle">
                                                 <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.name')}
+                                                         name={Lang.get('nas.labels.short_name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle">
                                                 <BtnSort sort="profile"
-                                                         name={Lang.get('profiles.labels.name')}
+                                                         name={Lang.get('profiles.labels.short_name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle" width={110}>
@@ -503,7 +535,7 @@ class CustomerPage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.customers.filtered.length === 0 ?
-                                            <DataNotFound colSpan={8} message={Lang.get('customers.labels.not_found')}/>
+                                            <DataNotFound colSpan={9} message={Lang.get('customers.labels.not_found')}/>
                                             :
                                             this.state.customers.filtered.map((item)=>
                                                 <tr key={item.value}>
@@ -547,9 +579,65 @@ class CustomerPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            {this.state.customers.filtered.length > 0 &&
+                                                <th className="align-middle text-center" width={30}>
+                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
+                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
+                                                        <label htmlFor="checkAll" className="custom-control-label"/>
+                                                    </div>
+                                                </th>
+                                            }
+                                            <th className="align-middle" width={80}>
+                                                <BtnSort sort="code"
+                                                         name={Lang.get('customers.labels.code')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={50}>
+                                                <BtnSort sort="type"
+                                                         name={Lang.get('customers.labels.type_short')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle">
+                                                <BtnSort sort="name"
+                                                         name={Lang.get('customers.labels.name')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle">
+                                                <BtnSort sort="nas"
+                                                         name={Lang.get('nas.labels.short_name')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle">
+                                                <BtnSort sort="profile"
+                                                         name={Lang.get('profiles.labels.short_name')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={110}>
+                                                <BtnSort sort="price"
+                                                         name={Lang.get('profiles.labels.price')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={100}>
+                                                <BtnSort sort="status" center={true}
+                                                         name={Lang.get('customers.labels.status.label')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle" width={150}>
+                                                <BtnSort sort="due"
+                                                         name={Lang.get('customers.labels.due.at')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
+                                            </th>
+                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
+                                        </tr>
+                                        </tfoot>
                                     </table>
                                 </div>
-                                <TablePaging customers={this.state.customers} filter={this.state.filter} handleChangePage={this.handleChangePage}/>
+                                <TablePaging showDataPerPage={true}
+                                             handelSelectDataPerPage={this.handleDataPerPage}
+                                             customers={this.state.customers}
+                                             filter={this.state.filter} handleChangePage={this.handleChangePage}/>
                             </div>
                         </div>
 

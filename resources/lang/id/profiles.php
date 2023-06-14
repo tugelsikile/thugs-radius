@@ -33,6 +33,7 @@ return [
         'select' => 'Pilih Layanan',
         'search' => 'Cari Layanan ...',
         'name' => 'Nama Layanan',
+        'short_name' => 'Layanan',
         'name_invalid' => 'Nama Layanan tidak boleh ada spasi',
         'price' => 'Harga Layanan',
         'type' => 'Jenis Layanan',

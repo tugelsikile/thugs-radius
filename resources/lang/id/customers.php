@@ -10,7 +10,8 @@ return [
             'district' => 'kecamatan',
             'city' => 'kabupaten_kota',
             'province' => 'provinsi',
-            'postal' => 'kode_pos'
+            'postal' => 'kode_pos',
+            'phone' => 'nomor_whatsapp',
         ],
         'username' => 'nama_pengguna',
         'password' => 'kata_sandi',
@@ -104,6 +105,8 @@ return [
             'street' => 'Nama Jalan',
             'postal' => 'Kode Pos',
             'email' => 'Alamat Email',
+            'phone' => 'No. Whatsapp',
+            'call' => 'Kirim Pesan Whatsapp',
         ],
         'username' => [
             'label' => 'Nama Pengguna',

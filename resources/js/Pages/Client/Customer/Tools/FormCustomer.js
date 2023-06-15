@@ -3,7 +3,6 @@ import {
     durationType, durationTypeByte, formatLocaleString, hasWhiteSpace, LabelRequired, responseMessage, serviceType
 } from "../../../../Components/mixedConsts";
 import {
-    FormatPrice,
     sumCustomerDiscountForm, sumCustomerSubtotalForm, sumCustomerTaxForm, sumCustomerTaxLineForm, sumGrandTotalForm
 } from "./Mixed";
 import {ModalFooter, ModalHeader} from "../../../../Components/ModalComponent";
@@ -13,9 +12,12 @@ import {DetailBandwidth} from "../../Nas/Profile/Tools/DetailCard";
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {crudCustomers} from "../../../../Services/CustomerService";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faHome, faConciergeBell, faStreetView, faPlus, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import {faConciergeBell, faStreetView, faPlus, faTrashAlt, faUserTie} from "@fortawesome/free-solid-svg-icons";
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/bootstrap.css'
+import id from "react-phone-input-2/lang/id.json";
 
-// noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode
+// noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode,HtmlUnknownAnchorTarget,JSValidateTypes,JSUnresolvedVariable
 class FormCustomer extends React.Component {
     constructor(props) {
         super(props);
@@ -23,7 +25,7 @@ class FormCustomer extends React.Component {
             loading : false,
             form : {
                 id : null, profile : null, nas : null, type : serviceType[0],
-                name : '', address : '', email : '',
+                name : '', address : '', email : '', phone : '',
                 village : null, district : null, city : null, province : null, postal : '',
                 username : '', password : '',
                 services : { current : [], delete : [] },
@@ -49,15 +51,24 @@ class FormCustomer extends React.Component {
             form.id = null, form.profile = null, form.nas = null, form.type = serviceType[0],
                 form.name = '', form.address = '', form.email = '',
                 form.village = null, form.district = null, form.city = null, form.province = null, form.postal = '',
-                form.username = '', form.password = '',
+                form.username = '', form.password = '', form.phone,
                 form.taxes.current = [], form.taxes.delete = [],
                 form.discounts.current = [], form.discounts.delete = [],
                 form.services.current = [], form.services.delete = [];
+            if (typeof props.type !== 'undefined') {
+                if (props.type !== null) {
+                    index = serviceType.findIndex((f) => f.value === props.type);
+                    if (index >= 0) {
+                        form.type = serviceType[index];
+                    }
+                }
+            }
         } else {
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.address = props.data.meta.address.street,
                     form.username = props.data.meta.auth.user, form.password = props.data.meta.auth.pass,
-                    form.postal = props.data.meta.address.postal;
+                    form.postal = props.data.meta.address.postal,
+                    form.phone = props.data.meta.address.phone;
                 if (props.data.meta.user !== null) {
                     form.email = props.data.meta.user.email;
                 }
@@ -311,6 +322,7 @@ class FormCustomer extends React.Component {
                 if (this.state.form.city !== null) formData.append(Lang.get('customers.form_input.address.city'), this.state.form.city.value);
                 if (this.state.form.province !== null) formData.append(Lang.get('customers.form_input.address.province'), this.state.form.province.value);
                 formData.append(Lang.get('customers.form_input.address.postal'), this.state.form.postal);
+                formData.append(Lang.get('customers.form_input.address.phone'), this.state.form.phone);
                 if (this.state.form.username.length > 1) formData.append(Lang.get('customers.form_input.username'), this.state.form.username);
                 if (this.state.form.password.length > 1) formData.append(Lang.get('customers.form_input.password'), this.state.form.password);
                 this.state.form.services.current.map((item,index)=>{
@@ -362,7 +374,7 @@ class FormCustomer extends React.Component {
                             <div className="card-header p-0 pt-1 border-bottom-0">
                                 <ul className="nav nav-tabs" id="custom-tabs-three-tab" role="tablist">
                                     <li className="nav-item">
-                                        <a className="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true"><FontAwesomeIcon icon={faHome}/></a>
+                                        <a className="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true"><FontAwesomeIcon icon={faUserTie}/></a>
                                     </li>
                                     <li className="nav-item">
                                         <a className="nav-link" id="custom-tabs-three-service-tab" data-toggle="pill" href="#custom-tabs-three-service" role="tab" aria-controls="custom-tabs-three-service" aria-selected="false"><FontAwesomeIcon icon={faConciergeBell} className="mr-1"/> {Lang.get('customers.labels.service.tab')}</a>
@@ -382,7 +394,9 @@ class FormCustomer extends React.Component {
                                                 {this.state.form.id === null ?
                                                     <Select onChange={(e)=>this.handleSelect(e,'nas')} isLoading={this.props.loadings.nas} isDisabled={this.state.loading || this.props.loadings.nas} className="text-sm" noOptionsMessage={()=>Lang.get('nas.labels.not_found')} options={this.props.nas} value={this.state.form.nas} placeholder={Lang.get('nas.labels.name')}/>
                                                     :
-                                                    <div className="form-control text-sm">{this.state.form.nas.label}</div>
+                                                    this.state.form.nas === null ? null
+                                                        :
+                                                        <div className="form-control text-sm">{this.state.form.nas.label}</div>
                                                 }
                                             </div>
                                             {this.state.form.nas === null ? null :
@@ -394,30 +408,34 @@ class FormCustomer extends React.Component {
                                                 </>
                                             }
                                         </div>
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label"><LabelRequired/>{Lang.get('customers.labels.type')}</label>
-                                            <div className="col-sm-4">
-                                                {this.state.form.id === null ?
-                                                    <Select onChange={(e)=>this.handleSelect(e,'type')} options={serviceType} value={this.state.form.type} placeholder={Lang.get('customers.labels.type')} isDisabled={this.state.loading} noOptionsMessage={()=>Lang.get('customers.labels.no_type')}/>
-                                                    :
-                                                    <div className="form-control text-sm">{this.state.form.type.label}</div>
-                                                }
-                                            </div>
-                                        </div>
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label"><LabelRequired/>{Lang.get('profiles.labels.name')}</label>
-                                            <div className="col-sm-4">
-                                                <Select onChange={(e)=>this.handleSelect(e,'profile')} value={this.state.form.profile}
-                                                        options={this.state.form.nas === null ? [] : this.state.form.type === null ? [] : this.props.profiles.filter((f) => f.meta.nas !== null && f.meta.nas.id === this.state.form.nas.value && f.meta.type === this.state.form.type.value && ! f.meta.additional)}
-                                                        isLoading={this.props.loadings.profiles}
-                                                        isDisabled={this.state.loading || this.props.loadings.profiles || this.state.form.type === null || this.state.form.nas === null}
-                                                        placeholder={Lang.get('profiles.labels.select')} noOptionsMessage={()=>Lang.get('profiles.labels.not_found')}/>
-                                            </div>
-                                        </div>
-                                        {this.state.form.profile === null ? null :
-                                            <React.Fragment>
-                                                <div className="row">
-                                                    <div className="col-sm-6">
+                                        {typeof this.props.type === 'undefined' &&
+                                            this.props.type === null &&
+                                                <div className="form-group row">
+                                                    <label className="col-sm-2 col-form-label"><LabelRequired/>{Lang.get('customers.labels.type')}</label>
+                                                    <div className="col-sm-4">
+                                                        {this.state.form.id === null ?
+                                                            <Select onChange={(e)=>this.handleSelect(e,'type')} options={serviceType} value={this.state.form.type} placeholder={Lang.get('customers.labels.type')} isDisabled={this.state.loading} noOptionsMessage={()=>Lang.get('customers.labels.no_type')}/>
+                                                            :
+                                                            <div className="form-control text-sm">{this.state.form.type.label}</div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                        }
+                                        <div className="row">
+                                            <div className="col-sm-6">
+                                                <div className="form-group row">
+                                                    <label className="col-sm-4 col-form-label"><LabelRequired/>{Lang.get('profiles.labels.name')}</label>
+                                                    <div className="col-sm-8">
+                                                        <Select onChange={(e)=>this.handleSelect(e,'profile')} value={this.state.form.profile}
+                                                                options={this.state.form.nas === null ? [] : this.state.form.type === null ? [] : this.props.profiles.filter((f) => f.meta.nas !== null && f.meta.nas.id === this.state.form.nas.value && f.meta.type === this.state.form.type.value && ! f.meta.additional)}
+                                                                isLoading={this.props.loadings.profiles}
+                                                                className="text-sm"
+                                                                isDisabled={this.state.loading || this.props.loadings.profiles || this.state.form.type === null || this.state.form.nas === null}
+                                                                placeholder={Lang.get('profiles.labels.select')} noOptionsMessage={()=>Lang.get('profiles.labels.not_found')}/>
+                                                    </div>
+                                                </div>
+                                                {this.state.form.profile === null ? null :
+                                                    <React.Fragment>
                                                         <div className="form-group row">
                                                             <label className="col-sm-4 col-form-label">{Lang.get('profiles.labels.price')}</label>
                                                             <div className="col-sm-8">
@@ -448,18 +466,20 @@ class FormCustomer extends React.Component {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="col-sm-6">
-                                                        <div className="form-group row">
-                                                            <div className="col-sm-12">
-                                                                <DetailBandwidth data={this.state.form.profile}/>
-                                                            </div>
+                                                    </React.Fragment>
+                                                }
+                                            </div>
+                                            <div className="col-sm-6">
+                                                {this.state.form.profile === null ? null :
+                                                    <div className="form-group row">
+                                                        <div className="col-sm-12">
+                                                            <DetailBandwidth data={this.state.form.profile}/>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                }
+                                            </div>
+                                        </div>
 
-                                            </React.Fragment>
-                                        }
                                         <div className="form-group row">
                                             <label className="col-sm-2 col-form-label" htmlFor="input-name"><LabelRequired/>{Lang.get('customers.labels.name')}</label>
                                             <div className="col-sm-10">
@@ -468,16 +488,29 @@ class FormCustomer extends React.Component {
                                         </div>
 
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-email"><LabelRequired/>{Lang.get('customers.labels.address.email')}</label>
+                                            <label className="col-sm-2 col-form-label" htmlFor="input-email">{Lang.get('customers.labels.address.email')}</label>
                                             <div className="col-sm-4">
                                                 <input type="email" id="input-email" className="form-control text-sm" value={this.state.form.email} name="email" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.email')}/>
                                             </div>
                                         </div>
                                         <div className="form-group row">
+                                            <label className="col-sm-2 col-form-label" htmlFor="input-phone">{Lang.get('customers.labels.address.phone')}</label>
+                                            <div className="col-sm-4">
+                                                <PhoneInput placeholder={Lang.get('customers.labels.address.phone')}
+                                                            inputClass="form-control text-sm" country="id"
+                                                            enableSearch={true} disabled={this.state.loading}
+                                                            localization={id}
+                                                            value={this.state.form.phone} onChange={(e)=>{ let form = this.state.form; form.phone = e; this.setState({form});}}/>
+                                            </div>
+                                        </div>
+
+                                        <div className="form-group row">
                                             <label className="col-sm-2 col-form-label" htmlFor="input-username"><LabelRequired/>{Lang.get('customers.labels.username.label')}</label>
                                             <div className="col-sm-4">
                                                 <input id="input-username" className="form-control text-sm" value={this.state.form.username} name="username" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.username.label')}/>
                                             </div>
+                                        </div>
+                                        <div className="form-group row">
                                             <label className="col-sm-2 col-form-label" htmlFor="input-password"><LabelRequired/>{Lang.get('customers.labels.password.label')}</label>
                                             <div className="col-sm-4">
                                                 <input id="input-password" className="form-control text-sm" value={this.state.form.password} name="password" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.password.label')}/>
@@ -761,7 +794,7 @@ class FormCustomer extends React.Component {
                     </DialogContent>
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
-                        loading={this.state.loading}
+                        loading={this.state.loading || this.props.loadings.nas || this.props.loadings.provinces || this.props.loadings.profiles}
                         langs={{create:Lang.get('customers.create.button'),update:Lang.get('customers.update.button')}}/>
                 </form>
             </Dialog>

@@ -63,13 +63,13 @@ function generateCustomerCode() {
     $length = Customer::orderBy('code', 'desc')->whereDate('created_at', Carbon::now()->format('Y-m-d'))->limit(1)->offset(0)->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
-        $length = Str::substr($length,-4);
+        $length = Str::substr($length,-5);
         $length = (int) $length;
         $length = $length + 1;
     } else {
         $length = 1;
     }
-    return Carbon::now()->format('ymd') . Str::padLeft($length,4,'0');
+    return Carbon::now()->format('ymd') . Str::padLeft($length,5,'0');
 }
 function generateCompanyInvoiceCode(): string
 {

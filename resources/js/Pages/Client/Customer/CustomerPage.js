@@ -20,14 +20,17 @@ import {allProvinces} from "../../../Services/RegionService";
 import FormCustomer from "./Tools/FormCustomer";
 import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
 import {
+    CardInfoPageCustomer,
     CustomerTypeIcon,
-    DueAtCustomer,
+    DueAtCustomer, FormatPrice,
     PriceCustomerPage,
     sortStatus,
     StatusCustomer,
     sumGrandtotalCustomer
 } from "./Tools/Mixed";
 import FormGenerate from "./Tools/FormGenerate";
+import {Popover} from "@mui/material";
+import {CardInfoCustomer, CardInfoNas, CardInfoPrice, CardInfoProfile} from "./Tools/CardPopover";
 
 class CustomerPage extends React.Component {
     constructor(props) {
@@ -37,7 +40,7 @@ class CustomerPage extends React.Component {
             loadings : { privilege : false, site : false, nas : true, customers : true, profiles : true, provinces : true, taxes : true, discounts : true },
             privilege : null, menus : [], site : null, nas : [], profiles : [], provinces : [], taxes : [], discounts : [],
             customers : { filtered : [], unfiltered : [], selected : [] },
-            filter : { keywords : '', sort : { by : 'code', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
+            filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
                 customer : { open : false, data : null },
                 generate : { open : false },
@@ -138,7 +141,25 @@ class CustomerPage extends React.Component {
         popover.data = null;
         let index = this.state.customers.unfiltered.findIndex((f) => f.value === e.currentTarget.getAttribute('data-value'));
         if (index >= 0) {
-            switch (e.currentTarget.getAttribute('data-type')) {
+            let type = e.currentTarget.getAttribute('data-type');
+            switch (type) {
+                default:
+                    break;
+                case 'customer' : popover.data = <CardInfoCustomer data={this.state.customers.unfiltered[index]} />; break;
+                case 'nas' : popover.data = <CardInfoNas data={this.state.customers.unfiltered[index].meta.nas}/>; break;
+                case 'profile' :
+                    if (this.state.profiles.length > 0) {
+                        if (this.state.customers.unfiltered[index].meta.profile !== null) {
+                            let idx = this.state.profiles.findIndex((f) => f.value === this.state.customers.unfiltered[index].meta.profile.id);
+                            if (idx >= 0) {
+                                popover.data = <CardInfoProfile data={this.state.profiles[idx]}/>;
+                            }
+                        }
+                    }
+                break;
+                case 'price' :
+                    popover.data = <CardInfoPrice data={this.state.customers.unfiltered[index]}/>;
+                    break;
             }
         }
         this.setState({popover});
@@ -216,7 +237,9 @@ class CustomerPage extends React.Component {
             customers.filtered = customers.unfiltered.filter((f) =>
                 f.label.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1
                 ||
-                f.meta.description.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1
+                f.meta.auth.user.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1
+                ||
+                (f.meta.user !== null && f.meta.user.name.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1)
             );
         } else {
             customers.filtered = customers.unfiltered;
@@ -437,6 +460,16 @@ class CustomerPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <Popover
+                    sx={{ pointerEvents: 'none', }}
+                    open={this.state.popover.open}
+                    anchorEl={this.state.popover.anchorEl}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left', }}
+                    onClose={this.handlePopOver}
+                    disableRestoreFocus>
+                    {this.state.popover.data}
+                </Popover>
                 <FormGenerate open={this.state.modal.generate.open}
                               profiles={this.state.profiles}
                               nas={this.state.nas}
@@ -464,6 +497,9 @@ class CustomerPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
+
+                            <CardInfoPageCustomer loading={this.state.loadings.customers} customers={this.state.customers}/>
+
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
                                 <div className="card-header" id="page-card-header">
@@ -544,7 +580,12 @@ class CustomerPage extends React.Component {
                                                                    loading={this.state.loadings.customers} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-center">{item.meta.code}</td>
                                                     <td className="align-middle text-center"><CustomerTypeIcon customer={item}/></td>
-                                                    <td className="align-middle">{item.label}</td>
+                                                    <td className="align-middle">
+                                                        {item.meta.auth.type !== 'voucher' &&
+                                                            <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-info" data-type="customer" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} size="xs"/>
+                                                        }
+                                                        {item.label}
+                                                    </td>
                                                     <td className="align-middle">
                                                         {item.meta.nas === null ? null :
                                                             <>
@@ -561,7 +602,9 @@ class CustomerPage extends React.Component {
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle"><PriceCustomerPage customer={item}/></td>
+                                                    <td className="align-middle">
+                                                        {FormatPrice(sumGrandtotalCustomer(item),<FontAwesomeIcon size="xs" data-type="price" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info float-left"/>)}
+                                                    </td>
                                                     <td className="align-middle text-center"><StatusCustomer customer={item}/></td>
                                                     <td className="align-middle"><DueAtCustomer customer={item}/> </td>
                                                     <TableAction others={[

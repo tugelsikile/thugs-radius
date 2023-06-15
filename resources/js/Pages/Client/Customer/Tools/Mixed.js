@@ -1,8 +1,8 @@
 import React from "react";
 import moment from "moment";
-import {formatLocaleDate, formatLocaleString} from "../../../../Components/mixedConsts";
+import {CardPreloader, formatLocaleDate, formatLocaleString} from "../../../../Components/mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSign, faSignal, faTicketAlt, faWifi} from "@fortawesome/free-solid-svg-icons";
+import {faSign, faSignal, faTicketAlt, faUserTie, faWifi} from "@fortawesome/free-solid-svg-icons";
 
 export const StatusCustomer = (props) => {
     let response = <span className="badge badge-secondary">{Lang.get('customers.labels.status.register')}</span>
@@ -43,11 +43,12 @@ export const DueAtCustomer = (props) => {
     }
     return response;
 }
-export const FormatPrice = (price) => {
+export const FormatPrice = (price, popover = null) => {
     let format = localStorage.getItem('locale_currency');
     if (format === null) {
         return (
             <React.Fragment>
+                {popover !== null && popover}
                 <span className="float-left">Rp.</span>
                 <span className="float-right">{formatLocaleString(price)}</span>
             </React.Fragment>
@@ -55,6 +56,7 @@ export const FormatPrice = (price) => {
     } else {
         return (
             <React.Fragment>
+                {popover !== null && popover}
                 <span className="float-left">{format.symbols}</span>
                 <span className="float-right">{formatLocaleString(price)}</span>
             </React.Fragment>
@@ -117,7 +119,7 @@ export const sumSubtotalCustomer = (customer) => {
     return response;
 }
 export const sumTaxCustomer = (customer) => {
-
+    let response = 0;
 }
 export const sumCustomerSubtotalForm = (form) => {
     let response = 0;
@@ -221,3 +223,59 @@ export const generateType = [
     { value : 'alpha-upper', label : Lang.get('customers.hotspot.generate.types.alpha-upper') },
     { value : 'numeric', label : Lang.get('customers.hotspot.generate.types.numeric') }
 ];
+export const CardInfoPageCustomer = (props) => {
+    return (
+        <React.Fragment>
+            <div className="row">
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-info">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.length}</h3>
+                            <p>Total</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faUserTie}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-primary">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.auth.type === 'pppoe').length}</h3>
+                            <p>PPPoE</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faSign}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-cyan">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.auth.type === 'hotspot').length}</h3>
+                            <p>Hotspot</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faSignal}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-light">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.auth.type === 'voucher').length}</h3>
+                            <p>Voucher</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faWifi}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </React.Fragment>
+    );
+}

@@ -55,12 +55,19 @@ return [
             'active' => 'AKTIF',
             'activate' => 'Aktifasi',
             'message_activate' => "Aktifasi pelanggan ?\nPelanggan aktif akan mulai dihitung dan bisa untuk terhubung ke jaringan",
-            'inactive' => 'NONAKTIF',
+            'inactive' => 'NON AKTIF',
             'inactivate' => 'Nonaktifasi',
             'message_inactivate' => "Nonaktifasi pelanggan ?\nPelanggan non aktif tidak bisa terhubung ke jaringan.\nTagihan berjalan tidak akan dihapus",
             'register' => 'TERDAFTAR',
             'warning' => 'Perhatian',
             'success' => 'Status Aktif pelanggan berhasil dirubah',
+            'expired' => 'Kadaluarsa',
+            'generated' => 'Generated',
+            'used' => 'Dipakai',
+            'select' => [
+                'label' => 'Pilih Status',
+                'not_found' => 'Status tidak ditemukan',
+            ]
         ],
         'service' => [
             'tab' => 'Layanan Tambahan',

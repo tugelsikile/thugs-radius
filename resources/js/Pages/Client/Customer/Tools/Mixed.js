@@ -1,8 +1,17 @@
 import React from "react";
 import moment from "moment";
-import {CardPreloader, formatLocaleDate, formatLocaleString} from "../../../../Components/mixedConsts";
+import {CardPreloader, formatLocaleDate, formatLocaleString, ucFirst} from "../../../../Components/mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faSign, faSignal, faTicketAlt, faUserTie, faWifi} from "@fortawesome/free-solid-svg-icons";
+import {
+    faCalendarTimes,
+    faCheckCircle,
+    faSign,
+    faSignal,
+    faTicketAlt,
+    faTimesCircle,
+    faUserTie,
+    faWifi
+} from "@fortawesome/free-solid-svg-icons";
 
 export const StatusCustomer = (props) => {
     let response = <span className="badge badge-secondary">{Lang.get('customers.labels.status.register')}</span>
@@ -272,6 +281,119 @@ export const CardInfoPageCustomer = (props) => {
                         </div>
                         <div className="icon">
                             <FontAwesomeIcon icon={faWifi}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </React.Fragment>
+    );
+}
+
+export const PageInfoPPPoEPage = (props) => {
+    return (
+        <React.Fragment>
+            <div className="row">
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-primary">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.length}</h3>
+                            <p>Total</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faUserTie}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-success">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.inactive.at === null && f.meta.timestamps.active.at !== null).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.active'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faCheckCircle}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-danger">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.inactive.at !== null).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.inactive'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faTimesCircle}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-warning">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.due.at !== null && moment(f.meta.timestamps.due.at).isBefore(moment())).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.expired'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faCalendarTimes}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </React.Fragment>
+    );
+}
+export const PageInfoHotspotPage = (props) => {
+    return (
+        <React.Fragment>
+            <div className="row">
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-primary">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.length}</h3>
+                            <p>Total</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faUserTie}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-success">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.inactive.at === null && f.meta.timestamps.active.at !== null).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.active'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faCheckCircle}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-danger">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.inactive.at !== null).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.inactive'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faTimesCircle}/>
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-3 col-6">
+                    <div className="small-box bg-warning">
+                        { props.loading && <CardPreloader/> }
+                        <div className="inner">
+                            <h3>{props.customers.unfiltered.filter((f) => f.meta.timestamps.due.at !== null && moment(f.meta.timestamps.due.at).isBefore(moment())).length}</h3>
+                            <p>{ucFirst(Lang.get('customers.labels.status.expired'))}</p>
+                        </div>
+                        <div className="icon">
+                            <FontAwesomeIcon icon={faCalendarTimes}/>
                         </div>
                     </div>
                 </div>

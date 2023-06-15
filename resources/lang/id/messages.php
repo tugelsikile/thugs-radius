@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'filter' => 'Filter',
     'confirm' => 'Konfirmasi',
     'cancel' => 'Batal',
     'method' => 'Undefined method',

@@ -1,3 +1,5 @@
 {
-    "/js/clients/nas/index.js": "/js/clients/nas/index.js"
+    "/js/clients/customers/index.js": "/js/clients/customers/index.js",
+    "/js/clients/customers/pppoe.js": "/js/clients/customers/pppoe.js",
+    "/js/clients/customers/hotspot.js": "/js/clients/customers/hotspot.js"
 }

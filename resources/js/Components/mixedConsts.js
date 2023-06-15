@@ -490,6 +490,7 @@ export const FormControlSMReactSelect = {
     }),
     valueContainer: (provided, state) => ({
         ...provided,
+        fontSize: '0.875rem !important',
         marginTop: '0',
         marginLeft: '6px',
         padding: '0',

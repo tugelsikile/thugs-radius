@@ -1,13 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../../Components/Authentication";
-import {CardPreloader, formatPhone, responseMessage, siteData} from "../../../../Components/mixedConsts";
+import {
+    CardPreloader,
+    formatLocalePeriode,
+    formatPhone,
+    responseMessage,
+    siteData
+} from "../../../../Components/mixedConsts";
 import {CardInfoCustomer, CardInfoNas, CardInfoPrice, CardInfoProfile} from "../Tools/CardPopover";
 import {confirmDialog} from "../../../../Components/Toaster";
 import {
-    CustomerTypeIcon,
     DueAtCustomer,
-    FormatPrice,
+    FormatPrice, PageInfoHotspotPage,
     sortStatus,
     StatusCustomer,
     sumGrandtotalCustomer
@@ -30,6 +35,8 @@ import MainFooter from "../../../../Components/Layout/MainFooter";
 import PageLoader from "../../../../Components/PageLoader";
 import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import FormGenerate from "../Tools/FormGenerate";
+import {FilterButton, FilterWrapper} from "./Tools/Filter";
+import moment from "moment";
 
 // noinspection DuplicatedCode
 class HotspotPage extends React.Component {
@@ -39,11 +46,12 @@ class HotspotPage extends React.Component {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
             loadings : { privilege : false, site : false, nas : true, customers : true, profiles : true, provinces : true, taxes : true, discounts : true },
             privilege : null, menus : [], site : null, nas : [], profiles : [], provinces : [], taxes : [], discounts : [],
-            customers : { filtered : [], unfiltered : [], selected : [] },
-            filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
+            customers : { filtered : [], unfiltered : [], selected : [] }, batches : [],
+            filter : { status : null, batch : null, keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
                 customer : { open : false, data : null },
                 generate : { open : false },
+                filter : { open : false }
             },
             popover : { open : false, anchorEl : null, data : null },
         };
@@ -59,6 +67,10 @@ class HotspotPage extends React.Component {
         this.confirmActive = this.confirmActive.bind(this);
         this.handleDataPerPage = this.handleDataPerPage.bind(this);
         this.toggleGenerate = this.toggleGenerate.bind(this);
+        this.toggleFilter = this.toggleFilter.bind(this);
+        this.filterBatch = this.filterBatch.bind(this);
+        this.handleSelectBatch = this.handleSelectBatch.bind(this);
+        this.handleSelectStatus = this.handleSelectStatus.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -98,6 +110,20 @@ class HotspotPage extends React.Component {
             }
         }
         window.addEventListener('scroll', this.handleScrollPage);
+    }
+    handleSelectStatus(event) {
+        let filter = this.state.filter;
+        filter.status = event; this.setState({filter},()=>this.handleFilter());
+    }
+    handleSelectBatch(event) {
+        let filter = this.state.filter;
+        filter.batch = event;
+        this.setState({filter},()=>this.handleFilter());
+    }
+    toggleFilter() {
+        let modal = this.state.modal;
+        modal.filter.open = ! this.state.modal.filter.open;
+        this.setState({modal});
     }
     componentWillUnmount() {
         window.removeEventListener('scroll', this.handleScrollPage);
@@ -227,7 +253,24 @@ class HotspotPage extends React.Component {
         let filter = this.state.filter;
         filter.page = {value:page,label:page}; this.setState({filter},()=>this.handleFilter());
     }
+    filterBatch() {
+        if (this.state.customers.unfiltered.length > 0) {
+            let batches = [];
+            this.state.customers.unfiltered.map((item)=>{
+                if (item.meta.voucher.batch !== null) {
+                    if (batches.findIndex((f) => f.value === item.meta.voucher.batch) < 0) {
+                        batches.push({
+                            value : item.meta.voucher.batch,
+                            label : formatLocalePeriode(item.meta.voucher.batch,'dddd, DD MMMM yyyy, HH:mm')
+                        });
+                    }
+                }
+            });
+            this.setState({batches});
+        }
+    }
     handleFilter() {
+        this.filterBatch();
         let loadings = this.state.loadings;
         let customers = this.state.customers;
         let filter = this.state.filter;
@@ -243,6 +286,31 @@ class HotspotPage extends React.Component {
             );
         } else {
             customers.filtered = customers.unfiltered;
+        }
+        if (filter.batch !== null) {
+            customers.filtered = customers.filtered.filter((f) => f.meta.voucher.batch === filter.batch.value);
+        }
+        if (filter.status !== null) {
+            switch (filter.status.value) {
+                case 'register' :
+                    customers.filtered = customers.filtered.filter((f) => !f.meta.voucher.is && f.meta.timestamps.active.at === null && f.meta.timestamps.inactive.at === null);
+                    break;
+                case 'active' :
+                    customers.filtered = customers.filtered.filter((f) => f.meta.timestamps.active.at !== null && f.meta.timestamps.inactive.at === null);
+                    break;
+                case 'inactive' :
+                    customers.filtered = customers.filtered.filter((f) => f.meta.timestamps.inactive.at !== null);
+                    break;
+                case 'expired' :
+                    customers.filtered = customers.filtered.filter((f) => moment(f.meta.timestamps.due.at).isBefore(moment()));
+                    break;
+                case 'generated' :
+                    customers.filtered = customers.filtered.filter((f) => f.meta.voucher.is && f.meta.timestamps.active.at === null);
+                    break;
+                case 'used' :
+                    customers.filtered = customers.filtered.filter((f) => f.meta.voucher.is && f.meta.timestamps.active.at !== null);
+                    break;
+            }
         }
         switch (filter.sort.by) {
             case 'name' :
@@ -282,9 +350,9 @@ class HotspotPage extends React.Component {
                 break;
             case 'profile' :
                 if (filter.sort.dir === 'asc') {
-                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile === null ? 'z' : a.meta.profile.name > b.meta.profile === null ? 'z' : b.meta.profile.name) ? 1 : ((b.meta.profile === null ? 'z' : b.meta.profile.name > a.meta.profile === null ? 'z' : a.meta.profile.name) ? -1 : 0));
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile.name > b.meta.profile.name) ? 1 : ((b.meta.profile.name > a.meta.profile.name) ? -1 : 0));
                 } else {
-                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile === null ? 'z' : a.meta.profile.name > b.meta.profile === null ? 'z' : b.meta.profile.name) ? -1 : ((b.meta.profile === null ? 'z' : b.meta.profile.name > a.meta.profile === null ? 'z' : a.meta.profile.name) ? 1 : 0));
+                    customers.filtered = customers.filtered.sort((a,b) => (a.meta.profile.name > b.meta.profile.name) ? -1 : ((b.meta.profile.name > a.meta.profile.name) ? 1 : 0));
                 }
                 break;
             case 'type' :
@@ -500,6 +568,16 @@ class HotspotPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
+
+                            <PageInfoHotspotPage customers={this.state.customers} loading={this.state.loadings.customers}/>
+
+                            <FilterWrapper handleBatch={this.handleSelectBatch}
+                                           handleStatus={this.handleSelectStatus}
+                                           batches={this.state.batches}
+                                           loading={this.state.loadings.customers}
+                                           filter={this.state.filter}
+                                           open={this.state.modal.filter.open}/>
+
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
                                 <div className="card-header" id="page-card-header">
@@ -509,6 +587,7 @@ class HotspotPage extends React.Component {
                                                    selected={this.state.customers.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}
+                                                   filter={<FilterButton onClick={this.toggleFilter} loading={this.state.loadings.customers}/>}
                                                    others={[
                                                        {lang : Lang.get('customers.hotspot.generate.button'), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
                                                    ]}/>

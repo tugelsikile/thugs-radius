@@ -7,7 +7,7 @@ import {confirmDialog} from "../../../../Components/Toaster";
 import {
     CustomerTypeIcon,
     DueAtCustomer,
-    FormatPrice,
+    FormatPrice, PageInfoPPPoEPage,
     sortStatus,
     StatusCustomer,
     sumGrandtotalCustomer
@@ -486,6 +486,9 @@ class PPPoEPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
+
+                            <PageInfoPPPoEPage customers={this.state.customers} loading={this.state.loadings.customers}/>
+
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
                                 <div className="card-header" id="page-card-header">

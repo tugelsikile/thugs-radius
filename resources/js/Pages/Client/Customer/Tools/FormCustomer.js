@@ -25,7 +25,7 @@ class FormCustomer extends React.Component {
             loading : false,
             form : {
                 id : null, profile : null, nas : null, type : serviceType[0],
-                name : '', address : '', email : '', phone : '',
+                name : '', address : '', email : '', phone : '', is_voucher : false,
                 village : null, district : null, city : null, province : null, postal : '',
                 username : '', password : '',
                 services : { current : [], delete : [] },
@@ -53,6 +53,7 @@ class FormCustomer extends React.Component {
                 form.village = null, form.district = null, form.city = null, form.province = null, form.postal = '',
                 form.username = '', form.password = '', form.phone,
                 form.taxes.current = [], form.taxes.delete = [],
+                form.is_voucher = false,
                 form.discounts.current = [], form.discounts.delete = [],
                 form.services.current = [], form.services.delete = [];
             if (typeof props.type !== 'undefined') {
@@ -68,7 +69,8 @@ class FormCustomer extends React.Component {
                 form.id = props.data.value, form.name = props.data.label, form.address = props.data.meta.address.street,
                     form.username = props.data.meta.auth.user, form.password = props.data.meta.auth.pass,
                     form.postal = props.data.meta.address.postal,
-                    form.phone = props.data.meta.address.phone;
+                    form.phone = props.data.meta.address.phone,
+                    form.is_voucher = props.data.meta.voucher.is;
                 if (props.data.meta.user !== null) {
                     form.email = props.data.meta.user.email;
                 }
@@ -358,7 +360,6 @@ class FormCustomer extends React.Component {
                     this.props.handleClose();
                 }
             } catch (err) {
-                console.log(err);
                 this.setState({loading:false});
                 responseMessage(err);
             }
@@ -376,12 +377,16 @@ class FormCustomer extends React.Component {
                                     <li className="nav-item">
                                         <a className="nav-link active" id="custom-tabs-three-home-tab" data-toggle="pill" href="#custom-tabs-three-home" role="tab" aria-controls="custom-tabs-three-home" aria-selected="true"><FontAwesomeIcon icon={faUserTie}/></a>
                                     </li>
-                                    <li className="nav-item">
-                                        <a className="nav-link" id="custom-tabs-three-service-tab" data-toggle="pill" href="#custom-tabs-three-service" role="tab" aria-controls="custom-tabs-three-service" aria-selected="false"><FontAwesomeIcon icon={faConciergeBell} className="mr-1"/> {Lang.get('customers.labels.service.tab')}</a>
-                                    </li>
-                                    <li className="nav-item">
-                                        <a className="nav-link" id="custom-tabs-three-address-tab" data-toggle="pill" href="#custom-tabs-three-address" role="tab" aria-controls="custom-tabs-three-address" aria-selected="false"><FontAwesomeIcon icon={faStreetView} className="mr-1"/> {Lang.get('customers.labels.address.tab')}</a>
-                                    </li>
+                                    {! this.state.form.is_voucher &&
+                                        <React.Fragment>
+                                            <li className="nav-item">
+                                                <a className="nav-link" id="custom-tabs-three-service-tab" data-toggle="pill" href="#custom-tabs-three-service" role="tab" aria-controls="custom-tabs-three-service" aria-selected="false"><FontAwesomeIcon icon={faConciergeBell} className="mr-1"/> {Lang.get('customers.labels.service.tab')}</a>
+                                            </li>
+                                            <li className="nav-item">
+                                                <a className="nav-link" id="custom-tabs-three-address-tab" data-toggle="pill" href="#custom-tabs-three-address" role="tab" aria-controls="custom-tabs-three-address" aria-selected="false"><FontAwesomeIcon icon={faStreetView} className="mr-1"/> {Lang.get('customers.labels.address.tab')}</a>
+                                            </li>
+                                        </React.Fragment>
+                                    }
                                 </ul>
                             </div>
 
@@ -480,29 +485,32 @@ class FormCustomer extends React.Component {
                                             </div>
                                         </div>
 
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-name"><LabelRequired/>{Lang.get('customers.labels.name')}</label>
-                                            <div className="col-sm-10">
-                                                <input id="input-name" className="form-control text-sm" disabled={this.state.loading} value={this.state.form.name} onChange={this.handleChange} name="name" placeholder={Lang.get('customers.labels.name')}/>
-                                            </div>
-                                        </div>
-
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-email">{Lang.get('customers.labels.address.email')}</label>
-                                            <div className="col-sm-4">
-                                                <input type="email" id="input-email" className="form-control text-sm" value={this.state.form.email} name="email" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.email')}/>
-                                            </div>
-                                        </div>
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-phone">{Lang.get('customers.labels.address.phone')}</label>
-                                            <div className="col-sm-4">
-                                                <PhoneInput placeholder={Lang.get('customers.labels.address.phone')}
-                                                            inputClass="form-control text-sm" country="id"
-                                                            enableSearch={true} disabled={this.state.loading}
-                                                            localization={id}
-                                                            value={this.state.form.phone} onChange={(e)=>{ let form = this.state.form; form.phone = e; this.setState({form});}}/>
-                                            </div>
-                                        </div>
+                                        {! this.state.form.is_voucher &&
+                                            <React.Fragment>
+                                                <div className="form-group row">
+                                                    <label className="col-sm-2 col-form-label" htmlFor="input-name"><LabelRequired/>{Lang.get('customers.labels.name')}</label>
+                                                    <div className="col-sm-10">
+                                                        <input id="input-name" className="form-control text-sm" disabled={this.state.loading} value={this.state.form.name} onChange={this.handleChange} name="name" placeholder={Lang.get('customers.labels.name')}/>
+                                                    </div>
+                                                </div>
+                                                <div className="form-group row">
+                                                    <label className="col-sm-2 col-form-label" htmlFor="input-email">{Lang.get('customers.labels.address.email')}</label>
+                                                    <div className="col-sm-4">
+                                                        <input type="email" id="input-email" className="form-control text-sm" value={this.state.form.email} name="email" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.email')}/>
+                                                    </div>
+                                                </div>
+                                                <div className="form-group row">
+                                                    <label className="col-sm-2 col-form-label" htmlFor="input-phone">{Lang.get('customers.labels.address.phone')}</label>
+                                                    <div className="col-sm-4">
+                                                        <PhoneInput placeholder={Lang.get('customers.labels.address.phone')}
+                                                                    inputClass="form-control text-sm" country="id"
+                                                                    enableSearch={true} disabled={this.state.loading}
+                                                                    localization={id}
+                                                                    value={this.state.form.phone} onChange={(e)=>{ let form = this.state.form; form.phone = e; this.setState({form});}}/>
+                                                    </div>
+                                                </div>
+                                            </React.Fragment>
+                                        }
 
                                         <div className="form-group row">
                                             <label className="col-sm-2 col-form-label" htmlFor="input-username"><LabelRequired/>{Lang.get('customers.labels.username.label')}</label>

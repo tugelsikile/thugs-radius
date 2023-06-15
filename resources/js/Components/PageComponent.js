@@ -17,10 +17,14 @@ export const PageCardTitle = (props) => {
         <div className="card-title">
             {props.privilege !== null &&
                 <React.Fragment>
+                    {typeof props.filter !== 'undefined' &&
+                        props.filter !== null &&
+                            props.filter
+                    }
                     {props.privilege.create &&
                         <button type="button" onClick={()=>props.handleModal()} disabled={props.loading} className="btn btn-tool">
-                            <FontAwesomeIcon icon={faPlus} className="mr-1"/>
-                            {props.langs.create}
+                            <FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/>
+                            <small>{props.langs.create}</small>
                         </button>
                     }
                     {typeof props.others === 'undefined' ? null :
@@ -32,16 +36,16 @@ export const PageCardTitle = (props) => {
                                             onClick={item.handle}
                                             disabled={props.loading || typeof item.disabled === 'undefined' ? false : item.disabled }
                                             className="btn btn-tool">
-                                        {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1"/>}
-                                        {item.lang}
+                                        {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1" size="sm"/>}
+                                        <small>{item.lang}</small>
                                     </button>
                                 )
                     }
                     {props.privilege.delete &&
                         props.selected.length > 0 &&
                         <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-tool">
-                            <FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>
-                            {props.langs.delete}
+                            <FontAwesomeIcon size="sm" icon={faTrashAlt} className="mr-1"/>
+                            <small>{props.langs.delete}</small>
                         </button>
                     }
                 </React.Fragment>

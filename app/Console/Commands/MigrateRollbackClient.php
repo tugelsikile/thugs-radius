@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php
 
 namespace App\Console\Commands;
 
@@ -8,21 +8,21 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-class MigrateClient extends Command
+class MigrateRollbackClient extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'migrate:client';
+    protected $signature = 'migrate:client:rollback';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Migrate radius clients';
+    protected $description = 'Rollback migrate radius client';
 
     /**
      * Create a new command instance.
@@ -53,7 +53,7 @@ class MigrateClient extends Command
                 'username' => $company->radius_db_user,
                 'password' => $company->radius_db_pass
             ]);
-            Artisan::call('migrate', [
+            Artisan::call('migrate:rollback', [
                 '--database' => 'radius',
                 '--path' => 'database/migrations/radius'
             ]);

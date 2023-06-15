@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use RouterOS\Client;
 use RouterOS\Query;
@@ -126,12 +127,11 @@ class NasRepository
             $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->type = 'other';
-            $nas->secret = 'asd';
-            $nas->community = "default";
+            $nas->secret = $request[__('nas.form_input.secret')];
+            $nas->community = Str::slug($nas->shortname,'_');
             $nas->method = $request[__('nas.form_input.method')];
             $nas->nasname = $request[__('nas.form_input.ip')];
-            if ($nas->method == 'api') {
-            } else {
+            if ($nas->method == 'ssl') {
                 $nas->method_domain = $request[__('nas.form_input.domain')];
             }
             $nas->method_port = $request[__('nas.form_input.port')];
@@ -158,9 +158,11 @@ class NasRepository
             $me = auth()->guard('api')->user();
             $nas = Nas::where('id', $request[__('nas.form_input.id')])->first();
             $nas->shortname = $request[__('nas.form_input.name')];
+            $nas->community = Str::slug($nas->shortname,'_');
             $nas->description = $request[__('nas.form_input.description')];
             $nas->method = $request[__('nas.form_input.method')];
             $nas->nasname = $request[__('nas.form_input.ip')];
+            $nas->secret = $request[__('nas.form_input.secret')];
             if ($nas->method == 'ssl') {
                 $nas->method_domain = $request[__('nas.form_input.domain')];
             } else {

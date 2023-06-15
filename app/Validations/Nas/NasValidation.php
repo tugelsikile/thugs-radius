@@ -99,6 +99,7 @@ class NasValidation
                 __('nas.form_input.name') => 'required|string|min:1|max:50',
                 __('nas.form_input.description') => 'nullable',
                 __('nas.form_input.method') => 'required|string|in:api,ssl',
+                __('nas.form_input.ip') => 'required|ip|ipv4|not_in:0.0.0.0|unique:nas,nasname,' . $request[__('nas.form_input.id')] . ',id',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             if ($request[__('nas.form_input.method')] == 'ssl') {
@@ -135,12 +136,12 @@ class NasValidation
                 __('nas.form_input.method') => 'required|string|in:api,ssl',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
-            if ($request[__('nas.form_input.method')] == 'api') {
-                $valid = Validator::make($request->all(),[
-                    __('nas.form_input.ip') => 'required|ip',
-                ]);
-                if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
-            } else {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                __('nas.form_input.ip') => 'required|ip|ipv4|not_in:0.0.0.0|unique:nas,nasname',
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request[__('nas.form_input.method')] == 'ssl') {
                 $valid = Validator::make($request->all(),[
                     __('nas.form_input.domain') => 'required|url',
                 ]);

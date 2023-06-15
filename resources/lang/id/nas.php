@@ -1,6 +1,7 @@
 <?php
 return [
     'form_input' => [
+        'secret' => 'secret',
         'id' => 'data_router',
         'name' => 'nama_router',
         'description' => 'keterangan_router',
@@ -20,6 +21,7 @@ return [
             'success' => 'Data Router [NAS] berhasil dimuat',
             'error' => 'Gagal memuat data Router [NAS]',
         ],
+        'secret' => 'Secret',
         'menu' => 'Router [NAS]',
         'menu_info' => 'Manajemen Router [NAS]',
         'not_found' => 'Tidak ada data Router',

@@ -4,11 +4,11 @@ import {crudNas, decryptEncryptPass, testNasConnection} from "../../../../Servic
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
-import {InputText} from "../../../../Components/CustomInput";
 import {ModalFooter, ModalHeader} from "../../../../Components/ModalComponent";
 import MaskedInput from "react-text-mask/dist/reactTextMask";
 import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faBuilding, faDatabase, faEye, faEyeSlash, faFile, faLink} from "@fortawesome/free-solid-svg-icons";
 import {TutorialAPI, TutorialSSL} from "./TutorialConnectionType";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,JSUnresolvedVariable,DuplicatedCode,JSValidateTypes
@@ -22,6 +22,7 @@ class FormNas extends React.Component {
                 ip : 'https://', port : 443, type : routerConnectionType[0],
                 url : '',
                 pass : {
+                    secret : { value : '', type : 'password' },
                     user : { value : '', type : 'password' },
                     current : { value : '', type : 'password' },
                     confirm : { value : '', type : 'password' },
@@ -46,6 +47,7 @@ class FormNas extends React.Component {
                 form.ip = '0.0.0.0', form.domain = 'https://', form.port = 443, form.type = routerConnectionType[1],
                 form.pass.user.value = '', form.pass.user.type = 'password',
                 form.url = '', form.next = true,
+                form.pass.secret.value = '', form.pass.secret.type = 'password',
                 form.pass.current.value = '', form.pass.current.type = 'password',
                 form.pass.confirm.value = '', form.pass.confirm.type = 'password';
         } else {
@@ -63,19 +65,14 @@ class FormNas extends React.Component {
                     form.company = null, form.type = null, form.next = true,
                     form.ip = props.data.meta.auth.ip, form.port = props.data.meta.auth.port,
                     form.domain = props.data.meta.auth.host,
+                    form.pass.secret.value = props.data.meta.auth.secret,
+                    form.pass.secret.type = 'password',
                     form.pass.user.value = '', form.pass.user.type = 'password',
                     form.pass.current.value = '', form.pass.current.type = 'password',
                     form.pass.confirm.value = '', form.pass.confirm.type = 'password',
                     form.url = props.data.meta.url;
                 let index = routerConnectionType.findIndex((f) => f.value === props.data.meta.auth.method);
                 if (index >= 0) form.type = routerConnectionType[index];
-                /*if (props.data.meta.company !== null) {
-                    form.company = {
-                        value : props.data.meta.company.id,
-                        label : props.data.meta.company.name,
-                        max : props.data.meta.company.package_obj === null ? 1 : props.data.meta.company.package_obj.max_routerboards,
-                    };
-                }*/
             }
 
         }
@@ -112,7 +109,7 @@ class FormNas extends React.Component {
     }
     handleChange(event) {
         let form = this.state.form;
-        if (['user','current','confirm'].indexOf(event.currentTarget.name) !== -1) {
+        if (['secret','user','current','confirm'].indexOf(event.currentTarget.name) !== -1) {
             form.pass[event.currentTarget.name].value = event.currentTarget.value;
         } else if (['port'].indexOf(event.currentTarget.name) !== -1) {
             form[event.currentTarget.name] = parseInputFloat(event);
@@ -215,6 +212,7 @@ class FormNas extends React.Component {
                 formData.append(Lang.get('nas.form_input.name'), this.state.form.name);
                 formData.append(Lang.get('nas.form_input.description'), this.state.form.description);
                 formData.append(Lang.get('nas.form_input.port'), this.state.form.port);
+                formData.append(Lang.get('nas.form_input.secret'), this.state.form.pass.secret.value);
                 if (this.state.form.type !== null) {
                     formData.append(Lang.get('nas.form_input.method'), this.state.form.type.value);
                     formData.append(Lang.get('nas.form_input.ip'), this.state.form.ip);
@@ -251,25 +249,30 @@ class FormNas extends React.Component {
                                 <div className="form-group row">
                                     <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
                                     <div className="col-sm-4">
-                                        <Select options={this.props.companies}
-                                                value={this.state.form.company} onChange={(e)=>this.handleSelect(e,'company')}
-                                                noOptionsMessage={()=>Lang.get('companies.labels.no_select')}
-                                                className="text-sm" placeholder={<small>{Lang.get('companies.labels.select')}</small>}
-                                                isDisabled={this.state.loading || this.props.loadings.companies} isLoading={this.props.loadings.companies}/>
+                                        <div className="input-group">
+                                            <div className="input-group-prepend">
+                                                <span className="input-group-text"><FontAwesomeIcon icon={faBuilding}/></span>
+                                            </div>
+                                            <Select options={this.props.companies}
+                                                    value={this.state.form.company} onChange={(e)=>this.handleSelect(e,'company')}
+                                                    noOptionsMessage={()=>Lang.get('companies.labels.no_select')}
+                                                    className="text-sm" placeholder={<small>{Lang.get('companies.labels.select')}</small>}
+                                                    isDisabled={this.state.loading || this.props.loadings.companies} isLoading={this.props.loadings.companies}/>
+                                        </div>
                                     </div>
                                 </div>
                         }
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label" htmlFor="input-name">{Lang.get('nas.labels.name')}</label>
                             <div className="col-sm-10">
-                                <input className="form-control text-sm" name="name" value={this.state.form.name} onChange={this.handleChange} placeholder={Lang.get('nas.labels.name')} disabled={this.state.loading}/>
+                                <input id="input-name" className="form-control text-sm" name="name" value={this.state.form.name} onChange={this.handleChange} placeholder={Lang.get('nas.labels.name')} disabled={this.state.loading}/>
                             </div>
                         </div>
 
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label" htmlFor="input-description">{Lang.get('nas.labels.description')}</label>
                             <div className="col-sm-10">
-                                <textarea style={{resize:'none'}} className="form-control text-sm" name="description" value={this.state.form.description} onChange={this.handleChange} placeholder={Lang.get('nas.labels.description')} disabled={this.state.loading}/>
+                                <textarea id="input-description" style={{resize:'none'}} className="form-control text-sm" name="description" value={this.state.form.description} onChange={this.handleChange} placeholder={Lang.get('nas.labels.description')} disabled={this.state.loading}/>
                             </div>
                         </div>
 
@@ -281,6 +284,7 @@ class FormNas extends React.Component {
                                     <div className="col-sm-8">
                                         <Select isDisabled={this.state.loading}
                                                 options={routerConnectionType} className="text-sm"
+                                                noOptionsMessage={()=>Lang.get('nas.labels.not_found')}
                                                 onChange={(e)=>this.handleSelect(e,'type')}
                                                 value={this.state.form.type}/>
                                     </div>
@@ -313,13 +317,27 @@ class FormNas extends React.Component {
                                 </div>
 
                                 <div className="form-group row">
+                                    <label className="col-sm-4 col-form-label" htmlFor="input-secret">{Lang.get('nas.labels.secret')}</label>
+                                    <div className="col-sm-8">
+                                        <div className="input-group">
+                                            <input type={this.state.form.pass.secret.type} className="form-control text-sm" value={this.state.form.pass.secret.value} onChange={this.handleChange} name="secret" id="input-secret" disabled={this.state.loading} placeholder={Lang.get('nas.labels.secret')}/>
+                                            <span className="input-group-append">
+                                                <button disabled={this.state.loading} name="secret" onClick={this.handleInputType} type="button" className="btn btn-default">
+                                                    <FontAwesomeIcon icon={this.state.form.pass.secret.type === 'password' ? faEye : faEyeSlash}/>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="form-group row">
                                     <label className="col-sm-4 col-form-label" htmlFor="input-user">{Lang.get('nas.labels.user.label')}</label>
                                     <div className="col-sm-8">
                                         <div className="input-group">
                                             <input type={this.state.form.pass.user.type} className="form-control text-sm" value={this.state.form.pass.user.value} onChange={this.handleChange} name="user" id="input-user" disabled={this.state.loading} placeholder={Lang.get('nas.labels.user.label')}/>
                                             <span className="input-group-append">
                                                 <button disabled={this.state.loading} name="user" onClick={this.handleInputType} type="button" className="btn btn-default">
-                                                    {this.state.form.pass.user.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                    <FontAwesomeIcon icon={this.state.form.pass.user.type === 'password' ? faEye : faEyeSlash}/>
                                                 </button>
                                             </span>
                                         </div>
@@ -333,7 +351,7 @@ class FormNas extends React.Component {
                                             <input type={this.state.form.pass.current.type} className="form-control text-sm" value={this.state.form.pass.current.value} onChange={this.handleChange} name="current" id="input-password" disabled={this.state.loading} placeholder={Lang.get('nas.labels.pass.label')}/>
                                             <span className="input-group-append">
                                                 <button disabled={this.state.loading} name="current" onClick={this.handleInputType} type="button" className="btn btn-default">
-                                                    {this.state.form.pass.current.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                    <FontAwesomeIcon icon={this.state.form.pass.current.type === 'password' ? faEye : faEyeSlash}/>
                                                 </button>
                                             </span>
                                         </div>
@@ -347,7 +365,7 @@ class FormNas extends React.Component {
                                             <input type={this.state.form.pass.confirm.type} className="form-control text-sm" value={this.state.form.pass.confirm.value} onChange={this.handleChange} name="confirm" id="input-confirm" disabled={this.state.loading} placeholder={Lang.get('nas.labels.pass.confirm')}/>
                                             <span className="input-group-append">
                                                 <button disabled={this.state.loading} name="confirm" onClick={this.handleInputType} type="button" className="btn btn-default">
-                                                    {this.state.form.pass.confirm.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }
+                                                    <FontAwesomeIcon icon={this.state.form.pass.confirm.type === 'password' ? faEye : faEyeSlash}/>
                                                 </button>
                                             </span>
                                         </div>

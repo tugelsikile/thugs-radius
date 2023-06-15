@@ -12,6 +12,7 @@ class CustomerTax extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = "radius";
 
     public function taxObj(): BelongsTo
     {

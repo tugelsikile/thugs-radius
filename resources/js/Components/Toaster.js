@@ -26,7 +26,7 @@ export const showError = (message) => {
 export const showSuccess = (message) => {
     toast.success(sanitizeMessage(message));
 }
-export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question") => {
+export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id') => {
     if (message === null) message = "Anda yakin akan melakukan aksi ini ?";
     if (title === null) title = "Konfirmasi";
     const  formData = new FormData();
@@ -34,10 +34,10 @@ export const confirmDialog = (app, ids, method = 'delete', url = null, title = n
     if (ids !== null) {
         if (typeof ids === 'object') {
             ids.map((item, index) => {
-                formData.append(`id[${index}]`, item);
+                formData.append(`${inputName}[${index}]`, item);
             });
         } else {
-            formData.append('id', ids);
+            formData.append(inputName, ids);
         }
         message = message.replaceAll("\n",'<br>');
         Swal.fire({

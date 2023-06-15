@@ -158,7 +158,7 @@ class AuthRepository
             if ($request->has('route')) {
                 $response = collect();
                 $user = auth()->guard('api')->user();
-                $menus = Menu::orderBy('created_at', 'asc');
+                $menus = Menu::orderBy('order', 'asc');
                 $menus->whereIn('route', $request->route);
                 $menus = $menus->get();
                 foreach ($menus as $menu) {
@@ -166,6 +166,7 @@ class AuthRepository
                     if ($privilege != null) {
                         $response->push((object) [
                             'value' => $menu->route,
+                            'func' => $menu->function,
                             'read' => $privilege->read,
                             'create' => $privilege->create,
                             'update' => $privilege->update,

@@ -8,6 +8,7 @@ use App\Http\Controllers\Config\DiscountController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\Customer\CustomerController;
+use App\Http\Controllers\Customer\InvoiceController;
 use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
@@ -79,6 +80,11 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::any('/', [CustomerController::class, 'crud']);
         Route::patch('/active', [CustomerController::class, 'statusActive']);
         Route::put('/generate', [CustomerController::class, 'generate']);
+        Route::group(['prefix' => 'invoices'],function () {
+            Route::any('/', [InvoiceController::class,'crud']);
+            Route::any('/payments', [InvoiceController::class, 'payment']);
+            Route::put('/generate', [InvoiceController::class, 'generate']);
+        });
     });
 });
 Route::group(['prefix' => 'regions'], function () {

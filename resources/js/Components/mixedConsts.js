@@ -461,9 +461,6 @@ export const listDataPerPage = [
     { value : 50, label : 50 },
     { value : 100, label : 100 },
     { value : 500, label : 500 },
-    { value : 1000, label : formatLocaleString(1000) },
-    { value : 2000, label : formatLocaleString(2000) },
-    { value : 5000, label : formatLocaleString(5000) },
 ];
 export const FormControlSMReactSelect = {
     container: (provided, state) => ({

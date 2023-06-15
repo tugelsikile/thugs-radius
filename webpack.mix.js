@@ -36,3 +36,4 @@ const mix = require('laravel-mix');
 //mix.js('resources/js/src/clients/customers/index.js','public/js/clients/customers');
 //mix.js('resources/js/src/clients/customers/pppoe.js','public/js/clients/customers');
 //mix.js('resources/js/src/clients/customers/hotspot.js','public/js/clients/customers');
+mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/customers');

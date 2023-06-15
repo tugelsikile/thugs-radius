@@ -57,7 +57,17 @@ export const getPrivileges = async (routes = null) => {
                                 let privString = item.value;
                                 privString = privString.split('.');
                                 privString = privString[privString.length - 1];
-                                privilege[privString] = item.read;
+                                if (item.func) {
+                                    privilege[privString] = item.read;
+                                } else {
+                                    if (typeof privilege[privString] === 'undefined') {
+                                        privilege[privString] = {};
+                                    }
+                                    privilege[privString].read = item.read;
+                                    privilege[privString].create = item.create;
+                                    privilege[privString].update = item.update;
+                                    privilege[privString].delete = item.delete;
+                                }
                             }
                         });
                         response.data.params.privileges = privilege;

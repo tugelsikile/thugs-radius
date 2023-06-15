@@ -153,6 +153,7 @@ class CustomerRepository
             if ($userid != null) {
                 $customer->user = $userid;
             }
+            $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             if ($request->has(__('customers.form_input.address.phone'))) {
@@ -285,6 +286,7 @@ class CustomerRepository
             } else {
                 $customer->id = $userid;
             }
+            $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             $customer->user = $userid;

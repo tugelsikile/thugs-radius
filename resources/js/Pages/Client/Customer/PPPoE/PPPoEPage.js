@@ -1,40 +1,37 @@
-// noinspection DuplicatedCode
-
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
-import {CardPreloader, formatPhone, responseMessage, siteData} from "../../../Components/mixedConsts";
-import {crudNas, crudProfile} from "../../../Services/NasService";
-import {crudCustomers} from "../../../Services/CustomerService";
-import {confirmDialog} from "../../../Components/Toaster";
-import MainHeader from "../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../Components/Layout/MainSidebar";
-import PageTitle from "../../../Components/Layout/PageTitle";
-import MainFooter from "../../../Components/Layout/MainFooter";
-import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
-import BtnSort from "../../Auth/User/Tools/BtnSort";
-import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle, faInfoCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
-import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
-import {allProvinces} from "../../../Services/RegionService";
-import FormCustomer from "./Tools/FormCustomer";
-import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
+import {getPrivileges, getRootUrl} from "../../../../Components/Authentication";
+import {CardPreloader, formatPhone, responseMessage, siteData} from "../../../../Components/mixedConsts";
+import {CardInfoCustomer, CardInfoNas, CardInfoPrice, CardInfoProfile} from "../Tools/CardPopover";
+import {confirmDialog} from "../../../../Components/Toaster";
 import {
-    CardInfoPageCustomer,
     CustomerTypeIcon,
-    DueAtCustomer, FormatPrice,
+    DueAtCustomer,
+    FormatPrice,
     sortStatus,
     StatusCustomer,
     sumGrandtotalCustomer
-} from "./Tools/Mixed";
-import FormGenerate from "./Tools/FormGenerate";
+} from "../Tools/Mixed";
+import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
+import {allProvinces} from "../../../../Services/RegionService";
+import {crudNas, crudProfile} from "../../../../Services/NasService";
+import {crudCustomers} from "../../../../Services/CustomerService";
 import {Popover} from "@mui/material";
-import {CardInfoCustomer, CardInfoNas, CardInfoPrice, CardInfoProfile} from "./Tools/CardPopover";
-import PageLoader from "../../../Components/PageLoader";
+import FormCustomer from "../Tools/FormCustomer";
+import MainHeader from "../../../../Components/Layout/MainHeader";
+import MainSidebar from "../../../../Components/Layout/MainSidebar";
+import PageTitle from "../../../../Components/Layout/PageTitle";
+import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
+import {faCheckCircle, faInfoCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
+import BtnSort from "../../../Auth/User/Tools/BtnSort";
+import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../../Components/TableComponent";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import MainFooter from "../../../../Components/Layout/MainFooter";
+import PageLoader from "../../../../Components/PageLoader";
+import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
-
-class CustomerPage extends React.Component {
+// noinspection DuplicatedCode
+class PPPoEPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -59,7 +56,6 @@ class CustomerPage extends React.Component {
         this.handlePopOver = this.handlePopOver.bind(this);
         this.loadCustomers = this.loadCustomers.bind(this);
         this.confirmActive = this.confirmActive.bind(this);
-        this.toggleGenerate = this.toggleGenerate.bind(this);
         this.handleDataPerPage = this.handleDataPerPage.bind(this);
     }
     componentDidMount() {
@@ -104,7 +100,7 @@ class CustomerPage extends React.Component {
     componentWillUnmount() {
         window.removeEventListener('scroll', this.handleScrollPage);
     }
-    handleScrollPage(event) {
+    handleScrollPage() {
         const element = document.getElementById('page-card-header');
         const sidebar = document.getElementById('app-main-sidebar');
         if (element !== null && sidebar !== null) {
@@ -131,11 +127,6 @@ class CustomerPage extends React.Component {
         }
         this.setState({filter},()=>this.handleFilter());
     }
-    toggleGenerate() {
-        let modal = this.state.modal;
-        modal.generate.open = ! this.state.modal.generate.open;
-        this.setState({modal});
-    }
     handlePopOver(e) {
         let popover = this.state.popover;
         popover.open = ! this.state.popover.open;
@@ -158,7 +149,7 @@ class CustomerPage extends React.Component {
                             }
                         }
                     }
-                break;
+                    break;
                 case 'price' :
                     popover.data = <CardInfoPrice data={this.state.customers.unfiltered[index]}/>;
                     break;
@@ -444,7 +435,9 @@ class CustomerPage extends React.Component {
                 this.setState({loadings,customers},()=>this.handleFilter());
             } else {
                 try {
-                    let response = await crudCustomers(null,true);
+                    const formData = new FormData();
+                    formData.append('type','pppoe');
+                    let response = await crudCustomers(formData,true);
                     if (response.data.params === null) {
                         loadings.customers = false; this.setState({loadings});
                     } else {
@@ -473,36 +466,26 @@ class CustomerPage extends React.Component {
                     disableRestoreFocus>
                     {this.state.popover.data}
                 </Popover>
-                <FormGenerate open={this.state.modal.generate.open}
-                              profiles={this.state.profiles}
-                              nas={this.state.nas}
-                              loadings={this.state.loadings}
-                              customers={this.state.customers.unfiltered}
-                              handleClose={this.toggleGenerate}
-                              handleUpdate={this.loadCustomers}/>
                 <FormCustomer open={this.state.modal.customer.open} data={this.state.modal.customer.data}
                               loadings={this.state.loadings}
+                              type="pppoe"
                               provinces={this.state.provinces}
                               taxes={this.state.taxes}
                               discounts={this.state.discounts}
                               profiles={this.state.profiles}
                               nas={this.state.nas}
                               handleClose={this.toggleModal} handleUpdate={this.loadCustomers}/>
-
                 <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
                 <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
                 <div className="content-wrapper">
-                    <PageTitle title={Lang.get('customers.labels.menu')} childrens={[]}/>
+                    <PageTitle title={Lang.get('customers.pppoe.labels.menu')} childrens={[]}/>
 
                     <section className="content">
 
                         <div className="container-fluid">
-
-                            <CardInfoPageCustomer loading={this.state.loadings.customers} customers={this.state.customers}/>
-
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
                                 <div className="card-header" id="page-card-header">
@@ -511,10 +494,7 @@ class CustomerPage extends React.Component {
                                                    langs={{create:Lang.get('customers.create.button'),delete:Lang.get('customers.delete.button')}}
                                                    selected={this.state.customers.selected}
                                                    handleModal={this.toggleModal}
-                                                   confirmDelete={this.confirmDelete}
-                                                   others={[
-                                                       {lang : Lang.get('customers.hotspot.generate.button'), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
-                                                   ]}/>
+                                                   confirmDelete={this.confirmDelete}/>
                                     <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('customers.labels.search')}/>
                                 </div>
                                 <div className="card-body p-0">
@@ -532,11 +512,6 @@ class CustomerPage extends React.Component {
                                             <th className="align-middle" width={80}>
                                                 <BtnSort sort="code"
                                                          name={Lang.get('customers.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort sort="type"
-                                                         name={Lang.get('customers.labels.type_short')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
                                             <th className="align-middle">
@@ -582,7 +557,6 @@ class CustomerPage extends React.Component {
                                                                    checked={this.state.customers.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.customers} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-center">{item.meta.code}</td>
-                                                    <td className="align-middle text-center"><CustomerTypeIcon customer={item}/></td>
                                                     <td className="align-middle">
                                                         {item.meta.auth.type !== 'voucher' &&
                                                             <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-info" data-type="customer" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} size="xs"/>
@@ -644,11 +618,6 @@ class CustomerPage extends React.Component {
                                                          name={Lang.get('customers.labels.code')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort sort="type"
-                                                         name={Lang.get('customers.labels.type_short')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
                                             <th className="align-middle">
                                                 <BtnSort sort="name"
                                                          name={Lang.get('customers.labels.name')}
@@ -698,7 +667,7 @@ class CustomerPage extends React.Component {
         )
     }
 }
+export default PPPoEPage;
 
-export default CustomerPage;
 const root = ReactDOM.createRoot(document.getElementById('main-container'));
-root.render(<React.StrictMode><CustomerPage route="clients.customers"/></React.StrictMode>)
+root.render(<React.StrictMode><PPPoEPage route="clients.customers.pppoe"/></React.StrictMode>);

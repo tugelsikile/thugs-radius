@@ -465,3 +465,62 @@ export const listDataPerPage = [
     { value : 2000, label : formatLocaleString(2000) },
     { value : 5000, label : formatLocaleString(5000) },
 ];
+export const FormControlSMReactSelect = {
+    container: (provided, state) => ({
+        ...provided,
+        padding: '0',
+        border: '0',
+        fontSize: '0.875rem !important',
+    }),
+    control: (provided, state) => ({
+        ...provided,
+        height: 'calc(1.8125rem + 2px)',
+        minHeight: 'calc(1.8125rem + 2px)',
+        fontSize: '0.875rem !important',
+        borderColor: '#d8dbe0',
+        lineHeight: 1.5,
+        boxShadow: 'inset 0 1px 1px rgba(0, 0, 0, 0.075)',
+        transition: 'background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+        ':hover': {
+            borderColor: state.isFocused ? '#66afe9' : '#d8dbe0',
+            boxShadow: state.isFocused ?
+                'inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6)' :
+                'inset 0 1px 1px rgba(0, 0, 0, 0.075)',
+        }
+    }),
+    valueContainer: (provided, state) => ({
+        ...provided,
+        marginTop: '0',
+        marginLeft: '6px',
+        padding: '0',
+        border: '0',
+    }),
+    dropdownIndicator: (provided, state) => ({
+        ...provided,
+        marginTop: '0',
+        padding: '0',
+        border: '0',
+        width: '16px',
+    }),
+    clearIndicator: (provided, state) => ({
+        ...provided,
+        marginTop: '0',
+        padding: '0',
+        border: '0',
+        width: '16px',
+    }),
+    indicatorsContainer: (provided, state) => ({
+        ...provided,
+        paddingRight: '4px',
+        border: '0',
+    }),
+}
+export const formatPhone = (phone, separator = ' ') => {
+    const cleaned = ('' + phone).replace(/\D/g, '');
+    const match = cleaned.match(/^(62|)?(\d{4})(\d{4})(\d{2}|\d{3}|\d{4})$/);
+    if (match) {
+        const intlCode = `+${match[1]}${separator}`; // (match[1] ? '+62 ' : '');
+        return [intlCode, match[2], match[3], match[4]].join(separator);
+    }
+    return null;
+}

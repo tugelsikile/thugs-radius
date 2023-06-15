@@ -84,6 +84,7 @@ class CustomerValidation
                 __('customers.form_input.type') => 'required|in:hotspot,pppoe',
                 __('customers.form_input.name') => 'required|string|min:1|max:199',
                 __('customers.form_input.address.street') => 'nullable',
+                __('customers.form_input.address.phone') => 'nullable'
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             if ($request->has(__('customers.form_input.email'))) {
@@ -149,6 +150,7 @@ class CustomerValidation
                 __('customers.form_input.type') => 'required|in:hotspot,pppoe',
                 __('customers.form_input.name') => 'required|string|min:1|max:199',
                 __('customers.form_input.address.street') => 'nullable',
+                __('customers.form_input.address.phone') => 'nullable'
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             if ($request->has(__('customers.form_input.email'))) {

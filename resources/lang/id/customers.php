@@ -36,6 +36,10 @@ return [
         ]
     ],
     'labels' => [
+        'select' => [
+            'label' => 'Pilih Pelanggan',
+            'not_found' => 'Pelanggan tidak ditemukan',
+        ],
         'menu' => 'Pelanggan',
         'menu_info' => 'Manajemen data pelanggan',
         'loading' => [

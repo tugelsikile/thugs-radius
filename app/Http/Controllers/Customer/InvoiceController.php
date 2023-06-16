@@ -31,6 +31,20 @@ class InvoiceController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function payment(Request $request): JsonResponse
+    {
+        try {
+            $this->params = $this->repository->payment($this->validation->payment($request));
+            $this->code = 200; $this->message = __('invoices.payments.success');
+            return formatResponse($this->code, $this->message, $this->params);
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
      * @throws Throwable
      */
     public function generate(Request $request): JsonResponse

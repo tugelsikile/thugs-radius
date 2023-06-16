@@ -1,6 +1,5 @@
 import React from "react";
 import moment from "moment";
-
 class MainFooter extends React.Component {
     constructor(props) {
         super(props);

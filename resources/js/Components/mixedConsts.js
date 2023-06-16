@@ -6,7 +6,8 @@ import {guestSiteConfig} from "../Services/ConfigService";
 import {showError} from "./Toaster";
 import {logout} from "./Authentication";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faAsterisk} from "@fortawesome/free-solid-svg-icons";
+import {faAsterisk, faCircleNotch} from "@fortawesome/free-solid-svg-icons";
+import {faSyncAlt} from "@fortawesome/free-solid-svg-icons/faSyncAlt";
 
 Lang.setLocale(localStorage.getItem('locale_lang'));
 export const langSelect = [
@@ -211,8 +212,18 @@ export const sumTotalPaymentSingle = (data) => {
 export const sumTotalPackageSingle = (item) => {
     return (((( item.meta.prices.price * item.meta.prices.qty) * item.meta.prices.vat ) / 100 ) + ( item.meta.prices.price * item.meta.prices.qty)) - item.meta.prices.discount;
 }
+export const CardPreloaderBackup = () => {
+    return <div className="overlay"><img alt="Loading ..." className="animation__shake" src={window.origin + '/preloader.svg'} style={{height:100}}/></div>
+}
 export const CardPreloader = () => {
-    return <div className="overlay"><img src={window.origin + '/preloader.svg'} style={{height:100}}/></div>
+    return <div className="overlay"><FontAwesomeIcon icon={faCircleNotch} spin={true} size="3x"/></div>
+}
+export const CardOverlay = (dark = false) => {
+    return (
+        <div className={`overlay ${dark ? 'dark' : null}`}>
+            <FontAwesomeIcon icon={faSyncAlt} size="3x" spin={true}/>
+        </div>
+    );
 }
 export const formatLocaleString = (number, maximumFractionDigits = 2) => {
     let response = number;
@@ -521,4 +532,15 @@ export const formatPhone = (phone, separator = ' ') => {
         return [intlCode, match[2], match[3], match[4]].join(separator);
     }
     return null;
+}
+export const randomString = (length = 10) => {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < length) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        counter += 1;
+    }
+    return result;
 }

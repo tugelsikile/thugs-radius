@@ -364,10 +364,14 @@ class CustomerRepository
             $response = collect();
             $customers = Customer::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $customers = $customers->where('id', $request->id);
-            if (strlen($request->type) > 0) {
-                $customers = $customers->where('method_type', $request->type);
-                if ($request->type == 'hotspot') {
-                    $customers = $customers->orWhere('method_type','voucher');
+            if ($request->has('type')) {
+                if (is_array($request->type)) {
+                    $customers = $customers->whereIn('method_type', $request->type);
+                } else {
+                    $customers = $customers->where('method_type', $request->type);
+                    if ($request->type == 'hotspot') {
+                        $customers = $customers->orWhere('method_type','voucher');
+                    }
                 }
             }
             $customers = $customers->get();

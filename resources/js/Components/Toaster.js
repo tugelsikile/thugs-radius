@@ -6,25 +6,27 @@ import React from "react";
 import 'react-toastify/dist/ReactToastify.css';
 import {toast} from "react-toastify";
 import Swal from "sweetalert2";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faAngleDoubleRight} from "@fortawesome/free-solid-svg-icons";
 
 export const sanitizeMessage = (message) => {
     message = message.split("\n");
     return (
-        <ul className="list-unstyled">
+        <ul className="list-unstyled mb-0">
             {message.map((item, index) =>
-                <li className="small" key={index}>{message.length > 1 && <i className="fas fa-minus"/>} {item}</li>
+                <li key={index}>{message.length > 1 && <FontAwesomeIcon icon={faAngleDoubleRight} size="xs"/>} {item}</li>
             )}
         </ul>
     );
 }
 export const showPromise = (message, promise) => {
-    toast.promise(promise, message,{autoClose : 1000});
+    toast.promise(promise, message,{autoClose : 2000, bodyClassName : 'text-xs'});
 }
 export const showError = (message) => {
-    toast.error(sanitizeMessage(message));
+    toast.error(sanitizeMessage(message), { bodyClassName : 'text-xs'});
 }
 export const showSuccess = (message) => {
-    toast.success(sanitizeMessage(message));
+    toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs'});
 }
 export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id') => {
     if (message === null) message = "Anda yakin akan melakukan aksi ini ?";

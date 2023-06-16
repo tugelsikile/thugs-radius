@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php /** @noinspection PhpUndefinedFieldInspection */
+
+/** @noinspection PhpUndefinedMethodInspection */
 
 namespace App\Repositories\Customer;
 
@@ -12,6 +14,7 @@ use App\Models\Customer\CustomerInvoicePayment;
 use App\Models\Customer\CustomerInvoiceService;
 use App\Models\Customer\CustomerInvoiceTax;
 use App\Models\Customer\CustomerTax;
+use App\Models\Nas\NasProfile;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -31,7 +34,243 @@ class InvoiceRepository
         $this->response = null;
         new SwitchDB();
     }
+    public function update(Request $request) {
+        try {
+            $isUpdating = false;
+            $invoice = CustomerInvoice::where('id', $request[__('invoices.form_input.id')])->first();
+            if ($request->has(__('invoices.form_input.note'))) {
+                if ($invoice->note != $request[__('invoices.form_input.note')]) {
+                    $isUpdating = true;
+                }
+                $invoice->note = $request[__('invoices.form_input.note')];
+            } else {
+                $invoice->note = null;
+            }
 
+            if ($request->has(__('invoices.form_input.service.input'))) {
+                foreach ($request[__('invoices.form_input.service.input')] as $index => $item) {
+                    $service = NasProfile::where('id', $item[__('profiles.form_input.name')])->first();
+                    if ($service != null) {
+                        if (array_key_exists(__('invoices.form_input.service.id'), $item)) {
+                            $invoiceService = CustomerInvoiceService::where('id', $item[__('invoices.form_input.service.id')])->first();
+                            if ($invoiceService->amount != $service->price ||
+                                $invoiceService->service != $service->id ||
+                                $invoiceService->note != $service->name
+                            ) {
+                                $invoiceService->updated_by = $this->me->id;
+                                $isUpdating = true;
+                            }
+                        } else {
+                            $invoiceService = new CustomerInvoiceService();
+                            $invoiceService->id = Uuid::uuid4()->toString();
+                            $invoiceService->invoice = $invoice->id;
+                            $invoiceService->order = $index;
+                            $invoiceService->created_by = $this->me->id;
+                        }
+                        $invoiceService->service = $service->id;
+                        $invoiceService->amount = $service->price;
+                        $invoiceService->note = $service->name;
+                        $invoiceService->saveOrFail();
+                    }
+                }
+            }
+            if ($request->has(__('invoices.form_input.service.delete'))) {
+                $invoiceServices = CustomerInvoiceService::whereIn('id', $request[__('invoices.form_input.service.delete')])->get();
+                foreach ($invoiceServices as $invoiceService) {
+                    $invoiceService->deleted_by = $this->me->id;
+                    $invoiceService->saveOrFail();
+                    $invoiceService->delete();
+                }
+                $isUpdating = true;
+            }
+            if ($request->has(__('invoices.form_input.taxes.input'))) {
+                foreach ($request[__('invoices.form_input.taxes.input')] as $item) {
+                    if (array_key_exists(__('invoices.form_input.taxes.id'), $item)) {
+                        $invoiceTax = CustomerInvoiceTax::where('id', $item[__('invoices.form_input.taxes.id')])->first();
+                        if ($invoiceTax->tax != $item[__('taxes.form_input.name')]) {
+                            $invoiceTax->updated_by = $this->me->id;
+                            $isUpdating = true;
+                        }
+                    } else {
+                        $invoiceTax = new CustomerInvoiceTax();
+                        $invoiceTax->id = Uuid::uuid4()->toString();
+                        $invoiceTax->invoice = $invoice->id;
+                        $invoiceTax->created_by = $this->me->id;
+                    }
+                    $invoiceTax->tax = $item[__('taxes.form_input.name')];
+                    $invoiceTax->saveOrFail();
+                }
+            }
+            if ($request->has(__('invoices.form_input.service.taxes.delete'))) {
+                $invoiceTaxes = CustomerInvoiceTax::whereIn('id', $request[__('invoices.form_input.service.taxes.delete')])->get();
+                foreach ($invoiceTaxes as $invoiceTax) {
+                    $invoiceTax->deleted_by = $this->me->id;
+                    $invoiceTax->saveOrFail();
+                    $invoiceTax->delete();
+                }
+                $isUpdating = true;
+            }
+            if ($request->has(__('invoices.form_input.discounts.input'))) {
+                foreach ($request[__('invoices.form_input.discounts.input')] as $item) {
+                    if (array_key_exists(__('invoices.form_input.discounts.id'), $item)) {
+                        $invoiceDiscount = CustomerInvoiceDiscount::where('id', $item[__('invoices.form_input.discounts.id')])->first();
+                        if ($invoiceDiscount->discount != $item[__('discounts.form_input.name')]) {
+                            $invoiceDiscount->updated_by = $this->me->id;
+                            $isUpdating = true;
+                        }
+                    } else {
+                        $invoiceDiscount = new CustomerInvoiceDiscount();
+                        $invoiceDiscount->id = Uuid::uuid4()->toString();
+                        $invoiceDiscount->invoice = $invoice->id;
+                        $invoiceDiscount->created_by = $this->me->id;
+                    }
+                    $invoiceDiscount->discount = $item[__('discounts.form_input.name')];
+                    $invoiceDiscount->saveOrFail();
+                }
+            }
+            if ($request->has(__('invoices.form_input.discounts.delete'))) {
+                $invoiceDiscounts = CustomerInvoiceDiscount::whereIn('id', $request[__('invoices.form_input.discounts.delete')])->get();
+                foreach ($invoiceDiscounts as $invoiceDiscount) {
+                    $invoiceDiscount->deleted_by = $this->me->id;
+                    $invoiceDiscount->saveOrFail();
+                    $invoiceDiscount->delete();
+                }
+                $isUpdating = true;
+            }
+            if ($isUpdating) {
+                $invoice->updated_by = $this->me->id;
+                $invoice->saveOrFail();
+            }
+            return $this->table(new Request(['id' => $invoice->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Throwable
+     */
+    public function create(Request $request) {
+        try {
+            $billPeriod = Carbon::parse($request[__('invoices.form_input.bill_period')]);
+            $invoice = new CustomerInvoice();
+            $invoice->id = Uuid::uuid4()->toString();
+            $orderId = mt_rand(1111111111,9999999999);
+            while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
+                $orderId = mt_rand(1111111111,9999999999);
+            }
+            $invoice->order_id = $orderId;
+            $invoice->customer = $request[__('customers.form_input.name')];
+            $invoice->code = generateCustomerInvoiceCode($billPeriod);
+            $invoice->bill_period = $billPeriod->format('Y-m-d');
+            if ($request->has(__('invoices.form_input.note'))) {
+                $invoice->note = $request[__('invoices.form_input.note')];
+            }
+            $invoice->due_at = $billPeriod->addDays(5)->format('Y-m-d H:i:s');
+            $invoice->created_by = $this->me->id;
+            $invoice->saveOrFail();
+
+            if ($request->has(__('invoices.form_input.service.input'))) {
+                foreach ($request[__('invoices.form_input.service.input')] as $index => $item) {
+                    $service = NasProfile::where('id', $item[__('profiles.form_input.name')])->first();
+                    if ($service != null) {
+                        $invoiceService = new CustomerInvoiceService();
+                        $invoiceService->id = Uuid::uuid4()->toString();
+                        $invoiceService->invoice = $invoice->id;
+                        $invoiceService->service = $service->id;
+                        $invoiceService->order = $index;
+                        $invoiceService->amount = $service->price;
+                        $invoiceService->note = $service->name;
+                        $invoiceService->created_by = $this->me->id;
+                        $invoiceService->saveOrFail();
+                    }
+                }
+            }
+            if ($request->has(__('invoices.form_input.taxes.input'))) {
+                foreach ($request[__('invoices.form_input.taxes.input')] as $item) {
+                    $invoiceTax = new CustomerInvoiceTax();
+                    $invoiceTax->id = Uuid::uuid4()->toString();
+                    $invoiceTax->invoice = $invoice->id;
+                    $invoiceTax->tax = $item[__('taxes.form_input.name')];
+                    $invoiceTax->created_by = $this->me->id;
+                    $invoiceTax->saveOrFail();
+                }
+            }
+            if ($request->has(__('invoices.form_input.discounts.input'))) {
+                foreach ($request[__('invoices.form_input.discounts.input')] as $item) {
+                    $invoiceDiscount = new CustomerInvoiceDiscount();
+                    $invoiceDiscount->id = Uuid::uuid4()->toString();
+                    $invoiceDiscount->invoice = $invoice->id;
+                    $invoiceDiscount->discount = $item[__('discounts.form_input.name')];
+                    $invoiceDiscount->created_by = $this->me->id;
+                    $invoiceDiscount->saveOrFail();
+                }
+            }
+            return $this->table(new Request(['id' => $invoice->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Throwable
+     */
+    public function payment(Request $request) {
+        try {
+            $invoice = CustomerInvoice::where('id', $request[__('invoices.form_input.id')])->first();
+            if ($request->has(__('invoices.payments.form_input.payment.input'))) {
+                foreach ($request[__('invoices.payments.form_input.payment.input')] as $item) {
+                    if (array_key_exists(__('invoices.payments.form_input.payment.id'), $item)) {
+                        $payment = CustomerInvoicePayment::where('id', $item[__('invoices.payments.form_input.payment.id')])->first();
+                        if ($payment->amount != (float) $item[__('invoices.payments.form_input.payment.amount')]) {
+                            $payment->updated_by = $this->me->id;
+                        }
+                        if ($payment->note != $item[__('invoices.payments.form_input.payment.note')]) {
+                            $payment->updated_by = $this->me->id;
+                        }
+                        if (! Carbon::parse($item[__('invoices.payments.form_input.payment.date')])->isSameAs(Carbon::parse($invoice->paid_at))) {
+                            $payment->updated_by = $this->me->id;
+                        }
+                    } else {
+                        $payment = new CustomerInvoicePayment();
+                        $payment->id = Uuid::uuid4()->toString();
+                        $payment->invoice = $invoice->id;
+                        $payment->code = generateCustomerPaymentCode(Carbon::parse($item[__('invoices.payments.form_input.payment.date')]));
+                        $payment->created_by = $this->me->id;
+                    }
+                    $payment->paid_at = Carbon::parse($item[__('invoices.payments.form_input.payment.date')])->format('Y-m-d H:i:s');
+                    $payment->amount = (float) $item[__('invoices.payments.form_input.payment.amount')];
+                    $payment->note = $item[__('invoices.payments.form_input.payment.note')];
+                    $payment->saveOrFail();
+                }
+            }
+            if ($request->has(__('invoices.payments.form_input.payment.delete'))) {
+                $payments = CustomerInvoicePayment::whereIn('id', $request[__('invoices.payments.form_input.payment.delete')])->get();
+                foreach ($payments as $payment) {
+                    $payment->deleted_by = $this->me->id;
+                    $payment->saveOrFail();
+                    $payment->delete();
+                }
+            }
+            if ($request->has(__('invoices.payments.form_input.total.payment'))) {
+                if ($request[__('invoices.payments.form_input.total.payment')] == 0) {
+                    if ($invoice->paid_at == null) {
+                        $invoice->paid_at = Carbon::now()->format('Y-m-d H:i:s');
+                        $invoice->paid_by = $this->me->id;
+                    }
+                } else {
+                    $invoice->paid_at = null;
+                    $invoice->paid_by = null;
+                }
+                $invoice->saveOrFail();
+            }
+            return $this->table(new Request(['id' => $invoice->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return bool

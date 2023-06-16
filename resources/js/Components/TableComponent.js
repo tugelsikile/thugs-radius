@@ -9,7 +9,7 @@ import Pagination from '@atlaskit/pagination';
 
 export const TableAction = (props) => {
     return (
-        <td className="align-middle text-center">
+        <td className={typeof props.className === 'undefined' ? "align-middle text-center" : props.className === null ? "align-middle text-center" : `align-middle text-center ${props.className}`}>
             {props.privilege !== null &&
                 <>
                     <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown"><span className="sr-only">Toggle Dropdown</span></button>
@@ -18,17 +18,17 @@ export const TableAction = (props) => {
                             props.others === null ? null :
                                 props.others.map((item,index)=>
                                     item === null ? null :
-                                        <button key={`otherPriv_${index}`} type="button" onClick={item.handle} className={`dropdown-item ${typeof item.color === null ? '' : item.color}`}>
+                                        <button key={`otherPriv_${index}`} type="button" onClick={item.handle} className={`dropdown-item text-xs ${typeof item.color === null ? '' : item.color}`}>
                                             {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1"/> }
                                             {item.lang}
                                         </button>
                                 )
                         }
                         {props.privilege.update &&
-                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
+                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-xs text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
                         }
                         {props.privilege.delete &&
-                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
+                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-xs text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
                         }
                     </div>
                 </>
@@ -48,7 +48,8 @@ export const DataNotFound = (props) => {
 }
 export const TableCheckBox = (props) => {
     return (
-        <td className="align-middle text-center">
+        <td className={
+            typeof props.className === 'undefined' ? "align-middle text-center" : props.className === null ? "align-middle text-center" : `align-middle text-center ${props.className}` }>
             <div style={{zIndex:0}} className="custom-control custom-checkbox">
                 <input id={`cbx_${props.item.value}`}
                        data-id={props.item.value}

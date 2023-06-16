@@ -1,7 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../../Components/Authentication";
-import {CardPreloader, formatPhone, responseMessage, siteData} from "../../../../Components/mixedConsts";
+import {
+    CardPreloader,
+    formatLocalePeriode,
+    formatPhone,
+    responseMessage,
+    siteData
+} from "../../../../Components/mixedConsts";
 import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
 import {crudNas, crudProfile} from "../../../../Services/NasService";
 import {crudCustomerInvoices, crudCustomers} from "../../../../Services/CustomerService";
@@ -14,7 +20,7 @@ import MainHeader from "../../../../Components/Layout/MainHeader";
 import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
-import {faCheckCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle, faInfoCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../../Components/TableComponent";
 import BtnSort from "../../../Auth/User/Tools/BtnSort";
@@ -22,14 +28,19 @@ import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import GenerateInvoice from "./Tools/GenerateInvoice";
 import moment from "moment";
 import {
+    CardInfoPageInvoice,
     sortStatusPaymentInvoice,
     StatusPaymentInvoice,
     sumGrandTotalInvoice,
-    sumPaymentLeftInvoice,
-    sumTotalPaymentInvoice
+    sumTotalPaymentInvoice, TableHeaderRow
 } from "./Tools/Mixed";
 import {FilterButton} from "../Hotspot/Tools/Filter";
 import {FilterInvoice} from "./Tools/Filter";
+import {faCashRegister} from "@fortawesome/free-solid-svg-icons/faCashRegister";
+import FormPayment from "./Tools/FormPayment";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import FormInvoice from "./Tools/FormInvoice";
+import InfoInvoice from "./Tools/InfoInvoice";
 
 // noinspection DuplicatedCode
 class InvoicePage extends React.Component {
@@ -40,11 +51,16 @@ class InvoicePage extends React.Component {
             loadings : { privilege : false, site : false, nas : true, customers : true, profiles : true, taxes : true, discounts : true, invoices : true },
             privilege : null, menus : [], site : null, nas : [], profiles : [], taxes : [], discounts : [], customers : [],
             invoices : { filtered : [], unfiltered : [], selected : [] },
-            filter : { bill_period : new Date(), paid_date : null, keywords : '', sort : { by : 'code', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
+            filter : {
+                status : [], bill_period : new Date(), paid_date : null, keywords : '',
+                sort : { by : 'code', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [],
+            },
             modal : {
                 invoice : { open : false, data : null },
                 generate : { open : false },
                 filter : { open : false },
+                payment : { open : false, data : null },
+                info : { open : false, data : null },
             },
             popover : { open : false, anchorEl : null, data : null },
         };
@@ -62,6 +78,9 @@ class InvoicePage extends React.Component {
         this.toggleFilter = this.toggleFilter.bind(this);
         this.handleSelectDate = this.handleSelectDate.bind(this);
         this.handleSelectPaidDate = this.handleSelectPaidDate.bind(this);
+        this.handleSelectStatus = this.handleSelectStatus.bind(this);
+        this.togglePayment = this.togglePayment.bind(this);
+        this.toggleInfo = this.toggleInfo.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -109,8 +128,30 @@ class InvoicePage extends React.Component {
     componentWillUnmount() {
         window.removeEventListener('scroll', this.handleScrollPage);
     }
+    toggleInfo(data = null) {
+        let modal = this.state.modal;
+        modal.info.open = ! this.state.modal.info.open;
+        modal.info.data = data;
+        if (modal.info.data === null) {
+            modal.info.open = false;
+        }
+        this.setState({modal});
+    }
+    togglePayment(data = null) {
+        let modal = this.state.modal;
+        modal.payment.open = ! this.state.modal.payment.open;
+        modal.payment.data = data;
+        this.setState({modal});
+    }
+    handleSelectStatus(event) {
+        let filter = this.state.filter;
+        filter.status = event;
+        filter.paid_date = null;
+        this.setState({filter},()=>this.handleFilter());
+    }
     handleSelectPaidDate(event) {
         let filter = this.state.filter;
+        filter.status = [];
         filter.paid_date = event; this.setState({filter},()=>this.handleFilter());
     }
     handleSelectDate(event) {
@@ -265,6 +306,29 @@ class InvoicePage extends React.Component {
         if (filter.paid_date !== null) {
             invoices.filtered = invoices.filtered.filter((f) => moment(f.meta.timestamps.paid.at).isSame(filter.paid_date,'day'));
         }
+        if (filter.status.length > 0) {
+            let filterStatus = [];
+            filter.status.map((item)=> {
+                switch (item.value) {
+                    case 'pending':
+                        invoices.filtered.filter((f) => sumTotalPaymentInvoice(f) === 0).map((item)=>{
+                            filterStatus.push(item);
+                        });
+                        break;
+                    case 'partial':
+                        invoices.filtered.filter((f) => sumTotalPaymentInvoice(f) > 0 && sumTotalPaymentInvoice(f) !== sumGrandTotalInvoice(f)).map((item)=>{
+                            filterStatus.push(item);
+                        });
+                        break;
+                    case 'paid' :
+                        invoices.filtered.filter((f) => sumTotalPaymentInvoice(f) === sumGrandTotalInvoice(f)).map((item)=>{
+                            filterStatus.push(item);
+                        });
+                        break;
+                }
+            });
+            invoices.filtered = filterStatus;
+        }
         switch (filter.sort.by) {
             case 'code' :
                 if (filter.sort.dir === 'asc') {
@@ -414,12 +478,12 @@ class InvoicePage extends React.Component {
             loadings.customers = true;
             this.setState({loadings});
             try {
-                let response = await crudCustomers();
+                let response = await crudCustomers({type:['pppoe','hotspot']});
                 if (response.data.params === null) {
                     loadings.customers = false; this.setState({loadings});
                 } else {
                     loadings.customers = false;
-                    this.setState({loadings});
+                    this.setState({loadings,customers:response.data.params});
                 }
             } catch (e) {
                 loadings.customers = false; this.setState({loadings});
@@ -442,7 +506,13 @@ class InvoicePage extends React.Component {
                     if (index >= 0) {
                         invoices.unfiltered[index] = data;
                     } else {
-                        invoices.unfiltered.push(data);
+                        if (moment(data.meta.period).isSame(this.state.filter.bill_period,'month')) {
+                            invoices.unfiltered.push(data);
+                        } else {
+                            let filter = this.state.filter;
+                            filter.bill_period = moment(data.meta.period).toDate();
+                            this.setState({filter},()=>this.loadInvoices());
+                        }
                     }
                 }
                 loadings.invoices = false;
@@ -469,26 +539,17 @@ class InvoicePage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <InfoInvoice invoices={this.state.invoices} bill_period={this.state.filter.bill_period} loadings={this.state.loadings} profiles={this.state.profiles} customers={this.state.customers} taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.info.open} data={this.state.modal.info.data} handleClose={this.toggleInfo} handleUpdate={this.loadInvoices}/>
+                <FormInvoice invoices={this.state.invoices} bill_period={this.state.filter.bill_period} loadings={this.state.loadings} profiles={this.state.profiles} customers={this.state.customers} taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.invoice.open} data={this.state.modal.invoice.data} handleClose={this.toggleModal} handleUpdate={this.loadInvoices}/>
+                <FormPayment open={this.state.modal.payment.open} data={this.state.modal.payment.data} handleClose={this.togglePayment} handleUpdate={this.loadInvoices}/>
                 <GenerateInvoice bill_period={this.state.filter.bill_period} open={this.state.modal.generate.open} handleClose={this.toggleGenerate} handleUpdate={this.loadInvoices}/>
                 <PageLoader/>
-                <Popover
-                    sx={{ pointerEvents: 'none', }}
-                    open={this.state.popover.open}
-                    anchorEl={this.state.popover.anchorEl}
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'left', }}
-                    onClose={this.handlePopOver}
-                    disableRestoreFocus>
-                    {this.state.popover.data}
-                </Popover>
+                <Popover open={this.state.popover.open} onClose={this.handlePopOver} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} sx={{ pointerEvents: 'none', }} disableRestoreFocus>{this.state.popover.data}</Popover>
 
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus}/>
+
                 <div className="content-wrapper">
-                    <PageTitle title={Lang.get('customers.invoices.labels.menu')} childrens={[
+                    <PageTitle title={`${Lang.get('customers.invoices.labels.menu')}, ${formatLocalePeriode(this.state.filter.bill_period,'MMMM yyyy')}`} childrens={[
                         {url:getRootUrl() + '/customers', label : Lang.get('customers.labels.menu')}
                     ]}/>
 
@@ -496,9 +557,14 @@ class InvoicePage extends React.Component {
 
                         <div className="container-fluid">
 
+                            <CardInfoPageInvoice loading={this.state.loadings.invoices}
+                                                 invoices={this.state.invoices}
+                                                 filter={this.state.filter}/>
+
                             <FilterInvoice filter={this.state.filter}
                                            loading={this.state.loadings.invoices}
                                            handleDate={this.handleSelectDate}
+                                           handleStatus={this.handleSelectStatus}
                                            handlePaidDate={this.handleSelectPaidDate}
                                            open={this.state.modal.filter.open}/>
 
@@ -517,50 +583,10 @@ class InvoicePage extends React.Component {
                                                    ]}/>
                                     <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('invoices.labels.search')}/>
                                 </div>
-                                <div className="card-body p-0">
+                                <div className="card-body p-0 table-responsive-sm">
                                     <table className="table table-striped table-sm">
                                         <thead>
-                                        <tr>
-                                            {this.state.invoices.filtered.length > 0 &&
-                                                <th className="align-middle text-center" width={30}>
-                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.invoices} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('invoices.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="id"
-                                                         name={Lang.get('invoices.labels.order_id')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('customers.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={120}>
-                                                <BtnSort sort="amount"
-                                                         name={Lang.get('invoices.labels.amount.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={120}>
-                                                <BtnSort sort="paid"
-                                                         name={Lang.get('invoices.labels.paid.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={120}>
-                                                <BtnSort sort="status"
-                                                         name={Lang.get('invoices.labels.status.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                        <TableHeaderRow filter={this.state.filter} invoices={this.state.invoices} loading={this.state.loadings.customers} onCheck={this.handleCheck} onSort={this.handleSort}/>
                                         </thead>
                                         <tbody>
                                         {this.state.invoices.filtered.length === 0 ?
@@ -568,7 +594,7 @@ class InvoicePage extends React.Component {
                                             :
                                             this.state.invoices.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.invoices.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.invoices} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-sm">{item.label}</td>
@@ -578,12 +604,18 @@ class InvoicePage extends React.Component {
                                                     <td className="align-middle text-sm">{FormatPrice(sumTotalPaymentInvoice(item))}</td>
                                                     <td className="align-middle text-center">{StatusPaymentInvoice(item)}</td>
                                                     <TableAction others={[
-
-                                                    ]} privilege={this.state.privilege} item={item} langs={{update: Lang.get('invoices.update.button'), delete: Lang.get('invoices.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                        { handle : ()=>this.toggleInfo(item), icon : faInfoCircle, lang : Lang.get('invoices.info.button') },
+                                                        this.state.privilege === null ? null :
+                                                            ! this.state.privilege.payment ? null :
+                                                                { handle : ()=>this.togglePayment(item), color : 'text-info', icon : faCashRegister, lang : Lang.get('invoices.payments.button') }
+                                                    ]} className="pr-1" privilege={this.state.privilege} item={item} langs={{update: Lang.get('invoices.update.button'), delete: Lang.get('invoices.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                        <TableHeaderRow filter={this.state.filter} invoices={this.state.invoices} loading={this.state.loadings.customers} onCheck={this.handleCheck} onSort={this.handleSort}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                                 <TablePaging showDataPerPage={true}

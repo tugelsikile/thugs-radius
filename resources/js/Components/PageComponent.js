@@ -7,7 +7,7 @@ export const PageCardSearch = (props) => {
         <div className="card-tools">
             <div className="input-group input-group-sm" style={{width:150}}>
                 <input onChange={props.handleSearch} value={props.filter.keywords} type="text" name="table_search" className="form-control text-xs float-right" placeholder={props.label}/>
-                <div className="input-group-append"><button type="submit" className="btn btn-default"><i className="fas fa-search"/></button></div>
+                <div style={{zIndex:0}} className="input-group-append"><button type="submit" className="btn btn-default"><i className="fas fa-search"/></button></div>
             </div>
         </div>
     );

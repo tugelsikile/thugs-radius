@@ -4,12 +4,12 @@ import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExclamationTriangle, faPencilAlt, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
-import {formatLocaleString, listDataPerPage} from "./mixedConsts";
+import {formatLocaleString, FormControlSMReactSelect, listDataPerPage} from "./mixedConsts";
 import Pagination from '@atlaskit/pagination';
 
 export const TableAction = (props) => {
     return (
-        <td className="align-middle text-center">
+        <td className={typeof props.className === 'undefined' ? "align-middle text-center" : props.className === null ? "align-middle text-center" : `align-middle text-center ${props.className}`}>
             {props.privilege !== null &&
                 <>
                     <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown"><span className="sr-only">Toggle Dropdown</span></button>
@@ -18,17 +18,17 @@ export const TableAction = (props) => {
                             props.others === null ? null :
                                 props.others.map((item,index)=>
                                     item === null ? null :
-                                        <button key={`otherPriv_${index}`} type="button" onClick={item.handle} className={`dropdown-item ${typeof item.color === null ? '' : item.color}`}>
+                                        <button key={`otherPriv_${index}`} type="button" onClick={item.handle} className={`dropdown-item text-xs ${typeof item.color === null ? '' : item.color}`}>
                                             {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1"/> }
                                             {item.lang}
                                         </button>
                                 )
                         }
                         {props.privilege.update &&
-                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
+                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-xs text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
                         }
                         {props.privilege.delete &&
-                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
+                            <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-xs text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
                         }
                     </div>
                 </>
@@ -48,7 +48,8 @@ export const DataNotFound = (props) => {
 }
 export const TableCheckBox = (props) => {
     return (
-        <td className="align-middle text-center">
+        <td className={
+            typeof props.className === 'undefined' ? "align-middle text-center" : props.className === null ? "align-middle text-center" : `align-middle text-center ${props.className}` }>
             <div style={{zIndex:0}} className="custom-control custom-checkbox">
                 <input id={`cbx_${props.item.value}`}
                        data-id={props.item.value}
@@ -70,12 +71,13 @@ export const TablePaging = (props) => {
                         props.showDataPerPage === null ? null :
                             typeof props.handelSelectDataPerPage === 'undefined' ? null :
                                 props.handelSelectDataPerPage === null ? null :
-                                    <div className="col-sm-3">
+                                    <div className="col-sm-2">
                                         <Select value={props.filter.data_length === null ? null : { value : props.filter.data_length, label : formatLocaleString(props.filter.data_length)}}
+                                                styles={FormControlSMReactSelect}
                                                 onChange={props.handelSelectDataPerPage} options={listDataPerPage} isLoading={props.loading}/>
                                     </div>
                     }
-                    <label className="col-sm-9 col-form-label text-muted text-xs">
+                    <label className="col-sm-10 col-form-label text-muted text-xs">
                         {props.customers.unfiltered.length === 0 ? null :
                             Lang.get('pagination.labels.showing',{
                                 dataFirst : ( ( parseInt(props.filter.page.value)  - 1 ) * parseInt(props.filter.data_length) ) + 1,
@@ -88,9 +90,11 @@ export const TablePaging = (props) => {
             </div>
             <div className="col-sm-6">
                 <div className="float-right">
-                    <Pagination onChange={(event, page)=>props.handleChangePage(page)}
-                                max={7}
-                                pages={props.filter.paging}/>
+                    {props.customers.unfiltered.length > 0 &&
+                        <Pagination onChange={(event, page)=>props.handleChangePage(page)}
+                                    max={7}
+                                    pages={props.filter.paging}/>
+                    }
                 </div>
 
                 {/*<ul className="pagination pagination-sm m-0 float-right">

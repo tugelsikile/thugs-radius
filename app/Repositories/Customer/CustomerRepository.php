@@ -153,6 +153,7 @@ class CustomerRepository
             if ($userid != null) {
                 $customer->user = $userid;
             }
+            $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             if ($request->has(__('customers.form_input.address.phone'))) {
@@ -285,6 +286,7 @@ class CustomerRepository
             } else {
                 $customer->id = $userid;
             }
+            $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             $customer->user = $userid;
@@ -362,10 +364,14 @@ class CustomerRepository
             $response = collect();
             $customers = Customer::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $customers = $customers->where('id', $request->id);
-            if (strlen($request->type) > 0) {
-                $customers = $customers->where('method_type', $request->type);
-                if ($request->type == 'hotspot') {
-                    $customers = $customers->orWhere('method_type','voucher');
+            if ($request->has('type')) {
+                if (is_array($request->type)) {
+                    $customers = $customers->whereIn('method_type', $request->type);
+                } else {
+                    $customers = $customers->where('method_type', $request->type);
+                    if ($request->type == 'hotspot') {
+                        $customers = $customers->orWhere('method_type','voucher');
+                    }
                 }
             }
             $customers = $customers->get();

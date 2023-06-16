@@ -44,7 +44,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/pppoe', function () { return view('clients.customers.pppoe'); })->name('clients.customers.pppoe');
         Route::get('/hotspot', function () { return view('clients.customers.hotspot'); })->name('clients.customers.hotspot');
         Route::group(['prefix' => 'invoices'], function () {
-            Route::get('/', function () { })->name('clients.customers.invoices');
+            Route::get('/', function () { return view('clients.customers.invoices'); })->name('clients.customers.invoices');
             Route::get('/payments', function () { })->name('clients.customers.invoices.payment');
         });
     });

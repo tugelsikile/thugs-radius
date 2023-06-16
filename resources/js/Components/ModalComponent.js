@@ -15,14 +15,28 @@ export const ModalHeader = (props) => {
         </DialogTitle>
     );
 }
+export const ButtonSubmit = (props) => {
+    return (
+        <button type="submit" className="btn btn-success" disabled={props.loading}>
+            <FontAwesomeIcon spin={props.loading} className="mr-1"
+                             icon={props.loading ? faCircleNotch : faSave}/>
+            {props.form.id === null ? props.langs.create : props.langs.update}
+        </button>
+    );
+}
 export const ModalFooter = (props) => {
     return (
         <DialogActions className="justify-content-between">
-            <button type="submit" className="btn btn-success" disabled={props.loading}>
-                <FontAwesomeIcon spin={props.loading} className="mr-1"
-                                 icon={props.loading ? faCircleNotch : faSave}/>
-                {props.form.id === null ? props.langs.create : props.langs.update}
-            </button>
+            {typeof props.hideSubmit === 'undefined' ?
+                ButtonSubmit(props)
+                :
+                props.hideSubmit === null ?
+                    ButtonSubmit(props)
+                    :
+                    props.hideSubmit ? null :
+                        ButtonSubmit(props)
+            }
+
             {typeof props.buttons === 'undefined' ? null :
                 props.buttons === null ? null :
                     props.buttons.length === 0 ? null :

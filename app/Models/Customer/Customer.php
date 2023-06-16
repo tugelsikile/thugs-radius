@@ -41,19 +41,19 @@ class Customer extends Model
     }
     public function villageObj(): BelongsTo
     {
-        return $this->belongsTo(Village::class,'village','code');
+        return $this->setConnection('mysql')->belongsTo(Village::class,'village','code');
     }
     public function districtObj(): BelongsTo
     {
-        return $this->belongsTo(District::class,'district','code');
+        return $this->setConnection('mysql')->belongsTo(District::class,'district','code');
     }
     public function cityObj(): BelongsTo
     {
-        return $this->belongsTo(City::class,'city','code');
+        return $this->setConnection('mysql')->belongsTo(City::class,'city','code');
     }
     public function provinceObj(): BelongsTo
     {
-        return $this->belongsTo(Province::class,'province','code');
+        return $this->setConnection('mysql')->belongsTo(Province::class,'province','code');
     }
     public function createdBy(): BelongsTo
     {

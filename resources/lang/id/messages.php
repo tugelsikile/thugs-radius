@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'sorts' => [
+        'dirs' => [
+            'asc' => 'Menaik',
+            'desc' => 'Menurun'
+        ]
+    ],
     'filter' => 'Filter',
     'confirm' => 'Konfirmasi',
     'cancel' => 'Batal',

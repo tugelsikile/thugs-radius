@@ -53,7 +53,7 @@ class MainHeader extends React.Component {
                             <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon={faBars}/></a>
                         </li>
                         <li className="nav-item d-none d-sm-inline-block">
-                            <a title="Server Time (LIVE)" href="#" onClick={customPreventDefault} className="nav-link pl-0"><DigitalClock/></a>
+                            <DigitalClock/>
                         </li>
                         {/*<li className="nav-item d-none d-sm-inline-block">
                             <a href={window.origin} className="nav-link">Contact</a>

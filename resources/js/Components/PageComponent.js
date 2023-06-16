@@ -6,8 +6,8 @@ export const PageCardSearch = (props) => {
     return (
         <div className="card-tools">
             <div className="input-group input-group-sm" style={{width:150}}>
-                <input onChange={props.handleSearch} value={props.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={props.label}/>
-                <div className="input-group-append"><button type="submit" className="btn btn-default"><i className="fas fa-search"/></button></div>
+                <input onChange={props.handleSearch} value={props.filter.keywords} type="text" name="table_search" className="form-control text-xs float-right" placeholder={props.label}/>
+                <div style={{zIndex:0}} className="input-group-append"><button type="submit" className="btn btn-default"><i className="fas fa-search"/></button></div>
             </div>
         </div>
     );
@@ -43,7 +43,7 @@ export const PageCardTitle = (props) => {
                     }
                     {props.privilege.delete &&
                         props.selected.length > 0 &&
-                        <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-tool">
+                        <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-tool text-danger">
                             <FontAwesomeIcon size="sm" icon={faTrashAlt} className="mr-1"/>
                             <small>{props.langs.delete}</small>
                         </button>

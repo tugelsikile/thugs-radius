@@ -52,22 +52,22 @@ export const DueAtCustomer = (props) => {
     }
     return response;
 }
-export const FormatPrice = (price, popover = null) => {
+export const FormatPrice = (price, popover = null, addSuffix = true) => {
     let format = localStorage.getItem('locale_currency');
     if (format === null) {
         return (
             <React.Fragment>
                 {popover !== null && popover}
-                <span className="float-left">Rp.</span>
-                <span className="float-right">{formatLocaleString(price)}</span>
+                <small className="float-left">Rp.</small>
+                <span className="float-right">{formatLocaleString(price)}{addSuffix && ',-'}</span>
             </React.Fragment>
         )
     } else {
         return (
             <React.Fragment>
                 {popover !== null && popover}
-                <span className="float-left">{format.symbols}</span>
-                <span className="float-right">{formatLocaleString(price)}</span>
+                <small className="float-left">{format.symbols}</small>
+                <span className="float-right">{formatLocaleString(price)}{addSuffix && ',-'}</span>
             </React.Fragment>
         )
     }

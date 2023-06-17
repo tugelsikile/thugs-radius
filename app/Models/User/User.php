@@ -44,7 +44,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'locale' => 'object'
+        'locale' => 'object',
+        'is_ghost' => 'boolean',
     ];
 
     public function levelObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo

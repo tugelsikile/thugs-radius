@@ -28,7 +28,7 @@ export const showError = (message) => {
 export const showSuccess = (message) => {
     toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs'});
 }
-export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id') => {
+export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null) => {
     if (message === null) message = "Anda yakin akan melakukan aksi ini ?";
     if (title === null) title = "Konfirmasi";
     const  formData = new FormData();
@@ -62,7 +62,6 @@ export const confirmDialog = (app, ids, method = 'delete', url = null, title = n
                         }
                     })
                     .catch((error) => {
-                        console.log(error);
                         Swal.showValidationMessage(error.response.data.message, true);
                     })
             }

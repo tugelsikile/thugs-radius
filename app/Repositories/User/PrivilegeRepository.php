@@ -17,6 +17,14 @@ use Throwable;
 
 class PrivilegeRepository
 {
+    protected $me;
+    public function __construct()
+    {
+        if (auth()->guard('api')->user() != null) {
+            $this->me = auth()->guard('api')->user();
+        }
+    }
+
     /* @
      * @param Request $request
      * @return bool
@@ -156,7 +164,7 @@ class PrivilegeRepository
                 $privilege->saveOrFail();
                 $response = $privilege;
             }
-            return $response;
+            return $this->table(new Request(['id' => $privilege->level]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -172,7 +180,22 @@ class PrivilegeRepository
         try {
             $response = collect();
             $levels = UserLevel::orderBy('created_at', 'asc');
-            if (strlen($request->id) > 0) $levels = $levels->where('id', $request->id);
+            if (strlen($request->id) > 0) {
+                $levels = $levels->where('id', $request->id);
+            } else {
+                if ($request->has(__('companies.form_input.name'))) {
+                    $levels = $levels->where('company', $request[__('companies.form_input.name')])->orWhereNull('company')
+                        ->where('for_client',true)
+                        ->whereNotIn('name',['Super Admin','Billing','Customer']);
+                }
+                if ($this->me != null) {
+                    if ($this->me->company != null) {
+                        $levels = $levels->where('company', $this->me->company)->orWhereNull('company')
+                            ->where('for_client',true)
+                            ->whereNotIn('name',['Super Admin','Billing','Customer']);
+                    }
+                }
+            }
             $levels = $levels->get();
             foreach ($levels as $level) {
                 $response->push((object) [

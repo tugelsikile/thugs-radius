@@ -3,9 +3,10 @@ import {ToastContainer} from "react-toastify";
 import {showError} from "../Toaster";
 import {updateLang} from "../../Services/AuthService";
 import DigitalClock from "./DigitalClock";
-import {customPreventDefault} from "../mixedConsts";
+import {customPreventDefault, listSupportedLanguage} from "../mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExpandArrowsAlt,faBars} from "@fortawesome/free-solid-svg-icons";
+//import "flag-icons/css/flag-icons.min.css";
 
 class MainHeader extends React.Component {
     constructor(props) {
@@ -25,7 +26,7 @@ class MainHeader extends React.Component {
             try {
                 const formData = new FormData();
                 let curLocale = localStorage.getItem('locale_lang');
-                formData.append('lang', curLocale === 'id' ? 'en' : 'id');
+                formData.append('lang', e.currentTarget.getAttribute('data-lang'));
                 let response = await updateLang(formData);
                 if (response.data.params === null) {
                     showError(response.data.message);
@@ -45,7 +46,7 @@ class MainHeader extends React.Component {
     render() {
         return (
             <React.Fragment>
-                <ToastContainer theme="light" pauseOnFocusLoss autoClose={2000} position="top-right" closeOnClick/>
+                <ToastContainer theme="light" pauseOnFocusLoss autoClose={10000} position="top-right" closeOnClick/>
 
                 <nav className="main-header navbar layout-navbar-fixed navbar-expand navbar-white navbar-light">
                     <ul className="navbar-nav">
@@ -61,97 +62,27 @@ class MainHeader extends React.Component {
                     </ul>
 
                     <ul className="navbar-nav ml-auto">
-                        {/*<li className="nav-item dropdown">
-                            <a className="nav-link" data-toggle="dropdown" href="#">
-                                <i className="far fa-comments"/>
-                                <span className="badge badge-danger navbar-badge">3</span>
-                            </a>
-                            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                <a href="#" className="dropdown-item">
-                                    <div className="media">
-                                        <img src={window.origin + '/theme/adminlte/img/user1-128x128.jpg'} alt="User Avatar" className="img-size-50 mr-3 img-circle"/>
-                                        <div className="media-body">
-                                            <h3 className="dropdown-item-title">
-                                                Brad Diesel
-                                                <span className="float-right text-sm text-danger"><i className="fas fa-star"/></span>
-                                            </h3>
-                                            <p className="text-sm">Call me whenever you can...</p>
-                                            <p className="text-sm text-muted"><i className="far fa-clock mr-1"/> 4 Hours Ago</p>
-                                        </div>
-                                    </div>
+                        {localStorage.getItem('locale_lang') === null ? null :
+                            <li className="nav-item dropdown">
+                                <a title={Lang.get('lang.select')} className="nav-link" data-toggle="dropdown" href="#">
+                                    <i className={`mr-1 ${listSupportedLanguage[listSupportedLanguage.findIndex((f) => f.value === localStorage.getItem('locale_lang'))].flag}`}/>
                                 </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item">
-                                    <div className="media">
-                                        <img src={window.origin + '/theme/adminlte/img/user8-128x128.jpg'} alt="User Avatar" className="img-size-50 img-circle mr-3"/>
-                                        <div className="media-body">
-                                            <h3 className="dropdown-item-title">
-                                                John Pierce
-                                                <span className="float-right text-sm text-muted"><i className="fas fa-star"/></span>
-                                            </h3>
-                                            <p className="text-sm">I got your message bro</p>
-                                            <p className="text-sm text-muted"><i className="far fa-clock mr-1"/> 4 Hours Ago</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item">
-                                    <div className="media">
-                                        <img src={window.origin + '/theme/adminlte/img/user3-128x128.jpg'} alt="User Avatar" className="img-size-50 img-circle mr-3"/>
-                                        <div className="media-body">
-                                            <h3 className="dropdown-item-title">
-                                                Nora Silvester
-                                                <span className="float-right text-sm text-warning"><i className="fas fa-star"/></span>
-                                            </h3>
-                                            <p className="text-sm">The subject goes here</p>
-                                            <p className="text-sm text-muted"><i className="far fa-clock mr-1"/> 4 Hours Ago</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item dropdown-footer">See All Messages</a>
-                            </div>
-                        </li>
+                                <div className="dropdown-menu dropdown-menu-right p-0">
+                                    {listSupportedLanguage.map((item,index)=>
+                                        <a data-lang={item.value}
+                                           onClick={this.setLocaleLang}
+                                           key={`flag_${index}`} href="#"
+                                           className={localStorage.getItem('locale_lang') === null ? "dropdown-item" : localStorage.getItem('locale_lang') === item.value ? "dropdown-item active" : "dropdown-item"}>
+                                            <i className={`mr-2 ${item.flag}`}/> {item.label}
+                                        </a>
+                                    )}
+                                </div>
+                            </li>
+                        }
 
-                        <li className="nav-item dropdown">
-                            <a className="nav-link" data-toggle="dropdown" href="#">
-                                <i className="far fa-bell"/>
-                                <span className="badge badge-warning navbar-badge">15</span>
-                            </a>
-                            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                                <span className="dropdown-item dropdown-header">15 Notifications</span>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item">
-                                    <i className="fas fa-envelope mr-2"/> 4 new messages
-                                    <span className="float-right text-muted text-sm">3 mins</span>
-                                </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item">
-                                    <i className="fas fa-users mr-2"/> 8 friend requests
-                                    <span className="float-right text-muted text-sm">12 hours</span>
-                                </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item">
-                                    <i className="fas fa-file mr-2"/> 3 new reports
-                                    <span className="float-right text-muted text-sm">2 days</span>
-                                </a>
-                                <div className="dropdown-divider"/>
-                                <a href="#" className="dropdown-item dropdown-footer">See All Notifications</a>
-                            </div>
-                        </li>*/}
                         <li className="nav-item">
                             <a className="nav-link" data-widget="fullscreen" href="#" role="button">
                                 <FontAwesomeIcon icon={faExpandArrowsAlt}/>
-                            </a>
-                        </li>
-                        <li className="nav-item">
-                            <a title="Set Language" onClick={this.setLocaleLang} className="nav-link" href="#" role="button">
-                                {
-                                    localStorage.getItem('locale_lang') === 'id' ?
-                                        <img alt="id" src={window.origin + '/flag_indonesia.png'} style={{height:20}}/>
-                                        :
-                                        <img alt="en" src={window.origin + '/flag_usa.png'} style={{height:20}}/>
-                                }
                             </a>
                         </li>
                     </ul>

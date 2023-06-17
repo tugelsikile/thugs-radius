@@ -21,11 +21,35 @@ return [
     'no_data' => 'Sementara data tidak ada',
     'otp' => 'One Time Payment (sekali bayar)',
     'menu' => [
-        'name' => 'Nama Menu / Fungsi',
-        'read' => 'Baca / Buka',
-        'create' => 'Tambah',
-        'update' => 'Rubah',
-        'delete' => 'Hapus'
+        'label' => 'Daftar Menu / Fungsi',
+        'info' => [
+            'label' => 'Izinkan pengguna untuk :type :menu',
+            'dont' => 'Jangan izinkan pengguna untuk :type :menu',
+        ],
+        'name' => [
+            'label' => 'Nama Menu',
+            'info' => 'Nama menu atau fungsi berdasarkan penggunaannya'
+        ],
+        'read' => [
+            'label' => 'Baca',
+            'do' => 'membaca / membuka / eksekusi',
+            'info' => 'Pengguna dengan akses dipilih, diperbolehkan membuka, membaca, atau eksekusi aksi ini'
+        ],
+        'create' => [
+            'label' => 'Tambah',
+            'do' => 'menambah',
+            'info' => 'Pengguna dengan akses dipilih, diperbolehkan menambahkan atau membuat data berdasarkan aksi ini'
+        ],
+        'update' => [
+            'label' => 'Rubah',
+            'do' => 'merubah',
+            'info' => 'Pengguna dengan akses dipilih, diperbolehkan merubah data berdasarkan aksi ini',
+        ],
+        'delete' => [
+            'label' => 'Hapus',
+            'do' => 'menghapus',
+            'info' => 'Pengguna dengan akses dipilih, diperbolehkan menghapus data berdasarkan aksi ini',
+        ]
     ],
     'company' => [
         'labels' => [
@@ -100,7 +124,7 @@ return [
             'form' => 'Hapus Data Hak Akses',
             'success' => 'Berhasil menghapus data hak akses',
             'button' => 'Hapus',
-            'select' => 'Hapus Hak Akses Dipilih',
+            'select' => "Anda akan menghapus hak akses yang telah dipilih.\nBeberapa data yang bersangkutan dengan hak akses tersebut akan ikut terhapus.\nAnda yakin ingin melanjutkan menghapus data ini?",
         ],
         'set' => [
             'success' => 'Aksi hak akses berhasil diubah',

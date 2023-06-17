@@ -57,6 +57,7 @@ export const getPrivileges = async (routes = null) => {
                                 let privString = item.value;
                                 privString = privString.split('.');
                                 privString = privString[privString.length - 1];
+                                privString = privString.replaceAll('-','_');
                                 if (item.func) {
                                     privilege[privString] = item.read;
                                 } else {

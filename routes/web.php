@@ -50,7 +50,7 @@ Route::group(['prefix' => 'clients'], function () {
     });
     Route::group(['prefix' => 'users'], function () {
         Route::get('/', function () { return view('clients.users.index'); })->name('clients.users');
-        Route::get('/privileges', function () { return view('clients.users.privileges.index'); })->name('clients.users.privileges');
+        Route::get('/privileges', function () { return view('clients.users.privileges'); })->name('clients.users.privileges');
     });
     Route::group(['prefix' => 'nas'], function () {
         Route::get('/', function () { return view('clients.nas.index'); })->name('clients.nas');

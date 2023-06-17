@@ -14,7 +14,7 @@ class AddLangToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->text('locale')->nullable();
+            $table->text('locale')->nullable()->after('avatar');
         });
     }
 

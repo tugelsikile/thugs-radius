@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{asset('css/progress-animation.css')}}">
     <link rel="stylesheet" href="{{asset('theme/adminlte/css/adminlte.min.css')}}">
     <link rel="stylesheet" href="{{asset('theme/adminlte/plugins/overlayScrollbars/css/OverlayScrollbars.min.css')}}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
     @yield('css')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed text-sm layout-footer-fixed">

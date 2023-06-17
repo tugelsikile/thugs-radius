@@ -39,7 +39,7 @@ class PrivilegeValidation
                 'id' => 'required|exists:user_levels,id',
                 __('messages.privileges.form_input.client') => 'required|in:ya,tidak',
                 __('messages.privileges.form_input.company') => 'required_if:'.__('messages.privileges.form_input.client').',ya|exists:client_companies,id',
-                __('messages.privileges.form_input.name') => 'required|string|min:3|max:199',
+                __('messages.privileges.form_input.name') => 'required|string|min:3|max:199|unique:user_levels,name,' . $request->id . ',id',
                 __('messages.privileges.form_input.description') => 'nullable',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
@@ -59,7 +59,7 @@ class PrivilegeValidation
             $valid = Validator::make($request->all(),[
                 __('messages.privileges.form_input.client') => 'required|in:ya,tidak',
                 __('messages.privileges.form_input.company') => 'required_if:'.__('messages.privileges.form_input.client').',ya|exists:client_companies,id',
-                __('messages.privileges.form_input.name') => 'required|string|min:3|max:199',
+                __('messages.privileges.form_input.name') => 'required|string|min:3|max:199|unique:user_levels,name',
                 __('messages.privileges.form_input.description') => 'nullable',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);

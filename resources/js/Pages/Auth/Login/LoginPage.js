@@ -112,11 +112,11 @@ class LoginPage extends React.Component {
                         <p className="login-box-msg">{Lang.get('messages.users.labels.signin_text',null,'id')}</p>
                         <form onSubmit={this.handleSave} className="mb-5">
                             <div className="input-group mb-3">
-                                <input id="email" required onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
+                                <input tabIndex={0} id="email" required onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
                                 <div className="input-group-append"><div className="input-group-text"><span className="fas fa-envelope"/></div></div>
                             </div>
                             <div className="input-group mb-3">
-                                <input id="password" required onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
+                                <input tabIndex={1} id="password" required onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
                                 <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><span className="fas fa-lock"/></div></div>
                             </div>
                             <div className="row">
@@ -125,13 +125,13 @@ class LoginPage extends React.Component {
                                 </div>
                             </div>
                             <div className="input-group mb-3">
-                                <input onChange={this.handleChange} onBlur={this.validateCaptcha} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
+                                <input tabIndex={2} onChange={this.handleChange} onBlur={this.validateCaptcha} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
                                 <div className="input-group-append"><div className="input-group-text"><span className="fas fa-barcode"/></div></div>
                             </div>
                             <div className="row">
                                 <div className="col-8"></div>
                                 <div className="col-4">
-                                    <button disabled={this.state.loading || ! this.state.form.captcha_valid} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
+                                    <button tabIndex={3} disabled={this.state.loading || ! this.state.form.captcha_valid} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
                                 </div>
                             </div>
                         </form>

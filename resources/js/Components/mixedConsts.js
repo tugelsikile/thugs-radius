@@ -215,8 +215,8 @@ export const sumTotalPackageSingle = (item) => {
 export const CardPreloaderBackup = () => {
     return <div className="overlay"><img alt="Loading ..." className="animation__shake" src={window.origin + '/preloader.svg'} style={{height:100}}/></div>
 }
-export const CardPreloader = () => {
-    return <div className="overlay"><FontAwesomeIcon icon={faCircleNotch} spin={true} size="3x"/></div>
+export const CardPreloader = (dark = false) => {
+    return <div className={`overlay`}><FontAwesomeIcon icon={faCircleNotch} spin={true} size="3x"/></div>
 }
 export const CardOverlay = (dark = false) => {
     return (
@@ -544,3 +544,7 @@ export const randomString = (length = 10) => {
     }
     return result;
 }
+export const listSupportedLanguage = [
+    { value : 'id', label : "Bahasa Indonesia", flag : 'fi fi-id' },
+    { value : 'en', label : "English US", flag : 'fi fi-us' },
+];

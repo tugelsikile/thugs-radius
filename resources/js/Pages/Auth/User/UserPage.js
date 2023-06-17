@@ -1,17 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
+import {getPrivileges, getRootUrl, logout} from "../../../Components/Authentication";
+import {CardPreloader, formatLocaleDate, formatPhone, responseMessage, siteData} from "../../../Components/mixedConsts";
+import {crudCompany} from "../../../Services/CompanyService";
+import {confirmDialog, showError} from "../../../Components/Toaster";
+import {crudPrivileges, crudUsers} from "../../../Services/UserService";
+import PageLoader from "../../../Components/PageLoader";
 import MainHeader from "../../../Components/Layout/MainHeader";
 import MainSidebar from "../../../Components/Layout/MainSidebar";
-import PageLoader from "../../../Components/PageLoader";
-import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
-import {crudPrivileges, crudUsers} from "../../../Services/UserService";
-import {confirmDialog, showError} from "../../../Components/Toaster";
-import BtnSort from "./Tools/BtnSort";
-import FormUser from "./Tools/FormUser";
-import {crudCompany} from "../../../Services/CompanyService";
-import {CardPreloader, siteData} from "../../../Components/mixedConsts";
+import MainFooter from "../../../Components/Layout/MainFooter";
+import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
+import {faCheckCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
+import BtnSort from "../../Auth/User/Tools/BtnSort";
+import {DataNotFound, TableAction, TableCheckBox} from "../../../Components/TableComponent";
+import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
+import {sortDate} from "../../Client/User/Tools/Mixed";
+import moment from "moment";
+import FormUser from "../../Client/User/Tools/FormUser";
 
 // noinspection DuplicatedCode
 class UserPage extends React.Component {
@@ -19,82 +25,96 @@ class UserPage extends React.Component {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
-            loadings : { privileges : false, levels : false, users : false, companies : false, site : false },
-            privileges : null, menus : [],
-            levels : [], companies : [],
-            users : { filtered : [], unfiltered : [], selected : [] },
-            filter : {
-                level : null, keywords : '', page : {value:1,label:1}, data_length : 20, paging : [],
-                sort : { by : 'email', dir : 'asc' },
+            loadings : { privilege : false, levels : true, companies : true, site : false, users : true },
+            privilege : null, menus : [], companies : [], levels : [],
+            users : {
+                filtered : [], unfiltered : [], selected : [],
             },
-            modals : {
-                user : { open : false, data : null },
-                level : { open : false, data : null }
-            }
+            filter : {
+                keywords : '', level : null,
+                sort : { by : 'name', dir : 'asc' },
+                page : { value : 1, label : 1}, data_length : 20, paging : [],
+            },
+            modal : { open : false, data : null },
         };
-        this.loadLevels = this.loadLevels.bind(this);
-        this.loadUsers = this.loadUsers.bind(this);
-        this.handleFilter = this.handleFilter.bind(this);
-        this.handleChangePage = this.handleChangePage.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
+        this.handleFilter = this.handleFilter.bind(this);
+        this.handleCheck = this.handleCheck.bind(this);
         this.handleSort = this.handleSort.bind(this);
-        this.handleCheckAll = this.handleCheckAll.bind(this);
-        this.toggleUser = this.toggleUser.bind(this);
-        this.toggleLevel = this.toggleLevel.bind(this);
+        this.toggleModal = this.toggleModal.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
+        this.loadUsers = this.loadUsers.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
         let loadings = this.state.loadings;
-        if (! loadings.privileges) {
+        if (! loadings.privilege) {
             siteData().then((response)=>this.setState({site:response}));
-            loadings.privileges = true; this.setState({loadings});
-            if (this.state.privileges === null) {
-                getPrivileges(this.props.route)
-                    .then((response)=>this.setState({privileges:response.privileges,menus:response.menus}))
-                    .then(()=>this.loadCompanies())
-                    .then(()=>this.loadLevels())
-                    .then(()=>this.loadUsers())
+            loadings.privilege = true; this.setState({loadings});
+            if (this.state.privilege === null) {
+                getPrivileges([
+                    {route : this.props.route, can : false },
+                    {route : 'clients.users.privileges', can : false},
+                    {route : 'clients.users.reset-password', can : false},
+                ])
+                    .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>{
-                        loadings.privileges = false;
-                        this.setState({loadings});
+                        loadings.companies = false; this.setState({loadings},()=>this.loadCompanies());
                     })
+                    .then(()=>{
+                        loadings.levels = false; this.setState({loadings},()=>this.loadLevels());
+                    })
+                    .then(()=>{
+                        loadings.users = false; this.setState({loadings},()=>this.loadUsers());
+                    })
+                    .then(()=>{
+                        loadings.privilege = false;
+                        this.setState({loadings});
+                    });
+            }
+        }
+        window.addEventListener('scroll', this.handleScrollPage);
+    }
+    componentWillUnmount() {
+        window.removeEventListener('scroll', this.handleScrollPage);
+    }
+    handleScrollPage(event) {
+        const element = document.getElementById('page-card-header');
+        const sidebar = document.getElementById('app-main-sidebar');
+        if (element !== null && sidebar !== null) {
+            if (window.scrollY > 230) {
+                element.style.position = 'fixed';
+                element.style.background = '#fff';
+                element.style.top = '0px';
+                element.style.right = '0px';
+                element.style.left = `${sidebar.offsetWidth}px`;
+                element.style.zIndex = '1';
+            } else {
+                element.style.position = null;
+                element.style.background = null;
+                element.style.right = null;
+                element.style.left = null;
+                element.style.zIndex = null;
             }
         }
     }
     confirmDelete(data = null) {
+        let index = null;
         let ids = [];
         if (data !== null) {
+            index = this.state.users.unfiltered.findIndex((f) => f.value === data.value);
             ids.push(data.value);
         } else {
             this.state.users.selected.map((item)=>{
                 ids.push(item);
             });
         }
-        confirmDialog(this,ids,'delete',`${window.origin}/api/auth/users`,Lang.get('messages.users.delete.form'), Lang.get('messages.users.delete.warning'), 'app.loadUsers()');
+        confirmDialog(this, ids,'delete',`${window.origin}/api/auth/users`,Lang.get('users.delete.button'), Lang.get('users.delete.confirm'),index === null ? 'app.loadLevels()' : 'app.loadLevels(deleteIndex)','warning',Lang.get('users.form_input.id'),index === null ? null : index);
     }
-    toggleLevel(data = null) {
-        let modals = this.state.modals;
-        modals.level.open = ! this.state.modals.level.open;
-        modals.level.data = data;
-        this.setState({modals});
-    }
-    toggleUser(data = null) {
-        let modals = this.state.modals;
-        modals.user.open = ! this.state.modals.user.open;
-        modals.user.data = data;
-        this.setState({modals});
-    }
-    handleCheckAll(event) {
-        let users = this.state.users;
-        if (event.target.checked) {
-            users.filtered.map((item)=>{
-                users.selected.push(item.value);
-            });
-        } else {
-            users.selected = [];
-        }
-        this.setState({users},()=>this.handleFilter());
+    toggleModal(data = null) {
+        let modal = this.state.modal;
+        modal.open = ! this.state.modal.open;
+        modal.data = data; this.setState({modal});
     }
     handleSort(event) {
         let filter = this.state.filter;
@@ -106,142 +126,169 @@ class UserPage extends React.Component {
         }
         this.setState({filter},()=>this.handleFilter())
     }
+    handleCheck(event) {
+        let users = this.state.users;
+        if (event.currentTarget.getAttribute('data-id').length === 0) {
+            users.selected = [];
+            if (event.currentTarget.checked) {
+                users.filtered.map((item)=>{
+                    if (! item.meta.default) {
+                        users.selected.push(item.value);
+                    }
+                });
+            }
+        } else {
+            let indexSelected = users.selected.findIndex((f) => f === event.currentTarget.getAttribute('data-id'));
+            if (indexSelected >= 0) {
+                users.selected.splice(indexSelected,1);
+            } else {
+                let indexTarget = users.unfiltered.findIndex((f) => f.value === event.currentTarget.getAttribute('data-id'));
+                if (indexTarget >= 0) {
+                    if (! users.unfiltered[indexTarget].meta.default) {
+                        users.selected.push(event.currentTarget.getAttribute('data-id'));
+                    }
+                }
+            }
+        }
+        this.setState({users});
+    }
     handleSearch(event) {
         let filter = this.state.filter;
         filter.keywords = event.target.value; this.setState({filter},()=>this.handleFilter());
     }
-    handleChangePage(page) {
-        let filter = this.state.filter;
-        filter.page = {value:page,label:page}; this.setState({filter},()=>this.handleFilter());
-    }
-    handleFilter() {
+    handleFilter(){
         let loadings = this.state.loadings;
-        loadings.users = true; this.setState({loadings});
-        let users = this.state.users;
         let filter = this.state.filter;
+        let users = this.state.users;
+        loadings.users = true; this.setState({loadings});
         if (this.state.filter.keywords.length > 0) {
-            users.filtered = users.unfiltered.filter((f) =>
-                    f.label.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
-                    ||
-                    f.meta.email.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
-                    ||
-                    f.meta.level.label.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1
-            );
+            users.filtered = users.unfiltered.filter((f) => f.label.toLowerCase().indexOf(this.state.filter.keywords.toLowerCase()) !== -1)
         } else {
             users.filtered = users.unfiltered;
         }
-        switch (this.state.filter.sort.by) {
-            case 'email' :
-                if (this.state.filter.sort.dir === 'asc') {
-                    users.filtered = users.filtered.sort((a,b) => (a.meta.email > b.meta.email) ? -1 : ((b.meta.email > a.meta.email) ? 1 : 0));
-                } else {
-                    users.filtered = users.filtered.sort((a,b) => (a.meta.email > b.meta.email) ? 1 : ((b.meta.email > a.meta.email) ? -1 : 0));
-                }
-                break;
+        switch (filter.sort.by) {
             case 'name' :
-                if (this.state.filter.sort.dir === 'asc') {
+                if (filter.sort.dir === 'asc') {
                     users.filtered = users.filtered.sort((a,b) => (a.label > b.label) ? -1 : ((b.label > a.label) ? 1 : 0));
                 } else {
                     users.filtered = users.filtered.sort((a,b) => (a.label > b.label) ? 1 : ((b.label > a.label) ? -1 : 0));
                 }
                 break;
+            case 'email' :
+                if (filter.sort.dir === 'asc') {
+                    users.filtered = users.filtered.sort((a,b) => (a.meta.email > b.meta.email) ? -1 : ((b.meta.email > a.meta.email) ? 1 : 0));
+                } else {
+                    users.filtered = users.filtered.sort((a,b) => (a.meta.email > b.meta.email) ? 1 : ((b.meta.email > a.meta.email) ? -1 : 0));
+                }
+                break;
             case 'level' :
-                if (this.state.filter.sort.dir === 'asc') {
+                if (filter.sort.dir === 'asc') {
                     users.filtered = users.filtered.sort((a,b) => (a.meta.level.label > b.meta.level.label) ? -1 : ((b.meta.level.label > a.meta.level.label) ? 1 : 0));
                 } else {
                     users.filtered = users.filtered.sort((a,b) => (a.meta.level.label > b.meta.level.label) ? 1 : ((b.meta.level.label > a.meta.level.label) ? -1 : 0));
                 }
                 break;
-            case 'company' :
-                if (this.state.filter.sort.dir === 'asc') {
-                    users.filtered = users.filtered.sort((a,b) => (a.meta.company === null || b.meta.company === null) ? 1 : (a.meta.company.name > b.meta.company.name) ? -1 : ((b.meta.company.name > a.meta.company.name) ? 1 : 0));
+            case 'login':
+                if (filter.sort.dir === 'asc') {
+                    users.filtered = users.filtered.sort((a,b) => ((sortDate(a) === null || sortDate(b) === null) ? 'z' : moment(sortDate(a)).isSameOrAfter(sortDate(b))) ? -1 : (((sortDate(a) === null || sortDate(b) === null) ? 'z' : moment(sortDate(b)).isSameOrAfter(sortDate(a))) ? 1 : 0));
                 } else {
-                    users.filtered = users.filtered.sort((a,b) => (a.meta.company === null || b.meta.company === null) ? -1 : (a.meta.company.name > b.meta.company.name) ? 1 : ((b.meta.company.name > a.meta.company.name) ? -1 : 0));
+                    users.filtered = users.filtered.sort((a,b) => ((sortDate(a) === null || sortDate(b) === null) ? 'z' : moment(sortDate(a)).isSameOrAfter(sortDate(b))) ? 1 : (((sortDate(a) === null || sortDate(b) === null) ? 'z' : moment(sortDate(b)).isSameOrAfter(sortDate(a))) ? -1 : 0));
                 }
                 break;
-
+            case 'activity':
+                if (filter.sort.dir === 'asc') {
+                    users.filtered = users.filtered.sort((a,b) => ((sortDate(a,'activity') === null || sortDate(b,'activity') === null) ? 'z' : moment(sortDate(a,'activity')).isSameOrAfter(sortDate(b,'activity'))) ? -1 : (((sortDate(a,'activity') === null || sortDate(b,'activity') === null) ? 'z' : moment(sortDate(b,'activity')).isSameOrAfter(sortDate(a,'activity'))) ? 1 : 0));
+                } else {
+                    users.filtered = users.filtered.sort((a,b) => ((sortDate(a,'activity') === null || sortDate(b,'activity') === null) ? 'z' : moment(sortDate(a,'activity')).isSameOrAfter(sortDate(b,'activity'))) ? 1 : (((sortDate(a,'activity') === null || sortDate(b,'activity') === null) ? 'z' : moment(sortDate(b,'activity')).isSameOrAfter(sortDate(a,'activity'))) ? -1 : 0));
+                }
+                break;
         }
-        filter.paging = [];
-        for (let page = 1; page <= Math.ceil(users.filtered.length / this.state.filter.data_length); page++) {
-            filter.paging.push(page);
-        }
-        let indexFirst = ( filter.page.value - 1 ) * filter.data_length;
-        let indexLast = filter.page.value * filter.data_length;
-        users.filtered = users.filtered.slice(indexFirst, indexLast);
         loadings.users = false;
-        this.setState({users,filter,loadings});
+        this.setState({users,loadings});
     }
     async loadCompanies() {
-        if (!this.state.loadings.companies) {
-            let loadings = this.state.loadings;
-            loadings.companies = true; this.setState({loadings});
-            try {
-                let response = await crudCompany();
-                if (response.data.params === null) {
+        if (! this.state.loadings.companies) {
+            if (this.state.companies.length === 0) {
+                let loadings = this.state.loadings;
+                loadings.companies = true; this.setState({loadings});
+                try {
+                    let response = await crudCompany();
+                    if (response.data.params === null) {
+                        loadings.companies = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        loadings.companies = false; this.setState({loadings,companies:response.data.params});
+                    }
+                } catch (e) {
                     loadings.companies = false; this.setState({loadings});
-                    showError(response.data.message);
-                } else {
-                    loadings.companies = false;
-                    this.setState({loadings,companies:response.data.params});
+                    responseMessage(e);
                 }
-            } catch (e) {
-                loadings.companies = false; this.setState({loadings});
-                showError(e.response.data.message);
             }
         }
     }
     async loadLevels() {
-        let loadings = this.state.loadings;
-        if (! loadings.levels) {
+        if (!this.state.loadings.levels) {
+            let loadings = this.state.loadings;
             loadings.levels = true; this.setState({loadings});
             try {
-                let response = await crudPrivileges();
+                const formData = new FormData();
+                if (this.state.user !== null) {
+                    if (this.state.user.meta.company !== null) {
+                        formData.append(Lang.get('companies.form_input.name'), this.state.user.meta.company.id);
+                    }
+                }
+                let response = await crudPrivileges(formData);
                 if (response.data.params === null) {
                     loadings.levels = false; this.setState({loadings});
                     showError(response.data.message);
                 } else {
-                    loadings.levels = false;
-                    this.setState({levels:response.data.params,loadings});
+                    loadings.levels = false; this.setState({loadings,levels:response.data.params});
                 }
             } catch (e) {
                 loadings.levels = false; this.setState({loadings});
-                showError(e.response.data.message);
+                responseMessage(e);
             }
         }
     }
     async loadUsers(data = null) {
-        let loadings = this.state.loadings;
-        let users = this.state.users;
-        if (! loadings.users) {
+        if (!this.state.loadings.users) {
+            let loadings = this.state.loadings;
+            let users = this.state.users;
             users.selected = [];
             loadings.users = true; this.setState({loadings,users});
             if (data !== null) {
                 if (Number.isInteger(data)) {
                     users.unfiltered.splice(data,1);
                 } else {
-                    let index = users.unfiltered.findIndex((f) => f.value === data.value);
-                    if (index >= 0) {
-                        users.unfiltered[index] = data;
+                    let indexLevel = users.unfiltered.findIndex((f) => f.value === data.value);
+                    if (indexLevel >= 0) {
+                        users.unfiltered[indexLevel] = data;
                     } else {
                         users.unfiltered.push(data);
                     }
+
                 }
                 loadings.users = false;
                 this.setState({loadings,users},()=>this.handleFilter());
             } else {
                 try {
-                    let response = await crudUsers();
+                    const formData = new FormData();
+                    if (this.state.user !== null) {
+                        if (this.state.user.meta.company !== null) {
+                            formData.append(Lang.get('companies.form_input.name'), this.state.user.meta.company.id);
+                        }
+                    }
+                    let response = await crudUsers(formData);
                     if (response.data.params === null) {
                         loadings.users = false; this.setState({loadings});
                         showError(response.data.message);
                     } else {
                         users.unfiltered = response.data.params;
-                        loadings.users = false;
-                        this.setState({loadings,users},()=>this.handleFilter());
+                        loadings.users = false; this.setState({loadings,users},()=>this.handleFilter());
                     }
                 } catch (e) {
                     loadings.users = false; this.setState({loadings});
-                    showError(e.response.data.message);
+                    responseMessage(e)
                 }
             }
         }
@@ -249,176 +296,106 @@ class UserPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <FormUser loadings={this.state.loadings}
-                          user={this.state.user}
-                          open={this.state.modals.user.open}
-                          data={this.state.modals.user.data}
-                          levels={this.state.levels}
-                          companies={this.state.companies}
-                          handleClose={this.toggleUser} handleUpdate={this.loadUsers}/>
-
+                <FormUser data={this.state.modal.data} user={this.state.user} levels={this.state.levels} companies={this.state.companies} loadings={this.state.loadings} open={this.state.modal.open} handleClose={this.toggleModal} handleUpdate={this.loadUsers}/>
                 <PageLoader/>
-                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
+                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
                 <MainSidebar route={this.props.route} site={this.state.site}
                              menus={this.state.menus}
                              root={this.state.root}
                              user={this.state.user}/>
-
                 <div className="content-wrapper">
-
-                    <PageTitle title={Lang.get('messages.users.labels.menu')} childrens={[]}/>
+                    <PageTitle title={Lang.get('users.labels.menu')} childrens={[]}/>
 
                     <section className="content">
 
                         <div className="container-fluid">
-                            <div className="alert alert-warning mb-3 alert-dismissible">
-                                <i className="fas fa-exclamation-triangle mr-1"/>{Lang.get('messages.users.labels.warning.title')}
-                                <br/>{Lang.get('messages.users.labels.warning.content')}
-                                <button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            </div>
-                            <div className="card">
-                                {this.state.loadings.users &&
-                                    <CardPreloader/>
-                                }
-                                <div className="card-header">
-                                    <h3 className="card-title">
-                                        {this.state.privileges !== null &&
-                                            <>
-                                                {this.state.privileges.create &&
-                                                    <button onClick={()=>this.toggleUser()} disabled={this.state.loadings.users} className="btn btn-tool"><i className="fe fe-plus"/> {Lang.get('messages.users.create.form')}</button>
-                                                }
-                                                {this.state.privileges.delete &&
-                                                    this.state.users.selected.length > 0 &&
-                                                        <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.users} className="btn btn-tool"><i className="fe fe-trash-2"/> {Lang.get('messages.users.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </h3>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('messages.users.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                            <div id="main-page-card" className="card card-outline card-primary">
+                                {this.state.loadings.users && <CardPreloader/>}
+                                <div className="card-header pl-1" id="page-card-header">
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   loading={this.state.loadings.users}
+                                                   langs={{create:Lang.get('users.create.button'),delete:Lang.get('users.delete.select')}}
+                                                   selected={this.state.users.selected}
+                                                   handleModal={this.toggleModal}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('users.labels.search')}/>
                                 </div>
-                                <div className="card-body table-responsive p-0">
-                                    <table className="table table-head-fixed text-nowrap table-sm">
-                                        <thead>
+                                <div className="card-body p-0">
+                                    <table className="table table-striped table-sm">
+                                        <thead id="main-table-header">
                                         <tr>
-                                            <th width={50}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input disabled={this.state.loadings.users} onChange={this.handleCheckAll} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
+                                            {this.state.users.filtered.length > 0 &&
+                                                <th className="align-middle text-center pl-2" width={30}>
+                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
+                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.users} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
+                                                        <label htmlFor="checkAll" className="custom-control-label"/>
+                                                    </div>
+                                                </th>
+                                            }
+                                            <th className="align-middle">
+                                                <BtnSort sort="name"
+                                                         name={Lang.get('users.labels.name')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th width="50px"/>
-                                            <th>
-                                                <BtnSort name={Lang.get('messages.users.labels.email')} sort="email" handleSort={this.handleSort} filter={this.state.filter}/>
+                                            <th className="align-middle">
+                                                <BtnSort sort="email"
+                                                         name={Lang.get('users.labels.email')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th>
-                                                <BtnSort name={Lang.get('messages.users.labels.name')} sort="name" handleSort={this.handleSort} filter={this.state.filter}/>
+                                            <th className="align-middle">
+                                                <BtnSort sort="level"
+                                                         name={Lang.get('users.privileges.labels.menu')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th width="200">
-                                                <BtnSort name={Lang.get('messages.privileges.labels.menu')} sort="level" handleSort={this.handleSort} filter={this.state.filter}/>
+                                            <th className="align-middle">
+                                                <BtnSort sort="login"
+                                                         name={Lang.get('users.labels.last.login')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th>
-                                                <BtnSort name={Lang.get('messages.company.labels.menu')} sort="company" handleSort={this.handleSort} filter={this.state.filter}/>
+                                            <th className="align-middle">
+                                                <BtnSort sort="activity"
+                                                         name={Lang.get('users.labels.last.activity')}
+                                                         filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th width="50px">{Lang.get('messages.users.labels.table_action')}</th>
+                                            <th className="align-middle text-center pr-2" width={50}>{Lang.get('messages.action')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {this.state.users.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={7}>Tidak ada data</td></tr>
+                                            <DataNotFound colSpan={6} message={Lang.get('users.labels.select.not_found')}/>
                                             :
-                                            this.state.users.filtered.map((item)=>
+                                            this.state.users.filtered.map((item,index)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
-                                                        <div className="custom-control custom-checkbox">
-                                                            <input onChange={()=>{
-                                                                let users = this.state.users;
-                                                                let indexChecked = users.selected.findIndex((f) => f === item.value);
-                                                                if (indexChecked >= 0) {
-                                                                    users.selected.splice(indexChecked, 1);
-                                                                } else {
-                                                                    users.selected.push(item.value);
-                                                                }
-                                                                this.setState({users},()=>this.handleFilter());
-                                                            }} checked={this.state.users.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.users} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id={`checkbox_${item.value}`}/>
-                                                            <label htmlFor={`checkbox_${item.value}`} className="custom-control-label"/>
-                                                        </div>
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        <img className="img-circle" src={item.meta.avatar} style={{width:30,height:30}}/>
-                                                    </td>
-                                                    <td className="align-middle">{item.meta.email}</td>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.level.label}</td>
-                                                    <td className="align-middle">{item.meta.company !== null && item.meta.company.name}</td>
-                                                    <td className="align-middle text-center">
-                                                        {item.label !== 'Super Admin' &&
-                                                            <React.Fragment>
-                                                                <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                                    <span className="sr-only">Toggle Dropdown</span>
-                                                                </button>
-                                                                <div className="dropdown-menu" role="menu">
-                                                                    {this.state.privileges.update &&
-                                                                        <button onClick={()=>this.toggleUser(item)} className="dropdown-item text-primary"><i className="fe fe-edit mr-1"/> {Lang.get('messages.users.update.form')}</button>
-                                                                    }
-                                                                    {this.state.privileges.delete &&
-                                                                        <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fe fe-trash-2 mr-1"/> {Lang.get('messages.users.delete.form')}</button>
-                                                                    }
-                                                                </div>
-                                                            </React.Fragment>
-                                                        }
-                                                    </td>
+                                                    <TableCheckBox item={item} className="pl-2"
+                                                                   checked={this.state.users.selected.findIndex((f) => f === item.value) >= 0}
+                                                                   loading={this.state.loadings.users} handleCheck={this.handleCheck}/>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.email}</td>
+                                                    <td className="align-middle text-xs">{item.meta.level.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.last.login === null ? null : formatLocaleDate(item.meta.last.login.created_at)}</td>
+                                                    <td className="align-middle text-xs">{item.meta.last.activity === null ? null : formatLocaleDate(item.meta.last.activity.created_at)}</td>
+                                                    <TableAction others={[]}
+                                                                 privilege={this.state.privilege} item={item} className="pr-2"
+                                                                 langs={{update:Lang.get('users.update.button'), delete:Lang.get('users.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }
                                         </tbody>
                                     </table>
                                 </div>
-                                {this.state.users.filtered.length > 0 &&
-                                    <div className="card-footer clearfix row">
-                                        <div className="col-sm-2">
-
-                                        </div>
-                                        <div className="col-sm-10">
-                                            <ul className="pagination pagination-sm m-0 float-right">
-                                                {this.state.filter.page.value > 1 &&
-                                                    <li className="page-item">
-                                                        <a onClick={()=>this.handleChangePage(1)} className="page-link" href="#">«</a>
-                                                    </li>
-                                                }
-                                                {this.state.filter.paging.map((item)=>
-                                                    <li key={item} onClick={()=>this.handleChangePage(item)} className={item === this.state.filter.page.value ? "page-item active" : "page-item"}>
-                                                        <a className="page-link" href="#">{item}</a>
-                                                    </li>
-                                                )}
-                                                {this.state.filter.paging.length > 1 &&
-                                                    <li className="page-item">
-                                                        <a onClick={()=>this.handleChangePage(this.state.filter.paging[this.state.filter.paging.length - 1])} className="page-link" href="#">»</a>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        </div>
-                                    </div>
-                                }
                             </div>
+
                         </div>
 
                     </section>
 
                 </div>
-
                 <MainFooter/>
             </React.StrictMode>
         )
     }
 }
 export default UserPage;
-
 const root = ReactDOM.createRoot(document.getElementById('main-container'));
 root.render(<React.StrictMode><UserPage route="auth.users"/></React.StrictMode>)

@@ -31,6 +31,7 @@ class MenuSeeder extends Seeder
             'name' => 'User', 'route' => 'auth.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Privilege', 'route' => 'auth.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ],
+                (object) [ 'name' => 'Reset Password', 'route' => 'auth.users.reset-password', 'description' => 'users.resets.labels.menu_info', 'function' => true, 'for_client' => false, 'icon' => 'fas fa-key', 'lang' => 'users.resets.labels.menu' ]
             ])
         ]);
         $requests->push((object) [
@@ -64,7 +65,8 @@ class MenuSeeder extends Seeder
         $requests->push((object) [
             'name' => 'User', 'route' => 'clients.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',
             'childrens' => collect([
-                (object) [ 'name' => 'Privileges', 'route' => 'clients.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ]
+                (object) [ 'name' => 'Privileges', 'route' => 'clients.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ],
+                (object) [ 'name' => 'Reset Password', 'route' => 'clients.users.reset-password', 'description' => 'users.resets.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-key', 'lang' => 'users.resets.labels.menu' ]
             ])
         ]);
         $requests->push((object) [

@@ -1,3 +1,7 @@
 {
-    "/js/clients/customers/invoices.js": "/js/clients/customers/invoices.js"
+    "/js/login.js": "/js/login.js",
+    "/js/auth/users/index.js": "/js/auth/users/index.js",
+    "/js/auth/users/privileges.js": "/js/auth/users/privileges.js",
+    "/js/clients/users/index.js": "/js/clients/users/index.js",
+    "/js/clients/users/privileges.js": "/js/clients/users/privileges.js"
 }

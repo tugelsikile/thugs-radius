@@ -4,6 +4,9 @@ import Select from "react-select";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
 import {crudPrivileges} from "../../../../../Services/UserService";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {faSave} from "@fortawesome/free-regular-svg-icons";
 
 // noinspection JSCheckFunctionSignatures,DuplicatedCode,CommaExpressionJS
 class FormPrivilege extends React.Component {
@@ -20,20 +23,35 @@ class FormPrivilege extends React.Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
     }
-    componentWillReceiveProps(props) {
+    componentWillReceiveProps(nextProps, nextContext) {
         let form = this.state.form;
-        if (props.open) {
-            if (props.data !== null) {
-                form.id = props.data.value,
-                    form.name = props.data.label,
-                    form.description = props.data.meta.description,
-                    form.client = props.data.meta.client;
-                if (props.data.meta.company !== null) {
-                    if (props.companies !== null) {
-                        if (props.companies.length > 0) {
-                            let indexCompany = props.companies.findIndex((f) => f.value === props.data.meta.company.id);
-                            if (indexCompany >= 0) {
-                                form.company = props.companies[indexCompany];
+        let index;
+        if (!nextProps.open) {
+            form.name = '', form.description = '', form.client = true, form.company = null, form.id = null;
+        } else {
+            if (nextProps.data === null) {
+                if (typeof nextProps.user !== 'undefined') {
+                    if (nextProps.user !== null) {
+                        if (nextProps.user.meta.company !== null) {
+                            index = nextProps.companies.findIndex((f) => f.value === nextProps.user.meta.company.id);
+                            if (index >= 0) {
+                                form.client = true;
+                                form.company = nextProps.companies[index];
+                            }
+                        }
+                    }
+                }
+            } else {
+                form.id = nextProps.data.value,
+                    form.name = nextProps.data.label,
+                    form.description = nextProps.data.meta.description,
+                    form.client = nextProps.data.meta.client;
+                if (nextProps.companies !== null) {
+                    if (nextProps.companies.length > 0) {
+                        if (nextProps.data.meta.company !== null) {
+                            index = nextProps.companies.findIndex((f) => f.value === nextProps.data.meta.company.id);
+                            if (index >= 0) {
+                                form.company = nextProps.companies[index];
                             }
                         }
                     }
@@ -87,37 +105,78 @@ class FormPrivilege extends React.Component {
     }
     render() {
         return (
-            <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+            <Dialog fullWidth maxWidth="sm" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave} className="modal-content">
-                    <DialogTitle>
+                    <DialogTitle className="py-2 px-3">
                         <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
+                            <FontAwesomeIcon icon={faTimes}/>
                         </button>
-                        <h5 className="modal-title text-sm">
+                        <span className="modal-title text-sm">
                             {this.state.form.id === null ?
                                 Lang.get('messages.privileges.create.form')
                                 :
                                 Lang.get('messages.privileges.update.form')
                             }
-                        </h5>
+                        </span>
                     </DialogTitle>
                     <DialogContent dividers>
-                        <div className="form-group row">
-                            <label className="col-sm-3 col-form-label" htmlFor="inputCheck">{Lang.get('messages.privileges.labels.client')}</label>
-                            <div className="col-sm-9">
-                                <div className="custom-control custom-checkbox">
-                                    <input checked={this.state.form.client} disabled={this.state.loading} onChange={this.handleCheck} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id="for_client"/>
-                                    <label htmlFor="for_client" className="custom-control-label"/>
-                                </div>
-                            </div>
-                        </div>
-                        {this.state.form.client &&
+                        {typeof this.props.user === 'undefined' ?
                             <div className="form-group row">
-                                <label className="col-sm-3 col-form-label">{Lang.get('messages.company.labels.name')}</label>
-                                <div className="col-sm-3">
-                                    <Select onChange={this.handleSelect} placeholder={<small>{Lang.get('messages.company.select.option')}</small>} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} value={this.state.form.company}/>
+                                <label className="col-sm-3 col-form-label" htmlFor="inputCheck">{Lang.get('messages.privileges.labels.client')}</label>
+                                <div className="col-sm-9">
+                                    <div className="custom-control custom-checkbox">
+                                        <input checked={this.state.form.client} disabled={this.state.loading} onChange={this.handleCheck} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id="for_client"/>
+                                        <label htmlFor="for_client" className="custom-control-label"/>
+                                    </div>
                                 </div>
                             </div>
+                            :
+                            this.props.user === null ?
+                                <div className="form-group row">
+                                    <label className="col-sm-3 col-form-label" htmlFor="inputCheck">{Lang.get('messages.privileges.labels.client')}</label>
+                                    <div className="col-sm-9">
+                                        <div className="custom-control custom-checkbox">
+                                            <input checked={this.state.form.client} disabled={this.state.loading} onChange={this.handleCheck} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id="for_client"/>
+                                            <label htmlFor="for_client" className="custom-control-label"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                : this.props.user.meta.company === null &&
+                                    <div className="form-group row">
+                                        <label className="col-sm-3 col-form-label" htmlFor="inputCheck">{Lang.get('messages.privileges.labels.client')}</label>
+                                        <div className="col-sm-9">
+                                            <div className="custom-control custom-checkbox">
+                                                <input checked={this.state.form.client} disabled={this.state.loading} onChange={this.handleCheck} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id="for_client"/>
+                                                <label htmlFor="for_client" className="custom-control-label"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                        }
+
+                        {!this.state.form.client ? null :
+                            typeof this.props.user === 'undefined' ?
+                                <div className="form-group row">
+                                    <label className="col-sm-3 col-form-label">{Lang.get('messages.company.labels.name')}</label>
+                                    <div className="col-sm-9">
+                                        <Select onChange={this.handleSelect} placeholder={<small>{Lang.get('messages.company.select.option')}</small>} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} value={this.state.form.company}/>
+                                    </div>
+                                </div>
+                                :
+                                this.props.user === null ?
+                                    <div className="form-group row">
+                                        <label className="col-sm-3 col-form-label">{Lang.get('messages.company.labels.name')}</label>
+                                        <div className="col-sm-9">
+                                            <Select onChange={this.handleSelect} placeholder={<small>{Lang.get('messages.company.select.option')}</small>} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} value={this.state.form.company}/>
+                                        </div>
+                                    </div>
+                                    :
+                                    this.props.user.meta.company === null &&
+                                    <div className="form-group row">
+                                        <label className="col-sm-3 col-form-label">{Lang.get('messages.company.labels.name')}</label>
+                                        <div className="col-sm-9">
+                                            <Select onChange={this.handleSelect} placeholder={<small>{Lang.get('messages.company.select.option')}</small>} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.props.loadings.companies || this.state.loading} value={this.state.form.company}/>
+                                        </div>
+                                    </div>
                         }
                         <div className="form-group row">
                             <label className="col-sm-3 col-form-label" htmlFor="inputName">{Lang.get('messages.privileges.labels.name')}</label>
@@ -125,20 +184,16 @@ class FormPrivilege extends React.Component {
                                 <input id="inputName" className="form-control text-sm" value={this.state.form.name} name="name" disabled={this.state.loading} onChange={this.handleChange} placeholder={Lang.get('messages.privileges.labels.name')}/>
                             </div>
                         </div>
-                        <div className="form-group row">
-                            <label className="col-sm-3 col-form-label" htmlFor="inputKeterangan">{Lang.get('messages.privileges.labels.description')}</label>
-                            <div className="col-sm-9">
-                                <textarea className="form-control text-sm" value={this.state.form.description} name="description" placeholder={Lang.get('messages.privileges.labels.description')} onChange={this.handleChange} disabled={this.state.loading} style={{resize:'none'}}/>
-                            </div>
-                        </div>
+
                     </DialogContent>
                     <DialogActions className="justify-content-between">
                         <button type="submit" className="btn btn-success" disabled={this.state.loading}>
-                            {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
+                            <FontAwesomeIcon icon={this.state.loading ? faCircleNotch : faSave} spin={this.state.loading} className="mr-1"/>
                             {this.state.form.id === null ? Lang.get('messages.privileges.create.button') : Lang.get('messages.privileges.update.button',null, 'id')}
                         </button>
                         <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
+                            <FontAwesomeIcon icon={faTimes} className="mr-1"/>
+                            {Lang.get('messages.close')}
                         </button>
                     </DialogActions>
                 </form>

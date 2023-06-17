@@ -39,6 +39,8 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
     Route::group(['prefix' => 'users'], function () {
         Route::any('/', [UserController::class, 'crud']);
+        Route::patch('/reset-passwords', [UserController::class, 'resetPassword'])->name('auth.users.reset-password');
+        Route::patch('/reset-password', [UserController::class, 'resetPassword'])->name('clients.users.reset-password');
         Route::group(['prefix' => 'privileges'], function () {
             Route::any('/', [PrivilegeController::class, 'crud']);
             Route::patch('/set', [PrivilegeController::class, 'setPrivilege']);

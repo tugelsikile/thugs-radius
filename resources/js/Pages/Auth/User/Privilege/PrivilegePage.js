@@ -6,12 +6,16 @@ import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import {getPrivileges, getRootUrl, logout} from "../../../../Components/Authentication";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
-import BtnSort from "../Tools/BtnSort";
 import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudPrivileges, setPrivileges} from "../../../../Services/UserService";
 import {crudCompany} from "../../../../Services/CompanyService";
-import FormPrivilege from "./Tools/FormPrivilege";
-import {CardPreloader, siteData} from "../../../../Components/mixedConsts";
+import FormPrivilege from "../../../Auth/User/Privilege/Tools/FormPrivilege";
+import {CardPreloader, customPreventDefault, siteData} from "../../../../Components/mixedConsts";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faExclamationCircle,faPlus} from "@fortawesome/free-solid-svg-icons";
+import {MenuIcon} from "../../../Client/User/Privilege/Tools/IconTool";
+import {Tooltip} from "@mui/material";
+import {InputCheckBox, UserLevelList} from "../../../Client/User/Privilege/Tools/TableTools";
 
 // noinspection DuplicatedCode
 class PrivilegePage extends React.Component {
@@ -25,7 +29,7 @@ class PrivilegePage extends React.Component {
                 filtered : [], unfiltered : [], selected : [],
             },
             filter : {
-                keywords : '',
+                keywords : '', level : null,
                 sort : { by : 'name', dir : 'asc' },
                 page : { value : 1, label : 1}, data_length : 20, paging : [],
             },
@@ -41,6 +45,7 @@ class PrivilegePage extends React.Component {
         this.loadCompanies = this.loadCompanies.bind(this);
         this.toggleModal = this.toggleModal.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
+        this.handleSelectLevel = this.handleSelectLevel.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -49,7 +54,11 @@ class PrivilegePage extends React.Component {
             siteData().then((response)=>this.setState({site:response}));
             loadings.privilege = true; this.setState({loadings});
             if (this.state.privilege === null) {
-                getPrivileges(this.props.route)
+                getPrivileges([
+                    {route : this.props.route, can : false },
+                    {route : 'clients.users', can : false},
+                    {route : 'clients.customers', can : false},
+                ])
                     .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>this.loadCompanies())
                     .then(()=>this.loadLevels())
@@ -60,16 +69,25 @@ class PrivilegePage extends React.Component {
             }
         }
     }
+    handleSelectLevel(data = null) {
+        if (data !== null) {
+            let filter = this.state.filter;
+            filter.level = data;
+            this.setState({filter},()=>this.handleFilter());
+        }
+    }
     confirmDelete(data = null) {
+        let index = null;
         let ids = [];
         if (data !== null) {
+            index = this.state.levels.unfiltered.findIndex((f) => f.value === data.value);
             ids.push(data.value);
         } else {
             this.state.levels.selected.map((item)=>{
                 ids.push(item);
             });
         }
-        confirmDialog(this, ids,'delete',`${window.origin}/api/auth/users/privileges`,Lang.get('messages.privileges.delete.form'),Lang.get('messages.privileges.delete.select'),'app.loadLevels()');
+        confirmDialog(this, ids,'delete',`${window.origin}/api/auth/users/privileges`,Lang.get('messages.privileges.delete.form'),Lang.get('messages.privileges.delete.select'),index === null ? 'app.loadLevels()' : 'app.loadLevels(deleteIndex)','warning','id',index === null ? null : index);
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -224,13 +242,6 @@ class PrivilegePage extends React.Component {
                 }
                 break;
         }
-        filter.paging = [];
-        for (let page = 1; page <= Math.ceil(levels.filtered.length / this.state.filter.data_length); page++) {
-            filter.paging.push(page);
-        }
-        let indexFirst = ( filter.page.value - 1 ) * filter.data_length;
-        let indexLast = filter.page.value * filter.data_length;
-        levels.filtered = levels.filtered.slice(indexFirst, indexLast);
         loadings.levels = false;
         this.setState({levels,loadings});
     }
@@ -260,6 +271,13 @@ class PrivilegePage extends React.Component {
             let response = await setPrivileges(formData);
             if (response.data.params === null) {
                 showError(response.data.message);
+            } else {
+                let levels = this.state.levels;
+                let index = levels.unfiltered.findIndex((f) => f.value === response.data.params.value);
+                if (index >= 0) {
+                    levels.unfiltered[index] = response.data.params;
+                    this.setState({levels});
+                }
             }
         } catch (e) {
             showError(e.response.data.message);
@@ -268,6 +286,7 @@ class PrivilegePage extends React.Component {
     }
     async loadLevels(data = null) {
         if (!this.state.loadings.levels) {
+            let filter = this.state.filter;
             let loadings = this.state.loadings;
             let levels = this.state.levels;
             levels.selected = [];
@@ -275,6 +294,12 @@ class PrivilegePage extends React.Component {
             if (data !== null) {
                 if (Number.isInteger(data)) {
                     levels.unfiltered.splice(data,1);
+                    if (levels.unfiltered.length === 0) {
+                        filter.level = null; this.setState({filter});
+                    } else {
+                        filter.level = levels.unfiltered[0];
+                        this.setState({filter});
+                    }
                 } else {
                     let indexLevel = levels.unfiltered.findIndex((f) => f.value === data.value);
                     if (indexLevel >= 0) {
@@ -282,18 +307,29 @@ class PrivilegePage extends React.Component {
                     } else {
                         levels.unfiltered.push(data);
                     }
+                    filter.level = data;
+                    this.setState({filter});
                 }
                 loadings.levels = false;
-                this.setState({loadings,levels},()=>this.handleFilter());
+                this.setState({loadings,levels,filter},()=>this.handleFilter());
             } else {
                 try {
-                    let response = await crudPrivileges();
+                    const formData = new FormData();
+                    if (this.state.user !== null) {
+                        if (this.state.user.meta.company !== null) {
+                            formData.append(Lang.get('companies.form_input.name'), this.state.user.meta.company.id);
+                        }
+                    }
+                    let response = await crudPrivileges(formData);
                     if (response.data.params === null) {
                         loadings.levels = false; this.setState({loadings});
                         showError(response.data.message);
                     } else {
                         levels.unfiltered = response.data.params;
-                        loadings.levels = false; this.setState({loadings,levels},()=>this.handleFilter());
+                        if (levels.unfiltered.length > 0) {
+                            filter.level = levels.unfiltered[0];
+                        }
+                        loadings.levels = false; this.setState({loadings,levels,filter},()=>this.handleFilter());
                     }
                 } catch (e) {
                     loadings.levels = false; this.setState({loadings});
@@ -307,7 +343,7 @@ class PrivilegePage extends React.Component {
         return (
             <React.StrictMode>
 
-                <FormPrivilege open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadLevels}/>
+                <FormPrivilege user={this.state.user} level={this.state.filter.level} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadLevels}/>
 
                 <PageLoader/>
                 <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
@@ -326,317 +362,169 @@ class PrivilegePage extends React.Component {
 
                         <div className="container-fluid">
 
-                            <div className="alert alert-warning mb-3 alert-dismissible">
-                                <i className="fas fa-exclamation-triangle mr-1"/>{Lang.get('messages.users.labels.warning.title')}
-                                <br/>{Lang.get('messages.users.labels.warning.content')}
-                                <button type="button" className="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            </div>
-
-                            <div className="card">
-                                {this.state.loadings.levels &&
-                                    <CardPreloader/>
-                                }
-                                <div className="card-header">
-                                    <h3 className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button onClick={()=>this.toggleModal()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('messages.privileges.create.form')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.levels.selected.length > 0 &&
-                                                    <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('messages.privileges.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </h3>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('messages.privileges.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
+                            <div className="row">
+                                <div className="col-md-3">
+                                    <div className="card shadow card-outline card-primary">
+                                        {this.state.loadings.levels && <CardPreloader/>}
+                                        <div className="card-header">
+                                            <h3 className="card-title">{Lang.get('users.privileges.labels.menu')}</h3>
+                                            <div className="card-tools">
+                                                <Tooltip title={Lang.get('users.privileges.create.info')}>
+                                                    <button onClick={()=>this.toggleModal()} disabled={this.state.loadings.levels} type="button" className="btn btn-tool btn-xs">
+                                                        <FontAwesomeIcon icon={faPlus} size="xs"/>
+                                                    </button>
+                                                </Tooltip>
                                             </div>
+                                        </div>
+                                        <div className="card-body p-0">
+                                            <ul className="nav nav-pills flex-column">
+                                                {this.state.levels.filtered.length === 0 ?
+                                                    <li className="nav-item active">
+                                                        <a onClick={customPreventDefault} href="#" className="nav-link text-sm text-muted">
+                                                            <FontAwesomeIcon icon={faExclamationCircle} size="xs" className="mr-1"/>
+                                                            {Lang.get('users.privileges.labels.select.not_found')}
+                                                        </a>
+                                                    </li>
+                                                    :
+                                                    this.state.levels.filtered.map((item,index)=>
+                                                        <li key={item.value} className="nav-item">
+                                                            {item.meta.company === null ?
+                                                                <UserLevelList filter={this.state.filter} item={item} privilege={this.state.privilege} loading={this.state.loadings.levels} clickUpdate={this.toggleModal} clickDelete={this.confirmDelete} onSelect={this.handleSelectLevel}/>
+                                                                :
+                                                                <Tooltip title={item.meta.company.name}>
+                                                                    <span><UserLevelList filter={this.state.filter} item={item} privilege={this.state.privilege} loading={this.state.loadings.levels} clickUpdate={this.toggleModal} clickDelete={this.confirmDelete} onSelect={this.handleSelectLevel}/></span>
+                                                                </Tooltip>
+                                                            }
+                                                        </li>
+                                                    )
+                                                }
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card-body p-0">
-                                    <table className="table table-head-fixed table-sm">
-                                        <thead>
-                                        <tr>
-                                            <th className="align-middle" width={50}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.levels} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort name={Lang.get('messages.privileges.labels.name')}
-                                                         sort="name"
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                {Lang.get('messages.company.labels.name')}
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort name={Lang.get('messages.privileges.labels.super')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}
-                                                         sort="super"/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort name={Lang.get('messages.privileges.labels.client')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}
-                                                         sort="client"/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                {Lang.get('messages.users.labels.table_action')}
-                                            </th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {this.state.levels.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-xl-center" colSpan={5}>Tidak ada data</td></tr>
-                                            :
-                                            this.state.levels.filtered.map((item, indexLevel)=>
-                                                <React.Fragment key={item.value}>
-                                                    <tr key={item.value}>
-                                                        <td className="align-middle text-center">
-                                                            {! item.meta.default &&
-                                                                <div className="custom-control custom-checkbox">
-                                                                    <input data-id={item.value} checked={this.state.levels.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.levels} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id={`checkbox_${item.value}`}/>
-                                                                    <label htmlFor={`checkbox_${item.value}`} className="custom-control-label"/>
-                                                                </div>
-                                                            }
-                                                        </td>
-                                                        <td className="align-middle">
-                                                            <a href="#" onClick={(e)=>{
-                                                                e.preventDefault();
-                                                                let element = document.getElementById(`table_${item.value}`);
-                                                                element.style.visibility = element.style.visibility === 'collapse' ? null : 'collapse';
-                                                            }} title={Lang.get('messages.privileges.set.vis')} className="btn btn-xs float-left btn-block text-left">
-                                                                <i className="far fa-question-circle mr-1"/>
-                                                                <strong>{item.label}</strong>
-                                                                {item.meta.description !== null &&
-                                                                    item.meta.description.length > 0 &&
-                                                                        <span className="text-muted small"><br/>{item.meta.description}</span>
-                                                                }
-                                                            </a>
-                                                        </td>
-                                                        <td className="align-middle">{item.meta.company !== null && item.meta.company.name}</td>
-                                                        <td className="align-middle text-center">
-                                                            {item.meta.super ?
-                                                                <i className="far fa-check-square text-success"/>
-                                                                :
-                                                                <i className="far fa-window-close text-danger"/>
-                                                            }
-                                                        </td>
-                                                        <td className="align-middle text-center">
-                                                            {item.meta.client ?
-                                                                <i className="far fa-check-square text-success"/>
-                                                                :
-                                                                <i className="far fa-window-close text-danger"/>
-                                                            }
-                                                        </td>
-                                                        <td className="align-middle text-center">
-                                                            {! item.meta.default &&
-                                                                <>
-                                                                    <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                                        <span className="sr-only">Toggle Dropdown</span>
-                                                                    </button>
-                                                                    <div className="dropdown-menu" role="menu">
-                                                                        {this.state.privilege.update &&
-                                                                            <button onClick={()=>this.toggleModal(item)} className="dropdown-item text-primary"><i className="fe fe-edit mr-1"/> {Lang.get('messages.privileges.update.form')}</button>
-                                                                        }
-                                                                        {this.state.privilege.delete &&
-                                                                            <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fe fe-trash-2 mr-1"/> {Lang.get('messages.privileges.delete.form')}</button>
-                                                                        }
-                                                                    </div>
-                                                                </>
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                    <tr id={`table_${item.value}`} style={{visibility:'collapse'}}>
-                                                        <td/>
-                                                        <td className="p-0" colSpan={4}>
-                                                            <table className="table table-sm mb-0 table-striped">
-                                                                <thead>
+
+                                <div className="col-md-9">
+                                    <div className="card shadow card-outline card-info">
+                                        {this.state.loadings.levels && <CardPreloader/>}
+                                        <div className="card-header pl-2">
+                                            <h3 className="card-title text-bold text-sm">{Lang.get('messages.menu.label')}</h3>
+                                        </div>
+
+                                        <div className="card-body p-0 table-responsive">
+                                            <table className="table table-sm table-striped table-hover table-head-fixed">
+                                                <thead>
+                                                <tr>
+                                                    <th className="align-middle text-sm pl-2"><Tooltip title={Lang.get('messages.menu.name.info')}><span>{Lang.get('messages.menu.name.label')}</span></Tooltip></th>
+                                                    <th width={50} className="align-middle text-center text-sm">
+                                                        <Tooltip title={Lang.get('messages.menu.read.info')}><span>{Lang.get('messages.menu.read.label')}</span></Tooltip>
+                                                    </th>
+                                                    <th width={50} className="align-middle text-center text-sm">
+                                                        <Tooltip title={Lang.get('messages.menu.create.info')}><span>{Lang.get('messages.menu.create.label')}</span></Tooltip>
+                                                    </th>
+                                                    <th width={50} className="align-middle text-center text-sm">
+                                                        <Tooltip title={Lang.get('messages.menu.update.info')}><span>{Lang.get('messages.menu.update.label')}</span></Tooltip>
+                                                    </th>
+                                                    <th width={50} className="align-middle text-center text-sm pr-2">
+                                                        <Tooltip title={Lang.get('messages.menu.delete.info')}><span>{Lang.get('messages.menu.delete.label')}</span></Tooltip>
+                                                    </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {this.state.filter.level === null ?
+                                                    <tr><td className="align-middle text-center text-xs text-warning" colSpan={5}>{Lang.get('users.privileges.labels.select.no_select')}</td></tr>
+                                                    :
+                                                    this.state.filter.level.meta.privileges.filter((f) => f.meta.client === this.state.filter.level.meta.client).length === 0 ?
+                                                        <tr><td className="align-middle text-center text-xs text-warning" colSpan={5}>{Lang.get('users.privileges.labels.select.no_menu')}</td></tr>
+                                                        :
+                                                        this.state.filter.level.meta.privileges.filter((f) => f.meta.client === this.state.filter.level.meta.client).map((menu,indexMenu)=>
+                                                            <React.Fragment key={menu.value}>
                                                                 <tr>
-                                                                    <th>{Lang.get('messages.menu.name')}</th>
-                                                                    <th width={50}>{Lang.get('messages.menu.read')}</th>
-                                                                    <th width={50}>{Lang.get('messages.menu.create')}</th>
-                                                                    <th width={50}>{Lang.get('messages.menu.update')}</th>
-                                                                    <th width={50}>{Lang.get('messages.menu.delete')}</th>
-                                                                </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                {item.meta.privileges.filter((f) => f.meta.client === item.meta.client).map((menu, indexMenu)=>
-                                                                    <React.Fragment key={menu.value}>
-                                                                        <tr key={menu.value}>
-                                                                            <td>
-                                                                                <i className={`${menu.meta.icon} mr-1`}/>
-                                                                                {Lang.get(menu.meta.langs.menu)}
-                                                                                <br/><span className="small text-muted ml-3">{Lang.get(menu.meta.langs.description)}</span>
+                                                                    <td className="align-middle text-xs pl-2">
+                                                                        <Tooltip placement="left-end" title={Lang.get(menu.meta.langs.description)}>
+                                                                            <FontAwesomeIcon icon={MenuIcon(menu.meta.icon)} size="sm" className="mr-1"/>
+                                                                        </Tooltip>
+                                                                        <span>{Lang.get(menu.meta.langs.menu)}</span>
+                                                                    </td>
+                                                                    {menu.meta.function ?
+                                                                        <td colSpan={4} className="align-middle pr-2">
+                                                                            <Tooltip title={menu.meta.can.read ? Lang.get('messages.menu.info.dont',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.read.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.read.do')})}>
+                                                                                <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={menu} levels={this.state.levels} filter={this.state.filter} index={indexMenu} checked={menu.meta.can.read} type="read" child={false} onCheck={this.handleCheckPrivilege}/></span>
+                                                                            </Tooltip>
+                                                                        </td>
+                                                                        :
+                                                                        <React.Fragment>
+                                                                            <td className="align-middle">
+                                                                                <Tooltip title={menu.meta.can.read ? Lang.get('messages.menu.info.dont',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.read.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.read.do')})}>
+                                                                                    <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={menu} levels={this.state.levels} filter={this.state.filter} index={indexMenu} checked={menu.meta.can.read} type="read" child={false} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                </Tooltip>
                                                                             </td>
-                                                                            {menu.meta.function ?
-                                                                                <td className="align-middle text-left" colSpan={4}>
-                                                                                    <div className="custom-control custom-checkbox">
-                                                                                        <input data-index-level={indexLevel}
-                                                                                               data-index-parent={null}
-                                                                                               data-index={indexMenu}
-                                                                                               data-child={false}
-                                                                                               data-type="read"
-                                                                                               data-id={menu.value} checked={menu.meta.can.read}
-                                                                                               disabled={this.state.loadings.levels || ! this.state.privilege.update} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id={`read_${menu.value}`}/>
-                                                                                        <label htmlFor={`read_${menu.value}`} className="custom-control-label"/>
-                                                                                    </div>
+                                                                            <td className="align-middle">
+                                                                                <Tooltip title={menu.meta.can.create ? Lang.get('messages.menu.info.dont',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.create.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get(`messages.menu.create.do`)})}>
+                                                                                    <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! menu.meta.can.read || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={menu} levels={this.state.levels} filter={this.state.filter} index={indexMenu} checked={menu.meta.can.create} type="create" child={false} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                </Tooltip>
+                                                                            </td>
+                                                                            <td className="align-middle">
+                                                                                <Tooltip title={menu.meta.can.update ? Lang.get('messages.menu.info.dont',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.update.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get(`messages.menu.update.do`)})}>
+                                                                                    <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! menu.meta.can.create || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={menu} levels={this.state.levels} filter={this.state.filter} index={indexMenu} checked={menu.meta.can.update} type="update" child={false} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                </Tooltip>
+                                                                            </td>
+                                                                            <td className="align-middle pr-2">
+                                                                                <Tooltip title={menu.meta.can.delete ? Lang.get('messages.menu.info.dont',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get('messages.menu.delete.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(menu.meta.langs.menu), type : Lang.get(`messages.menu.delete.do`)})}>
+                                                                                    <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! menu.meta.can.update || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={menu} levels={this.state.levels} filter={this.state.filter} index={indexMenu} checked={menu.meta.can.delete} type="delete" child={false} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                </Tooltip>
+                                                                            </td>
+                                                                        </React.Fragment>
+                                                                    }
+                                                                </tr>
+                                                                {menu.meta.childrens.length === 0 ? null :
+                                                                    menu.meta.childrens.map((children, indexChildren)=>
+                                                                        <tr key={children.value}>
+                                                                            <td className="align-middle text-xs pl-2">
+                                                                                <Tooltip placement="left-end" title={Lang.get(children.meta.langs.description)}>
+                                                                                    <FontAwesomeIcon icon={MenuIcon(children.meta.icon)} size="sm" className="mr-1 ml-3"/>
+                                                                                </Tooltip>
+                                                                                <span>{Lang.get(children.meta.langs.menu)}</span>
+                                                                            </td>
+                                                                            {children.meta.function ?
+                                                                                <td colSpan={4} className="align-middle pr-2">
+                                                                                    <Tooltip title={children.meta.can.read ? Lang.get('messages.menu.info.dont',{menu : Lang.get(children.meta.langs.menu), type : Lang.get('messages.menu.read.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(children.meta.langs.menu), type : Lang.get(`messages.menu.read.do`)})}>
+                                                                                        <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! menu.meta.can.read || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={children} levels={this.state.levels} filter={this.state.filter} index={indexChildren} indexParent={indexMenu} checked={children.meta.can.read} type="read" child={true} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                    </Tooltip>
                                                                                 </td>
                                                                                 :
-                                                                                <>
-                                                                                    <td className="align-middle text-center">
-                                                                                        <div className="custom-control custom-checkbox text-left">
-                                                                                            <input data-index-level={indexLevel}
-                                                                                                   data-index-parent={null}
-                                                                                                   data-index={indexMenu}
-                                                                                                   data-child={false}
-                                                                                                   data-type="read"
-                                                                                                   data-id={menu.value} checked={menu.meta.can.read} disabled={this.state.loadings.levels || ! this.state.privilege.update} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" id={`read_${menu.value}`}/>
-                                                                                            <label htmlFor={`read_${menu.value}`} className="custom-control-label"/>
-                                                                                        </div>
+                                                                                <React.Fragment>
+                                                                                    <td className="align-middle">
+                                                                                        <Tooltip title={children.meta.can.read ? Lang.get('messages.menu.info.dont',{menu : Lang.get(children.meta.langs.menu), type : Lang.get('messages.menu.read.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(children.meta.langs.menu), type : Lang.get(`messages.menu.read.do`)})}>
+                                                                                            <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! menu.meta.can.read || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={children} levels={this.state.levels} filter={this.state.filter} index={indexChildren} indexParent={indexMenu} checked={children.meta.can.read} type="read" child={true} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                        </Tooltip>
                                                                                     </td>
-                                                                                    <td className="align-middle text-center">
-                                                                                        <div className="custom-control custom-checkbox text-left">
-                                                                                            <input data-index-level={indexLevel}
-                                                                                                   data-index-parent={null}
-                                                                                                   data-index={indexMenu}
-                                                                                                   data-child={false}
-                                                                                                   data-type="create"
-                                                                                                   id={`create_${menu.value}`}
-                                                                                                   disabled={this.state.loadings.levels || ! menu.meta.can.read || ! this.state.privilege.update}
-                                                                                                   data-id={menu.value} checked={menu.meta.can.create}  onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" />
-                                                                                            <label htmlFor={`create_${menu.value}`} className="custom-control-label"/>
-                                                                                        </div>
+                                                                                    <td className="align-middle">
+                                                                                        <Tooltip title={children.meta.can.create ? Lang.get('messages.menu.info.dont',{menu : Lang.get(children.meta.langs.menu), type : Lang.get('messages.menu.create.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(children.meta.langs.menu), type : Lang.get(`messages.menu.create.do`)})}>
+                                                                                            <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! children.meta.can.read || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={children} levels={this.state.levels} filter={this.state.filter} index={indexChildren} indexParent={indexMenu} checked={children.meta.can.create} type="create" child={true} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                        </Tooltip>
                                                                                     </td>
-                                                                                    <td className="align-middle text-center">
-                                                                                        <div className="custom-control custom-checkbox text-left">
-                                                                                            <input data-index-level={indexLevel}
-                                                                                                   data-index-parent={null}
-                                                                                                   data-index={indexMenu}
-                                                                                                   data-child={false}
-                                                                                                   data-type="update"
-                                                                                                   id={`update_${menu.value}`}
-                                                                                                   disabled={this.state.loadings.levels || ! menu.meta.can.create || ! this.state.privilege.update}
-                                                                                                   data-id={menu.value} checked={menu.meta.can.update}  onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" />
-                                                                                            <label htmlFor={`update_${menu.value}`} className="custom-control-label"/>
-                                                                                        </div>
+                                                                                    <td className="align-middle">
+                                                                                        <Tooltip title={children.meta.can.update ? Lang.get('messages.menu.info.dont',{menu : Lang.get(children.meta.langs.menu), type : Lang.get('messages.menu.update.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(children.meta.langs.menu), type : Lang.get(`messages.menu.update.do`)})}>
+                                                                                            <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! children.meta.can.create || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={children} levels={this.state.levels} filter={this.state.filter} index={indexChildren} indexParent={indexMenu} checked={children.meta.can.update} type="update" child={true} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                        </Tooltip>
                                                                                     </td>
-                                                                                    <td className="align-middle text-center">
-                                                                                        <div className="custom-control custom-checkbox text-left">
-                                                                                            <input data-index-level={indexLevel}
-                                                                                                   data-index-parent={null}
-                                                                                                   data-index={indexMenu}
-                                                                                                   data-child={false}
-                                                                                                   data-type="delete"
-                                                                                                   id={`delete_${menu.value}`}
-                                                                                                   disabled={this.state.loadings.levels || ! menu.meta.can.update || ! this.state.privilege.update}
-                                                                                                   data-id={menu.value} checked={menu.meta.can.delete}  onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox" />
-                                                                                            <label htmlFor={`delete_${menu.value}`} className="custom-control-label"/>
-                                                                                        </div>
+                                                                                    <td className="align-middle pr-2">
+                                                                                        <Tooltip title={children.meta.can.delete ? Lang.get('messages.menu.info.dont',{menu : Lang.get(children.meta.langs.menu), type : Lang.get('messages.menu.delete.do')}) : Lang.get('messages.menu.info.label',{menu : Lang.get(children.meta.langs.menu), type : Lang.get(`messages.menu.delete.do`)})}>
+                                                                                            <span><InputCheckBox disabled={this.state.loadings.levels || ! this.state.privilege.update || ! children.meta.can.update || (!this.state.user.meta.level.super && this.state.filter.level.meta.default) } privilege={this.state.privilege} loadings={this.state.loadings} menu={children} levels={this.state.levels} filter={this.state.filter} index={indexChildren} indexParent={indexMenu} checked={children.meta.can.delete} type="delete" child={true} onCheck={this.handleCheckPrivilege}/></span>
+                                                                                        </Tooltip>
                                                                                     </td>
-                                                                                </>
+                                                                                </React.Fragment>
                                                                             }
                                                                         </tr>
-                                                                        {menu.meta.childrens.map((child,indexChild)=>
-                                                                            <tr key={child.value}>
-                                                                                <td>
-                                                                                    <i className={`${child.meta.icon} ml-3 mr-1`}/>
-                                                                                    {Lang.get(child.meta.langs.menu)}
-                                                                                    <br/><span className="small text-muted ml-3">{Lang.get(child.meta.langs.description)}</span>
-                                                                                </td>
-                                                                                {child.meta.function ?
-                                                                                    <td className="align-middle text-left" colSpan={4}>
-                                                                                        <div className="custom-control custom-checkbox">
-                                                                                            <input data-index-level={indexLevel}
-                                                                                                   data-index-parent={indexMenu}
-                                                                                                   data-index={indexChild}
-                                                                                                   data-child={true}
-                                                                                                   data-type="read"
-                                                                                                   disabled={this.state.loadings.levels || ! menu.meta.can.read || ! this.state.privilege.update}
-                                                                                                   id={`read_${child.value}`}
-                                                                                                   data-id={child.value} checked={child.meta.can.read} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox"/>
-                                                                                            <label htmlFor={`read_${child.value}`} className="custom-control-label"/>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    :
-                                                                                    <>
-                                                                                        <td className="align-middle text-center">
-                                                                                            <div className="custom-control custom-checkbox text-left">
-                                                                                                <input data-index-level={indexLevel}
-                                                                                                       data-index-parent={indexMenu}
-                                                                                                       data-index={indexChild}
-                                                                                                       data-child={true}
-                                                                                                       data-type="read"
-                                                                                                       disabled={this.state.loadings.levels || ! menu.meta.can.read || ! this.state.privilege.update}
-                                                                                                       id={`read_${child.value}`}
-                                                                                                       data-id={child.value} checked={child.meta.can.read} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox"/>
-                                                                                                <label htmlFor={`read_${child.value}`} className="custom-control-label"/>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td className="align-middle text-center">
-                                                                                            <div className="custom-control custom-checkbox text-left">
-                                                                                                <input data-index-level={indexLevel}
-                                                                                                       data-index-parent={indexMenu}
-                                                                                                       data-index={indexChild}
-                                                                                                       data-child={true}
-                                                                                                       data-type="create"
-                                                                                                       disabled={this.state.loadings.levels || ! child.meta.can.read || ! this.state.privilege.update}
-                                                                                                       id={`create_${child.value}`}
-                                                                                                       data-id={child.value} checked={child.meta.can.create} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox"/>
-                                                                                                <label htmlFor={`create_${child.value}`} className="custom-control-label"/>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td className="align-middle text-center">
-                                                                                            <div className="custom-control custom-checkbox text-left">
-                                                                                                <input data-index-level={indexLevel}
-                                                                                                       data-index-parent={indexMenu}
-                                                                                                       data-index={indexChild}
-                                                                                                       data-child={true}
-                                                                                                       data-type="update"
-                                                                                                       disabled={this.state.loadings.levels || ! child.meta.can.create || ! this.state.privilege.update}
-                                                                                                       id={`update_${child.value}`}
-                                                                                                       data-id={child.value} checked={child.meta.can.update} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox"/>
-                                                                                                <label htmlFor={`update_${child.value}`} className="custom-control-label"/>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                        <td className="align-middle text-center">
-                                                                                            <div className="custom-control custom-checkbox text-left">
-                                                                                                <input data-index-level={indexLevel}
-                                                                                                       data-index-parent={indexMenu}
-                                                                                                       data-index={indexChild}
-                                                                                                       data-child={true}
-                                                                                                       data-type="delete"
-                                                                                                       disabled={this.state.loadings.levels || ! child.meta.can.update || ! this.state.privilege.update}
-                                                                                                       id={`delete_${child.value}`}
-                                                                                                       data-id={child.value} checked={child.meta.can.delete} onChange={this.handleCheckPrivilege} className="custom-control-input custom-control-input-success custom-control-input-outline" type="checkbox"/>
-                                                                                                <label htmlFor={`delete_${child.value}`} className="custom-control-label"/>
-                                                                                            </div>
-                                                                                        </td>
-                                                                                    </>
-                                                                                }
-                                                                            </tr>
-                                                                        )}
-                                                                    </React.Fragment>
-                                                                )}
-                                                                </tbody>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                </React.Fragment>
-                                            )
-                                        }
-                                        </tbody>
-                                    </table>
+                                                                    )
+                                                                }
+                                                            </React.Fragment>
+                                                        )
+                                                }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

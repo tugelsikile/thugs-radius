@@ -16,9 +16,16 @@ class ClientCompany extends Model
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $hidden = [
+        'radius_db_host',
+        'radius_db_name',
+        'radius_db_user',
+        'radius_db_pass',
+    ];
     protected $casts = [
         'discount' => 'double',
         'active_at' => 'datetime',
+        'config' => 'object',
     ];
 
     public function packageObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo

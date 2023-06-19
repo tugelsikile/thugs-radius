@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\CompanyConfigController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
 use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
+use App\Http\Controllers\Config\PaymentGatewayController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\Customer\CustomerController;
@@ -33,6 +35,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function () {
+    Route::any('/logout', [AuthController::class, 'logout']);
     Route::group(['prefix' => 'me'], function () {
         Route::post('/privileges', [AuthController::class, 'myPrivileges']);
         Route::post('/language', [AuthController::class, 'setLanguage']);
@@ -63,6 +66,7 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::any('/currencies', [ConfigController::class, 'currencies']);
         Route::any('/taxes', [TaxController::class, 'crud']);
         Route::any('/discounts', [DiscountController::class, 'crud']);
+        Route::patch('/payment-gateways/activate', [PaymentGatewayController::class, 'activate'])->name('auth.configs.payment-gateways.activate');
     });
 });
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
@@ -86,6 +90,14 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/', [InvoiceController::class,'crud']);
             Route::any('/payments', [InvoiceController::class, 'payment']);
             Route::put('/generate', [InvoiceController::class, 'generate']);
+        });
+    });
+    Route::group(['prefix' => 'configs'], function () {
+        Route::any('/', [CompanyConfigController::class, 'crud']);
+        Route::group(['prefix' => 'payment-gateways'], function () {
+            Route::any('/', [PaymentGatewayController::class, 'crud']);
+            Route::patch('/activate', [PaymentGatewayController::class, 'activate'])->name('clients.configs.payment-gateways.activate');
+            Route::patch('/inactivate', [PaymentGatewayController::class, 'activate']);
         });
     });
 });

@@ -23,7 +23,7 @@ export const PageCardTitle = (props) => {
                     }
                     {props.privilege.create &&
                         <button type="button" onClick={()=>props.handleModal()} disabled={props.loading} className="btn btn-tool">
-                            <FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/>
+                            <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
                             <small>{props.langs.create}</small>
                         </button>
                     }
@@ -36,7 +36,7 @@ export const PageCardTitle = (props) => {
                                             onClick={item.handle}
                                             disabled={props.loading || typeof item.disabled === 'undefined' ? false : item.disabled }
                                             className="btn btn-tool">
-                                        {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1" size="sm"/>}
+                                        {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1" size="xs"/>}
                                         <small>{item.lang}</small>
                                     </button>
                                 )
@@ -44,7 +44,7 @@ export const PageCardTitle = (props) => {
                     {props.privilege.delete &&
                         props.selected.length > 0 &&
                         <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-tool text-danger">
-                            <FontAwesomeIcon size="sm" icon={faTrashAlt} className="mr-1"/>
+                            <FontAwesomeIcon size="xs" icon={faTrashAlt} className="mr-1"/>
                             <small>{props.langs.delete}</small>
                         </button>
                     }

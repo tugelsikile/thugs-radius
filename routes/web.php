@@ -31,6 +31,7 @@ Route::group(['prefix' => 'auth'], function () {
     });
     Route::group(['prefix' => 'configs'], function () {
         Route::get('/', function () { })->name('auth.configs');
+        Route::get('/payment-gateways', function () { return view('auth.configs.payment-gateways'); })->name('auth.configs.payment-gateways');
         Route::get('/discounts', function () { return view('auth.configs.discounts'); })->name('auth.configs.discounts');
         Route::get('/taxes', function () { return view('auth.configs.taxes'); })->name('auth.configs.taxes');
         Route::get('/currencies', function () { return view('auth.configs.currencies'); })->name('auth.configs.currencies');
@@ -38,7 +39,7 @@ Route::group(['prefix' => 'auth'], function () {
     });
 });
 Route::group(['prefix' => 'clients'], function () {
-    Route::get('/', function () { return view('auth.dashboard.index'); });
+    Route::get('/', function () { return view('clients.dashboard.index'); });
     Route::group(['prefix' => 'customers'], function () {
         Route::get('/', function () { return view('clients.customers.index'); })->name('clients.customers');
         Route::get('/pppoe', function () { return view('clients.customers.pppoe'); })->name('clients.customers.pppoe');
@@ -60,7 +61,8 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/select', function () { abort(404); })->name('clients.nas.select');
     });
     Route::group(['prefix' => 'configs'], function () {
-        Route::get('/', function () { })->name('clients.configs');
+        Route::get('/', function () { return view('clients.configs.index'); })->name('clients.configs');
+        Route::get('/payment-gateways', function () { return view('clients.configs.payment-gateways'); })->name('clients.configs.payment-gateways');
         Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });

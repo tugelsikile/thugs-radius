@@ -38,9 +38,11 @@ class MenuSeeder extends Seeder
             'name' => 'Config', 'route' => 'auth.configs', 'description' => 'configs.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-tools', 'lang' => 'configs.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Diskon / Promo', 'route' => 'auth.configs.discounts', 'description' => 'discounts.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-tags', 'lang' => 'discounts.labels.menu' ],
-                (object) [ 'name' => 'Pajak', 'route' => 'auth.configs.taxes', 'description' => 'taxes.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-wallet', 'lang' => 'taxes.labels.menu' ],
+                (object) [ 'name' => 'Pajak', 'route' => 'auth.configs.taxes', 'description' => 'taxes.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-archway', 'lang' => 'taxes.labels.menu' ],
                 (object) [ 'name' => 'Mata Uang', 'route' => 'auth.configs.currencies', 'description' => 'currencies.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-money-bill', 'lang' => 'currencies.labels.menu' ],
                 (object) [ 'name' => 'Timezone', 'route' => 'auth.configs.timezones', 'description' => 'timezones.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-atlas', 'lang' => 'timezones.labels.menu' ],
+                (object) [ 'name' => 'Payment Gateway', 'route' => 'auth.configs.payment-gateways', 'description' => 'gateways.labels.menu_info', 'function' => false, 'for_client' => false, 'icon' => 'fas fa-concierge-bell', 'lang' => 'gateways.labels.menu' ],
+                (object) [ 'name' => 'Aktivasi Payment Gateway', 'route' => 'auth.configs.payment-gateways.activate', 'description' => 'gateways.activate.menu_info', 'function' => true, 'for_client' => false, 'icon' => 'fas fa-check-circle', 'lang' => 'gateways.activate.menu' ],
             ])
         ]);
 
@@ -72,8 +74,10 @@ class MenuSeeder extends Seeder
         $requests->push((object) [
             'name' => 'Config', 'route' => 'clients.configs', 'description' => 'Konfigurasi', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cog', 'lang' => 'configs.labels.menu',
             'childrens' => collect([
+                (object) [ 'name' => 'Payment Gateway', 'route' => 'clients.configs.payment-gateways', 'description' => 'gateways.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'gateways.labels.menu' ],
+                (object) [ 'name' => 'Aktifkan Payment Gateway', 'route' => 'clients.configs.payment-gateways.activate', 'description' => 'gateways.activate.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-check-circle', 'lang' => 'gateways.activate.menu' ],
                 (object) [ 'name' => 'Diskon', 'route' => 'clients.configs.discounts', 'description' => 'Manage Diskon', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-tags', 'lang' => 'discounts.labels.menu' ],
-                (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.taxes', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-tags', 'lang' => 'taxes.labels.menu' ],
+                (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.taxes', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-archway', 'lang' => 'taxes.labels.menu' ],
             ])
         ]);
 

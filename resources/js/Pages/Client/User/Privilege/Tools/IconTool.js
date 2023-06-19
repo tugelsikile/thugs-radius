@@ -17,16 +17,19 @@ import {
     faConciergeBell,
     faUserTie,
     faTicketAlt,
-    faFileInvoice, faKey, faCog
+    faFileInvoice, faKey, faCog, faArchway
 } from "@fortawesome/free-solid-svg-icons";
-import {faHandPointer} from "@fortawesome/free-regular-svg-icons";
+import {faBuilding, faCheckCircle, faHandPointer} from "@fortawesome/free-regular-svg-icons";
 
 export const MenuIcon = (iconName) => {
     let icon = faInfoCircle;
     switch (iconName) {
         default : icon = faInfoCircle; break;
+        case 'fas fa-archway': icon = faArchway; break;
+        case 'fas fa-building': icon = faBuilding; break;
         case 'fas fa-archive': icon = faArchive; break;
         case 'fas fa-file-invoice-dollar': icon = faFileInvoiceDollar; break;
+        case 'fas fa-check-circle': icon = faCheckCircle; break;
         case 'fas fa-cash-register': icon = faCashRegister; break;
         case 'fas fa-user-secret': icon = faUserSecret; break;
         case 'fas fa-user-shield': icon = faUserShield; break;

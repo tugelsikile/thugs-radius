@@ -6,7 +6,6 @@ import DigitalClock from "./DigitalClock";
 import {customPreventDefault, listSupportedLanguage} from "../mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faExpandArrowsAlt,faBars} from "@fortawesome/free-solid-svg-icons";
-//import "flag-icons/css/flag-icons.min.css";
 
 class MainHeader extends React.Component {
     constructor(props) {
@@ -17,7 +16,12 @@ class MainHeader extends React.Component {
         this.setLocaleLang = this.setLocaleLang.bind(this);
     }
     componentDidMount() {
-        Lang.setLocale(localStorage.getItem('locale_lang'));
+        if (localStorage.getItem('locale_lang') === null) {
+            localStorage.setItem('locale_lang','id');
+            Lang.setLocale('id');
+        } else {
+            Lang.setLocale(localStorage.getItem('locale_lang'));
+        }
     }
     async setLocaleLang(e) {
         e.preventDefault();

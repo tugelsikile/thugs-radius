@@ -33,10 +33,10 @@ class AuthValidation
     {
         try {
             $valid = Validator::make($request->all(),[
-                'email' => 'required|email|exists:users,email',
-                'password' => ['required','min:5', function($attribute, $value, $fail) use ($request) {
+                __('auth.form_input.email') => 'required|email|exists:users,email',
+                __('auth.form_input.password') => ['required','min:5', function($attribute, $value, $fail) use ($request) {
                     if (User::where('email', $request->email)->first() !== null) {
-                        if (! Hash::check($value, User::where('email', $request->email)->first()->password)) {
+                        if (! Hash::check($value, User::where('email', $request[__(__('auth.form_input.email'))])->first()->password)) {
                             return $fail(__('auth.failed'));
                         }
                     }

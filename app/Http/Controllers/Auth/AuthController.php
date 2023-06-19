@@ -19,7 +19,24 @@ class AuthController extends Controller
         $this->repository = new AuthRepository();
         $this->validation = new AuthValidation();
     }
-    public function setLanguage(Request $request) {
+
+    /* @
+     * @return JsonResponse
+     */
+    public function logout(): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->logout());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function setLanguage(Request $request): JsonResponse
+    {
         try {
             $valid = $this->validation->setLanguage($request);
             $params = $this->repository->setLanguage($valid);

@@ -1,7 +1,7 @@
 // noinspection BadExpressionStatementJS,JSUnresolvedVariable
 
 import Axios from "axios";
-import {myPrivileges} from "../Services/AuthService";
+import {logoutSubmit, myPrivileges} from "../Services/AuthService";
 
 export const getRootUrl = () => {
     let user = JSON.parse(localStorage.getItem('user'));
@@ -15,10 +15,22 @@ export const getRootUrl = () => {
         }
     }
 }
-export const logout = () => {
+export const clearLoginStorage = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = window.origin + '/login';
+}
+export const logout = async () => {
+    try {
+        let response = await logoutSubmit();
+        if (response.data.params === null) {
+            clearLoginStorage();
+        } else {
+            clearLoginStorage();
+        }
+    } catch (e) {
+        clearLoginStorage();
+    }
 }
 export const getPrivileges = async (routes = null) => {
     let routers = [];
@@ -26,7 +38,7 @@ export const getPrivileges = async (routes = null) => {
         const formData = new FormData();
         let user = JSON.parse(localStorage.getItem('user'));
         if (user === null) {
-            logout();
+            await logout();
         }
         if (routes !== null) {
             if (Array.isArray(routes)) {

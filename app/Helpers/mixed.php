@@ -13,6 +13,7 @@ use App\Models\Customer\CustomerInvoicePayment;
 use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 function randomString($length = 5) {
@@ -137,7 +138,8 @@ function durationLists(): array
         'minutes', 'hours', 'days', 'weeks', 'months'
     ];
 }
-function allowedDateFormat() {
+function allowedDateFormat(): array
+{
     return [
         'DD/MM/yyyy HH:mm:ss', 'DD/MM/yyyy HH:mm',
         'DD/MM/yy HH:mm', 'DD-MM-yyyy HH:mm:ss',
@@ -165,13 +167,34 @@ function formatResponse($code, $message = null, $params = null): JsonResponse
 function getAvatar(User $user) {
     $ava = new Laravolt\Avatar\Avatar();
     if ($user->avatar == null) {
-        return $ava->create($user->name)->toBase64();
+        return $ava->create($user->name)->setBackground('#001f3f')->setBorder(1,'#001f3f')->toBase64();
     } else {
         $tgtFile = storage_path() . '/app/public/avatars/' . $user->avatar;
         if (File::exists($tgtFile)) {
             return asset('/storage/avatars/' . $user->avatar);
         } else {
-            $ava->create($user->name)->toBase64();
+            return $ava->create($user->name)->setBackground('#001f3f')->setBorder(1,'#001f3f')->toBase64();
         }
     }
+}
+function companyLogo(ClientCompany $company) {
+    if ($company->config != null) {
+        if ($company->config->logo != null) {
+            $file = storage_path() . '/app/public/companies/' . $company->id . '/' . $company->config->logo;
+            if (File::exists($file)) {
+                return asset('/storage/companies/' . $company->id . '/' . $company->config->logo);
+            } else {
+                return asset('/images/logo-1.png');
+            }
+        }
+    }
+    return null;
+}
+function resetStorageLink() {
+    $dir = public_path() . '/storage';
+    if (File::exists($dir)) {
+        if (!File::isWritable($dir)) File::chmod($dir,0777);
+        File::delete($dir);
+    }
+    Artisan::call("storage:link");
 }

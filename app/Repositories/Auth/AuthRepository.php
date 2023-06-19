@@ -24,6 +24,20 @@ use Throwable;
 
 class AuthRepository
 {
+    public function logout() {
+        try {
+            $user = auth()->guard('api')->user();
+            if ($user != null) {
+                $user = $user->token();
+                if ($user != null) {
+                    $user->revoke();
+                }
+            }
+            return true;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     public function setStorageLang($lang) {
         try {
             $me = auth()->guard('api')->user();
@@ -214,7 +228,7 @@ class AuthRepository
     public function login(Request $request): object
     {
         try {
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request[__('auth.form_input.email')])->first();
             DB::table('oauth_access_tokens')->where('user_id', $user->id)->delete();
             auth()->login($user);
             $logs = new UserLog();
@@ -223,7 +237,7 @@ class AuthRepository
             $logs->url = $request->fullUrl();
             $logs->method = strtolower($request->method());
             $requestX = $request->all();
-            $requestX['password'] = '**********';
+            $requestX['password'] = '***HIDDEN***';
             $logs->params = $requestX;
             $logs->ip = $request->ip();
             $logs->browser = Browser::browserFamily() . ' ' . Browser::browserVersion();
@@ -252,6 +266,21 @@ class AuthRepository
             if (strlen($request->id) > 0) $users = $users->where('id', $request->id);
             $users = $users->get();
             foreach ($users as $user) {
+                $company = $user->companyObj;
+                if ($company != null) {
+                    if ($company->config != null) {
+                        if ($company->config->logo != null) {
+                            $logo = companyLogo($company);
+                            if ($logo != null) {
+                                $config = $company->config;
+                                if (property_exists($config,'logo')) {
+                                    $config->logo = $logo;
+                                    $company->config = $config;
+                                }
+                            }
+                        }
+                    }
+                }
                 $response->push((object) [
                     'value' => $user->id,
                     'label' => $user->name,
@@ -260,7 +289,7 @@ class AuthRepository
                         'avatar' => getAvatar($user),
                         'level' => $user->levelObj,
                         'locale' => $user->locale,
-                        'company' => $user->companyObj,
+                        'company' => $company,
                     ]
                 ]);
             }

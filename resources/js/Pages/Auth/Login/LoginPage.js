@@ -17,7 +17,7 @@ class LoginPage extends React.Component {
                 password : {
                     current : { value : '', type : 'password' }
                 },
-                captcha_valid : false,
+                captcha_valid : true,
             }
         };
         this.handleChange = this.handleChange.bind(this);
@@ -72,32 +72,41 @@ class LoginPage extends React.Component {
     }
     async handleSave(e) {
         e.preventDefault();
-        this.setState({loading:true});
-        try {
-            const formData = new FormData();
-            formData.append('email', this.state.form.email);
-            formData.append('password', this.state.form.password.current.value);
-            let response = await loginSubmit(formData);
-            if (response.data.params === null) {
-                this.setState({loading:false});
-                showError(response.data.message);
-            } else {
-                this.setState({loading:false});
-                showSuccess(response.data.message);
-                localStorage.setItem('token', response.data.params.token);
-                localStorage.setItem('user', JSON.stringify(response.data.params.user));
-                localStorage.setItem('locale_lang', response.data.params.user.meta.locale.lang);
-                localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
-                localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
-                if (response.data.params.user.meta.level.for_client) {
-                    window.location.href = window.origin + '/clients';
+        if (this.state.form.kode_keamanan.length === 0) {
+            validateCaptcha('asd',true);
+            showError(Lang.get('validation.required',{Attribute:Lang.get('auth.labels.captcha')}));
+        } else if (!validateCaptcha(this.state.form.kode_keamanan,true)) {
+            showError(Lang.get('validation.exists',{Attribute:Lang.get('auth.labels.captcha')}))
+        } else {
+            this.setState({loading:true});
+            try {
+                const formData = new FormData();
+                formData.append(Lang.get('auth.form_input.email'), this.state.form.email);
+                formData.append(Lang.get('auth.form_input.password'), this.state.form.password.current.value);
+                let response = await loginSubmit(formData);
+                if (response.data.params === null) {
+                    this.setState({loading:false});
+                    validateCaptcha('asd',true);
+                    showError(response.data.message);
                 } else {
-                    window.location.href = window.origin + '/auth';
+                    this.setState({loading:false});
+                    showSuccess(response.data.message);
+                    localStorage.setItem('token', response.data.params.token);
+                    localStorage.setItem('user', JSON.stringify(response.data.params.user));
+                    localStorage.setItem('locale_lang', response.data.params.user.meta.locale.lang);
+                    localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
+                    localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
+                    if (response.data.params.user.meta.level.for_client) {
+                        window.location.href = window.origin + '/clients';
+                    } else {
+                        window.location.href = window.origin + '/auth';
+                    }
                 }
+            } catch (e) {
+                this.setState({loading:false});
+                validateCaptcha('asd',true);
+                showError(e.response.data.message);
             }
-        } catch (e) {
-            this.setState({loading:false});
-            showError(e.response.data.message);
         }
     }
     render() {
@@ -106,17 +115,19 @@ class LoginPage extends React.Component {
                 <ToastContainer theme="light" pauseOnFocusLoss autoClose={2000} position="top-center" closeOnClick/>
                 <div className="card card-outline card-primary">
                     <div className="card-header text-center">
-                        <a href={window.origin} className="h1"><b>Admin</b>LTE</a>
+                        <a href={window.origin} className="h1">
+                            <img src={`${window.origin}/images/logo-2.png`} style={{width:100}} alt="logo"/>
+                        </a>
                     </div>
                     <div className="card-body">
-                        <p className="login-box-msg">{Lang.get('messages.users.labels.signin_text',null,'id')}</p>
+                        <p className="login-box-msg">{Lang.get('messages.users.labels.signin_text')}</p>
                         <form onSubmit={this.handleSave} className="mb-5">
                             <div className="input-group mb-3">
-                                <input tabIndex={0} id="email" required onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
+                                <input tabIndex={0} id="email" onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
                                 <div className="input-group-append"><div className="input-group-text"><span className="fas fa-envelope"/></div></div>
                             </div>
                             <div className="input-group mb-3">
-                                <input tabIndex={1} id="password" required onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
+                                <input tabIndex={1} id="password" onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
                                 <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><span className="fas fa-lock"/></div></div>
                             </div>
                             <div className="row">
@@ -131,7 +142,7 @@ class LoginPage extends React.Component {
                             <div className="row">
                                 <div className="col-8"></div>
                                 <div className="col-4">
-                                    <button tabIndex={3} disabled={this.state.loading || ! this.state.form.captcha_valid} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
+                                    <button tabIndex={3} disabled={this.state.loading} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
                                 </div>
                             </div>
                         </form>

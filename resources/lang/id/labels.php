@@ -29,6 +29,12 @@ return [
         'select' => 'Hapus :Attribute terpilih',
         'success' => ':Attribute berhasil dihapus'
     ],
+    'generate' => [
+        'label' => 'Generate :Attribute',
+        'form' => 'Formulir Generate :Attribute',
+        'submit' => 'Generate :Attribute',
+        'success' => ':Attribute berhasil digenerate'
+    ],
     'active' => [
         'success' => 'Status aktif :Attribute berhasil dirubah',
         'button' => 'Aktifkan :Attribute',
@@ -54,5 +60,10 @@ return [
         'title' => 'Perhatian',
         'yes' => 'Konfirmasi',
         'cancel' => 'Batal',
-    ]
+    ],
+    'total' => 'Total :Attribute',
+    'online' => ':Attribute Online',
+    'offline' => ':Attribute Offline',
+    'max' => 'Maksimal :Attribute',
+    'min' => 'Minimal :Attribute'
 ];

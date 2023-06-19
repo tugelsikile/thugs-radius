@@ -15,7 +15,7 @@ export const LabelRequired = () => {
 export const InputText = (props) => {
     return (
         <div className="form-group row">
-            <label className={`col-form-label ${props.labels.cols.label}`} htmlFor={props.input.id}>
+            <label className={`col-form-label text-xs ${props.labels.cols.label}`} htmlFor={props.input.id}>
                 {props.required ? <LabelRequired/> : null }
                 {props.labels.name}
             </label>
@@ -35,13 +35,13 @@ export const InputText = (props) => {
                                    labels={props.labels} input={props.input}/>
                 }
                 {props.info === null ? null :
-                    <span className="small text-info">{ReactHtmlParser(props.info)}</span>
+                    <span className="small text-xs text-info">{ReactHtmlParser(props.info)}</span>
                 }
             </div>
             {typeof props.isByte === 'undefined' ? null :
                 ! props.isByte ? null :
                     <div className="col-sm-2">
-                        <div className="form-control text-sm">{formatBytes(props.input.value,2)}</div>
+                        <div className="form-control form-control-sm text-xs">{formatBytes(props.input.value,2)}</div>
                     </div>
             }
             {typeof props.appends === 'undefined' ? null :
@@ -75,7 +75,7 @@ export const InputText = (props) => {
                             {typeof item.props.isByte === 'undefined' ? null :
                                 ! item.props.isByte ? null :
                                     <div className="col-sm-2">
-                                        <div className="form-control text-sm">{formatBytes(item.props.input.value,2)}</div>
+                                        <div className="form-control form-control-sm text-xs">{formatBytes(item.props.input.value,2)}</div>
                                     </div>
                             }
                         </React.Fragment>
@@ -95,7 +95,7 @@ export const InputResponse = (props) => {
                     value={props.input.value} id={props.input.id}
                     placeholder={props.labels.placeholder}
                     data-parent={typeof props.input.parent === 'undefined' ? null : props.input.parent}
-                    className="form-control text-sm" disabled={props.loading}/>
+                    className="form-control form-control-sm text-xs" disabled={props.loading}/>
             );
             break;
         case 'textarea' :
@@ -105,16 +105,16 @@ export const InputResponse = (props) => {
                     value={props.input.value} id={props.input.id}
                     placeholder={props.labels.placeholder} style={{resize:'none'}}
                     data-parent={typeof props.input.parent === 'undefined' ? null : props.input.parent}
-                    className="form-control text-sm" disabled={props.loading}/>
+                    className="form-control form-control-sm text-xs" disabled={props.loading}/>
             );
             break;
         case 'numeric' :
             if (typeof props.inputAppends !== 'undefined') {
                 response = (
-                    <div className="input-group">
+                    <div className="input-group input-group-sm">
                         <NumericFormat disabled={props.loading} id={props.input.id}
                                        title={props.inv_message}
-                                       className={typeof props.invalid === 'undefined' ? "form-control text-sm" : props.invalid ? "form-control text-sm is-invalid" : "form-control text-sm"}
+                                       className={typeof props.invalid === 'undefined' ? "form-control form-control-sm text-xs" : props.invalid ? "form-control form-control-sm text-xs is-invalid" : "form-control form-control-sm text-xs"}
                                        name={props.input.name} onChange={props.handleChange}
                                        allowLeadingZeros={false} placeholder={props.labels.placeholder}
                                        value={props.input.value}
@@ -131,7 +131,7 @@ export const InputResponse = (props) => {
                 response = (
                     <NumericFormat disabled={props.loading} id={props.input.id}
                                    title={props.inv_message}
-                                   className={typeof props.invalid === 'undefined' ? "form-control text-sm" : props.invalid ? "form-control text-sm" : "form-control text-sm is-invalid"}
+                                   className={typeof props.invalid === 'undefined' ? "form-control form-control-sm text-xs" : props.invalid ? "form-control form-control-sm text-xs" : "form-control form-control-sm text-xs is-invalid"}
                                    name={props.input.name} onChange={props.handleChange}
                                    allowLeadingZeros={false} placeholder={props.labels.placeholder}
                                    value={props.input.value}
@@ -162,17 +162,17 @@ export const InputResponse = (props) => {
                              }}
                              disabled={props.loading} mask={value => Array(value.length).fill(/[\d.]/)}
                              placeholder={props.labels.placeholder}
-                             value={props.input.value} className="form-control text-sm"/>
+                             value={props.input.value} className="form-control form-control-sm text-xs"/>
             )
             break;
         case 'password' :
             response = (
-                <div className="input-group">
+                <div className="input-group input-group-sm">
                     <input placeholder={props.labels.placeholder} id={props.input.id}
                            value={props.input.value} name={props.input.name}
                            data-parent={typeof props.input.parent === 'undefined' ? null : props.input.parent}
                            onChange={props.handleChange} disabled={props.loading}
-                           type={props.input.type} className="form-control text-sm"/>
+                           type={props.input.type} className="form-control form-control-sm text-xs"/>
                   <span className="input-group-append">
                       <button disabled={props.loading} name={props.input.name} onClick={props.handleInputType} type="button" className="btn btn-info">
                           {props.input.type === 'password' ? <FontAwesomeIcon icon="eye"/> : <FontAwesomeIcon icon="eye-slash"/> }

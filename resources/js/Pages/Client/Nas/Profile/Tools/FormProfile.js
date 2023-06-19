@@ -1,7 +1,7 @@
 import React from "react";
 import {
     durationType, durationTypeByte,
-    formatBytes, hasWhiteSpace,
+    formatBytes, FormControlSMReactSelect, hasWhiteSpace,
     limitType,
     parseInputFloat, pipeIp,
     responseMessage, serviceType
@@ -273,14 +273,14 @@ class FormProfile extends React.Component {
         return (
             <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
-                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('profiles.create.form'),update:Lang.get('profiles.update.form')}}/>
+                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('profiles.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('profiles.labels.menu')})}}/>
                     <DialogContent dividers>
                         {this.state.form.id === null &&
                             <div className="form-group row">
                                 <div className="col-sm-10 offset-2">
                                     <div className="custom-control custom-checkbox">
                                         <input onChange={this.handleCheck} className="custom-control-input" type="checkbox" id="inputAdditional" checked={this.state.form.additional}/>
-                                        <label htmlFor="inputAdditional" className="custom-control-label">
+                                        <label htmlFor="inputAdditional" className="custom-control-label text-xs">
                                             {this.state.form.additional ? Lang.get('profiles.labels.additional.info_true') : Lang.get('profiles.labels.additional.info_false')}
                                         </label>
                                     </div>
@@ -291,106 +291,106 @@ class FormProfile extends React.Component {
                         {this.state.form.additional ? null :
                             <>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('nas.labels.name')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('nas.labels.name')}</label>
                                     <div className="col-sm-4">
                                         {this.state.form.id === null ?
-                                            <Select noOptionsMessage={()=>Lang.get('nas.labels.not_found')} placeholder={Lang.get('nas.labels.select')} onChange={(e)=>this.handleSelect(e,'nas')} value={this.state.form.nas} options={this.props.nas} isLoading={this.props.loadings.nas} isDisabled={this.state.loading || this.props.loadings.nas}/>
+                                            <Select styles={FormControlSMReactSelect} noOptionsMessage={()=>Lang.get('nas.labels.not_found')} placeholder={Lang.get('nas.labels.select')} onChange={(e)=>this.handleSelect(e,'nas')} value={this.state.form.nas} options={this.props.nas} isLoading={this.props.loadings.nas} isDisabled={this.state.loading || this.props.loadings.nas}/>
                                             :
-                                            <div className="form-control text-sm">{this.state.form.nas.label}</div>
+                                            <div className="form-control form-control-sm text-xs">{this.state.form.nas.label}</div>
                                         }
                                     </div>
                                     {this.state.form.nas === null ? null :
                                         <>
-                                            <label className="col-sm-2 col-form-label">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
+                                            <label className="col-sm-2 col-form-label text-xs">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
                                             <div className="col-sm-4">
-                                                <div className="form-control text-sm">{this.state.form.nas.meta.auth.method === 'api' ? this.state.form.nas.meta.auth.ip : this.state.form.nas.meta.auth.host}</div>
+                                                <div className="form-control form-control-sm text-xs">{this.state.form.nas.meta.auth.method === 'api' ? this.state.form.nas.meta.auth.ip : this.state.form.nas.meta.auth.host}</div>
                                             </div>
                                         </>
                                     }
                                 </div>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('profiles.labels.service_type')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
                                     <div className="col-sm-2">
-                                        <Select options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                        <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
                                     </div>
                                 </div>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('nas.pools.labels.name')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('nas.pools.labels.name')}</label>
                                     <div className="col-sm-4">
-                                        <Select noOptionsMessage={()=>Lang.get('nas.pools.labels.not_found')} placeholder={Lang.get('nas.pools.labels.select')} onChange={(e)=>this.handleSelect(e,'pool')} options={this.state.form.nas === null ? [] : this.props.pools.filter((f) => f.meta.nas.id === this.state.form.nas.value)} value={this.state.form.pool} isLoading={this.props.loadings.pools} isDisabled={this.state.loading || this.props.loadings.pools}/>
+                                        <Select styles={FormControlSMReactSelect} noOptionsMessage={()=>Lang.get('nas.pools.labels.not_found')} placeholder={Lang.get('nas.pools.labels.select')} onChange={(e)=>this.handleSelect(e,'pool')} options={this.state.form.nas === null ? [] : this.props.pools.filter((f) => f.meta.nas.id === this.state.form.nas.value)} value={this.state.form.pool} isLoading={this.props.loadings.pools} isDisabled={this.state.loading || this.props.loadings.pools}/>
                                     </div>
                                     {this.state.form.pool === null ? null :
                                         <>
-                                            <label className="col-sm-2 col-form-label">{Lang.get('nas.pools.labels.address.full')}</label>
+                                            <label className="col-sm-2 col-form-label text-xs">{Lang.get('nas.pools.labels.address.full')}</label>
                                             <div className="col-sm-4">
-                                                <div className="form-control text-sm">{this.state.form.pool.meta.address.first} - {this.state.form.pool.meta.address.last}</div>
+                                                <div className="form-control text-xs">{this.state.form.pool.meta.address.first} - {this.state.form.pool.meta.address.last}</div>
                                             </div>
                                         </>
                                     }
                                 </div>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('bandwidths.labels.name')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('bandwidths.labels.name')}</label>
                                     <div className="col-sm-4">
-                                        <Select noOptionsMessage={()=>Lang.get('bandwidths.labels.not_found')} placeholder={Lang.get('bandwidths.labels.select')} onChange={(e)=>this.handleSelect(e,'bandwidth')} options={this.props.bandwidths} value={this.state.form.bandwidth} isLoading={this.props.loadings.bandwidths} isDisabled={this.state.loading || this.props.loadings.bandwidths}/>
+                                        <Select styles={FormControlSMReactSelect} noOptionsMessage={()=>Lang.get('bandwidths.labels.not_found')} placeholder={Lang.get('bandwidths.labels.select')} onChange={(e)=>this.handleSelect(e,'bandwidth')} options={this.props.bandwidths} value={this.state.form.bandwidth} isLoading={this.props.loadings.bandwidths} isDisabled={this.state.loading || this.props.loadings.bandwidths}/>
                                     </div>
                                     {this.state.form.bandwidth === null ? null :
                                         <div className="col-sm-6">
                                             <table className="table table-sm table-striped mb-0">
                                                 <thead>
                                                 <tr>
-                                                    <th colSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.max_limit.main')}</th>
-                                                    <th colSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.burst_limit.main')}</th>
-                                                    <th colSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.threshold.main')}</th>
-                                                    <th colSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.time.main')}</th>
-                                                    <th colSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.limit_at.main')}</th>
-                                                    <th rowSpan={2} className="align-middle text-center">{Lang.get('bandwidths.labels.priority.name')}</th>
+                                                    <th colSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.max_limit.main')}</th>
+                                                    <th colSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.burst_limit.main')}</th>
+                                                    <th colSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.threshold.main')}</th>
+                                                    <th colSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.time.main')}</th>
+                                                    <th colSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.limit_at.main')}</th>
+                                                    <th rowSpan={2} className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.priority.name')}</th>
                                                 </tr>
                                                 <tr>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.max_limit.up')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.max_limit.down')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.burst_limit.up')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.burst_limit.down')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.threshold.up')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.threshold.down')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.time.up')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.time.down')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.limit_at.up')}</th>
-                                                    <th className="align-middle text-center">{Lang.get('bandwidths.labels.limit_at.down')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.max_limit.up')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.max_limit.down')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.burst_limit.up')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.burst_limit.down')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.threshold.up')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.threshold.down')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.time.up')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.time.down')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.limit_at.up')}</th>
+                                                    <th className="align-middle text-center text-xs">{Lang.get('bandwidths.labels.limit_at.down')}</th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
                                                 <tr>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.max_limit.up === 0 ? <span className="badge badge-success">UNL</span> :formatBytes(this.state.form.bandwidth.meta.max_limit.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.max_limit.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.max_limit.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.burst.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.burst.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.burst.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.burst.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.threshold.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.threshold.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.threshold.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.threshold.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.burst.up === 0 ? <span className="badge badge-success">UNL</span> : `${this.state.form.bandwidth.meta.time.up}s`}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.burst.down === 0 ? <span className="badge badge-success">UNL</span> : `${this.state.form.bandwidth.meta.time.down}s`}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.limit_at.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.limit_at.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {this.state.form.bandwidth.meta.limit_at.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(this.state.form.bandwidth.meta.limit_at.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">{this.state.form.bandwidth.meta.priority}</td>
+                                                    <td className="align-middle text-center text-xs">{this.state.form.bandwidth.meta.priority}</td>
                                                 </tr>
                                                 </tbody>
                                             </table>
@@ -398,15 +398,15 @@ class FormProfile extends React.Component {
                                     }
                                 </div>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('queue.labels.name')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('queue.labels.name')}</label>
                                     <div className="col-sm-4">
-                                        <Select onChange={(e)=>this.handleSelect(e,'queue')} options={this.state.queues} value={this.state.form.queue} isLoading={this.state.loading} isDisabled={this.state.loading} isClearable placeholder={Lang.get('queue.labels.select')} noOptionsMessage={()=>Lang.get('queue.labels.no_data')}/>
+                                        <Select styles={FormControlSMReactSelect} onChange={(e)=>this.handleSelect(e,'queue')} options={this.state.queues} value={this.state.form.queue} isLoading={this.state.loading} isDisabled={this.state.loading} isClearable placeholder={Lang.get('queue.labels.select')} noOptionsMessage={()=>Lang.get('queue.labels.no_data')}/>
                                     </div>
                                     {this.state.form.queue === null ? null :
                                         <>
-                                            <label className="col-sm-2 col-form-label">{Lang.get('queue.labels.target')}</label>
+                                            <label className="col-sm-2 col-form-label text-xs">{Lang.get('queue.labels.target')}</label>
                                             <div className="col-sm-4">
-                                                <div className="form-control text-sm">{this.state.form.queue.meta.data.target}</div>
+                                                <div className="form-control form-control-sm text-xs">{this.state.form.queue.meta.data.target}</div>
                                             </div>
                                         </>
                                     }
@@ -425,17 +425,17 @@ class FormProfile extends React.Component {
                         {this.state.form.additional ? null :
                             <>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('profiles.labels.limitation.name')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('profiles.labels.limitation.name')}</label>
                                     <div className="col-sm-2">
-                                        <Select placeholder={Lang.get('profiles.labels.limitation.select')} options={limitType} value={this.state.form.limit.type} isDisabled={this.state.loading} isClearable onChange={(e)=>this.handleSelect(e,'limit')}/>
+                                        <Select styles={FormControlSMReactSelect} placeholder={Lang.get('profiles.labels.limitation.select')} options={limitType} value={this.state.form.limit.type} isDisabled={this.state.loading} isClearable onChange={(e)=>this.handleSelect(e,'limit')}/>
                                     </div>
                                     {this.state.form.limit.type === null ? null :
                                         <>
                                             <div className="col-sm-2">
-                                                <NumericFormat className="form-control text-sm" placeholder={Lang.get('profiles.labels.limitation.value')} disabled={this.state.loading} value={this.state.form.limit.rate} decimalScale={0} decimalSeparator="," thousandSeparator="." onChange={this.handleChange} name="limit"/>
+                                                <NumericFormat className="form-control form-control-sm text-xs" placeholder={Lang.get('profiles.labels.limitation.value')} disabled={this.state.loading} value={this.state.form.limit.rate} decimalScale={0} decimalSeparator="," thousandSeparator="." onChange={this.handleChange} name="limit"/>
                                             </div>
                                             <div className="col-sm-2">
-                                                <Select value={this.state.form.limit.unit} onChange={(e)=>this.handleSelect(e,'unit')} options={this.state.form.limit.type === null ? [] : this.state.form.limit.type.value === 'time' ? durationType : durationTypeByte} isDisabled={this.state.loading}/>
+                                                <Select styles={FormControlSMReactSelect} value={this.state.form.limit.unit} onChange={(e)=>this.handleSelect(e,'unit')} options={this.state.form.limit.type === null ? [] : this.state.form.limit.type.value === 'time' ? durationType : durationTypeByte} isDisabled={this.state.loading}/>
                                             </div>
                                         </>
                                     }
@@ -449,7 +449,7 @@ class FormProfile extends React.Component {
                         {this.state.form.additional ? null :
                             <>
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('profiles.labels.address.dns')}</label>
+                                    <label className="col-sm-2 col-form-label text-xs">{Lang.get('profiles.labels.address.dns')}</label>
                                     <div className="col-sm-3">
                                         {this.state.form.address.dns.length === 0 ? null :
                                             <MaskedInput name="dns"
@@ -459,13 +459,13 @@ class FormProfile extends React.Component {
                                                          pipe={pipeIp}
                                                          disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
                                                          placeholder={Lang.get('profiles.labels.address.dns')}
-                                                         value={this.state.form.address.dns[0].label} className="form-control text-sm"/>
+                                                         value={this.state.form.address.dns[0].label} className="form-control form-control-sm text-xs"/>
                                         }
                                     </div>
                                     <div className="col-sm-3">
-                                        <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
+                                        <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
                                         {this.state.form.address.dns.length > 0 &&
-                                            <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
+                                            <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
                                         }
                                     </div>
                                 </div>
@@ -481,11 +481,11 @@ class FormProfile extends React.Component {
                                                                  pipe={pipeIp}
                                                                  disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
                                                                  placeholder={Lang.get('profiles.labels.address.dns')}
-                                                                 value={item.label} className="form-control text-sm"/>
+                                                                 value={item.label} className="form-control text-xs form-control-sm"/>
                                                 </div>
                                                 <div className="col-sm-3">
-                                                    <button type="button" className="btn btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
-                                                    <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
+                                                    <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
+                                                    <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
                                                 </div>
                                             </div>
                                     )
@@ -496,7 +496,7 @@ class FormProfile extends React.Component {
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
                         buttons={[]} loading={this.state.loading}
-                        langs={{create:Lang.get('profiles.create.button'),update:Lang.get('profiles.update.button')}}/>
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('profiles.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('profiles.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

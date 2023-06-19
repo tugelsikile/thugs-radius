@@ -91,9 +91,11 @@ export const TablePaging = (props) => {
             <div className="col-sm-6">
                 <div className="float-right">
                     {props.customers.unfiltered.length > 0 &&
-                        <Pagination onChange={(event, page)=>props.handleChangePage(page)}
-                                    max={7}
-                                    pages={props.filter.paging}/>
+                        props.handleChangePage !== null &&
+                            props.filter.paging.length > 0 &&
+                                <Pagination onChange={(event, page)=>props.handleChangePage(page)}
+                                            max={7}
+                                            pages={props.filter.paging}/>
                     }
                 </div>
 

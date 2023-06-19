@@ -17,7 +17,7 @@ export const ModalHeader = (props) => {
 }
 export const ButtonSubmit = (props) => {
     return (
-        <button type="submit" className="btn btn-success" disabled={props.loading}>
+        <button type="submit" className="btn  btn-outline-success text-xs" disabled={props.loading}>
             <FontAwesomeIcon spin={props.loading} className="mr-1"
                              icon={props.loading ? faCircleNotch : faSave}/>
             {props.form.id === null ? props.langs.create : props.langs.update}
@@ -44,7 +44,7 @@ export const ModalFooter = (props) => {
                             <React.Fragment key={index}>{item}</React.Fragment>
                         )
             }
-            <button type="button" className="btn btn-default" disabled={props.loading} onClick={()=>props.loading ? null : props.handleClose()}>
+            <button type="button" className="btn  text-xs btn-outline-secondary" disabled={props.loading} onClick={()=>props.loading ? null : props.handleClose()}>
                 <FontAwesomeIcon icon={faClose} className="mr-1"/>
                 {Lang.get('messages.close')}
             </button>

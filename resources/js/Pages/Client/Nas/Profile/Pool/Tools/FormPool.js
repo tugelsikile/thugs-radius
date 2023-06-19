@@ -1,7 +1,7 @@
 // noinspection JSCheckFunctionSignatures
 
 import React from "react";
-import {hasWhiteSpace, responseMessage} from "../../../../../../Components/mixedConsts";
+import {FormControlSMReactSelect, hasWhiteSpace, responseMessage} from "../../../../../../Components/mixedConsts";
 import {crudProfilePools} from "../../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../../Components/Toaster";
 import {ModalFooter, ModalHeader} from "../../../../../../Components/ModalComponent";
@@ -108,49 +108,49 @@ class FormPool extends React.Component {
         return (
             <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
-                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('nas.pools.create.form'),update:Lang.get('nas.pools.update.form')}}/>
+                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('nas.pools.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('nas.pools.labels.menu')})}}/>
                     <DialogContent dividers>
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">
+                            <label className="col-md-2 col-form-label text-xs">
                                 {this.state.form.id === null ? <LabelRequired/> : null}
                                 {Lang.get('nas.labels.name')}
                             </label>
-                            <div className="col-sm-4">
+                            <div className="col-md-4">
                                 {this.state.form.id === null ?
-                                    <Select isClearable className="text-sm" placeholder={Lang.get('nas.labels.select')} onChange={(e)=>this.handleSelect(e,'nas')} value={this.state.form.nas} noOptionsMessage={()=>Lang.get('nas.labels.not_found')} options={this.props.nas} isDisabled={this.state.loading || this.props.loadings.nas} isLoading={this.props.loadings.nas}/>
+                                    <Select styles={FormControlSMReactSelect} isClearable className="text-xs" placeholder={Lang.get('nas.labels.select')} onChange={(e)=>this.handleSelect(e,'nas')} value={this.state.form.nas} noOptionsMessage={()=>Lang.get('nas.labels.not_found')} options={this.props.nas} isDisabled={this.state.loading || this.props.loadings.nas} isLoading={this.props.loadings.nas}/>
                                     :
-                                    <div className="form-control text-sm">{this.state.form.nas.label}</div>
+                                    <div className="form-control form-control-sm text-xs">{this.state.form.nas.label}</div>
                                 }
                             </div>
                             {this.state.form.nas === null ? null :
                                 <>
-                                    <label className="col-sm-2 col-form-label">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
-                                    <div className="col-sm-4">
-                                        <div className="form-control text-sm">{this.state.form.nas.meta.auth.method === 'api' ? `${this.state.form.nas.meta.auth.ip}:${this.state.form.nas.meta.auth.port}` : `${this.state.form.nas.meta.auth.host}:${this.state.form.nas.meta.auth.port}`}</div>
+                                    <label className="col-md-2 col-form-label text-xs">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
+                                    <div className="col-md-4">
+                                        <div className="form-control form-control-sm text-xs">{this.state.form.nas.meta.auth.method === 'api' ? `${this.state.form.nas.meta.auth.ip}:${this.state.form.nas.meta.auth.port}` : `${this.state.form.nas.meta.auth.host}:${this.state.form.nas.meta.auth.port}`}</div>
                                     </div>
                                 </>
                             }
                         </div>
-                        <InputText type="text" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
+                        <InputText type="text" labels={{ cols:{ label : 'col-md-2', input : 'col-md-10' },
                             placeholder : Lang.get('nas.pools.labels.name'), name : Lang.get('nas.pools.labels.name') }}
                                    input={{ name : 'name', value : this.state.form.name, id : 'name', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
                         {this.state.name_invalid ?
                             <div className="form-group mt-0">
-                                <div className="col-sm-10 offset-2 text-danger">
+                                <div className="col-md-10 offset-2 text-danger">
                                     {Lang.get('nas.pools.labels.invalid_name')}
                                 </div>
                             </div>
                             : null}
 
-                        <InputText type="textarea" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
+                        <InputText type="textarea" labels={{ cols:{ label : 'col-md-2', input : 'col-md-10' },
                             placeholder : Lang.get('nas.pools.labels.description'), name : Lang.get('nas.pools.labels.description') }}
                                    input={{ name : 'description', value : this.state.form.description, id : 'description', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
-                        <InputText type="ip" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-4' },
+                        <InputText type="ip" labels={{ cols:{ label : 'col-md-2', input : 'col-md-4' },
                             placeholder : Lang.get('nas.pools.labels.address.first'), name : Lang.get('nas.pools.labels.address.first') }}
                                    input={{ name : 'first', value : this.state.form.first, id : 'first', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
-                        <InputText type="ip" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-4' },
+                        <InputText type="ip" labels={{ cols:{ label : 'col-md-2', input : 'col-md-4' },
                             placeholder : Lang.get('nas.pools.labels.address.last'), name : Lang.get('nas.pools.labels.address.last') }}
                                    input={{ name : 'last', value : this.state.form.last, id : 'last', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
@@ -158,7 +158,7 @@ class FormPool extends React.Component {
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
                         buttons={[]} loading={this.state.loading}
-                        langs={{create:Lang.get('nas.pools.create.button'),update:Lang.get('nas.pools.update.button')}}/>
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('nas.pools.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('nas.pools.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

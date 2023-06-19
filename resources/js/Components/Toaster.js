@@ -28,7 +28,7 @@ export const showError = (message) => {
 export const showSuccess = (message) => {
     toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs'});
 }
-export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null,confirmText = Lang.get('labels.confirm.yes'),cancelText = Lang.get('labels.confirm.cancel')) => {
+export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null,confirmText = Lang.get('labels.delete.confirm.confirm'),cancelText = Lang.get('labels.delete.confirm.cancel')) => {
     if (message === null) message = Lang.get('labels.confirm.message');
     if (title === null) title = Lang.get('labels.confirm.title');
     const  formData = new FormData();

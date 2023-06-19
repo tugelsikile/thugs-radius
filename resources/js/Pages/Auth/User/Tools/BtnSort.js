@@ -12,15 +12,15 @@ class BtnSort extends React.Component {
         return (
             typeof this.props.title === 'undefined' ?
                 <a className={typeof this.props.center === 'undefined' ? "btn-block" : this.props.center ? "btn-block text-center" : "btn-block"} data-sort={this.props.sort} onClick={this.props.handleSort} href="#">
-                    <span className="text-dark">{this.props.name}</span>
+                    <span className="text-dark text-xs">{this.props.name}</span>
                     <span className="float-right ml-1">
                     {this.props.filter.sort.by !== this.props.sort ?
-                        <FontAwesomeIcon size="2xs" icon={faSort} className="text-muted fa-2xs"/>
+                        <FontAwesomeIcon size="2xs" icon={faSort} className="text-muted"/>
                         :
                         this.props.filter.sort.dir === 'asc' ?
-                            <FontAwesomeIcon size="2xs" icon={faSortDown} className="text-dark fa-2xs"/>
+                            <FontAwesomeIcon size="2xs" icon={faSortDown} className="text-dark"/>
                             :
-                            <FontAwesomeIcon size="2xs" icon={faSortUp} className="text-dark fa-2xs"/>
+                            <FontAwesomeIcon size="2xs" icon={faSortUp} className="text-dark"/>
                     }
                     </span>
                 </a>

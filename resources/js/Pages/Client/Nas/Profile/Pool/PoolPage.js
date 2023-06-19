@@ -16,6 +16,7 @@ import {PageCardSearch, PageCardTitle} from "../../../../../Components/PageCompo
 import BtnSort from "../../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Components/TableComponent";
 import FormPool from "./Tools/FormPool";
+import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
 
 class PoolPage extends React.Component {
     constructor(props) {
@@ -75,7 +76,7 @@ class PoolPage extends React.Component {
                 ids.push(item);
             });
         }
-        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas/profiles/pools`,Lang.get('nas.pools.delete.warning'),Lang.get('nas.pools.delete.select'),'app.loadPools()');
+        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas/profiles/pools`,Lang.get('labels.delete.confirm.title',{Attribute:Lang.get('nas.pools.labels.menu')}),Lang.get('labels.delete.confirm.message',{Attribute:Lang.get('nas.pools.labels.menu')}),'app.loadPools()','error');
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -246,11 +247,9 @@ class PoolPage extends React.Component {
             <React.StrictMode>
                 <FormPool nas={this.state.nas} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} user={this.state.user} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadPools}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('nas.pools.labels.menu')} childrens={[]}/>
 
@@ -263,11 +262,11 @@ class PoolPage extends React.Component {
                                 <div className="card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.pools}
-                                                   langs={{create:Lang.get('nas.pools.create.button'),delete:Lang.get('nas.pools.delete.button')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.pools.labels.menu')})}}
                                                    selected={this.state.pools.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}/>
-                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('nas.pools.labels.search')}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('nas.pools.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
@@ -313,10 +312,10 @@ class PoolPage extends React.Component {
                                                     <TableCheckBox item={item}
                                                                    checked={this.state.pools.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.pools} handleCheck={this.handleCheck}/>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
-                                                    <td className="align-middle">{item.meta.address.first}</td>
-                                                    <td className="align-middle">{item.meta.address.last}</td>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.first}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.last}</td>
                                                     <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )

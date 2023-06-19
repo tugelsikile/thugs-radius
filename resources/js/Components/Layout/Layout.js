@@ -87,10 +87,10 @@ export const SideBarUser = (props) => {
             </div>
     )
 }
-export const SideBarMenuDashboard = () => {
+export const SideBarMenuDashboard = (props) => {
     return (
-        <li className={['clients','auth'].indexOf(getRootUrl()) === -1 ? 'nav-item active' : 'nav-item'}>
-            <a href={getRootUrl()} className={['clients','auth'].indexOf(getRootUrl()) === -1 ? 'nav-link active' : 'nav-link'}>
+        <li className={['auth','clients'].indexOf(props.route) !== -1 ? 'nav-item active' : 'nav-item'}>
+            <a href={getRootUrl()} className={['auth','clients'].indexOf(props.route) !== -1 ? 'nav-link active' : 'nav-link'}>
                 <FontAwesomeIcon style={{height:'12px'}} icon={faTachometerAlt} className="nav-icon mr-1"/>
                 <p>Dashboard</p>
             </a>

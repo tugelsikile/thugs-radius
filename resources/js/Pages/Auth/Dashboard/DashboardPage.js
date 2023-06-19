@@ -25,7 +25,7 @@ class DashboardPage extends React.Component {
         return (
             <React.StrictMode>
                 <PageLoader/>
-                <HeaderAndSideBar user={this.state.user} site={this.state.site} menus={this.state.menus} loadings={this.state.loadings}/>
+                <HeaderAndSideBar user={this.state.user} site={this.state.site} menus={this.state.menus} route={this.props.route} loadings={this.state.loadings}/>
 
                 <MainFooter/>
             </React.StrictMode>

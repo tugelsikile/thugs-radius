@@ -21,7 +21,7 @@ class MainSidebar extends React.Component {
 
                         <nav className="mt-2">
                             <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-                                <SideBarMenuDashboard/>
+                                <SideBarMenuDashboard route={this.props.route}/>
 
                                 {this.props.menus.length > 0 &&
                                     this.props.menus.map((parent) =>

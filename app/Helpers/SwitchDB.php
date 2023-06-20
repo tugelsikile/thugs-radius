@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\DB;
 
 class SwitchDB
 {
-    public function __construct($configName = null)
+    public function __construct($configName = null, $configParams = null)
     {
         if ($configName != null) {
-            DB::setDefaultConnection($configName);
+            if ($configParams != null && is_string($configName) && is_array($configParams)) {
+                Config::set($configName, $configParams);
+            } elseif(is_string($configName)) {
+                DB::setDefaultConnection($configName);
+            }
         } else {
             $me = auth()->guard('api')->user();
             if ($me != null) {

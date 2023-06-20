@@ -46,7 +46,9 @@ class ConfigPage extends React.Component {
         }
     }
     async loadProvinces() {
-        if (! this.state.loadings.provinces) {
+        let loadings = this.state.loadings;
+        loadings.provinces = false; this.setState({loadings});
+        /*if (! this.state.loadings.provinces) {
             if (this.state.provinces.length === 0) {
                 let loadings = this.state.loadings;
                 loadings.provinces = true; this.setState({loadings});
@@ -63,7 +65,7 @@ class ConfigPage extends React.Component {
                     showError(e.response.data.message);
                 }
             }
-        }
+        }*/
     }
     async loadConfigs(data = null) {
         if (! this.state.loadings.configs) {
@@ -116,10 +118,10 @@ class ConfigPage extends React.Component {
                                 logo : this.state.user.meta.company.config === null ? null : typeof this.state.user.meta.company.config.logo === 'undefined' ? null : this.state.user.meta.company.config.logo,
                                 address : {
                                     street : this.state.user.meta.company.address,
-                                    village : this.state.user.meta.company.village,
-                                    district : this.state.user.meta.company.district,
-                                    city : this.state.user.meta.company.city,
-                                    province : this.state.user.meta.company.province,
+                                    village : this.state.user.meta.company.village_obj,
+                                    district : this.state.user.meta.company.district_obj,
+                                    city : this.state.user.meta.company.city_obj,
+                                    province : this.state.user.meta.company.province_obj,
                                     postal : this.state.user.meta.company.postal,
                                     email : this.state.user.meta.company.email,
                                     phone : this.state.user.meta.company.phone

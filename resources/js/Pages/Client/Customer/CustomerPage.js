@@ -366,7 +366,7 @@ class CustomerPage extends React.Component {
         }
     }
     async loadProvinces() {
-        if (! this.state.loadings.provinces) {
+        /*if (! this.state.loadings.provinces) {
             if (this.state.provinces.length === 0) {
                 let loadings = this.state.loadings;
                 loadings.provinces = true; this.setState({loadings});
@@ -382,7 +382,7 @@ class CustomerPage extends React.Component {
                     responseMessage(e);
                 }
             }
-        }
+        }*/
     }
     async loadNas () {
         if (! this.state.loadings.nas) {

@@ -15,13 +15,21 @@ import 'react-phone-input-2/lib/bootstrap.css'
 import id from "react-phone-input-2/lang/id.json";
 import {crudCompanyConfig} from "../../../../Services/ConfigService";
 import {Tooltip} from "@mui/material";
+import {searchRegions} from "../../../../Services/RegionService";
+import {VillageComponent} from "../../../Auth/Company/Tools/Mixed";
 
-// noinspection CommaExpressionJS
+// noinspection CommaExpressionJS,DuplicatedCode
 class FormAddress extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             loading : false,
+            regions : {
+                provinces : { select : [], loading : false },
+                cities : { select : [], loading : false },
+                districts : { select : [], loading : false },
+                villages : { select : [], loading : false },
+            },
             form : {
                 logo : {
                     file : null, content : null, delete : false,
@@ -31,11 +39,15 @@ class FormAddress extends React.Component {
                 postal : '',
             }
         };
+        this.timer = null;
         this.handleSave = this.handleSave.bind(this);
         this.handleFile = this.handleFile.bind(this);
         this.handleRemoveLogo = this.handleRemoveLogo.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
+        this.handleSearchRegions = this.handleSearchRegions.bind(this);
+        this.loadRegions = this.loadRegions.bind(this);
+        this.onSelectClose = this.onSelectClose.bind(this);
     }
     componentWillReceiveProps(nextProps, nextContext) {
         let form = this.state.form;
@@ -50,7 +62,10 @@ class FormAddress extends React.Component {
             if (nextProps.data.meta.logo !== null) {
                 form.logo.content = nextProps.data.meta.logo;
             }
-            if (nextProps.provinces !== null) {
+            if (nextProps.data.meta.address.village !== null) {
+                this.handleSearchRegions(nextProps.data.meta.address.village.name,'villages',true,nextProps.data.meta.address.village.code);
+            }
+            /*if (nextProps.provinces !== null) {
                 if (nextProps.provinces.length > 0) {
                     if (nextProps.data.meta.address.province !== null) {
                         index = nextProps.provinces.findIndex((f) => f.value === nextProps.data.meta.address.province);
@@ -90,9 +105,94 @@ class FormAddress extends React.Component {
                         }
                     }
                 }
-            }
+            }*/
         }
         this.setState({form});
+    }
+    handleSelectRegion(event, name) {
+        let form = this.state.form;
+        let index;
+        form[name] = event;
+        switch (name) {
+            case 'village':
+                if (form.village === null) {
+                    form.district = null, form.city = null, form.province = null, form.postal = '';
+                } else {
+                    if (['NULL',null].indexOf(form.village.meta.postal) !== 0) {
+                        form.postal = form.village.meta.postal;
+                    }
+                    if (form.village.meta.district !== null) {
+                        form.district = form.village.meta.district;
+                        if (form.district !== null) {
+                            if (form.district.meta.city !== null) {
+                                form.city = form.district.meta.city;
+                                if (form.city !== null) {
+                                    if (form.city.meta.province !== null) {
+                                        form.province = form.city.meta.province;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'district' :
+                if (form.district === null) {
+                    form.city = null, form.province = null, form.village = null;
+                } else {
+                    if (form.district.meta.villages.length > 0) {
+                        if (form.village !== null) {
+                            index = this.state.regions.villages.select.findIndex((f) => f.value === form.village.value);
+                            if (index >= 0) {
+                                form.village = this.state.regions.villages[index];
+                            } else {
+                                form.village = this.state.regions.villages[0];
+                            }
+                        }
+                    }
+                    if (form.district.meta.city !== null) {
+                        form.city = form.district.meta.city;
+                        if (form.city !== null) {
+                            if (form.city.meta.province !== null) {
+                                form.province = form.city.meta.province;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+        this.setState({form});
+    }
+    handleSearchRegions(keywords, type, forceSelect = false, selectValue = null) {
+        let regions = this.state.regions;
+        let index;
+        regions[type].loading = true; this.setState({regions});
+        clearTimeout(this.timer);
+        this.timer = setTimeout(()=> {
+            if (keywords.length >= 2) {
+                const formData = new FormData();
+                formData.append(Lang.get('labels.form_input.keywords'), keywords);
+                formData.append(Lang.get('labels.form_input.search_type'), type);
+                this.loadRegions(formData)
+                    .then((response)=>{
+                        regions[type].select = response;
+                        regions[type].loading = false;
+                        this.setState({regions},()=>{
+                            if (forceSelect && selectValue !== null) {
+                                index = regions.villages.select.findIndex((f) => f.value === selectValue);
+                                if (index >= 0) {
+                                    this.handleSelectRegion(regions.villages.select[index],'village');
+                                }
+                            }
+                        });
+                    });
+            }
+        }, 1000);
+    }
+    onSelectClose(type) {
+        let regions = this.state.regions;
+        regions[type].loading = false;
+        this.setState({regions});
     }
     handleSelect(event, name) {
         let form = this.state.form;
@@ -185,6 +285,18 @@ class FormAddress extends React.Component {
             }
         }
         this.setState({form});
+    }
+    async loadRegions(formData) {
+        try {
+            let response = await searchRegions(formData);
+            if (response.data.params === null) {
+                return [];
+            } else {
+                return response.data.params;
+            }
+        } catch (e) {
+            return [];
+        }
     }
     async handleSave(e) {
         e.preventDefault();
@@ -294,47 +406,65 @@ class FormAddress extends React.Component {
                         </div>
                     </div>
                     <div className="form-group row">
-                        <label className="col-md-2 col-form-label text-xs">{Lang.get('configs.address.village.label')}</label>
+                        <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.village.label')}</label>
                         <div className="col-md-4">
-                            <Select value={this.state.form.village}
-                                    onChange={(e)=>this.handleSelect(e,'village')}
-                                    isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}
-                                    className="text-xs" styles={FormControlSMReactSelect}
-                                    placeholder={<small>{Lang.get('configs.address.village.select.label')}</small>}
-                                    noOptionsMessage={()=><small>{Lang.get('configs.address.village.select.no_option')}</small>}
-                                    options={this.state.form.district === null ? [] : this.state.form.district.meta.villages}/>
+                            <Select onChange={(e)=>this.handleSelectRegion(e,'village')}
+                                    value={this.state.form.village}
+                                    components={{Option:VillageComponent}}
+                                    maxMenuHeight={200}
+                                    options={this.state.regions.villages.select}
+                                    isLoading={this.state.regions.villages.loading}
+                                    onInputChange={(e)=>this.handleSearchRegions(e,'villages')}
+                                    onMenuClose={()=>this.onSelectClose('villages')}
+                                    isDisabled={this.state.loading}
+                                    placeholder={<small>{Lang.get('labels.select.option',{ Attribute : Lang.get('regions.village.label')})}</small>}
+                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{ Attribute : Lang.get('regions.village.label')})}
+                                    styles={FormControlSMReactSelect}
+                                    className="text-xs"/>
                         </div>
-                        <label className="col-md-2 col-form-label text-xs">{Lang.get('configs.address.district.label')}</label>
+                        <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.district.label')}</label>
                         <div className="col-md-4">
-                            <Select value={this.state.form.district}
-                                    onChange={(e)=>this.handleSelect(e,'district')}
-                                    isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}
-                                    className="text-xs" styles={FormControlSMReactSelect}
-                                    placeholder={<small>{Lang.get('configs.address.district.select.label')}</small>}
-                                    noOptionsMessage={()=><small>{Lang.get('configs.address.district.select.no_option')}</small>}
-                                    options={this.state.form.city === null ? [] : this.state.form.city.meta.districts}/>
+                            <Select onChange={(e)=>this.handleSelectRegion(e,'district')}
+                                    value={this.state.form.district} cacheOptions
+                                    options={this.state.regions.districts.select}
+                                    isLoading={this.state.regions.districts.loading}
+                                    onInputChange={(e)=>this.handleSearchRegions(e,'districts')}
+                                    onMenuClose={()=>this.onSelectClose('districts')}
+                                    isDisabled={true}
+                                    placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.district.label')})}</small>}
+                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.district.label')})}
+                                    styles={FormControlSMReactSelect}
+                                    className="text-xs"/>
                         </div>
                     </div>
                     <div className="form-group row">
-                        <label className="col-md-2 col-form-label text-xs">{Lang.get('configs.address.city.label')}</label>
+                        <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.city.label')}</label>
                         <div className="col-md-4">
-                            <Select value={this.state.form.city}
-                                    onChange={(e)=>this.handleSelect(e,'city')}
-                                    isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}
-                                    className="text-xs" styles={FormControlSMReactSelect}
-                                    placeholder={<small>{Lang.get('configs.address.city.select.label')}</small>}
-                                    noOptionsMessage={()=><small>{Lang.get('configs.address.city.select.no_option')}</small>}
-                                    options={this.state.form.province === null ? [] : this.state.form.province.meta.cities}/>
+                            <Select onChange={(e)=>this.handleSelectRegion(e,'city')}
+                                    value={this.state.form.city} cacheOptions
+                                    options={this.state.regions.cities.select}
+                                    isLoading={this.state.regions.cities.loading}
+                                    onInputChange={(e)=>this.handleSearchRegions(e,'cities')}
+                                    onMenuClose={()=>this.onSelectClose('cities')}
+                                    isDisabled={true}
+                                    placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.city.label')})}</small>}
+                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.city.label')})}
+                                    styles={FormControlSMReactSelect}
+                                    className="text-xs"/>
                         </div>
-                        <label className="col-md-2 col-form-label text-xs">{Lang.get('configs.address.province.label')}</label>
+                        <label className="col-md-2 col-form-label">{Lang.get('regions.province.label')}</label>
                         <div className="col-md-4">
-                            <Select value={this.state.form.province}
-                                    onChange={(e)=>this.handleSelect(e,'province')}
-                                    isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}
-                                    className="text-xs" styles={FormControlSMReactSelect}
-                                    placeholder={<small>{Lang.get('configs.address.province.select.label')}</small>}
-                                    noOptionsMessage={()=><small>{Lang.get('configs.address.province.select.no_option')}</small>}
-                                    options={this.props.provinces}/>
+                            <Select onChange={(e)=>this.handleSelectRegion(e,'province')}
+                                    value={this.state.form.province} cacheOptions
+                                    options={this.state.regions.provinces.select}
+                                    isLoading={this.state.regions.provinces.loading}
+                                    onInputChange={(e)=>this.handleSearchRegions(e,'provinces')}
+                                    onMenuClose={()=>this.onSelectClose('provinces')}
+                                    isDisabled={true}
+                                    placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.province.label')})}</small>}
+                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.province.label')})}
+                                    styles={FormControlSMReactSelect}
+                                    className="text-xs"/>
                         </div>
                     </div>
                     <div className="form-group row">

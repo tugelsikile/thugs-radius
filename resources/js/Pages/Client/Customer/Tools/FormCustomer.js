@@ -1,6 +1,13 @@
 import React from "react";
 import {
-    durationType, durationTypeByte, formatLocaleString, hasWhiteSpace, LabelRequired, responseMessage, serviceType
+    durationType,
+    durationTypeByte,
+    formatLocaleString,
+    FormControlSMReactSelect,
+    hasWhiteSpace,
+    LabelRequired,
+    responseMessage,
+    serviceType
 } from "../../../../Components/mixedConsts";
 import {
     sumCustomerDiscountForm, sumCustomerSubtotalForm, sumCustomerTaxForm, sumCustomerTaxLineForm, sumGrandTotalForm
@@ -16,6 +23,8 @@ import {faConciergeBell, faStreetView, faPlus, faTrashAlt, faUserTie} from "@for
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/bootstrap.css'
 import id from "react-phone-input-2/lang/id.json";
+import {VillageComponent} from "../../../Auth/Company/Tools/Mixed";
+import {searchRegions} from "../../../../Services/RegionService";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode,HtmlUnknownAnchorTarget,JSValidateTypes,JSUnresolvedVariable
 class FormCustomer extends React.Component {
@@ -23,6 +32,12 @@ class FormCustomer extends React.Component {
         super(props);
         this.state = {
             loading : false,
+            regions : {
+                provinces : { select : [], loading : false },
+                cities : { select : [], loading : false },
+                districts : { select : [], loading : false },
+                villages : { select : [], loading : false },
+            },
             form : {
                 id : null, profile : null, nas : null, type : serviceType[0],
                 name : '', address : '', email : '', phone : '', is_voucher : false,
@@ -33,6 +48,7 @@ class FormCustomer extends React.Component {
                 discounts : { current : [], delete : [] }
             }
         };
+        this.timer = null;
         this.handleSave = this.handleSave.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.handleChange = this.handleChange.bind(this);
@@ -42,6 +58,9 @@ class FormCustomer extends React.Component {
         this.handleRemoveTax = this.handleRemoveTax.bind(this);
         this.handleAddDiscount = this.handleAddDiscount.bind(this);
         this.handleRemoveDiscount = this.handleRemoveDiscount.bind(this);
+        this.handleSearchRegions = this.handleSearchRegions.bind(this);
+        this.loadRegions = this.loadRegions.bind(this);
+        this.onSelectClose = this.onSelectClose.bind(this);
     }
     componentWillReceiveProps(props) {
         this.setState({loading:true});
@@ -96,7 +115,10 @@ class FormCustomer extends React.Component {
                         }
                     }
                 }
-                if (props.data.meta.address.province !== null && props.provinces !== null) {
+                if (props.data.meta.address.village !== null) {
+                    this.handleSearchRegions(props.data.meta.address.village.name,'villages',true,props.data.meta.address.village.code);
+                }
+                /*if (props.data.meta.address.province !== null && props.provinces !== null) {
                     if (props.provinces.length > 0) {
                         index = props.provinces.findIndex((f) => f.value === props.data.meta.address.province.code);
                         if (index >= 0) {
@@ -121,7 +143,7 @@ class FormCustomer extends React.Component {
                             }
                         }
                     }
-                }
+                }*/
                 if (props.data.meta.additional.length > 0) {
                     if (props.profiles !== null) {
                         if (props.profiles.length > 0) {
@@ -164,6 +186,91 @@ class FormCustomer extends React.Component {
             }
         }
         this.setState({loading:false,form});
+    }
+    handleSelectRegion(event, name) {
+        let form = this.state.form;
+        let index;
+        form[name] = event;
+        switch (name) {
+            case 'village':
+                if (form.village === null) {
+                    form.district = null, form.city = null, form.province = null, form.postal = '';
+                } else {
+                    if (['NULL',null].indexOf(form.village.meta.postal) !== 0) {
+                        form.postal = form.village.meta.postal;
+                    }
+                    if (form.village.meta.district !== null) {
+                        form.district = form.village.meta.district;
+                        if (form.district !== null) {
+                            if (form.district.meta.city !== null) {
+                                form.city = form.district.meta.city;
+                                if (form.city !== null) {
+                                    if (form.city.meta.province !== null) {
+                                        form.province = form.city.meta.province;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'district' :
+                if (form.district === null) {
+                    form.city = null, form.province = null, form.village = null;
+                } else {
+                    if (form.district.meta.villages.length > 0) {
+                        if (form.village !== null) {
+                            index = this.state.regions.villages.select.findIndex((f) => f.value === form.village.value);
+                            if (index >= 0) {
+                                form.village = this.state.regions.villages[index];
+                            } else {
+                                form.village = this.state.regions.villages[0];
+                            }
+                        }
+                    }
+                    if (form.district.meta.city !== null) {
+                        form.city = form.district.meta.city;
+                        if (form.city !== null) {
+                            if (form.city.meta.province !== null) {
+                                form.province = form.city.meta.province;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+        this.setState({form});
+    }
+    handleSearchRegions(keywords, type, forceSelect = false, selectValue = null) {
+        let regions = this.state.regions;
+        let index;
+        regions[type].loading = true; this.setState({regions});
+        clearTimeout(this.timer);
+        this.timer = setTimeout(()=> {
+            if (keywords.length >= 2) {
+                const formData = new FormData();
+                formData.append(Lang.get('labels.form_input.keywords'), keywords);
+                formData.append(Lang.get('labels.form_input.search_type'), type);
+                this.loadRegions(formData)
+                    .then((response)=>{
+                        regions[type].select = response;
+                        regions[type].loading = false;
+                        this.setState({regions},()=>{
+                            if (forceSelect && selectValue !== null) {
+                                index = regions.villages.select.findIndex((f) => f.value === selectValue);
+                                if (index >= 0) {
+                                    this.handleSelectRegion(regions.villages.select[index],'village');
+                                }
+                            }
+                        });
+                    });
+            }
+        }, 1000);
+    }
+    onSelectClose(type) {
+        let regions = this.state.regions;
+        regions[type].loading = false;
+        this.setState({regions});
     }
     handleRemoveDiscount(index) {
         let form = this.state.form;
@@ -301,6 +408,18 @@ class FormCustomer extends React.Component {
         }
         this.setState({form});
     }
+    async loadRegions(formData) {
+        try {
+            let response = await searchRegions(formData);
+            if (response.data.params === null) {
+                return [];
+            } else {
+                return response.data.params;
+            }
+        } catch (e) {
+            return [];
+        }
+    }
     async handleSave(e) {
         e.preventDefault();
         if (hasWhiteSpace(this.state.form.username)) {
@@ -395,20 +514,20 @@ class FormCustomer extends React.Component {
                                     <div className="tab-pane fade active show" id="custom-tabs-three-home" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
                                         <div className="form-group row">
                                             <label className="col-form-label col-sm-2"><LabelRequired/> {Lang.get('nas.labels.name')}</label>
-                                            <div className="col-sm-4">
+                                            <div className="col-md-4">
                                                 {this.state.form.id === null ?
-                                                    <Select onChange={(e)=>this.handleSelect(e,'nas')} isLoading={this.props.loadings.nas} isDisabled={this.state.loading || this.props.loadings.nas} className="text-sm" noOptionsMessage={()=>Lang.get('nas.labels.not_found')} options={this.props.nas} value={this.state.form.nas} placeholder={Lang.get('nas.labels.name')}/>
+                                                    <Select styles={FormControlSMReactSelect} onChange={(e)=>this.handleSelect(e,'nas')} isLoading={this.props.loadings.nas} isDisabled={this.state.loading || this.props.loadings.nas} className="text-xs" noOptionsMessage={()=>Lang.get('nas.labels.not_found')} options={this.props.nas} value={this.state.form.nas} placeholder={Lang.get('nas.labels.name')}/>
                                                     :
                                                     this.state.form.nas === null ? null
                                                         :
-                                                        <div className="form-control text-sm">{this.state.form.nas.label}</div>
+                                                        <div className="form-control form-control-sm text-xs">{this.state.form.nas.label}</div>
                                                 }
                                             </div>
                                             {this.state.form.nas === null ? null :
                                                 <>
-                                                    <label className="col-sm-2 col-form-label">{Lang.get('nas.labels.ip.short')}</label>
-                                                    <div className="col-sm-4">
-                                                        <div className="form-control text-sm">{this.state.form.nas.meta.auth.ip}:{this.state.form.nas.meta.auth.port}</div>
+                                                    <label className="col-md-2 text-xs col-form-label">{Lang.get('nas.labels.ip.short')}</label>
+                                                    <div className="col-md-4">
+                                                        <div className="form-control form-control-sm text-xs">{this.state.form.nas.meta.auth.ip}:{this.state.form.nas.meta.auth.port}</div>
                                                     </div>
                                                 </>
                                             }
@@ -416,25 +535,26 @@ class FormCustomer extends React.Component {
                                         {typeof this.props.type === 'undefined' &&
                                             this.props.type === null &&
                                                 <div className="form-group row">
-                                                    <label className="col-sm-2 col-form-label"><LabelRequired/>{Lang.get('customers.labels.type')}</label>
-                                                    <div className="col-sm-4">
+                                                    <label className="col-md-2 text-xs col-form-label"><LabelRequired/>{Lang.get('customers.labels.type')}</label>
+                                                    <div className="col-md-4">
                                                         {this.state.form.id === null ?
-                                                            <Select onChange={(e)=>this.handleSelect(e,'type')} options={serviceType} value={this.state.form.type} placeholder={Lang.get('customers.labels.type')} isDisabled={this.state.loading} noOptionsMessage={()=>Lang.get('customers.labels.no_type')}/>
+                                                            <Select styles={FormControlSMReactSelect} onChange={(e)=>this.handleSelect(e,'type')} options={serviceType} value={this.state.form.type} placeholder={Lang.get('customers.labels.type')} isDisabled={this.state.loading} noOptionsMessage={()=>Lang.get('customers.labels.no_type')}/>
                                                             :
-                                                            <div className="form-control text-sm">{this.state.form.type.label}</div>
+                                                            <div className="form-control form-control-sm text-xs">{this.state.form.type.label}</div>
                                                         }
                                                     </div>
                                                 </div>
                                         }
                                         <div className="row">
-                                            <div className="col-sm-6">
+                                            <div className="col-md-6">
                                                 <div className="form-group row">
-                                                    <label className="col-sm-4 col-form-label"><LabelRequired/>{Lang.get('profiles.labels.name')}</label>
-                                                    <div className="col-sm-8">
+                                                    <label className="col-md-4 text-xs col-form-label"><LabelRequired/>{Lang.get('profiles.labels.name')}</label>
+                                                    <div className="col-md-8">
                                                         <Select onChange={(e)=>this.handleSelect(e,'profile')} value={this.state.form.profile}
                                                                 options={this.state.form.nas === null ? [] : this.state.form.type === null ? [] : this.props.profiles.filter((f) => f.meta.nas !== null && f.meta.nas.id === this.state.form.nas.value && f.meta.type === this.state.form.type.value && ! f.meta.additional)}
                                                                 isLoading={this.props.loadings.profiles}
-                                                                className="text-sm"
+                                                                className="text-xs"
+                                                                styles={FormControlSMReactSelect}
                                                                 isDisabled={this.state.loading || this.props.loadings.profiles || this.state.form.type === null || this.state.form.nas === null}
                                                                 placeholder={Lang.get('profiles.labels.select')} noOptionsMessage={()=>Lang.get('profiles.labels.not_found')}/>
                                                     </div>
@@ -442,9 +562,9 @@ class FormCustomer extends React.Component {
                                                 {this.state.form.profile === null ? null :
                                                     <React.Fragment>
                                                         <div className="form-group row">
-                                                            <label className="col-sm-4 col-form-label">{Lang.get('profiles.labels.price')}</label>
-                                                            <div className="col-sm-8">
-                                                                <div className="form-control text-sm">
+                                                            <label className="col-md-4 text-xs col-form-label">{Lang.get('profiles.labels.price')}</label>
+                                                            <div className="col-md-8">
+                                                                <div className="form-control text-xs">
                                                                     {this.state.form.profile.meta.price === 0 ?
                                                                         <span className="badge badge-success">FREE</span>
                                                                         :
@@ -457,9 +577,9 @@ class FormCustomer extends React.Component {
                                                             </div>
                                                         </div>
                                                         <div className="form-group row">
-                                                            <label className="col-sm-4 col-form-label">{Lang.get('profiles.labels.validity.rate')}</label>
-                                                            <div className="col-sm-8">
-                                                                <div className="form-control text-sm">
+                                                            <label className="col-md-4 text-xs col-form-label">{Lang.get('profiles.labels.validity.rate')}</label>
+                                                            <div className="col-md-8">
+                                                                <div className="form-control form-control-sm text-xs">
                                                                     {this.state.form.profile.meta.limit.rate === 0 ?
                                                                         <span className="badge badge-success">UNLIMITED</span>
                                                                         :
@@ -474,10 +594,10 @@ class FormCustomer extends React.Component {
                                                     </React.Fragment>
                                                 }
                                             </div>
-                                            <div className="col-sm-6">
+                                            <div className="col-md-6">
                                                 {this.state.form.profile === null ? null :
                                                     <div className="form-group row">
-                                                        <div className="col-sm-12">
+                                                        <div className="col-md-12">
                                                             <DetailBandwidth data={this.state.form.profile}/>
                                                         </div>
                                                     </div>
@@ -488,22 +608,22 @@ class FormCustomer extends React.Component {
                                         {! this.state.form.is_voucher &&
                                             <React.Fragment>
                                                 <div className="form-group row">
-                                                    <label className="col-sm-2 col-form-label" htmlFor="input-name"><LabelRequired/>{Lang.get('customers.labels.name')}</label>
-                                                    <div className="col-sm-10">
-                                                        <input id="input-name" className="form-control text-sm" disabled={this.state.loading} value={this.state.form.name} onChange={this.handleChange} name="name" placeholder={Lang.get('customers.labels.name')}/>
+                                                    <label className="col-md-2 text-xs col-form-label" htmlFor="input-name"><LabelRequired/>{Lang.get('customers.labels.name')}</label>
+                                                    <div className="col-md-10">
+                                                        <input id="input-name" className="form-control form-control-sm text-xs" disabled={this.state.loading} value={this.state.form.name} onChange={this.handleChange} name="name" placeholder={Lang.get('customers.labels.name')}/>
                                                     </div>
                                                 </div>
                                                 <div className="form-group row">
-                                                    <label className="col-sm-2 col-form-label" htmlFor="input-email">{Lang.get('customers.labels.address.email')}</label>
-                                                    <div className="col-sm-4">
-                                                        <input type="email" id="input-email" className="form-control text-sm" value={this.state.form.email} name="email" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.email')}/>
+                                                    <label className="col-md-2 col-form-label text-xs" htmlFor="input-email">{Lang.get('customers.labels.address.email')}</label>
+                                                    <div className="col-md-4">
+                                                        <input type="email" id="input-email" className="form-control form-control-sm text-xs" value={this.state.form.email} name="email" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.email')}/>
                                                     </div>
                                                 </div>
                                                 <div className="form-group row">
-                                                    <label className="col-sm-2 col-form-label" htmlFor="input-phone">{Lang.get('customers.labels.address.phone')}</label>
-                                                    <div className="col-sm-4">
+                                                    <label className="col-md-2 col-form-label text-xs" htmlFor="input-phone">{Lang.get('customers.labels.address.phone')}</label>
+                                                    <div className="col-md-4">
                                                         <PhoneInput placeholder={Lang.get('customers.labels.address.phone')}
-                                                                    inputClass="form-control text-sm" country="id"
+                                                                    inputClass="form-control form-control-sm text-xs" country="id"
                                                                     enableSearch={true} disabled={this.state.loading}
                                                                     localization={id}
                                                                     value={this.state.form.phone} onChange={(e)=>{ let form = this.state.form; form.phone = e; this.setState({form});}}/>
@@ -513,15 +633,15 @@ class FormCustomer extends React.Component {
                                         }
 
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-username"><LabelRequired/>{Lang.get('customers.labels.username.label')}</label>
-                                            <div className="col-sm-4">
-                                                <input id="input-username" className="form-control text-sm" value={this.state.form.username} name="username" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.username.label')}/>
+                                            <label className="col-md-2 col-form-label text-xs" htmlFor="input-username"><LabelRequired/>{Lang.get('customers.labels.username.label')}</label>
+                                            <div className="col-md-4">
+                                                <input id="input-username" className="form-control form-control-sm text-xs" value={this.state.form.username} name="username" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.username.label')}/>
                                             </div>
                                         </div>
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-password"><LabelRequired/>{Lang.get('customers.labels.password.label')}</label>
-                                            <div className="col-sm-4">
-                                                <input id="input-password" className="form-control text-sm" value={this.state.form.password} name="password" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.password.label')}/>
+                                            <label className="col-md-2 col-form-label text-xs" htmlFor="input-password"><LabelRequired/>{Lang.get('customers.labels.password.label')}</label>
+                                            <div className="col-md-4">
+                                                <input id="input-password" className="form-control form-control-sm text-xs" value={this.state.form.password} name="password" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('customers.labels.password.label')}/>
                                             </div>
                                         </div>
                                     </div>
@@ -531,19 +651,19 @@ class FormCustomer extends React.Component {
                                         <table className="table table-sm table-striped mb-0">
                                             <thead>
                                             <tr>
-                                                <th className="align-middle text-center" width={30}><FontAwesomeIcon icon={faTrashAlt}/></th>
-                                                <th className="align-middle" width={100}>{Lang.get('customers.labels.service.type')}</th>
-                                                <th colSpan={3} className="align-middle">{Lang.get('customers.labels.service.name')}</th>
-                                                <th className="align-middle" width={150}>{Lang.get('customers.labels.service.price')}</th>
+                                                <th className="align-middle text-center text-xs" width={30}><FontAwesomeIcon icon={faTrashAlt}/></th>
+                                                <th className="align-middle text-xs" width={100}>{Lang.get('customers.labels.service.type')}</th>
+                                                <th colSpan={3} className="align-middle text-xs">{Lang.get('customers.labels.service.name')}</th>
+                                                <th className="align-middle text-xs" width={150}>{Lang.get('customers.labels.service.price')}</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             {this.state.form.profile === null ? null :
                                                 <tr>
-                                                    <td className="align-middle text-center"><FontAwesomeIcon icon={faTrashAlt}/></td>
-                                                    <td className="align-middle text-center">{Lang.get('customers.labels.service.main')}</td>
-                                                    <td colSpan={3} className="align-middle">{this.state.form.profile.label}</td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-center text-xs"><FontAwesomeIcon icon={faTrashAlt}/></td>
+                                                    <td className="align-middle text-center text-xs">{Lang.get('customers.labels.service.main')}</td>
+                                                    <td colSpan={3} className="align-middle text-xs">{this.state.form.profile.label}</td>
+                                                    <td className="align-middle text-xs">
                                                         {this.state.form.profile.meta.price === 0 ?
                                                             <span className="badge badge-success">FREE</span>
                                                             :
@@ -556,23 +676,24 @@ class FormCustomer extends React.Component {
                                                 </tr>
                                             }
                                             {this.state.form.services.current.length === 0 ?
-                                                <tr><td colSpan={6} className="align-middle text-center">{Lang.get('customers.labels.service.not_found')}</td></tr>
+                                                <tr><td colSpan={6} className="align-middle text-xs text-center">{Lang.get('customers.labels.service.not_found')}</td></tr>
                                                 :
                                                 this.state.form.services.current.map((item,index)=>
                                                     <tr key={`sv_${index}`}>
-                                                        <td className="align-middle text-center">
+                                                        <td className="align-middle text-xs text-center">
                                                             <button type="button" className="btn btn-outline-warning btn-xs" disabled={this.state.loading} onClick={()=>this.handleRemoveAdditional(index)}><FontAwesomeIcon size="xs" icon={faTrashAlt}/></button>
                                                         </td>
-                                                        <td className="align-middle text-center">{Lang.get('customers.labels.service.add')}</td>
+                                                        <td className="align-middle text-xs text-center">{Lang.get('customers.labels.service.add')}</td>
                                                         <td colSpan={3} className="align-middle">
                                                             <Select options={this.props.profiles.filter((f) => f.meta.additional)}
                                                                     value={item.package}
+                                                                    styles={FormControlSMReactSelect}
                                                                     placeholder={Lang.get('customers.labels.service.select.label')}
                                                                     noOptionsMessage={()=>Lang.get('customers.labels.service.select.not_found')}
                                                                     onChange={(e)=>this.handleSelect(e,'package',index)}
                                                                     isDisabled={this.state.loading || this.props.loadings.profiles} isLoading={this.props.loadings.profiles}/>
                                                         </td>
-                                                        <td className="align-middle text-right">
+                                                        <td className="align-middle text-xs text-right">
                                                             {item.package === null ? null :
                                                                 item.package.meta.price === 0 ?
                                                                     <span className="badge badge-success">FREE</span>
@@ -589,22 +710,23 @@ class FormCustomer extends React.Component {
                                             </tbody>
                                             <tfoot>
                                             <tr>
-                                                <th className="align-middle text-right" colSpan={5}>{Lang.get('customers.labels.service.subtotal.label')}</th>
+                                                <th className="align-middle text-xs text-right" colSpan={5}>{Lang.get('customers.labels.service.subtotal.label')}</th>
                                                 <th className="align-middle">
                                                     <span className="float-left align-middle">Rp.</span>
                                                     <span className="float-right align-middle">{formatLocaleString(sumCustomerSubtotalForm(this.state.form))}</span>
                                                 </th>
                                             </tr>
                                             <tr>
-                                                <th className="align-middle text-right" colSpan={3}>
+                                                <th className="align-middle text-xs text-right" colSpan={3}>
                                                     {Lang.get('customers.labels.service.taxes.label')}
                                                     <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                 </th>
-                                                <th width={150} className="align-middle">
+                                                <th width={150} className="text-xs align-middle">
                                                     <Select onChange={(e)=>this.handleSelect(e,'taxes',0)}
+                                                            styles={FormControlSMReactSelect}
                                                             isClearable value={this.state.form.taxes.current.length === 0 ? null : this.state.form.taxes.current[0].tax} isDisabled={this.state.loading || this.props.loadings.taxes} isLoading={this.props.loadings.taxes} options={this.props.taxes} placeholder={Lang.get('customers.labels.service.taxes.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.taxes.select.not_found')}/>
                                                 </th>
-                                                <th width={150} className="align-middle text-right">
+                                                <th width={150} className="align-middle text-xs text-right">
                                                     {this.state.form.taxes.current.length === 0 ? '-' :
                                                         this.state.form.taxes.current[0].tax === null ?
                                                             '-'
@@ -612,7 +734,7 @@ class FormCustomer extends React.Component {
                                                             `${this.state.form.taxes.current[0].tax.meta.percent}%`
                                                     }
                                                 </th>
-                                                <th className="align-middle text-right">
+                                                <th className="align-middle text-xs text-right">
                                                     {this.state.form.taxes.current.length === 0 ? '-' :
                                                         this.state.form.taxes.current[0].tax === null ? '-' :
                                                             sumCustomerTaxLineForm(this.state.form, 0) === 0 ?
@@ -630,20 +752,20 @@ class FormCustomer extends React.Component {
                                                     {this.state.form.taxes.current.map((item,index)=>
                                                         index === 0 ? null :
                                                             <tr key={`tax_${index}`}>
-                                                                <th className="align-middle text-right" colSpan={3}>
+                                                                <th className="align-middle text-xs text-right" colSpan={3}>
                                                                     {Lang.get('customers.labels.service.taxes.label')} #{index+1}
                                                                     <button title={Lang.get('customers.labels.service.taxes.add')} type="button" className="btn btn-tool" disabled={this.state.loading} onClick={this.handleAddTax}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                                 </th>
-                                                                <th width={150} className="align-middle">
+                                                                <th width={150} className="text-xs align-middle">
                                                                     <Select onChange={(e)=>this.handleSelect(e,'taxes',index)}
                                                                             isClearable
                                                                             value={item.tax}
                                                                             isDisabled={this.state.loading || this.props.loadings.taxes} isLoading={this.props.loadings.taxes} options={this.props.taxes} placeholder={Lang.get('customers.labels.service.taxes.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.taxes.select.not_found')}/>
                                                                 </th>
-                                                                <th width={100} className="align-middle text-right">
+                                                                <th width={100} className="align-middle text-xs text-right">
                                                                     {item.tax === null ? '-' : `${item.tax.meta.percent}%` }
                                                                 </th>
-                                                                <th className="align-middle text-right">
+                                                                <th className="align-middle text-xs text-right">
                                                                     {item.tax === null ? '-' :
                                                                         sumCustomerTaxLineForm(this.state.form, index) === 0 ?
                                                                             '-' :
@@ -656,8 +778,8 @@ class FormCustomer extends React.Component {
                                                             </tr>
                                                     )}
                                                     <tr>
-                                                        <th className="align-middle text-right" colSpan={5}>{Lang.get('customers.labels.service.taxes.subtotal')}</th>
-                                                        <th className="align-middle text-right">
+                                                        <th className="align-middle text-xs text-right" colSpan={5}>{Lang.get('customers.labels.service.taxes.subtotal')}</th>
+                                                        <th className="align-middle text-xs text-right">
                                                             {sumCustomerTaxForm(this.state.form) === 0 ? '-' :
                                                                 <>
                                                                     <span className="float-left">Rp.</span>
@@ -669,14 +791,14 @@ class FormCustomer extends React.Component {
                                                 </>
                                             }
                                             <tr>
-                                                <th className="align-middle text-right" colSpan={4}>
+                                                <th className="align-middle text-xs text-right" colSpan={4}>
                                                     {Lang.get('customers.labels.service.discount.label')}
                                                     <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                 </th>
                                                 <th className="align-middle">
                                                     <Select onChange={(e)=>this.handleSelect(e,'discount',0)} value={this.state.form.discounts.current.length === 0 ? null : this.state.form.discounts.current[0].discount} options={this.props.discounts} isLoading={this.props.loadings.discounts} isDisabled={this.state.loading} placeholder={Lang.get('customers.labels.service.discount.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.discount.select.not_found')} isClearable/>
                                                 </th>
-                                                <th className="align-middle text-right">
+                                                <th className="align-middle text-xs text-right">
                                                     {this.state.form.discounts.current.length === 0 ? '-' :
                                                         this.state.form.discounts.current[0].discount === null ? '-' :
                                                             this.state.form.discounts.current[0].discount.meta.amount === 0 ? '-' :
@@ -692,14 +814,14 @@ class FormCustomer extends React.Component {
                                                     {this.state.form.discounts.current.map((item,index)=>
                                                         index === 0 ? null :
                                                             <tr key={`disc_${index}`}>
-                                                                <th colSpan={4} className="align-middle text-right">
+                                                                <th colSpan={4} className="align-middle text-xs text-right">
                                                                     {Lang.get('customers.labels.service.discount.label')}
                                                                     <button type="button" title={Lang.get('customers.labels.service.discount.add')} className="btn btn-tool" onClick={this.handleAddDiscount}><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                                 </th>
-                                                                <th className="align-middle">
-                                                                    <Select onChange={(e)=>this.handleSelect(e,'discount', index)} value={item.discount} options={this.props.discounts} isLoading={this.props.loadings.discounts} isDisabled={this.state.loading} placeholder={Lang.get('customers.labels.service.discount.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.discount.select.not_found')} isClearable/>
+                                                                <th className="align-middle text-xs">
+                                                                    <Select styles={FormControlSMReactSelect} onChange={(e)=>this.handleSelect(e,'discount', index)} value={item.discount} options={this.props.discounts} isLoading={this.props.loadings.discounts} isDisabled={this.state.loading} placeholder={Lang.get('customers.labels.service.discount.select.label')} noOptionsMessage={()=>Lang.get('customers.labels.service.discount.select.not_found')} isClearable/>
                                                                 </th>
-                                                                <th className="align-middle text-right">
+                                                                <th className="align-middle text-xs text-right">
                                                                     {item.discount === null ? '-' :
                                                                         item.discount.meta.amount === 0 ? '-' :
                                                                             <>
@@ -711,10 +833,10 @@ class FormCustomer extends React.Component {
                                                             </tr>
                                                     )}
                                                     <tr>
-                                                        <th colSpan={5} className="align-middle text-right">
+                                                        <th colSpan={5} className="align-middle text-xs text-right">
                                                             {Lang.get('customers.labels.service.discount.subtotal')}
                                                         </th>
-                                                        <th className="align-middle text-right">
+                                                        <th className="align-middle text-xs text-right">
                                                             {sumCustomerDiscountForm(this.state.form) === 0 ? '-' :
                                                                 <>
                                                                     <span className="float-left">Rp.</span>
@@ -728,8 +850,8 @@ class FormCustomer extends React.Component {
                                                 </>
                                             }
                                             <tr>
-                                                <th className="align-middle text-right text-md text-success" colSpan={5}>{Lang.get('customers.labels.service.grand_total.label')}</th>
-                                                <th className="align-middle text-right text-md text-success">{sumGrandTotalForm(this.state.form)}</th>
+                                                <th className="align-middle text-right text-xs text-success" colSpan={5}>{Lang.get('customers.labels.service.grand_total.label')}</th>
+                                                <th className="align-middle text-right text-xs text-success">{sumGrandTotalForm(this.state.form)}</th>
                                             </tr>
                                             </tfoot>
                                         </table>
@@ -737,59 +859,77 @@ class FormCustomer extends React.Component {
 
                                     <div className="tab-pane fade" id="custom-tabs-three-address" role="tabpanel" aria-labelledby="custom-tabs-three-address-tab">
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-address">{Lang.get('customers.labels.address.street')}</label>
-                                            <div className="col-sm-10">
-                                                <textarea id="input-address" style={{resize:'none'}} className="form-control text-sm" disabled={this.state.loading} value={this.state.form.address} onChange={this.handleChange} name="address" placeholder={Lang.get('customers.labels.address.street')}/>
+                                            <label className="col-md-2 text-xs col-form-label" htmlFor="input-address">{Lang.get('customers.labels.address.street')}</label>
+                                            <div className="col-md-10">
+                                                <textarea id="input-address" style={{resize:'none'}} className="form-control text-xs form-control-sm" disabled={this.state.loading} value={this.state.form.address} onChange={this.handleChange} name="address" placeholder={Lang.get('customers.labels.address.street')}/>
                                             </div>
                                         </div>
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label">{Lang.get('regions.village.label')}</label>
-                                            <div className="col-sm-4">
-                                                <Select value={this.state.form.village}
-                                                        className="text-sm"
-                                                        onChange={(e)=>this.handleSelect(e,'village')}
-                                                        placeholder={Lang.get('regions.village.select')}
-                                                        noOptionsMessage={()=>Lang.get('regions.village.no_data')}
-                                                        options={this.state.form.district === null ? [] : this.state.form.district.meta.villages}
-                                                        isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}/>
+                                            <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.village.label')}</label>
+                                            <div className="col-md-4">
+                                                <Select onChange={(e)=>this.handleSelectRegion(e,'village')}
+                                                        value={this.state.form.village}
+                                                        components={{Option:VillageComponent}}
+                                                        maxMenuHeight={200}
+                                                        options={this.state.regions.villages.select}
+                                                        isLoading={this.state.regions.villages.loading}
+                                                        onInputChange={(e)=>this.handleSearchRegions(e,'villages')}
+                                                        onMenuClose={()=>this.onSelectClose('villages')}
+                                                        isDisabled={this.state.loading}
+                                                        placeholder={<small>{Lang.get('labels.select.option',{ Attribute : Lang.get('regions.village.label')})}</small>}
+                                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{ Attribute : Lang.get('regions.village.label')})}
+                                                        styles={FormControlSMReactSelect}
+                                                        className="text-xs"/>
                                             </div>
-                                            <label className="col-sm-2 col-form-label">{Lang.get('regions.village.label')}</label>
-                                            <div className="col-sm-4">
-                                                <Select value={this.state.form.district}
-                                                        className="text-sm"
-                                                        onChange={(e)=>this.handleSelect(e,'district')}
-                                                        placeholder={Lang.get('regions.district.select')}
-                                                        noOptionsMessage={()=>Lang.get('regions.district.no_data')}
-                                                        options={this.state.form.city === null ? [] : this.state.form.city.meta.districts}
-                                                        isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}/>
-                                            </div>
-                                        </div>
-                                        <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label">{Lang.get('regions.city.label')}</label>
-                                            <div className="col-sm-4">
-                                                <Select value={this.state.form.city}
-                                                        className="text-sm"
-                                                        onChange={(e)=>this.handleSelect(e,'city')}
-                                                        placeholder={Lang.get('regions.city.select')}
-                                                        noOptionsMessage={()=>Lang.get('regions.city.no_data')}
-                                                        options={this.state.form.province === null ? [] : this.state.form.province.meta.cities}
-                                                        isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}/>
-                                            </div>
-                                            <label className="col-sm-2 col-form-label">{Lang.get('regions.village.label')}</label>
-                                            <div className="col-sm-4">
-                                                <Select value={this.state.form.province}
-                                                        className="text-sm"
-                                                        onChange={(e)=>this.handleSelect(e,'province')}
-                                                        placeholder={Lang.get('regions.province.select')}
-                                                        noOptionsMessage={()=>Lang.get('regions.province.no_data')}
-                                                        options={this.props.provinces}
-                                                        isLoading={this.props.loadings.provinces} isDisabled={this.state.loading || this.props.loadings.provinces}/>
+                                            <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.district.label')}</label>
+                                            <div className="col-md-4">
+                                                <Select onChange={(e)=>this.handleSelectRegion(e,'district')}
+                                                        value={this.state.form.district} cacheOptions
+                                                        options={this.state.regions.districts.select}
+                                                        isLoading={this.state.regions.districts.loading}
+                                                        onInputChange={(e)=>this.handleSearchRegions(e,'districts')}
+                                                        onMenuClose={()=>this.onSelectClose('districts')}
+                                                        isDisabled={true}
+                                                        placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.district.label')})}</small>}
+                                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.district.label')})}
+                                                        styles={FormControlSMReactSelect}
+                                                        className="text-xs"/>
                                             </div>
                                         </div>
                                         <div className="form-group row">
-                                            <label className="col-sm-2 col-form-label" htmlFor="input-postal">{Lang.get('customers.labels.address.postal')}</label>
-                                            <div className="col-sm-2">
-                                                <input className="form-control text-sm" value={this.state.form.postal} name="postal" id="input-postal" disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.postal')} onChange={this.handleChange}/>
+                                            <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.city.label')}</label>
+                                            <div className="col-md-4">
+                                                <Select onChange={(e)=>this.handleSelectRegion(e,'city')}
+                                                        value={this.state.form.city} cacheOptions
+                                                        options={this.state.regions.cities.select}
+                                                        isLoading={this.state.regions.cities.loading}
+                                                        onInputChange={(e)=>this.handleSearchRegions(e,'cities')}
+                                                        onMenuClose={()=>this.onSelectClose('cities')}
+                                                        isDisabled={true}
+                                                        placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.city.label')})}</small>}
+                                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.city.label')})}
+                                                        styles={FormControlSMReactSelect}
+                                                        className="text-xs"/>
+                                            </div>
+                                            <label className="col-md-2 col-form-label">{Lang.get('regions.province.label')}</label>
+                                            <div className="col-md-4">
+                                                <Select onChange={(e)=>this.handleSelectRegion(e,'province')}
+                                                        value={this.state.form.province} cacheOptions
+                                                        options={this.state.regions.provinces.select}
+                                                        isLoading={this.state.regions.provinces.loading}
+                                                        onInputChange={(e)=>this.handleSearchRegions(e,'provinces')}
+                                                        onMenuClose={()=>this.onSelectClose('provinces')}
+                                                        isDisabled={true}
+                                                        placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.province.label')})}</small>}
+                                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.province.label')})}
+                                                        styles={FormControlSMReactSelect}
+                                                        className="text-xs"/>
+                                            </div>
+                                        </div>
+                                        <div className="form-group row">
+                                            <label className="col-md-2 col-form-label text-xs" htmlFor="input-postal">{Lang.get('customers.labels.address.postal')}</label>
+                                            <div className="col-md-2">
+                                                <input className="form-control form-control-sm text-xs" value={this.state.form.postal} name="postal" id="input-postal" disabled={this.state.loading} placeholder={Lang.get('customers.labels.address.postal')} onChange={this.handleChange}/>
                                             </div>
                                         </div>
                                     </div>

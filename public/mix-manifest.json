@@ -1,4 +1,7 @@
 {
     "/js/auth/users/privileges.js": "/js/auth/users/privileges.js",
-    "/js/clients/users/privileges.js": "/js/clients/users/privileges.js"
+    "/js/clients/configs/index.js": "/js/clients/configs/index.js",
+    "/js/clients/customers/index.js": "/js/clients/customers/index.js",
+    "/js/clients/customers/pppoe.js": "/js/clients/customers/pppoe.js",
+    "/js/clients/customers/hotspot.js": "/js/clients/customers/hotspot.js"
 }

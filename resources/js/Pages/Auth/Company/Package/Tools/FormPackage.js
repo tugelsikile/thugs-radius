@@ -1,7 +1,12 @@
 // noinspection JSValidateTypes,CommaExpressionJS
 
 import React from "react";
-import {durationType, parseInputFloat} from "../../../../../Components/mixedConsts";
+import {
+    durationType,
+    FormControlSMReactSelect,
+    LabelRequired,
+    parseInputFloat
+} from "../../../../../Components/mixedConsts";
 import {crudCompanyPackage} from "../../../../../Services/CompanyService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
@@ -9,6 +14,8 @@ import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
 import {NumericFormat} from "react-number-format";
 import Select from "react-select";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
+import {listCompanyPackageType} from "./Mixed";
 
 // noinspection DuplicatedCode,JSCheckFunctionSignatures,JSValidateTypes,CommaExpressionJS
 class FormPackage extends React.Component {
@@ -17,7 +24,7 @@ class FormPackage extends React.Component {
         this.state = {
             loading : false,
             form : {
-                id : null, name : '', description : '',
+                id : null, name : '', description : '', additional : listCompanyPackageType[0],
                 prices : { base : 0, vat : 0 },
                 duration : { type : durationType[0], amount : 0 },
                 max : {
@@ -34,12 +41,14 @@ class FormPackage extends React.Component {
         if (! props.open) {
             form.id = null, form.name = '', form.name = '', form.description = '',
                 form.prices.base = 0, form.duration.type = durationType[0], form.duration.amount = 0,
+                form.additional = listCompanyPackageType[0],
                 form.max.customer = 0, form.max.user = 0, form.max.voucher = 0, form.max.router = 0;
         } else {
             if (props.data !== null) {
                 form.id = props.data.value,
                     form.name = props.data.label, form.description = props.data.meta.description,
                     form.prices.base = props.data.meta.prices,
+                    form.additional = props.data.meta.additional ? listCompanyPackageType[0] : listCompanyPackageType[1],
                     form.duration.type = durationType[durationType.findIndex((f) => f.value === props.data.meta.duration.string)],
                     form.duration.amount = props.data.meta.duration.amount,
                     form.max.customer = props.data.meta.max.customers, form.max.user = props.data.meta.max.users,
@@ -50,7 +59,12 @@ class FormPackage extends React.Component {
     }
     handleSelect(event, name) {
         let form = this.state.form;
-        form.duration[name] = event; this.setState({form});
+        if (name === 'additional') {
+            form[name] = event;
+        } else {
+            form.duration[name] = event;
+        }
+        this.setState({form});
     }
     handleChange(event) {
         let form = this.state.form;
@@ -68,6 +82,7 @@ class FormPackage extends React.Component {
             const formData = new FormData();
             formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
             if (this.state.form.id !== null) formData.append('id', this.state.form.id);
+            formData.append(Lang.get('companies.packages.form_input.type'), this.state.form.additional.value ? 1 : 0);
             formData.append(Lang.get('companies.packages.form_input.name'), this.state.form.name);
             formData.append(Lang.get('companies.packages.form_input.description'), this.state.form.description);
             formData.append(Lang.get('companies.packages.form_input.price'), this.state.form.prices.base);
@@ -97,96 +112,89 @@ class FormPackage extends React.Component {
         return (
             <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
-                    <DialogTitle>
-                        <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
-                        </button>
-                        <span className="modal-title text-sm">
-                            {this.state.form.id === null ?
-                                Lang.get('companies.packages.create.form')
-                                :
-                                Lang.get('companies.packages.update.form')
-                            }
-                        </span>
-                    </DialogTitle>
+                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('companies.packages.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('companies.packages.labels.menu')})}}/>
                     <DialogContent dividers>
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputName">{Lang.get('companies.packages.labels.name')}</label>
-                            <div className="col-sm-10">
-                                <input id="inputName" className="form-control text-sm" value={this.state.form.name} name="name" placeholder={Lang.get('companies.packages.labels.name')} disabled={this.state.loading} onChange={this.handleChange}/>
+                            <label className="col-md-2 col-form-label text-xs"><LabelRequired/> {Lang.get('labels.type',{Attribute:Lang.get('companies.packages.labels.menu')})}</label>
+                            <div className="col-md-4">
+                                <Select options={listCompanyPackageType} value={this.state.form.additional}
+                                        onChange={(e)=>this.handleSelect(e,'additional')}
+                                        styles={FormControlSMReactSelect}
+                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:Lang.get('labels.type',{Attribute:Lang.get('companies.packages.labels.menu')})})}
+                                        placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('labels.type',{Attribute:Lang.get('companies.packages.labels.menu')})})}/>
                             </div>
                         </div>
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputDescription">{Lang.get('companies.packages.labels.description')}</label>
-                            <div className="col-sm-10">
-                                <textarea id="inputDescription" style={{resize:'none'}} className="form-control text-sm" value={this.state.form.description} name="description" placeholder={Lang.get('companies.packages.labels.description')} disabled={this.state.loading} onChange={this.handleChange}/>
+                            <label className="col-md-2 col-form-label text-xs" htmlFor="inputName"><LabelRequired/>{Lang.get('companies.packages.labels.name')}</label>
+                            <div className="col-md-10">
+                                <input id="inputName" className="form-control text-xs form-control-sm" value={this.state.form.name} name="name" placeholder={Lang.get('companies.packages.labels.name')} disabled={this.state.loading} onChange={this.handleChange}/>
                             </div>
                         </div>
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputPrice">{Lang.get('companies.packages.labels.price')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputPrice" className="form-control text-sm text-right"
+                            <label className="col-md-2 col-form-label text-xs" htmlFor="inputDescription">{Lang.get('companies.packages.labels.description')}</label>
+                            <div className="col-md-10">
+                                <textarea id="inputDescription" style={{resize:'none'}} className="form-control form-control-sm text-xs" value={this.state.form.description} name="description" placeholder={Lang.get('companies.packages.labels.description')} disabled={this.state.loading} onChange={this.handleChange}/>
+                            </div>
+                        </div>
+                        <div className="form-group row">
+                            <label className="col-md-2 col-form-label text-xs" htmlFor="inputPrice"><LabelRequired/>{Lang.get('companies.packages.labels.price')}</label>
+                            <div className="col-md-2">
+                                <NumericFormat disabled={this.state.loading} id="inputPrice" className="form-control form-control-sm text-sm text-right"
                                                name="base" data-type="prices" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.prices.base} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
                             </div>
                         </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputDurationType">{Lang.get('companies.packages.labels.duration_type')}</label>
-                            <div className="col-sm-2">
-                                <Select onChange={(e)=>this.handleSelect(e,'type')} options={durationType} value={this.state.form.duration.type} isDisabled={this.state.loading} placeholder={<small>{Lang.get('companies.packages.labels.duration_type_select')}</small>}/>
-                            </div>
-                            <label className="col-sm-2 col-form-label" htmlFor="inputDuration">{Lang.get('companies.packages.labels.duration_amount')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputDuration" className="form-control text-sm text-right"
-                                               name="amount" data-type="duration" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.duration.amount} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputMaxRouter">{Lang.get('companies.packages.labels.max_router')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputMaxRouter" className="form-control text-sm text-right"
-                                               value={this.state.form.max.router} placeholder={Lang.get('companies.packages.labels.max_router')}
-                                               name="router" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputMaxUser">{Lang.get('companies.packages.labels.max_user')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputMaxUser" className="form-control text-sm text-right"
-                                               value={this.state.form.max.user} placeholder={Lang.get('companies.packages.labels.max_user')}
-                                               name="user" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputMaxCustomer">{Lang.get('companies.packages.labels.max_customer')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputMaxCustomer" className="form-control text-sm text-right"
-                                               value={this.state.form.max.customer} placeholder={Lang.get('companies.packages.labels.max_customer')}
-                                               name="customer" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputMaxVoucher">{Lang.get('companies.packages.labels.max_voucher')}</label>
-                            <div className="col-sm-2">
-                                <NumericFormat disabled={this.state.loading} id="inputMaxVoucher" className="form-control text-sm text-right"
-                                               value={this.state.form.max.voucher} placeholder={Lang.get('companies.packages.labels.max_voucher')}
-                                               name="voucher" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                            </div>
-                        </div>
+                        {! this.state.form.additional.value &&
+                            <React.Fragment>
+                                <div className="form-group row">
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputDurationType">{Lang.get('companies.packages.labels.duration_type')}</label>
+                                    <div className="col-md-2">
+                                        <Select styles={FormControlSMReactSelect} onChange={(e)=>this.handleSelect(e,'type')} options={durationType} value={this.state.form.duration.type} isDisabled={this.state.loading} placeholder={<small>{Lang.get('companies.packages.labels.duration_type_select')}</small>}/>
+                                    </div>
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputDuration">{Lang.get('companies.packages.labels.duration_amount')}</label>
+                                    <div className="col-md-2">
+                                        <NumericFormat disabled={this.state.loading} id="inputDuration" className="form-control text-xs form-control-sm text-right"
+                                                       name="amount" data-type="duration" onChange={this.handleChange} allowLeadingZeros={false} value={this.state.form.duration.amount} decimalScale={2} decimalSeparator="," thousandSeparator="."/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputMaxRouter">{Lang.get('companies.packages.labels.max_router')}</label>
+                                    <div className="col-md-2">
+                                        <NumericFormat disabled={this.state.loading} id="inputMaxRouter" className="form-control form-control-sm text-xs text-right"
+                                                       value={this.state.form.max.router} placeholder={Lang.get('companies.packages.labels.max_router')}
+                                                       name="router" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputMaxUser">{Lang.get('companies.packages.labels.max_user')}</label>
+                                    <div className="col-md-2">
+                                        <NumericFormat disabled={this.state.loading} id="inputMaxUser" className="form-control text-xs form-control-sm text-right"
+                                                       value={this.state.form.max.user} placeholder={Lang.get('companies.packages.labels.max_user')}
+                                                       name="user" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputMaxCustomer">{Lang.get('companies.packages.labels.max_customer')}</label>
+                                    <div className="col-md-2">
+                                        <NumericFormat disabled={this.state.loading} id="inputMaxCustomer" className="form-control text-xs form-control-sm text-right"
+                                                       value={this.state.form.max.customer} placeholder={Lang.get('companies.packages.labels.max_customer')}
+                                                       name="customer" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                    </div>
+                                </div>
+                                <div className="form-group row">
+                                    <label className="col-md-2 col-form-label text-xs" htmlFor="inputMaxVoucher">{Lang.get('companies.packages.labels.max_voucher')}</label>
+                                    <div className="col-md-2">
+                                        <NumericFormat disabled={this.state.loading} id="inputMaxVoucher" className="form-control text-xs form-control-sm text-right"
+                                                       value={this.state.form.max.voucher} placeholder={Lang.get('companies.packages.labels.max_voucher')}
+                                                       name="voucher" data-type="max" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                    </div>
+                                </div>
+                            </React.Fragment>
+                        }
                     </DialogContent>
-                    <DialogActions className="justify-content-between">
-                        <button type="submit" className="btn btn-success" disabled={this.state.loading}>
-                            {this.state.loading ?
-                                <FontAwesomeIcon icon="fa-circle-notch" className="fa-spin"/>
-                                :
-                                <FontAwesomeIcon icon="fas fa-save"/>
-                            }
-                            <span className="mr-1"/>
-                            {this.state.form.id === null ? Lang.get('companies.packages.create.button') : Lang.get('companies.packages.update.button',null, 'id')}
-                        </button>
-                        <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
-                        </button>
-                    </DialogActions>
+                    <ModalFooter
+                        form={this.state.form} handleClose={()=>this.props.handleClose()}
+                        loading={this.state.loading}
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('companies.packages.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('companies.packages.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

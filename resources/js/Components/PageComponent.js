@@ -22,9 +22,9 @@ export const PageCardTitle = (props) => {
                             props.filter
                     }
                     {props.privilege.create &&
-                        <button type="button" onClick={()=>props.handleModal()} disabled={props.loading} className="btn btn-tool">
+                        <button type="button" onClick={()=>props.handleModal()} disabled={props.loading} className="mr-1 btn btn-outline-primary btn-sm text-xs">
                             <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
-                            <small>{props.langs.create}</small>
+                            <span className="text-xs">{props.langs.create}</span>
                         </button>
                     }
                     {typeof props.others === 'undefined' ? null :
@@ -35,17 +35,17 @@ export const PageCardTitle = (props) => {
                                             type="button"
                                             onClick={item.handle}
                                             disabled={props.loading || typeof item.disabled === 'undefined' ? false : item.disabled }
-                                            className="btn btn-tool">
+                                            className="btn btn-outline-secondary btn-sm mr-1">
                                         {typeof item.icon === 'undefined' ? null : <FontAwesomeIcon icon={item.icon} className="mr-1" size="xs"/>}
-                                        <small>{item.lang}</small>
+                                        <span className="text-xs">{item.lang}</span>
                                     </button>
                                 )
                     }
                     {props.privilege.delete &&
                         props.selected.length > 0 &&
-                        <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-tool text-danger">
+                        <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-outline-danger btn-sm">
                             <FontAwesomeIcon size="xs" icon={faTrashAlt} className="mr-1"/>
-                            <small>{props.langs.delete}</small>
+                            <span className="text-xs">{props.langs.delete}</span>
                         </button>
                     }
                 </React.Fragment>

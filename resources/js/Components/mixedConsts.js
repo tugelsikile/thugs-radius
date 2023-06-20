@@ -278,11 +278,25 @@ export const grandTotalCompanyForm = (form) => {
     return subtotal - discount;
 }
 export const sumTotalAfterTaxCompanyPackageForm = (form) => {
-    return sumTotalTaxCompanyPackageForm(form) + form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    let response = 0;
+    let tax = sumTotalTaxCompanyPackageForm(form);
+    form.packages.map((item)=>{
+        if (item.package !== null) {
+            response += item.package.meta.price * item.qty;
+        }
+    })
+    return response + tax;
+    //return sumTotalTaxCompanyPackageForm(form) + form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
 }
 export const sumTaxCompanyPackageForm = (form, currentTax) => {
     let response = 0;
-    let subtotal = form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    let subtotal = 0;
+    form.packages.map((item)=>{
+        if (item.package !== null) {
+            subtotal += item.package.meta.prices * item.qty;
+        }
+    })
+    //form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
     if (currentTax.tax !== null) {
         response = ( currentTax.tax.meta.percent * subtotal ) / 100;
     }

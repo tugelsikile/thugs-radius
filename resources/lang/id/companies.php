@@ -82,6 +82,7 @@ return [
     ],
     'packages' => [
         'form_input' => [
+            'type' => 'jenis_paket_client_radius',
             'id' => 'paket_client_radius',
             'discount' => 'diskon',
             'main_package' => 'paket_utama',

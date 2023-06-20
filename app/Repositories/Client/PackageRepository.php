@@ -29,12 +29,20 @@ class PackageRepository
             $package->name = $request[__('companies.packages.form_input.name')];
             $package->description = $request[__('companies.packages.form_input.description')];
             $package->base_price = $request[__('companies.packages.form_input.price')];
-            $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
-            $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
-            $package->max_users = $request[__('companies.packages.form_input.max_user')];
-            $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
-            $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
-            $package->max_routerboards = $request[__('companies.packages.form_input.max_router')];
+
+            if ($request->has(__('companies.packages.form_input.type'))) {
+                if ($request[__('companies.packages.form_input.type')] == 1) {
+                    $package->is_additional = true;
+                } else {
+                    $package->is_additional = false;
+                    $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
+                    $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
+                    $package->max_users = $request[__('companies.packages.form_input.max_user')];
+                    $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
+                    $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
+                    $package->max_routerboards = $request[__('companies.packages.form_input.max_router')];
+                }
+            }
             $package->saveOrFail();
 
             return $this->table(new Request(['id' => $package->id]))->first();
@@ -54,12 +62,31 @@ class PackageRepository
             $package->name = $request[__('companies.packages.form_input.name')];
             $package->description = $request[__('companies.packages.form_input.description')];
             $package->base_price = $request[__('companies.packages.form_input.price')];
-            $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
-            $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
-            $package->max_users = $request[__('companies.packages.form_input.max_user')];
-            $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
-            $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
-            $package->max_routerboards = $request[__('companies.packages.form_input.max_router')];
+            if ($request->has(__('companies.packages.form_input.type'))) {
+                if ($request[__('companies.packages.form_input.type')] == 1) {
+                    $package->is_additional = true;
+                    $package->duration_string = null;
+                    $package->duration_ammount = 0;
+                    $package->max_users = 0;
+                    $package->max_vouchers = 0;
+                    $package->max_routerboards = 0;
+                } else {
+                    $package->is_additional = false;
+                    $package->duration_string = $request[__('companies.packages.form_input.duration_type')];
+                    $package->duration_ammount = $request[__('companies.packages.form_input.duration_amount')];
+                    $package->max_users = $request[__('companies.packages.form_input.max_user')];
+                    $package->max_customers = $request[__('companies.packages.form_input.max_customer')];
+                    $package->max_vouchers = $request[__('companies.packages.form_input.max_voucher')];
+                    $package->max_routerboards = $request[__('companies.packages.form_input.max_router')];
+                }
+            } else {
+                $package->is_additional = true;
+                $package->duration_string = null;
+                $package->duration_ammount = 0;
+                $package->max_users = 0;
+                $package->max_vouchers = 0;
+                $package->max_routerboards = 0;
+            }
             $package->saveOrFail();
 
             return $this->table(new Request(['id' => $package->id]))->first();
@@ -104,6 +131,7 @@ class PackageRepository
                             'code' => $package->code,
                             'description' => $package->description,
                             'prices' => $package->base_price,
+                            'additional' => $package->is_additional,
                             'duration' => (object) [
                                 'string' => $package->duration_string,
                                 'amount' => $package->duration_ammount,

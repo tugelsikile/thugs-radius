@@ -1,5 +1,14 @@
 <?php
 return [
+    'form_input' => [
+        'keywords' => 'kata_kunci',
+        'search_type' => 'jenis_pencarian',
+    ],
+    'type' => 'Jenis :Attribute',
+    'additional' => [
+        'true' => ':Attribute Tambahan',
+        'false' => ':Attribute Utama',
+    ],
     'search' => 'Cari :Attribute ...',
     'not_found' => 'Sementara data :Attribute tidak ditemukan',
     'select' => [

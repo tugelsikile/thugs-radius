@@ -14,5 +14,6 @@ class CompanyPackage extends Model
     protected $casts = [
         'base_price' => 'double',
         'vat_percent' => 'double',
+        'is_additional' => 'boolean',
     ];
 }

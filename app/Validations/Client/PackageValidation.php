@@ -17,15 +17,16 @@ class PackageValidation
     {
         try {
             $valid = Validator::make($request->all(),[
+                __('companies.packages.form_input.type') => 'required|boolean',
                 __('companies.packages.form_input.name') => 'required|string|min:3|max:199',
                 __('companies.packages.form_input.description') => 'nullable',
                 __('companies.packages.form_input.price') => 'required|numeric|min:0',
-                __('companies.packages.form_input.duration_type') => 'required|in:minutes,hours,days,weeks,months,years',
-                __('companies.packages.form_input.duration_amount') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_customer') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_user') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_voucher') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_router') => 'required|numeric|min:0',
+                __('companies.packages.form_input.duration_type') => 'required_if:'.__('companies.packages.form_input.type').',1|in:minutes,hours,days,weeks,months,years',
+                __('companies.packages.form_input.duration_amount') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_customer') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_user') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_voucher') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_router') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             return $request;
@@ -44,15 +45,16 @@ class PackageValidation
         try {
             $valid = Validator::make($request->all(),[
                 'id' => 'required|exists:company_packages,id',
+                __('companies.packages.form_input.type') => 'required|boolean',
                 __('companies.packages.form_input.name') => 'required|string|min:3|max:199',
                 __('companies.packages.form_input.description') => 'nullable',
                 __('companies.packages.form_input.price') => 'required|numeric|min:0',
-                __('companies.packages.form_input.duration_type') => 'required|in:minutes,hours,days,weeks,months,years',
-                __('companies.packages.form_input.duration_amount') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_customer') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_user') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_voucher') => 'required|numeric|min:0',
-                __('companies.packages.form_input.max_router') => 'required|numeric|min:0',
+                __('companies.packages.form_input.duration_type') => 'required_if:'.__('companies.packages.form_input.type').',1|in:minutes,hours,days,weeks,months,years',
+                __('companies.packages.form_input.duration_amount') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_customer') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_user') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_voucher') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
+                __('companies.packages.form_input.max_router') => 'required_if:'.__('companies.packages.form_input.type').',1|numeric|min:0',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             return $request;

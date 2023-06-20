@@ -103,6 +103,8 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
 });
 Route::group(['prefix' => 'regions'], function () {
     Route::post('/all', [RegionController::class, 'all']);
+    Route::get('/file', [RegionController::class, 'fileRegions']);
+    Route::post('/search', [RegionController::class, 'searchRegions']);
 });
 Route::group(['prefix' => 'configs'], function () {
     Route::get('/times', function () {

@@ -1,5 +1,4 @@
 {
-    "/js/auth/users/privileges.js": "/js/auth/users/privileges.js",
-    "/js/auth/companies/index.js": "/js/auth/companies/index.js",
-    "/js/auth/companies/packages.js": "/js/auth/companies/packages.js"
+    "/js/auth/companies/invoices.js": "/js/auth/companies/invoices.js",
+    "/js/auth/companies/print-invoices.js": "/js/auth/companies/print-invoices.js"
 }

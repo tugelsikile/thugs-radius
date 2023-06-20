@@ -3,9 +3,10 @@ import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
 import {crudTaxes} from "../../../../../Services/ConfigService";
 import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
-import {parseInputFloat} from "../../../../../Components/mixedConsts";
+import {FormControlSMReactSelect, parseInputFloat} from "../../../../../Components/mixedConsts";
 import Select from "react-select";
 import {NumericFormat} from "react-number-format";
+import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
 
 // noinspection DuplicatedCode,JSCheckFunctionSignatures
 class FormTax extends React.Component {
@@ -47,10 +48,12 @@ class FormTax extends React.Component {
                     form.percent = props.data.meta.percent, form.company = null,
                     form.code = props.data.meta.code;
                 if (props.companies !== null) {
-                    if (props.companies.length > 0) {
-                        index = props.companies.findIndex((f) => f.value === props.data.meta.company.id);
-                        if (index >= 0) {
-                            form.company = props.companies[index];
+                    if (props.data.meta.company !== null) {
+                        if (props.companies.length > 0) {
+                            index = props.companies.findIndex((f) => f.value === props.data.meta.company.id);
+                            if (index >= 0) {
+                                form.company = props.companies[index];
+                            }
                         }
                     }
                 }
@@ -103,47 +106,40 @@ class FormTax extends React.Component {
         return (
             <Dialog fullWidth maxWidth="sm" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
-                    <DialogTitle>
-                        <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
-                        </button>
-                        <span className="modal-title text-sm">
-                            {this.state.form.id === null ? Lang.get('taxes.create.form') : Lang.get('taxes.update.form') }
-                        </span>
-                    </DialogTitle>
+                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('taxes.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('taxes.labels.menu')})}}/>
                     <DialogContent dividers>
                         {this.props.user === null ? null :
                             this.props.user.meta.company !== null ? null :
                                 <div className="form-group row">
-                                    <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
-                                    <div className="col-sm-4">
-                                        <Select noOptionsMessage={()=>Lang.get('companies.labels.no_select')} value={this.state.form.company} onChange={this.handleSelect} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies} isClearable placeholder={<small>{Lang.get('companies.labels.name')}</small>}/>
+                                    <label className="col-md-3 text-xs col-form-label">{Lang.get('companies.labels.name')}</label>
+                                    <div className="col-md-6">
+                                        <Select styles={FormControlSMReactSelect} noOptionsMessage={()=>Lang.get('companies.labels.no_select')} value={this.state.form.company} onChange={this.handleSelect} options={this.props.companies} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies} isClearable placeholder={<small>{Lang.get('companies.labels.name')}</small>}/>
                                     </div>
                                 </div>
                         }
                         <div className="form-group row">
-                            <label htmlFor="inputCode" className="col-sm-2 col-form-label">{Lang.get('taxes.labels.code')}</label>
-                            <div className="col-sm-4">
-                                <input id="inputCode" placeholder={Lang.get('taxes.labels.code')} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.code} name="code" onChange={this.handleChange}/>
+                            <label htmlFor="inputCode" className="col-md-3 text-xs col-form-label">{Lang.get('taxes.labels.code')}</label>
+                            <div className="col-md-4">
+                                <input id="inputCode" placeholder={Lang.get('taxes.labels.code')} className="form-control form-control-sm text-xs" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.code} name="code" onChange={this.handleChange}/>
                             </div>
                         </div>
                         <div className="form-group row">
-                            <label htmlFor="inputName" className="col-sm-2 col-form-label">{Lang.get('taxes.labels.name')}</label>
-                            <div className="col-sm-10">
-                                <input id="inputName" placeholder={Lang.get('taxes.labels.name')} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.name} name="name" onChange={this.handleChange}/>
+                            <label htmlFor="inputName" className="col-md-3 col-form-label text-xs">{Lang.get('taxes.labels.name')}</label>
+                            <div className="col-md-9">
+                                <input id="inputName" placeholder={Lang.get('taxes.labels.name')} className="form-control form-control-sm text-xs" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.name} name="name" onChange={this.handleChange}/>
                             </div>
                         </div>
                         {/*<div className="form-group row">
-                            <label htmlFor="inputDescription" className="col-sm-2 col-form-label">{Lang.get('taxes.labels.description')}</label>
-                            <div className="col-sm-10">
+                            <label htmlFor="inputDescription" className="col-md-2 col-form-label">{Lang.get('taxes.labels.description')}</label>
+                            <div className="col-md-10">
                                 <textarea style={{resize:'none'}} id="inputDescription" placeholder={Lang.get('taxes.labels.description')} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.companies} value={this.state.form.description} name="description" onChange={this.handleChange}/>
                             </div>
                         </div>*/}
                         <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputPercent">{Lang.get('taxes.labels.percent')}</label>
-                            <div className="col-sm-3">
-                                <div className="input-group">
-                                    <NumericFormat disabled={this.state.loading || this.props.loadings.companies} id="inputPercent" className="form-control text-sm text-right"
+                            <label className="col-md-3 col-form-label text-xs" htmlFor="inputPercent">{Lang.get('taxes.labels.percent')}</label>
+                            <div className="col-md-4">
+                                <div className="input-group input-group-sm">
+                                    <NumericFormat disabled={this.state.loading || this.props.loadings.companies} id="inputPercent" className="form-control text-xs form-control-sm text-right"
                                                    isAllowed={(values) => {
                                                        const { floatValue } = values;
                                                        const MAX_VALUE = 100;
@@ -155,15 +151,10 @@ class FormTax extends React.Component {
                             </div>
                         </div>
                     </DialogContent>
-                    <DialogActions className="justify-content-between">
-                        <button type="submit" className="btn btn-success" disabled={this.state.loading || this.props.loadings.companies}>
-                            {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
-                            {this.state.form.id === null ? Lang.get('taxes.create.button') : Lang.get('taxes.update.button',null, 'id')}
-                        </button>
-                        <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
-                        </button>
-                    </DialogActions>
+                    <ModalFooter
+                        form={this.state.form} handleClose={()=>this.props.handleClose()}
+                        loading={this.state.loading}
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('taxes.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('taxes.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

@@ -195,7 +195,15 @@ class CompanyRepository
             $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
             $company->radius_db_user = Str::slug($company->name,'_');
             $company->radius_db_pass = Str::random(8) . '-_';
+            $company->active_at = Carbon::now();
+            $company->active_by = auth()->guard('api')->user()->id;
+            if ($company->packageObj != null) {
+                if ($company->packageObj->duration_ammount > 0) {
+                    $company->expired_at = generateCompanyExpired(Carbon::now(),$company->packageObj->duration_string, $company->packageObj->duration_ammount);
+                }
+            }
             $company->saveOrFail();
+
             if ($request->has(__('companies.packages.form_input.additional'))) {
                 foreach ($request[__('companies.packages.form_input.additional')] as $item) {
                     $additional = new AdditionalPackage();
@@ -249,6 +257,8 @@ class CompanyRepository
             $this->generateDatabase($company);
             return $this->table(new Request(['id' => $company->id]))->first();
         } catch (Exception $exception) {
+            $company->delete();
+            if ($user != null) $user->delete();
             throw new Exception($exception->getMessage(),500);
         }
     }

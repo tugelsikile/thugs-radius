@@ -28,6 +28,12 @@ import FormPayment from "./Tools/FormPayment";
 import InvoiceInfo from "./Tools/InvoiceInfo";
 import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
 import CardStatus from "./Tools/CardStatus";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {PageCardSearch} from "../../../../Components/PageComponent";
+import {FormatPrice} from "../../../Client/Customer/Tools/Mixed";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCashRegister, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {faTrashAlt} from "@fortawesome/free-regular-svg-icons";
 
 
 class InvoicePage extends React.Component {
@@ -64,6 +70,8 @@ class InvoicePage extends React.Component {
         this.toggleInfo = this.toggleInfo.bind(this);
         this.handlePrint = this.handlePrint.bind(this);
         this.handleChangePage = this.handleChangePage.bind(this);
+        this.loadTaxes = this.loadTaxes.bind(this);
+        this.loadDiscounts = this.loadDiscounts.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -74,6 +82,10 @@ class InvoicePage extends React.Component {
                 loadings.privilege = true; this.setState({loadings});
                 getPrivileges([
                     {route:this.props.route,can:false},
+                    {route:'auth.clients',can:false},
+                    {route:'auth.clients.packages',can:false},
+                    {route:'auth.configs.taxes',can:false},
+                    {route:'auth.configs.discounts',can:false},
                     {route:'auth.clients.invoices.payments',can:false},
                 ])
                     .then((response) => this.setState({privilege:response.privileges,menus:response.menus}))
@@ -93,7 +105,7 @@ class InvoicePage extends React.Component {
         filter.page = {value:page,label:page}; this.setState({filter},()=>this.handleFilter());
     }
     confirmGenerate() {
-        confirmDialog(this,moment(this.state.filter.periode).format('yyyy-MM-DD'),'put',`${window.origin}/api/auth/companies/invoices/generate`,Lang.get('companies.invoices.generate.warning'),Lang.get('companies.invoices.generate.message'),'app.loadInvoices()');
+        confirmDialog(this,moment(this.state.filter.periode).format('yyyy-MM-DD'),'put',`${window.origin}/api/auth/companies/invoices/generate`,Lang.get('labels.generate.label',{Attribute:Lang.get('companies.invoices.labels.menu')}),Lang.get('labels.generate.message',{Attribute:Lang.get('companies.invoices.labels.menu')}),'app.loadInvoices()');
     }
     handlePrint(event) {
         event.preventDefault();
@@ -246,100 +258,157 @@ class InvoicePage extends React.Component {
         let filter = this.state.filter;
         filter.periode = event; this.setState({filter},()=>this.loadInvoices());
     }
-    async loadTaxes() {
+    async loadTaxes(data = null) {
         if (! this.state.loadings.taxes ) {
-            if (this.state.taxes.length === 0 ) {
-                let loadings = this.state.loadings;
-                loadings.taxes = true; this.setState({loadings});
-                try {
-                    let response = await crudTaxes();
-                    if (response.data.params === null) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let taxes = this.state.taxes;
+                    let index = taxes.findIndex((f) => f.value === data.value);
+                    if (index >= 0) {
+                        taxes[index] = data;
+                    } else {
+                        taxes.push(data);
+                    }
+                    this.setState({taxes});
+                }
+            } else {
+                if (this.state.taxes.length === 0 ) {
+                    loadings.taxes = true; this.setState({loadings});
+                    try {
+                        let response = await crudTaxes();
+                        if (response.data.params === null) {
+                            loadings.taxes = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            let taxes = [];
+                            if (response.data.params.length > 0) {
+                                response.data.params.map((item)=>{
+                                    item.meta.name = item.label;
+                                    item.label = item.meta.code;
+                                    taxes.push(item);
+                                });
+                            }
+                            loadings.taxes = false; this.setState({loadings,taxes});
+                        }
+                    } catch (e) {
                         loadings.taxes = false; this.setState({loadings});
-                        showError(response.data.message);
-                    } else {
-                        let taxes = [];
-                        if (response.data.params.length > 0) {
-                            response.data.params.map((item)=>{
-                                item.meta.name = item.label;
-                                item.label = item.meta.code;
-                                taxes.push(item);
-                            });
-                        }
-                        loadings.taxes = false; this.setState({loadings,taxes});
+                        showError(e.response.data.message);
                     }
-                } catch (e) {
-                    loadings.taxes = false; this.setState({loadings});
-                    showError(e.response.data.message);
                 }
             }
         }
     }
-    async loadDiscounts() {
+    async loadDiscounts(data = null) {
         if (! this.state.loadings.discounts) {
-            if (this.state.discounts.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.discounts = true; this.setState({loadings});
-                try {
-                    let response = await crudDiscounts();
-                    if (response.data.params === null) {
-                        loadings.discounts = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let discounts = this.state.discounts;
+                    let index = discounts.findIndex((f) => f.value === data.value);
+                    if (index >= 0) {
+                        discounts[index] = data;
                     } else {
-                        let discounts = [];
-                        if (response.data.params.length > 0) {
-                            response.data.params.map((item)=>{
-                                item.meta.label = item.label;
-                                item.label = item.meta.code;
-                                discounts.push(item);
-                            })
+                        discounts.push(data);
+                    }
+                    this.setState({discounts});
+                }
+            } else {
+                if (this.state.discounts.length === 0) {
+                    loadings.discounts = true; this.setState({loadings});
+                    try {
+                        let response = await crudDiscounts();
+                        if (response.data.params === null) {
+                            loadings.discounts = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            let discounts = [];
+                            if (response.data.params.length > 0) {
+                                response.data.params.map((item)=>{
+                                    item.meta.label = item.label;
+                                    item.label = item.meta.code;
+                                    discounts.push(item);
+                                })
+                            }
+                            loadings.discounts = false; this.setState({loadings,discounts});
                         }
-                        loadings.discounts = false; this.setState({loadings,discounts});
+                    } catch (e) {
+                        loadings.discounts = false; this.setState({loadings});
+                        showError(e.response.data.message);
                     }
-                } catch (e) {
-                    loadings.discounts = false; this.setState({loadings});
-                    showError(e.response.data.message);
                 }
             }
         }
     }
-    async loadCompanies() {
+    async loadCompanies(data = null) {
         if (! this.state.loadings.companies) {
-            if (this.state.companies.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.companies = true; this.setState({loadings});
-                try {
-                    let response = await crudCompany();
-                    if (response.data.params === null) {
-                        loadings.companies = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            let index;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    loadings.companies = true; this.setState({loadings});
+                    let companies = this.state.companies;
+                    index = companies.findIndex((f) => f.value === data.value);
+                    if (index >= 0) {
+                        companies[index] = data;
                     } else {
-                        loadings.companies = false; this.setState({loadings,companies:response.data.params});
+                        companies.push(data);
                     }
-                } catch (e) {
-                    loadings.companies = false; this.setState({loadings});
-                    if (e.response.status === 401) logout();
-                    showError(e.response.data.message);
+                    loadings.companies = false;
+                    this.setState({loadings,companies});
+                }
+            } else {
+                if (this.state.companies.length === 0) {
+                    loadings.companies = true; this.setState({loadings});
+                    try {
+                        let response = await crudCompany();
+                        if (response.data.params === null) {
+                            loadings.companies = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.companies = false; this.setState({loadings,companies:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.companies = false; this.setState({loadings});
+                        if (e.response.status === 401) logout();
+                        showError(e.response.data.message);
+                    }
                 }
             }
         }
     }
-    async loadPackages() {
+    async loadPackages(data = null) {
         if (! this.state.loadings.packages) {
-            if (this.state.packages.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.packages = true;this.setState({loadings});
-                try {
-                    let response = await crudCompanyPackage();
-                    if (response.data.params === null) {
-                        loadings.packages = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    loadings.packages = true; this.setState({loadings});
+                    let packages = this.state.packages;
+                    let index = packages.findIndex((f) => f.value === data.value);
+                    if (index >= 0) {
+                        packages[index] = data;
                     } else {
-                        loadings.packages = false; this.setState({loadings,packages:response.data.params});
+                        packages.push(data);
                     }
-                } catch (e) {
-                    loadings.packages = false; this.setState({loadings});
-                    if (e.response.status === 401) logout();
-                    showError(e.response.data.message);
+                    loadings.packages = false;
+                    this.setState({loadings,packages});
+                }
+            } else {
+                if (this.state.packages.length === 0) {
+                    loadings.packages = true;this.setState({loadings});
+                    try {
+                        let response = await crudCompanyPackage();
+                        if (response.data.params === null) {
+                            loadings.packages = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.packages = false; this.setState({loadings,packages:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.packages = false; this.setState({loadings});
+                        if (e.response.status === 401) logout();
+                        showError(e.response.data.message);
+                    }
                 }
             }
         }
@@ -394,18 +463,22 @@ class InvoicePage extends React.Component {
                 <FormInvoice open={this.state.modals.invoice.open} data={this.state.modals.invoice.data}
                              loadings={this.state.loadings} invoices={this.state.invoices.unfiltered}
                              discounts={this.state.discounts}
+                             onUpdateDiscounts={this.loadDiscounts}
                              taxes={this.state.taxes}
+                             onUpdateTaxes={this.loadTaxes}
                              companies={this.state.companies} periode={this.state.filter.periode}
+                             onUpdateCompanies={this.loadCompanies}
                              packages={this.state.packages}
+                             onUpdatePackages={this.loadPackages}
                              handleClose={this.toggleForm}
+                             privilege={this.state.privilege}
+                             user={this.state.user}
                              handleUpdate={this.loadInvoices}/>
 
                 <PageLoader/>
-                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('companies.invoices.labels.menu')} childrens={[
@@ -422,14 +495,14 @@ class InvoicePage extends React.Component {
                                 {this.state.loadings.invoices &&
                                     <CardPreloader/>
                                 }
-                                <div className="card-header">
+                                <div className="card-header pl-2">
                                     <div className="card-title">
                                         <div className="row">
                                             <div className="col-md-4">
                                                 <DatePicker
                                                     selected={this.state.filter.periode} maxDate={new Date()} title={Lang.get('companies.invoices.labels.select_periode')}
-                                                    className="form-control text-sm form-control-sm" disabled={this.state.loadings.invoices}
-                                                    locale={localStorage.getItem('locale_lang') === 'id' ? id : en }
+                                                    className="form-control text-sm form-control-sm mb-1" disabled={this.state.loadings.invoices}
+                                                    locale={localStorage.getItem('locale_lang') === 'id' ? id : en } showFullMonthYearPicker
                                                     onChange={this.handleDate} showMonthYearPicker dateFormat="MMMM yyyy"/>
                                             </div>
                                             <div className="col-md-8">
@@ -437,40 +510,35 @@ class InvoicePage extends React.Component {
                                                     <>
                                                         {this.state.privilege.create &&
                                                             <>
-                                                                <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.invoices} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('companies.invoices.create.form')}</button>
-                                                                <button onClick={()=>this.confirmGenerate()} disabled={this.state.loadings.invoices} className="btn btn-tool"><i className="fas fa-cash-register"/> {Lang.get('companies.invoices.generate.form')}</button>
+                                                                <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.invoices} className="btn btn-outline-primary btn-sm mb-1 mr-1 text-xs"><FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/> {Lang.get('labels.create.label',{Attribute:Lang.get('companies.invoices.labels.menu')})}</button>
+                                                                <button onClick={()=>this.confirmGenerate()} disabled={this.state.loadings.invoices} className="btn btn-outline-success btn-sm mr-1 mb-1 text-xs"><FontAwesomeIcon icon={faCashRegister} size="sm" className="mr-1"/> {Lang.get('companies.invoices.generate.form')}</button>
                                                             </>
                                                         }
                                                         {this.state.privilege.delete &&
                                                             this.state.invoices.selected.length > 0 &&
-                                                            <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.packages} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('companies.invoices.delete.select')}</button>
+                                                            <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.packages} className="btn btn-outline-danger btn-sm text-xs"><FontAwesomeIcon icon={faTrashAlt} className="mr-1" size="sm"/> {Lang.get('companies.invoices.delete.select')}</button>
                                                         }
                                                     </>
                                                 }
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('companies.invoices.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('companies.invoices.labels.menu')})}/>
                                 </div>
 
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-striped">
                                         <thead>
                                         <tr>
-                                            <th className="align-middle text-center" width={30}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.invoices} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th className="align-middle" width={120}>
+                                            {this.state.invoices.filtered.length > 0 &&
+                                                <th className="align-middle text-center pl-2" width={30}>
+                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
+                                                        <input data-id="" disabled={this.state.loadings.invoices} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
+                                                        <label htmlFor="checkAll" className="custom-control-label"/>
+                                                    </div>
+                                                </th>
+                                            }
+                                            <th className={this.state.invoices.filtered.length === 0 ? "align-middle pl-2" : "align-middle" } width={120}>
                                                 <BtnSort sort="code"
                                                     name={Lang.get('companies.invoices.labels.code')}
                                                     filter={this.state.filter}
@@ -506,40 +574,35 @@ class InvoicePage extends React.Component {
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle" width={30}>
+                                            <th className="align-middle pr-2" width={30}>
                                                 {Lang.get('messages.action')}
                                             </th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {this.state.invoices.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={6}>{Lang.get('messages.no_data')}</td></tr>
+                                            <tr><td className="align-middle text-center" colSpan={7}>{Lang.get('messages.no_data')}</td></tr>
                                             :
                                             this.state.invoices.filtered.map((item) =>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
-                                                        <div className="custom-control custom-checkbox">
+                                                    <td className="align-middle text-center pl-2">
+                                                        <div style={{zIndex:0}} className="custom-control custom-checkbox">
                                                             <input id={`cbx_${item.value}`} data-id={item.value} checked={this.state.invoices.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.invoices} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                             <label htmlFor={`cbx_${item.value}`} className="custom-control-label"/>
                                                         </div>
                                                     </td>
-                                                    <td className="align-middle text-center">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.company.name}</td>
-                                                    <td className="align-middle">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">
-                                                            {formatLocaleString(sumGrandTotalInvoiceSingle(item),2)}
-                                                        </span>
+                                                    <td className="align-middle text-center text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.company.name}</td>
+                                                    <td className="align-middle text-xs">
+                                                        {FormatPrice(sumGrandTotalInvoiceSingle(item))}
                                                     </td>
-                                                    <td className="align-middle">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(sumTotalPaymentSingle(item))}</span>
+                                                    <td className="align-middle text-xs">
+                                                        {FormatPrice(sumTotalPaymentSingle(item))}
                                                     </td>
-                                                    <td className="align-middle">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(sumGrandTotalInvoiceSingle(item) - sumTotalPaymentSingle(item))}</span>
+                                                    <td className="align-middle text-xs">
+                                                        {FormatPrice(sumGrandTotalInvoiceSingle(item) - sumTotalPaymentSingle(item))}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {
                                                             sumTotalPaymentSingle(item) === 0 ?
                                                                 <span className="badge badge-secondary btn-block">{Lang.get('companies.invoices.payments.labels.status.pending')}</span>
@@ -550,7 +613,7 @@ class InvoicePage extends React.Component {
                                                                     <span className="badge badge-warning btn-block">{Lang.get('companies.invoices.payments.labels.status.partial')}</span>
                                                         }
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pr-2">
                                                         {this.state.privilege !== null &&
                                                             <>
                                                                 <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">

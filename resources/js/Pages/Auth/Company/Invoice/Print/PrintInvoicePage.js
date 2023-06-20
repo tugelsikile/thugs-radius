@@ -11,6 +11,7 @@ import {crudCompanyInvoice} from "../../../../../Services/CompanyService";
 import {siteData} from "../../../../../Components/mixedConsts";
 import BodyInvoiceWM from "./BodyInvoiceWM";
 import BodyInvoice from "./BodyInvoice";
+import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
 
 class PrintInvoicePage extends React.Component {
     constructor(props) {
@@ -80,11 +81,7 @@ class PrintInvoicePage extends React.Component {
         return (
             <React.StrictMode>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} site={this.state.site} loadings={this.state.loadings}/>
 
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('companies.invoices.labels.print')} childrens={[

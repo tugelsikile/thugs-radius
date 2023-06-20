@@ -25,6 +25,7 @@ class ClientCompany extends Model
     protected $casts = [
         'discount' => 'double',
         'active_at' => 'datetime',
+        'expired_at' => 'datetime',
         'config' => 'object',
     ];
 

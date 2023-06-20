@@ -48,7 +48,7 @@ class FormPackage extends React.Component {
                 form.id = props.data.value,
                     form.name = props.data.label, form.description = props.data.meta.description,
                     form.prices.base = props.data.meta.prices,
-                    form.additional = props.data.meta.additional ? listCompanyPackageType[0] : listCompanyPackageType[1],
+                    form.additional = props.data.meta.additional ? listCompanyPackageType[1] : listCompanyPackageType[0],
                     form.duration.type = durationType[durationType.findIndex((f) => f.value === props.data.meta.duration.string)],
                     form.duration.amount = props.data.meta.duration.amount,
                     form.max.customer = props.data.meta.max.customers, form.max.user = props.data.meta.max.users,

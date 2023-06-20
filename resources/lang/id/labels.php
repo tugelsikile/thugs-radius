@@ -41,6 +41,7 @@ return [
     'generate' => [
         'label' => 'Generate :Attribute',
         'form' => 'Formulir Generate :Attribute',
+        'message' => "Anda akan melakukan generate :Attribute.\nLanjutkan generate :Attribute ?",
         'submit' => 'Generate :Attribute',
         'success' => ':Attribute berhasil digenerate'
     ],

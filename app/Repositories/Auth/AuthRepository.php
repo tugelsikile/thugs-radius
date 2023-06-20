@@ -177,14 +177,16 @@ class AuthRepository
                     if ($menu != null) {
                         $privilege = UserPrivilege::where('route', $menu->route)->where('level', $user->level)->first();
                         if ($privilege != null) {
-                            $response->push((object) [
-                                'value' => $menu->route,
-                                'func' => $menu->function,
-                                'read' => $privilege->read,
-                                'create' => $privilege->create,
-                                'update' => $privilege->update,
-                                'delete' => $privilege->delete,
-                            ]);
+                            if ($privilege->read) {
+                                $response->push((object) [
+                                    'value' => $menu->route,
+                                    'func' => $menu->function,
+                                    'read' => $privilege->read,
+                                    'create' => $privilege->create,
+                                    'update' => $privilege->update,
+                                    'delete' => $privilege->delete,
+                                ]);
+                            }
                         }
                     }
                 }

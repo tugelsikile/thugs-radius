@@ -14,11 +14,35 @@ return [
     'no_data' => 'Data Temporarily not available',
     'otp' => 'One Time Payment',
     'menu' => [
-        'name' => 'Menu Name / Function',
-        'read' => 'Read / Open',
-        'create' => 'Create',
-        'update' => 'Update',
-        'delete' => 'Delete'
+        'label' => 'Menu / Functions Lists',
+        'info' => [
+            'label' => 'Allow users to :type :menu',
+            'dont' => 'Restrict users to :type :menu',
+        ],
+        'name' => [
+            'label' => 'Menu Name',
+            'info' => 'Menu name based function or usage'
+        ],
+        'read' => [
+            'label' => 'Read',
+            'do' => 'read, open and or execute',
+            'info' => 'User with selected access allowed to read, open and or execute this actions'
+        ],
+        'create' => [
+            'label' => 'Create',
+            'do' => 'creating',
+            'info' => 'User with selected access allowed to create this action'
+        ],
+        'update' => [
+            'label' => 'Update',
+            'do' => 'updating',
+            'info' => 'User with selected access allowed to updating this action',
+        ],
+        'delete' => [
+            'label' => 'Delete',
+            'do' => 'deleting',
+            'info' => 'User with selected access allowed to deleting this action',
+        ]
     ],
     'company' => [
         'labels' => [

@@ -175,6 +175,10 @@ return [
                 'warning' => 'Jangan tutup / refresh halaman ini sebelum selesai',
                 'span' => 'Memproses :current dari :total voucher (:percent) Selesai',
             ],
+            'separator' => [
+                'label' => 'Pemisah',
+                'every' => 'Pisahkan Setiap'
+            ],
             'qty' => 'Jumlah Voucher',
             'max' => 'Batas maksimal jumlah generate adalah 5000 voucher',
             'length_max' => ':parent tidak boleh lebih dari :length',
@@ -222,6 +226,8 @@ return [
             'submit' => 'Generate Sekarang',
         ],
         'vouchers' => [
+            'batch' => 'Batch',
+            'menu' => 'Voucher Hotspot',
             'delete' => 'Hapus Voucher',
             'update' => 'Rubah Voucher'
         ]

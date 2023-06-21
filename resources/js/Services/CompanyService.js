@@ -1,9 +1,10 @@
 import Axios from "axios";
 import {showPromise} from "../Components/Toaster";
+import {axiosHeader} from "./Configs";
 
 export const crudCompany = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/auth/companies", data : data
     });
     if (show) {
@@ -13,7 +14,7 @@ export const crudCompany = async (data, show = false) => {
 }
 export const crudCompanyPackage = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/auth/companies/packages", data : data
     });
     if (show) {
@@ -23,7 +24,7 @@ export const crudCompanyPackage = async (data, show = false) => {
 }
 export const crudCompanyInvoice = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/auth/companies/invoices", data : data
     });
     if (show) {
@@ -33,7 +34,7 @@ export const crudCompanyInvoice = async (data, show = false) => {
 }
 export const crudCompanyInvoicePayment = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/auth/companies/invoices/payments", data : data
     });
     if (show) {

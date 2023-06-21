@@ -6,17 +6,13 @@ import {CardPreloader, responseMessage, siteData} from "../../../Components/mixe
 import {crudNas, reloadNasStatus} from "../../../Services/NasService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import PageLoader from "../../../Components/PageLoader";
-import MainHeader from "../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
-import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {crudCompany} from "../../../Services/CompanyService";
 import FormNas from "./Tools/FormNas";
 import StatusNas from "./Tools/StatusNas";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
-import {faTicketAlt} from "@fortawesome/free-solid-svg-icons";
 import {TableHeader} from "./Tools/Mixed";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
 

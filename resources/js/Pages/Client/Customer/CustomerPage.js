@@ -4,9 +4,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import {CardPreloader, formatPhone, responseMessage, siteData} from "../../../Components/mixedConsts";
-import {crudNas, crudProfile} from "../../../Services/NasService";
+import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../Services/NasService";
 import {crudCustomers} from "../../../Services/CustomerService";
-import {confirmDialog} from "../../../Components/Toaster";
+import {confirmDialog, showError} from "../../../Components/Toaster";
 import MainHeader from "../../../Components/Layout/MainHeader";
 import MainSidebar from "../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../Components/Layout/PageTitle";
@@ -32,6 +32,8 @@ import FormGenerate from "./Tools/FormGenerate";
 import {Popover} from "@mui/material";
 import {CardInfoCustomer, CardInfoNas, CardInfoPrice, CardInfoProfile} from "./Tools/CardPopover";
 import PageLoader from "../../../Components/PageLoader";
+import {crudCompany} from "../../../Services/CompanyService";
+import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 
 
 class CustomerPage extends React.Component {
@@ -39,8 +41,8 @@ class CustomerPage extends React.Component {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, site : false, nas : true, customers : true, profiles : true, provinces : true, taxes : true, discounts : true },
-            privilege : null, menus : [], site : null, nas : [], profiles : [], provinces : [], taxes : [], discounts : [],
+            loadings : { privilege : false, site : false, nas : true, customers : true, profiles : true, provinces : true, taxes : true, discounts : true, companies : true, pools : true, bandwidths : true },
+            privilege : null, menus : [], site : null, nas : [], profiles : [], provinces : [], taxes : [], discounts : [], companies : [], pools : [], bandwidths : [],
             customers : { filtered : [], unfiltered : [], selected : [] },
             filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
@@ -61,6 +63,12 @@ class CustomerPage extends React.Component {
         this.confirmActive = this.confirmActive.bind(this);
         this.toggleGenerate = this.toggleGenerate.bind(this);
         this.handleDataPerPage = this.handleDataPerPage.bind(this);
+        this.loadProfiles = this.loadProfiles.bind(this);
+        this.loadNas = this.loadNas.bind(this);
+        this.loadTaxes = this.loadTaxes.bind(this);
+        this.loadDiscounts = this.loadDiscounts.bind(this);
+        this.loadBandwidths = this.loadBandwidths.bind(this);
+        this.loadPools = this.loadPools.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -73,7 +81,16 @@ class CustomerPage extends React.Component {
                     .then((response)=>{
                         loadings.site = false;
                         this.setState({loadings,site:response},()=>{
-                            getPrivileges(this.props.route)
+                            getPrivileges([
+                                {route : this.props.route, can : false },
+                                {route : 'clients.configs.taxes', can: false },
+                                {route : 'clients.configs.discounts', can: false },
+                                {route : 'clients.nas', can: false },
+                                {route : 'clients.nas.pools', can : false },
+                                {route : 'clients.nas.bandwidths', can : false },
+                                {route : 'clients.nas.profiles', can: false },
+                                {route : 'clients.customers.hotspot', can : false }
+                            ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
                                 })
@@ -91,6 +108,15 @@ class CustomerPage extends React.Component {
                                 })
                                 .then(()=>{
                                     loadings.profiles = false; this.setState({loadings}, ()=>this.loadProfiles());
+                                })
+                                .then(()=>{
+                                    loadings.companies = false; this.setState({loadings},()=>this.loadCompanies());
+                                })
+                                .then(()=>{
+                                    loadings.bandwidths = false; this.setState({loadings},()=>this.loadBandwidths())
+                                })
+                                .then(()=>{
+                                    loadings.pools = false; this.setState({loadings},()=>this.loadPools());
                                 })
                                 .then(()=>{
                                     loadings.customers = false; this.setState({loadings}, ()=>this.loadCustomers());
@@ -315,52 +341,164 @@ class CustomerPage extends React.Component {
         loadings.customers = false;
         this.setState({loadings,customers});
     }
-    async loadDiscounts() {
-        if (! this.state.loadings.discounts) {
-            if (this.state.discounts.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.discounts = true; this.setState({loadings});
-                try {
-                    let response = await crudDiscounts();
-                    if (response.data.params === null) {
-                        loadings.discounts = false; this.setState({loadings});
+    async loadBandwidths(data = null) {
+        if (! this.state.loadings.bandwidths) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let bandwidths = this.state.bandwidths;
+                    let index = bandwidths.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        bandwidths[index] = data;
                     } else {
-                        let discounts = [];
-                        response.data.params.map((item)=>{
-                            item.meta.label = item.label;
-                            item.label = item.meta.code;
-                            discounts.push(item);
-                        });
-                        loadings.discounts = false; this.setState({loadings,discounts});
+                        bandwidths.push(data);
+                    }
+                    this.setState({bandwidths});
+                }
+            } else {
+                if (this.state.bandwidths.length === 0) {
+                    loadings.bandwidths = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfileBandwidth();
+                        if (response.data.params === null) {
+                            loadings.bandwidths = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.bandwidths = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
+    }
+    async loadPools(data = null) {
+        if (! this.state.loadings.pools ) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let pools = this.state.pools;
+                    let index = pools.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        pools[index] = data;
+                    } else {
+                        pools.push(data);
+                    }
+                    this.setState({pools});
+                }
+            } else {
+                if (this.state.pools.length === 0) {
+                    loadings.pools = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfilePools();
+                        if (response.data.params === null) {
+                            loadings.pools = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.pools = false; this.setState({loadings,pools:response.data.params});
+                        }
+                    } catch (e) {
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
+    }
+    async loadCompanies() {
+        if (! this.state.loadings.companies) {
+            if (this.state.companies.length === 0) {
+                let loadings = this.state.loadings;
+                loadings.companies = true; this.setState({loadings});
+                try {
+                    let response = await crudCompany();
+                    if (response.data.params === null) {
+                        loadings.companies = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        loadings.companies = false;
+                        this.setState({loadings,companies:response.data.params});
                     }
                 } catch (e) {
-                    loadings.discounts = false; this.setState({loadings});
+                    loadings.companies = false;
+                    this.setState({loadings});
                     responseMessage(e);
                 }
             }
         }
     }
-    async loadTaxes() {
-        if (! this.state.loadings.taxes) {
-            if (this.state.taxes.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.taxes = true; this.setState({loadings});
-                try {
-                    let response = await crudTaxes();
-                    if (response.data.params === null) {
-                        loadings.taxes = false; this.setState({loadings});
+    async loadDiscounts(data = null) {
+        if (! this.state.loadings.discounts) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let discounts = this.state.discounts;
+                    if (discounts.findIndex((f)=>f.value === data.value) >= 0) {
+                        discounts[discounts.findIndex((f)=>f.value === data.value)] = data;
                     } else {
-                        let taxes = [];
-                        response.data.params.map((item)=>{
-                            item.meta.label = item.label;
-                            item.label = item.meta.code;
-                            taxes.push(item);
-                        });
-                        loadings.taxes = false; this.setState({loadings,taxes});
+                        discounts.push(data);
                     }
-                } catch (e) {
-                    loadings.taxes = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({discounts});
+                }
+            } else {
+                if (this.state.discounts.length === 0) {
+                    loadings.discounts = true; this.setState({loadings});
+                    try {
+                        let response = await crudDiscounts();
+                        if (response.data.params === null) {
+                            loadings.discounts = false; this.setState({loadings});
+                        } else {
+                            let discounts = [];
+                            response.data.params.map((item)=>{
+                                item.meta.label = item.label;
+                                item.label = item.meta.code;
+                                discounts.push(item);
+                            });
+                            loadings.discounts = false; this.setState({loadings,discounts});
+                        }
+                    } catch (e) {
+                        loadings.discounts = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
+    }
+    async loadTaxes(data = null) {
+        if (! this.state.loadings.taxes) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let taxes = this.state.taxes;
+                    let index = taxes.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        taxes[index] = data;
+                    } else {
+                        taxes.push(data);
+                    }
+                    this.setState({taxes});
+                }
+            } else {
+                if (this.state.taxes.length === 0) {
+                    loadings.taxes = true; this.setState({loadings});
+                    try {
+                        let response = await crudTaxes();
+                        if (response.data.params === null) {
+                            loadings.taxes = false; this.setState({loadings});
+                        } else {
+                            let taxes = [];
+                            response.data.params.map((item)=>{
+                                item.meta.label = item.label;
+                                item.label = item.meta.code;
+                                taxes.push(item);
+                            });
+                            loadings.taxes = false; this.setState({loadings,taxes});
+                        }
+                    } catch (e) {
+                        loadings.taxes = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -384,40 +522,66 @@ class CustomerPage extends React.Component {
             }
         }*/
     }
-    async loadNas () {
+    async loadNas (data = null) {
         if (! this.state.loadings.nas) {
-            if (this.state.nas.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.nas = true; this.setState({loadings});
-                try {
-                    let response = await crudNas();
-                    if (response.data.params === null) {
-                        loadings.nas = false; this.setState({loadings});
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
                     } else {
-                        loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        nas.push(data);
                     }
-                } catch (e) {
-                    loadings.nas = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({nas});
+                }
+            } else {
+                if (this.state.nas.length === 0) {
+                    loadings.nas = true; this.setState({loadings});
+                    try {
+                        let response = await crudNas();
+                        if (response.data.params === null) {
+                            loadings.nas = false; this.setState({loadings});
+                        } else {
+                            loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.nas = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
     }
-    async loadProfiles() {
+    async loadProfiles(data = null) {
         if (! this.state.loadings.profiles ) {
-            if (this.state.profiles.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.profiles = true; this.setState({loadings});
-                try {
-                    let response = await crudProfile();
-                    if (response.data.params === null) {
-                        loadings.profiles = false; this.setState({loadings});
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let profiles = this.state.profiles;
+                    let index = profiles.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        profiles[index] = data;
                     } else {
-                        loadings.profiles = false; this.setState({loadings,profiles:response.data.params});
+                        profiles.push(data);
                     }
-                } catch (e) {
-                    loadings.profiles = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({profiles});
+                }
+            } else {
+                if (this.state.profiles.length === 0) {
+                    loadings.profiles = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfile();
+                        if (response.data.params === null) {
+                            loadings.profiles = false; this.setState({loadings});
+                        } else {
+                            loadings.profiles = false; this.setState({loadings,profiles:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.profiles = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -474,26 +638,38 @@ class CustomerPage extends React.Component {
                     {this.state.popover.data}
                 </Popover>
                 <FormGenerate open={this.state.modal.generate.open}
-                              profiles={this.state.profiles}
-                              nas={this.state.nas}
                               loadings={this.state.loadings}
+                              user={this.state.user} companies={this.state.companies}
+                              privilege={this.state.privilege}
                               customers={this.state.customers.unfiltered}
                               handleClose={this.toggleGenerate}
+                              profiles={this.state.profiles} onUpdateProfiles={this.loadProfiles}
+                              nas={this.state.nas} onUpdateNas={this.loadNas}
+                              pools={this.state.pools} onUpdatePool={this.loadPools}
+                              bandwidths={this.state.bandwidths} onUpdateBandwidth={this.loadBandwidths}
                               handleUpdate={this.loadCustomers}/>
                 <FormCustomer open={this.state.modal.customer.open} data={this.state.modal.customer.data}
                               loadings={this.state.loadings}
+                              privilege={this.state.privilege}
                               provinces={this.state.provinces}
                               taxes={this.state.taxes}
+                              onUpdateTaxes={this.loadTaxes}
                               discounts={this.state.discounts}
+                              onUpdateDiscounts={this.loadDiscounts}
                               profiles={this.state.profiles}
+                              onUpdateProfiles={this.loadProfiles}
                               nas={this.state.nas}
+                              onUpdateNas={this.loadNas}
+                              pools={this.state.pools}
+                              onUpdatePool={this.loadPools}
+                              bandwidths={this.state.bandwidths}
+                              onUpdateBandwidth={this.loadBandwidths}
+                              user={this.state.user}
+                              companies={this.state.companies}
                               handleClose={this.toggleModal} handleUpdate={this.loadCustomers}/>
 
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('customers.labels.menu')} childrens={[]}/>
 
@@ -508,12 +684,12 @@ class CustomerPage extends React.Component {
                                 <div className="card-header" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.customers}
-                                                   langs={{create:Lang.get('customers.create.button'),delete:Lang.get('customers.delete.button')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('customers.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('customers.labels.menu')})}}
                                                    selected={this.state.customers.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}
                                                    others={[
-                                                       {lang : Lang.get('customers.hotspot.generate.button'), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
+                                                       this.state.privilege === null ? null : this.state.privilege.hotspot === null ? null : ! this.state.privilege.hotspot.create ? null : {lang : Lang.get('labels.generate.label',{Attribute:Lang.get('customers.hotspot.vouchers.menu')}), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
                                                    ]}/>
                                     <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('customers.labels.search')}/>
                                 </div>

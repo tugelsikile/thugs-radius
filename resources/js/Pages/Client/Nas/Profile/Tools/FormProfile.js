@@ -25,7 +25,7 @@ class FormProfile extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            loading : false, queues : [],
+            loading : false, queues : [], hide_additional : false, hide_type : false,
             form : {
                 id : null, company : null, pool : null, bandwidth : null, nas : null,
                 description : '', name : '', type : serviceType[0],
@@ -56,6 +56,11 @@ class FormProfile extends React.Component {
         let dataParentQueue = null;
         let form = this.state.form;
         let index;
+        if (typeof props.hideAdditional !== 'undefined') {
+            if (props.hideAdditional !== null) {
+                this.setState({hide_additional:props.hideAdditional});
+            }
+        }
         if (! props.open) {
             form.id = null, form.company = null, form.pool = null, form.bandwidth = null,
                 form.name = '', form.type = serviceType[0],
@@ -65,6 +70,25 @@ class FormProfile extends React.Component {
                 form.address.local = '', form.address.dns = [],
                 form.queue = null;
         } else {
+            if (typeof props.type !== 'undefined') {
+                if (props.type !== null) {
+                    index = serviceType.findIndex((f)=> f.value === props.type);
+                    if (index >= 0) {
+                        form.type = serviceType[index];
+                    }
+                }
+            }
+            if (typeof props.additional !== 'undefined') {
+                if (props.additional !== null) {
+                    form.additional = props.additional;
+                }
+            }
+            this.setState({hide_type:false})
+            if (typeof props.hideType !== 'undefined') {
+                if (props.hideType !== null) {
+                    this.setState({hide_type:props.hideType});
+                }
+            }
             if (props.data !== null) {
                 if (props.nas !== null) {
                     if (props.nas.length > 0) {
@@ -101,6 +125,11 @@ class FormProfile extends React.Component {
                     form.additional = props.data.meta.additional,
                     form.limit.rate = props.data.meta.limit.rate,
                     form.price = props.data.meta.price;
+                index = serviceType.findIndex((f)=> f.value === props.data.meta.type);
+                //console.log(index);
+                if (index >= 0) {
+                    form.type = serviceType[index];
+                }
                 index = limitType.findIndex((f) => f.value === props.data.meta.limit.type);
                 if (index >= 0) {
                     form.limit.type = limitType[index];
@@ -127,6 +156,7 @@ class FormProfile extends React.Component {
                 if (props.data.meta.queue !== null) {
                     dataParentQueue = props.data.meta.queue;
                 }
+                //console.log(form, props);
             }
         }
         this.setState({form,loading:false}, ()=>{
@@ -308,17 +338,18 @@ class FormProfile extends React.Component {
                     <form onSubmit={this.handleSave}>
                         <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('profiles.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('profiles.labels.menu')})}}/>
                         <DialogContent dividers>
-                            {this.state.form.id === null &&
-                                <div className="form-group row">
-                                    <div className="col-md-10 offset-2">
-                                        <div className="custom-control custom-checkbox">
-                                            <input onChange={this.handleCheck} className="custom-control-input" type="checkbox" id="inputAdditional" checked={this.state.form.additional}/>
-                                            <label htmlFor="inputAdditional" className="custom-control-label text-xs">
-                                                {this.state.form.additional ? Lang.get('profiles.labels.additional.info_true') : Lang.get('profiles.labels.additional.info_false')}
-                                            </label>
+                            {this.state.form.id !== null ? null :
+                                ! this.state.hide_additional &&
+                                    <div className="form-group row">
+                                        <div className="col-md-10 offset-2">
+                                            <div className="custom-control custom-checkbox">
+                                                <input onChange={this.handleCheck} className="custom-control-input" type="checkbox" id="inputAdditional" checked={this.state.form.additional}/>
+                                                <label htmlFor="inputAdditional" className="custom-control-label text-xs">
+                                                    {this.state.form.additional ? Lang.get('profiles.labels.additional.info_true') : Lang.get('profiles.labels.additional.info_false')}
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                             }
 
                             {this.state.form.additional ? null :
@@ -344,14 +375,10 @@ class FormProfile extends React.Component {
                                                 <div className="col-md-2">
                                                     {this.state.form.nas === null ?
                                                         this.props.privilege !== null && typeof this.props.privilege.nas !== 'undefined' && this.props.privilege.nas !== null && this.props.privilege.nas.create &&
-                                                        <Tooltip title={Lang.get('labels.create.label',{Attribute:Lang.get('nas.labels.menu')})}>
-                                                            <button onClick={()=>this.toggleNas()} type="button" disabled={this.state.loading || this.props.loadings.nas} className="btn btn-outline-primary btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
-                                                        </Tooltip>
+                                                        <button title={Lang.get('labels.create.label',{Attribute:Lang.get('nas.labels.menu')})} onClick={()=>this.toggleNas()} type="button" disabled={this.state.loading || this.props.loadings.nas} className="btn btn-outline-primary btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                         :
                                                         this.props.privilege !== null && typeof this.props.privilege.nas !== 'undefined' && this.props.privilege.nas !== null && this.props.privilege.nas.create &&
-                                                        <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('nas.labels.menu')})}>
-                                                            <button onClick={()=>this.toggleNas(this.state.form.nas)} type="button" disabled={this.state.loading || this.props.loadings.nas} className="btn btn-outline-info btn-sm text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
-                                                        </Tooltip>
+                                                        <button title={Lang.get('labels.update.label',{Attribute:Lang.get('nas.labels.menu')})} onClick={()=>this.toggleNas(this.state.form.nas)} type="button" disabled={this.state.loading || this.props.loadings.nas} className="btn btn-outline-info btn-sm text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
                                                     }
                                                 </div>
                                             </div>
@@ -366,12 +393,14 @@ class FormProfile extends React.Component {
                                         }
                                     </div>
 
-                                    <div className="form-group row">
-                                        <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
-                                        <div className="col-md-2">
-                                            <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                    {! this.state.hide_type &&
+                                        <div className="form-group row">
+                                            <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
+                                            <div className="col-md-2">
+                                                <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                            </div>
                                         </div>
-                                    </div>
+                                    }
 
                                     <div className="form-group row">
                                         <label className="col-md-2 col-form-label text-xs">{Lang.get('nas.pools.labels.name')}</label>
@@ -389,14 +418,10 @@ class FormProfile extends React.Component {
                                                     {this.state.form.nas === null ? null :
                                                         this.state.form.pool === null ?
                                                             this.props.privilege !== null && typeof this.props.privilege.pools !== 'undefined' && this.props.privilege.pools.create && ! this.props.loadings.pools && ! this.state.loading &&
-                                                            <Tooltip title={Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')})}>
-                                                                <button onClick={()=>this.togglePool()} disabled={this.state.loading || this.props.loadings.pools} type="button" className="btn btn-outline-primary btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
-                                                            </Tooltip>
+                                                            <button title={Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')})} onClick={()=>this.togglePool()} disabled={this.state.loading || this.props.loadings.pools} type="button" className="btn btn-outline-primary btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                             :
                                                             this.props.privilege !== null && typeof this.props.privilege.pools !== 'undefined' && this.props.privilege.pools.update && ! this.props.loadings.pools && ! this.state.loading &&
-                                                            <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('nas.pools.labels.menu')})}>
-                                                                <button onClick={()=>this.togglePool(this.state.form.pool)} disabled={this.state.loading || this.props.loadings.pools} type="button" className="btn btn-outline-info btn-sm text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
-                                                            </Tooltip>
+                                                            <button title={Lang.get('labels.update.label',{Attribute:Lang.get('nas.pools.labels.menu')})} onClick={()=>this.togglePool(this.state.form.pool)} disabled={this.state.loading || this.props.loadings.pools} type="button" className="btn btn-outline-info btn-sm text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
                                                     }
                                                 </div>
                                             </div>
@@ -421,14 +446,10 @@ class FormProfile extends React.Component {
                                                 <div className="col-md-2">
                                                     {this.state.form.bandwidth === null ?
                                                             this.props.privilege !== null && typeof this.props.privilege.bandwidths !== 'undefined' && this.props.privilege.bandwidths.create && !this.props.loadings.bandwidths && !this.state.loading &&
-                                                            <Tooltip title={Lang.get('labels.create.label',{Attribute:Lang.get('bandwidths.labels.menu')})}>
-                                                                <button onClick={()=>this.toggleBandwidth()} type="button" disabled={this.state.loading || this.props.loadings.bandwidths} className="btn btn-sm btn-outline-primary text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
-                                                            </Tooltip>
+                                                        <button title={Lang.get('labels.create.label',{Attribute:Lang.get('bandwidths.labels.menu')})} onClick={()=>this.toggleBandwidth()} type="button" disabled={this.state.loading || this.props.loadings.bandwidths} className="btn btn-sm btn-outline-primary text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
                                                             :
                                                             this.props.privilege !== null && typeof this.props.privilege.bandwidths !== 'undefined' && this.props.privilege.bandwidths.update && !this.props.loadings.bandwidths && !this.state.loading &&
-                                                            <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('bandwidths.labels.menu')})}>
-                                                                <button onClick={()=>this.toggleBandwidth(this.state.form.bandwidth)} type="button" disabled={this.state.loading || this.props.loadings.bandwidths} className="btn btn-sm btn-outline-info text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
-                                                            </Tooltip>
+                                                        <button title={Lang.get('labels.update.label',{Attribute:Lang.get('bandwidths.labels.menu')})} onClick={()=>this.toggleBandwidth(this.state.form.bandwidth)} type="button" disabled={this.state.loading || this.props.loadings.bandwidths} className="btn btn-sm btn-outline-info text-xs"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
                                                     }
                                                 </div>
                                             </div>
@@ -507,9 +528,7 @@ class FormProfile extends React.Component {
                                                 </div>
                                                 <div className="col-md-2">
                                                     {this.state.form.nas === null ? null :
-                                                        <Tooltip title={Lang.get('labels.search',{Attribute:Lang.get('queue.labels.name')})}>
-                                                            <button type="button" onClick={this.loadParentQueue} disabled={this.state.loading || this.state.form.nas === null} className="btn btn-outline-secondary btn-sm text-xs"><FontAwesomeIcon icon={faRefresh} size="sm"/></button>
-                                                        </Tooltip>
+                                                        <button title={Lang.get('labels.search',{Attribute:Lang.get('queue.labels.name')})} type="button" onClick={this.loadParentQueue} disabled={this.state.loading || this.state.form.nas === null} className="btn btn-outline-secondary btn-sm text-xs"><FontAwesomeIcon icon={faRefresh} size="sm"/></button>
                                                     }
                                                 </div>
                                             </div>

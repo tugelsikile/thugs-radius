@@ -4,9 +4,14 @@ return [
         'keywords' => 'keyword',
         'search_type' => 'search_type',
     ],
+    'filter' => ':Attribute Filter',
+    'preview' => 'Preview :Attribute',
+    'name' => ':Attribute Name',
+    'description' => ':Attribute Description',
+    'range' => ':Attribute Range',
     'type' => ':Attribute Type',
     'additional' => [
-        'true' => 'Additional :Attribute Tambahan',
+        'true' => 'Additional :Attribute',
         'false' => 'Main :Attribute',
     ],
     'search' => 'Search :Attribute ...',
@@ -15,12 +20,15 @@ return [
         'option' => 'Select :Attribute',
         'not_found' => ':Attribute not found',
     ],
-    'create' => [
+    'add' => [
         'label' => 'Add :Attribute',
-        'form' => 'Add :Attribute Form',
-        'submit' => 'Save and Add :Attribute',
-        'success' => ':Attribute successfully added and saved',
-        'pending' => 'Adding :Attribute ...',
+    ],
+    'create' => [
+        'label' => 'Create :Attribute',
+        'form' => 'Create :Attribute Form',
+        'submit' => 'Save and Create :Attribute',
+        'success' => ':Attribute successfully created and saved',
+        'pending' => 'Creating :Attribute ...',
     ],
     'update' => [
         'label' => 'Update :Attribute',

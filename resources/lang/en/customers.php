@@ -175,6 +175,10 @@ return [
                 'warning' => 'Dont close / refresh this page until success',
                 'span' => 'Processing :current of :total voucher (:percent) Finish',
             ],
+            'separator' => [
+                'label' => 'Separator',
+                'every' => 'Separate Every'
+            ],
             'qty' => 'Voucher Quantity',
             'max' => 'Max Generate Voucher is 5000',
             'length_max' => ':parent cant no more than :length',
@@ -189,8 +193,8 @@ return [
                 'type' => 'User Name Type',
                 'preview' => 'User Name Preview',
                 'prefix' => [
-                    'true' => 'User Name Suffix',
-                    'false' => 'User Name Prefix'
+                    'true' => 'Random As User Name Suffix',
+                    'false' => 'Random As User Name Prefix'
                 ]
             ],
             'passwords' => [
@@ -203,8 +207,8 @@ return [
                 'type' => 'Password Type',
                 'preview' => 'Password Preview',
                 'prefix' => [
-                    'true' => 'Password Suffix',
-                    'false' => 'Password Prefix'
+                    'true' => 'Random As Password Suffix',
+                    'false' => 'Random As Password Prefix'
                 ]
             ],
             'types' => [
@@ -222,6 +226,8 @@ return [
             'submit' => 'Generate Now',
         ],
         'vouchers' => [
+            'batch' => 'Batch',
+            'menu' => 'Hotspot Voucher',
             'delete' => 'Delete Voucher',
             'update' => 'Update Voucher'
         ]

@@ -36,6 +36,7 @@ class RegionRepository
     {
         try {
             $response = collect();
+            //dd($request->all(),__('labels.form_input.search_type'));
             if ($request->has(__('labels.form_input.search_type'))) {
                 $searchType = $request[__('labels.form_input.search_type')];
                 $keywords = '';

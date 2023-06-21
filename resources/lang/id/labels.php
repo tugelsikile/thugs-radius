@@ -4,6 +4,11 @@ return [
         'keywords' => 'kata_kunci',
         'search_type' => 'jenis_pencarian',
     ],
+    'filter' => 'Saring :Attribute',
+    'preview' => 'Pratinjau :Attribute',
+    'name' => 'Nama :Attribute',
+    'description' => 'Keterangan :Attribute',
+    'range' => 'Rentang :Attribute',
     'type' => 'Jenis :Attribute',
     'additional' => [
         'true' => ':Attribute Tambahan',
@@ -15,12 +20,15 @@ return [
         'option' => 'Pilih :Attribute',
         'not_found' => ':Attribute tidak ditemukan',
     ],
-    'create' => [
+    'add' => [
         'label' => 'Tambah :Attribute',
-        'form' => 'Formulir Tambah :Attribute',
-        'submit' => 'Tambah dan Simpan :Attribute',
-        'success' => ':Attribute berhasil ditambahkan',
-        'pending' => 'Menambahkan :Attribute ...',
+    ],
+    'create' => [
+        'label' => 'Buat :Attribute',
+        'form' => 'Formulir Buat :Attribute',
+        'submit' => 'Buat dan Simpan :Attribute',
+        'success' => ':Attribute berhasil dibuat',
+        'pending' => 'Membuat :Attribute ...',
     ],
     'update' => [
         'label' => 'Rubah :Attribute',

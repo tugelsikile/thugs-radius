@@ -1,9 +1,10 @@
 import Axios from "axios";
 import {showPromise} from "../Components/Toaster";
+import {axiosHeader} from "./Configs";
 
 export const crudNas = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas", data : data
     });
     if (show) {
@@ -13,7 +14,7 @@ export const crudNas = async (data, show = false) => {
 }
 export const testNasConnection = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/test-connection", data : data
     });
     if (show) {
@@ -23,14 +24,14 @@ export const testNasConnection = async (data, show = false) => {
 }
 export const decryptEncryptPass = async (data) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/decrypt-encrypt", data : data
     });
     return Promise.resolve(request);
 }
 export const crudProfilePools = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/profiles/pools", data : data
     });
     if (show) {
@@ -40,7 +41,7 @@ export const crudProfilePools = async (data, show = false) => {
 }
 export const crudProfileBandwidth = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/profiles/bandwidths", data : data
     });
     if (show) {
@@ -50,7 +51,7 @@ export const crudProfileBandwidth = async (data, show = false) => {
 }
 export const crudProfile = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/profiles", data : data
     });
     if (show) {
@@ -60,7 +61,7 @@ export const crudProfile = async (data, show = false) => {
 }
 export const getParentQueue = async (data, show = false) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/parent-queues", data : data
     });
     if (show) {
@@ -70,7 +71,7 @@ export const getParentQueue = async (data, show = false) => {
 }
 export const reloadNasStatus = async (data) => {
     let request = Axios({
-        headers : { "Accept" : "application/json", "Authorization" : `Bearer ${localStorage.getItem('token')}` },
+        headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/nas/reload-status", data : data
     });
     return Promise.resolve(request);

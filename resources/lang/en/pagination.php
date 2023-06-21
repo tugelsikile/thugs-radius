@@ -15,5 +15,7 @@ return [
 
     'previous' => '&laquo; Previous',
     'next' => 'Next &raquo;',
-
+    'labels' => [
+        'showing' => 'Showing :dataFirst to :dataLast of :max total data'
+    ],
 ];

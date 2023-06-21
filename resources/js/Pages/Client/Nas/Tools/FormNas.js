@@ -398,6 +398,7 @@ class FormNas extends React.Component {
                         buttons={[
                             <button onClick={this.testConnection} type="button" className="btn btn-outline-primary text-xs" disabled={this.state.loading}><FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/> {Lang.get('nas.labels.check_connection')}</button>
                         ]} loading={this.state.loading}
+                        pendings={{create:Lang.get('labels.create.pending',{Attribute:Lang.get('nas.labels.menu')}),update:Lang.get('labels.update.pending',{Attribute:Lang.get('nas.labels.menu')})}}
                         langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('nas.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('nas.labels.menu')})}}/>
                 </form>
             </Dialog>

@@ -20,7 +20,35 @@ export const ButtonSubmit = (props) => {
         <button type="submit" className="btn  btn-outline-success text-xs" disabled={props.loading}>
             <FontAwesomeIcon spin={props.loading} className="mr-1"
                              icon={props.loading ? faCircleNotch : faSave}/>
-            {props.form.id === null ? props.langs.create : props.langs.update}
+            {props.form.id === null ?
+                <React.Fragment>
+                    {
+                        ! props.loading ? props.langs.create
+                            :
+                            typeof props.pendings === 'undefined' ? props.langs.create
+                                :
+                                typeof props.pendings.create === 'undefined' ? props.langs.create
+                                    :
+                                    props.pendings.create === null ? props.langs.create
+                                        :
+                                        props.pendings.create
+                    }
+                </React.Fragment>
+                :
+                <React.Fragment>
+                    {
+                        ! props.loading ? props.langs.update
+                            :
+                            typeof props.pendings === 'undefined' ? props.langs.update
+                                :
+                                typeof props.pendings.update === 'undefined' ? props.langs.update
+                                    :
+                                    props.pendings.update === null ? props.langs.update
+                                        :
+                                        props.pendings.update
+                    }
+                </React.Fragment>
+            }
         </button>
     );
 }

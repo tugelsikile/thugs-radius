@@ -19,13 +19,15 @@ return [
         'label' => 'Tambah :Attribute',
         'form' => 'Formulir Tambah :Attribute',
         'submit' => 'Tambah dan Simpan :Attribute',
-        'success' => ':Attribute berhasil ditambahkan'
+        'success' => ':Attribute berhasil ditambahkan',
+        'pending' => 'Menambahkan :Attribute ...',
     ],
     'update' => [
         'label' => 'Rubah :Attribute',
         'form' => 'Formulir Rubah :Attribute',
         'submit' => 'Simpan Perubahan :Attribute',
-        'success' => ':Attribute berhasil disimpan'
+        'success' => ':Attribute berhasil disimpan',
+        'pending' => 'Menyimpan :Attribute ...',
     ],
     'delete' => [
         'label' => 'Hapus :Attribute',
@@ -43,7 +45,8 @@ return [
         'form' => 'Formulir Generate :Attribute',
         'message' => "Anda akan melakukan generate :Attribute.\nLanjutkan generate :Attribute ?",
         'submit' => 'Generate :Attribute',
-        'success' => ':Attribute berhasil digenerate'
+        'success' => ':Attribute berhasil digenerate',
+        'pending' => 'Proses Generate :Attribute',
     ],
     'active' => [
         'success' => 'Status aktif :Attribute berhasil dirubah',

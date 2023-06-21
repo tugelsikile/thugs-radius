@@ -4,7 +4,6 @@ import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudCompany} from "../../../../Services/CompanyService";
 import {
     CardPreloader, durationType, durationTypeByte,
-    formatBytes,
     formatLocaleString,
     responseMessage,
     siteData
@@ -12,8 +11,6 @@ import {
 import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../../Services/NasService";
 import {getPrivileges, getRootUrl} from "../../../../Components/Authentication";
 import PageLoader from "../../../../Components/PageLoader";
-import MainHeader from "../../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
@@ -47,6 +44,9 @@ class ProfilePage extends React.Component {
         this.handleCheck = this.handleCheck.bind(this);
         this.loadProfiles = this.loadProfiles.bind(this);
         this.handlePopOver = this.handlePopOver.bind(this);
+        this.loadNas = this.loadNas.bind(this);
+        this.loadBandwidths = this.loadBandwidths.bind(this);
+        this.loadPools = this.loadPools.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -59,7 +59,12 @@ class ProfilePage extends React.Component {
                     .then((response)=>{
                         loadings.site = false;
                         this.setState({loadings,site:response},()=>{
-                            getPrivileges(this.props.route)
+                            getPrivileges([
+                                {route : this.props.route, can : false },
+                                {route : 'clients.nas', can : false },
+                                {route : 'clients.nas.pools', can : false },
+                                {route : 'clients.nas.bandwidths', can : false }
+                            ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
                                 })
@@ -255,61 +260,100 @@ class ProfilePage extends React.Component {
             }
         }
     }
-    async loadNas() {
+    async loadNas(data = null) {
         if (! this.state.loadings.nas) {
-            if (this.state.nas.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.nas = true; this.setState({loadings});
-                try {
-                    let response = await crudNas();
-                    if (response.data.params === null) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
+                    } else {
+                        nas.push(data);
+                    }
+                    this.setState({nas});
+                }
+            } else {
+                if (this.state.nas.length === 0) {
+                    loadings.nas = true; this.setState({loadings});
+                    try {
+                        let response = await crudNas();
+                        if (response.data.params === null) {
+                            loadings.nas = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        }
+                    } catch (e) {
                         loadings.nas = false; this.setState({loadings});
-                        showError(response.data.message);
-                    } else {
-                        loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        responseMessage(e);
                     }
-                } catch (e) {
-                    loadings.nas = false; this.setState({loadings});
-                    responseMessage(e);
                 }
             }
         }
     }
-    async loadBandwidths() {
+    async loadBandwidths(data = null) {
         if (! this.state.loadings.bandwidths) {
-            if (this.state.bandwidths.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.bandwidths = true; this.setState({loadings});
-                try {
-                    let response = await crudProfileBandwidth();
-                    if (response.data.params === null) {
-                        loadings.bandwidths = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let bandwidths = this.state.bandwidths;
+                    let index = bandwidths.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        bandwidths[index] = data;
                     } else {
-                        loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params});
+                        bandwidths.push(data);
                     }
-                } catch (e) {
-                    loadings.bandwidths = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({bandwidths});
+                }
+            } else {
+                if (this.state.bandwidths.length === 0) {
+                    loadings.bandwidths = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfileBandwidth();
+                        if (response.data.params === null) {
+                            loadings.bandwidths = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.bandwidths = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
     }
-    async loadPools() {
+    async loadPools(data = null) {
         if (! this.state.loadings.pools ) {
-            if (this.state.pools.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.pools = true; this.setState({loadings});
-                try {
-                    let response = await crudProfilePools();
-                    if (response.data.params === null) {
-                        loadings.pools = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let pools = this.state.pools;
+                    let index = pools.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        pools[index] = data;
                     } else {
-                        loadings.pools = false; this.setState({loadings,pools:response.data.params});
+                        pools.push(data);
                     }
-                } catch (e) {
-                    responseMessage(e);
+                    this.setState({pools});
+                }
+            } else {
+                if (this.state.pools.length === 0) {
+                    loadings.pools = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfilePools();
+                        if (response.data.params === null) {
+                            loadings.pools = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.pools = false; this.setState({loadings,pools:response.data.params});
+                        }
+                    } catch (e) {
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -361,7 +405,8 @@ class ProfilePage extends React.Component {
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
                     transformOrigin={{ vertical: 'top', horizontal: 'left', }}
                     onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
-                <FormProfile user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} nas={this.state.nas} pools={this.state.pools} bandwidths={this.state.bandwidths} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadProfiles}/>
+                <FormProfile privilege={this.state.privilege} user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} nas={this.state.nas} onUpdateNas={this.loadNas} pools={this.state.pools} onUpdatePool={this.loadPools} bandwidths={this.state.bandwidths} onUpdateBandwidth={this.loadBandwidths} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadProfiles}/>
+
                 <PageLoader/>
 
                 <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>

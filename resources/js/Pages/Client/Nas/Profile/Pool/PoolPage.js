@@ -36,6 +36,7 @@ class PoolPage extends React.Component {
         this.confirmDelete = this.confirmDelete.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
         this.loadPools = this.loadPools.bind(this);
+        this.loadNas = this.loadNas.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -185,22 +186,35 @@ class PoolPage extends React.Component {
             }
         }
     }
-    async loadNas() {
+    async loadNas(data = null) {
         if (! this.state.loadings.nas) {
-            if (this.state.nas.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.nas = true; this.setState({loadings});
-                try {
-                    let response = await crudNas();
-                    if (response.data.params === null) {
-                        loadings.nas = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
                     } else {
-                        loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        nas.push(data);
                     }
-                } catch (e) {
-                    loadings.nas = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({nas});
+                }
+            } else {
+                if (this.state.nas.length === 0) {
+                    loadings.nas = true; this.setState({loadings});
+                    try {
+                        let response = await crudNas();
+                        if (response.data.params === null) {
+                            loadings.nas = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.nas = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -245,7 +259,7 @@ class PoolPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <FormPool nas={this.state.nas} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} user={this.state.user} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadPools}/>
+                <FormPool onUpdateNas={this.loadNas} privilege={this.state.privilege} nas={this.state.nas} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} user={this.state.user} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadPools}/>
                 <PageLoader/>
 
                 <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>

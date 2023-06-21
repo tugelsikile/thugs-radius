@@ -1,5 +1,10 @@
 import React from "react";
-import {parseInputFloat, priorityList, responseMessage} from "../../../../../../Components/mixedConsts";
+import {
+    FormControlSMReactSelect,
+    parseInputFloat,
+    priorityList,
+    responseMessage
+} from "../../../../../../Components/mixedConsts";
 import {crudProfileBandwidth, getParentQueue} from "../../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../../Components/Toaster";
 import {ModalFooter, ModalHeader} from "../../../../../../Components/ModalComponent";
@@ -316,13 +321,14 @@ class FormBandwidth extends React.Component {
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label">{Lang.get('bandwidths.labels.priority.name')}</label>
                             <div className="col-sm-2">
-                                <Select className="text-sm" noOptionsMessage={()=>Lang.get('bandwidths.labels.priority.not_found')} onChange={(e)=>this.handleSelect(e,'priority')} isDisabled={this.state.loading} options={priorityList} value={this.state.form.priority} placeholder={Lang.get('bandwidths.labels.priority.name')}/>
+                                <Select menuPlacement="top" maxMenuHeight={150} styles={FormControlSMReactSelect} className="text-sm" noOptionsMessage={()=>Lang.get('bandwidths.labels.priority.not_found')} onChange={(e)=>this.handleSelect(e,'priority')} isDisabled={this.state.loading} options={priorityList} value={this.state.form.priority} placeholder={Lang.get('bandwidths.labels.priority.name')}/>
                             </div>
                         </div>
                     </DialogContent>
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
                         buttons={[]} loading={this.state.loading}
+                        pendings={{create:Lang.get('labels.create.pending',{Attribute:Lang.get('bandwidths.labels.menu')}),update:Lang.get('labels.update.pending',{Attribute:Lang.get('bandwidths.labels.menu')})}}
                         langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('bandwidths.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('bandwidths.labels.menu')})}}/>
                 </form>
             </Dialog>

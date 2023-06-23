@@ -10,6 +10,7 @@ namespace App\Repositories\Nas;
 
 use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
+use App\Helpers\Radius\Radius;
 use App\Helpers\SwitchDB;
 use App\Models\Nas\Nas;
 use Exception;
@@ -23,25 +24,27 @@ use Ramsey\Uuid\Uuid;
 use RouterOS\Client;
 use RouterOS\Query;
 use Throwable;
+use function PHPUnit\Framework\isFalse;
 
 class NasRepository
 {
     protected $mikrotikAPI;
     protected $mikrotikSSL;
+    protected $me;
     public function __construct()
     {
-        $me = auth()->guard('api')->user();
-        if ($me != null) {
-            if ($me->company != null) {
+        $this->me = auth()->guard('api')->user();
+        if ($this->me != null) {
+            if ($this->me->company != null) {
                 Config::set("database.connections.radius", [
                     'charset' => 'utf8mb4',
                     'collation' => 'utf8mb4_unicode_ci',
                     'driver' => 'mysql',
-                    'host' => $me->companyObj->radius_db_host,
+                    'host' => $this->me->companyObj->radius_db_host,
                     'port' => env('DB_RADIUS_PORT'),
-                    'database' => $me->companyObj->radius_db_name,
-                    'username' => $me->companyObj->radius_db_user,
-                    'password' => $me->companyObj->radius_db_pass
+                    'database' => $this->me->companyObj->radius_db_name,
+                    'username' => $this->me->companyObj->radius_db_user,
+                    'password' => $this->me->companyObj->radius_db_pass
                 ]);
             }
         }
@@ -139,6 +142,7 @@ class NasRepository
             $nas->password = $request[__('nas.form_input.pass')];
             $nas->created_by = $me->id;
             $nas->saveOrFail();
+            (new Radius())->restartRadiusService($this->me->companyObj);
             return $this->table(new Request(['id' => $nas->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -155,8 +159,16 @@ class NasRepository
         try {
             new SwitchDB();
             $this->testConnection($request);
-            $me = auth()->guard('api')->user();
+            $updating = false;
             $nas = Nas::where('id', $request[__('nas.form_input.id')])->first();
+
+            if ($nas->shortname != $request[__('nas.form_input.name')]) $updating = true;
+            if ($nas->community != Str::slug($nas->shortname,'_')) $updating = true;
+            if ($nas->description != $request[__('nas.form_input.description')]) $updating = true;
+            if ($nas->method != $request[__('nas.form_input.method')]) $updating = true;
+            if ($nas->nasname != $request[__('nas.form_input.ip')]) $updating = true;
+            if ($nas->secret != $request[__('nas.form_input.secret')]) $updating = true;
+
             $nas->shortname = $request[__('nas.form_input.name')];
             $nas->community = Str::slug($nas->shortname,'_');
             $nas->description = $request[__('nas.form_input.description')];
@@ -164,15 +176,30 @@ class NasRepository
             $nas->nasname = $request[__('nas.form_input.ip')];
             $nas->secret = $request[__('nas.form_input.secret')];
             if ($nas->method == 'ssl') {
+                if ($nas->method != 'ssl') $updating = true;
+                if ($nas->method_domain != $request[__('nas.form_input.domain')]) $updating = true;
                 $nas->method_domain = $request[__('nas.form_input.domain')];
             } else {
+                if ($nas->method == 'api') $updating = true;
+                if ($nas->method_domain != null) $updating = true;
                 $nas->method_domain = null;
             }
+            if ($nas->method_port != $request[__('nas.form_input.port')]) $updating = true;
+            if ($nas->user != $request[__('nas.form_input.user')]) $updating = true;
+            if ($nas->password != $request[__('nas.form_input.pass')]) $updating = true;
+
             $nas->method_port = $request[__('nas.form_input.port')];
             $nas->user = $request[__('nas.form_input.user')];
             $nas->password = $request[__('nas.form_input.pass')];
-            $nas->updated_by = $me->id;
+
+            if ($updating) {
+                $nas->updated_by = $this->me->id;
+            }
             $nas->saveOrFail();
+
+            if ($updating) {
+                (new Radius())->restartRadiusService($this->me->companyObj);
+            }
             return $this->table(new Request(['id' => $nas->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

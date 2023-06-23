@@ -3,7 +3,14 @@ return [
     'form_input' => [
         'keywords' => 'kata_kunci',
         'search_type' => 'jenis_pencarian',
+        'type' => 'jenis_:Attribute',
+        'action' => 'aksi_:Attribute',
+        'value' => 'id_:Attribute',
+        'max' => 'maksimal_:Attribute',
+        'min' => 'minimal_:Attribute',
+        'current' => ':Attribute_sekarang',
     ],
+    'loading' => 'Memuat :Attribute ...',
     'filter' => 'Saring :Attribute',
     'preview' => 'Pratinjau :Attribute',
     'name' => 'Nama :Attribute',
@@ -86,5 +93,15 @@ return [
     'online' => ':Attribute Online',
     'offline' => ':Attribute Offline',
     'max' => 'Maksimal :Attribute',
-    'min' => 'Minimal :Attribute'
+    'min' => 'Minimal :Attribute',
+    'new' => ':Attribute Baru',
+    'payment' => 'Pembayaran :Attribute',
+    'sales' => 'Penjualan :Attribute',
+    'pending' => 'Menunggu :Attribute',
+    'status' => 'Status :Attribute',
+    'response' => [
+        '200' => ':Attribute Success',
+        '400' => ':Attribute Bad Request',
+        '500' => ':Attribute Server Error',
+    ],
 ];

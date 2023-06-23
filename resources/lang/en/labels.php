@@ -3,7 +3,14 @@ return [
     'form_input' => [
         'keywords' => 'keyword',
         'search_type' => 'search_type',
+        'type' => ':Attribute_type',
+        'action' => ':Attribute_action',
+        'value' => ':Attribute_value',
+        'max' => 'maximum_:Attribute',
+        'min' => 'minimum_:Attribute',
+        'current' => 'current_:Attribute',
     ],
+    'loading' => 'Loading :Attribute ...',
     'filter' => ':Attribute Filter',
     'preview' => 'Preview :Attribute',
     'name' => ':Attribute Name',
@@ -86,5 +93,15 @@ return [
     'online' => 'Online :Attribute',
     'offline' => 'Offline :Attribute',
     'max' => ':Attribute Maximum',
-    'min' => ':Attribute Minimum'
+    'min' => ':Attribute Minimum',
+    'new' => 'New :Attribute',
+    'payment' => ':Attribute Payment',
+    'sales' => ':Attribute Sales',
+    'pending' => 'Pending :Attribute',
+    'status' => ':Attribute Status',
+    'response' => [
+        '200' => ':Attribute Success',
+        '400' => ':Attribute Bad Request',
+        '500' => ':Attribute Server Error',
+    ],
 ];

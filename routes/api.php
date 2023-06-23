@@ -11,6 +11,7 @@ use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Customer\InvoiceController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
@@ -70,6 +71,9 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
 });
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
+    Route::group(['prefix' => 'dashboards'],function () {
+        Route::any('/server-statuses', [DashboardController::class, 'serverStatus']);
+    });
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);
         Route::post('/reload-status', [NasController::class, 'reloadStatus']);

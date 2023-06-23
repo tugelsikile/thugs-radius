@@ -1,3 +1,4 @@
 {
-    "/js/clients/configs/index.js": "/js/clients/configs/index.js"
+    "/js/clients/index.js": "/js/clients/index.js",
+    "/js/clients/users/privileges.js": "/js/clients/users/privileges.js"
 }

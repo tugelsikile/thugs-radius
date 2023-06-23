@@ -4,6 +4,9 @@ namespace App\Helpers\Radius;
 
 use App\Models\Company\ClientCompany;
 use App\Models\Nas\Nas;
+use DivineOmega\SSHConnection\SSHConnection;
+use Exception;
+use Illuminate\Support\Str;
 use phpseclib3\Net\SSH2;
 
 class Radius
@@ -34,22 +37,144 @@ class Radius
      * @return void
      */
     public function restartRadiusService(ClientCompany $company = null) {
-        if ($company != null) {
-            if (property_exists($company->config,'radius')) {
-                $config = $company->config->radius;
-                if (property_exists($config,'host') &&
-                    property_exists($config,'user') &&
-                    property_exists($config,'pass') &&
-                    property_exists($config,'port') &&
-                    property_exists($config,'daemon')
-                ) {
-                    $ssh = new SSH2($config->host, $config->port);
-                    $ssh->login($config->user, $config->pass);
-                    $command = "service " . $config->daemon . " restart";
-                    $ssh->exec($command);
-                    $ssh->disconnect();
+        try {
+            if ($company != null) {
+                if (property_exists($company->config,'radius')) {
+                    $config = $company->config->radius;
+                    if (property_exists($config,'host') &&
+                        property_exists($config,'user') &&
+                        property_exists($config,'pass') &&
+                        property_exists($config,'port') &&
+                        property_exists($config,'daemon')
+                    ) {
+                        $ssh = new SSH2($config->host, $config->port);
+                        $ssh->login($config->user, $config->pass);
+                        $command = "service " . $config->daemon . " restart";
+                        $ssh->exec($command);
+                        $ssh->disconnect();
+                        return;
+                    }
                 }
             }
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+
+    /* @
+     * @param ClientCompany|null $company
+     * @return object|null
+     */
+    public function statusRadiusServerService(ClientCompany $company = null): ?object
+    {
+        try {
+            $response = null;
+            if ($company != null) {
+                if (!empty($company->config)) {
+                    if (property_exists($company->config,'radius')) {
+                        $config = $company->config->radius;
+                        if (property_exists($config,'host') &&
+                            property_exists($config,'user') &&
+                            property_exists($config,'pass') &&
+                            property_exists($config,'port') &&
+                            property_exists($config,'daemon')
+                        ) {
+                            $connection = (new SSHConnection())
+                                ->to($config->host)
+                                ->onPort($config->port)
+                                ->as($config->user)
+                                ->withPassword($config->pass)
+                                ->connect();
+                            if ($connection->isConnected()) {
+                                $response = (object) ['active' => false, 'message' => '' ];
+                                $cmd = "service " . $config->daemon . " status";
+                                $command = $connection->run($cmd);
+                                if (Str::contains($command->getOutput(),"active (running)")) {
+                                    $response->active = true;
+                                }
+                                $response->message = $command->getOutput();
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            return null;
+        }
+    }
+    public function startRadiusServerService(ClientCompany $company) {
+        try {
+            $response = null;
+            if ($company != null) {
+                if (!empty($company->config)) {
+                    if (property_exists($company->config,'radius')) {
+                        $config = $company->config->radius;
+                        if (property_exists($config,'host') &&
+                            property_exists($config,'user') &&
+                            property_exists($config,'pass') &&
+                            property_exists($config,'port') &&
+                            property_exists($config,'daemon')
+                        ) {
+                            $connection = (new SSHConnection())
+                                ->to($config->host)
+                                ->onPort($config->port)
+                                ->as($config->user)
+                                ->withPassword($config->pass)
+                                ->connect();
+                            if ($connection->isConnected()) {
+                                $response = (object) ['active' => false, 'message' => '' ];
+                                $cmd = "service " . $config->daemon . " start";
+                                $command = $connection->run($cmd);
+                                if (Str::contains($command->getOutput(),"active (running)")) {
+                                    $response->active = true;
+                                }
+                                $response->message = $command->getOutput();
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function stopRadiusServerService(ClientCompany $company) {
+        try {
+            $response = null;
+            if ($company != null) {
+                if (!empty($company->config)) {
+                    if (property_exists($company->config,'radius')) {
+                        $config = $company->config->radius;
+                        if (property_exists($config,'host') &&
+                            property_exists($config,'user') &&
+                            property_exists($config,'pass') &&
+                            property_exists($config,'port') &&
+                            property_exists($config,'daemon')
+                        ) {
+                            $connection = (new SSHConnection())
+                                ->to($config->host)
+                                ->onPort($config->port)
+                                ->as($config->user)
+                                ->withPassword($config->pass)
+                                ->connect();
+                            if ($connection->isConnected()) {
+                                $response = (object) ['active' => false, 'message' => '' ];
+                                $cmd = "service " . $config->daemon . " stop";
+                                $command = $connection->run($cmd);
+                                if (Str::contains($command->getOutput(),"active (running)")) {
+                                    $response->active = true;
+                                }
+                                $response->message = $command->getOutput();
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
         }
     }
 }

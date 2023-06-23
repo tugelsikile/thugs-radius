@@ -1,0 +1,33 @@
+version: '3.2'
+
+services:
+  freeradius:
+    image: "2stacks/freeradius"
+    container_name: "eko_nugroho"
+    hostname: "eko_nugroho"
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+    #volumes:
+    #  - "./configs/radius/users:/etc/raddb/users"
+    #  - "./configs/radius/clients.conf:/etc/raddb/clients.conf"
+    environment:
+      - DB_NAME=radius_eko_nugroho
+      - DB_HOST=103.156.16.252
+      - DB_USER=eko_nugroho
+      - DB_PASS=AOwGbipX-_
+      - DB_PORT=3306
+      - RADIUS_KEY=testing123
+      - RAD_CLIENTS=10.200.0.0/24
+      - RAD_DEBUG=yes
+    restart: always
+    networks:
+      radius:
+        ipv4_address: 10.200.0.250
+networks:
+  radius:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.200.0.0/24
+          gateway: 10.200.0.1

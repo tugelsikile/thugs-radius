@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+Route::get('/', function(){ return view('home'); });
 Route::get('/login', function () { return view('auth.login'); })->name('login');
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });

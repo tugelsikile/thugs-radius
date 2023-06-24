@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\DashboardRepository;
 use App\Validations\DashboardValidation;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,6 +27,31 @@ class DashboardController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function topCards(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->topCards($request));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function onlineCustomer(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->onlineCustomer($request));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     * @throws GuzzleException
      */
     public function serverStatus(Request $request): JsonResponse
     {

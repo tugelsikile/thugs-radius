@@ -259,6 +259,13 @@ class InvoiceRepository
                     if ($invoice->paid_at == null) {
                         $invoice->paid_at = Carbon::now()->format('Y-m-d H:i:s');
                         $invoice->paid_by = $this->me->id;
+                        $customer = Customer::where('id', $invoice->customer)->first();
+                        if ($customer != null) {
+                            if (Carbon::parse($customer->due_at)->isBefore(Carbon::now())) {
+                                $customer->due_at = generateCompanyExpired(Carbon::parse($customer->due_at), $customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate)->format('Y-m-d H:i:s');
+                                $customer->saveOrFail();
+                            }
+                        }
                     }
                 } else {
                     $invoice->paid_at = null;
@@ -420,6 +427,9 @@ class InvoiceRepository
             if ($request->has(__('invoices.form_input.bill_period'))) {
                 $invoices = $invoices->whereMonth('bill_period', Carbon::parse($request[__('invoices.form_input.bill_period')])->format('m'))
                     ->whereYear('bill_period', Carbon::parse($request[__('invoices.form_input.bill_period')])->format('Y'));
+            }
+            if ($request->has(__('customers.form_input.id'))) {
+                $invoices = $invoices->where('customer', $request[__('customers.form_input.id')]);
             }
             $invoices = $invoices->get();
             if ($invoices->count() > 0) {

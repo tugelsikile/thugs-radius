@@ -14,6 +14,13 @@ export const langSelect = [
     { value : 'id', label : 'Bahasa Indonesia'},
     { value : 'en', label : 'English' }
 ]
+export const wordLimit = (words, maxWord = 20, separator = ' ') => {
+    if (words === null) return words;
+    if (words.length <= maxWord) return words;
+    let cut = words.indexOf(separator, maxWord);
+    if (cut === -1) return words;
+    return words.substr(0, cut);
+}
 export const dateFormatSelect = [
     { value : 'DD/MM/yyyy HH:mm:ss', label : 'DD/MM/yyyy HH:mm:ss'},
     { value : 'DD/MM/yyyy HH:mm', label : 'DD/MM/yyyy HH:mm'},

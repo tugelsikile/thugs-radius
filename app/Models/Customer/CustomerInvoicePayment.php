@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @method static whereDate(string $string, string $format)
+ */
 class CustomerInvoicePayment extends Model
 {
     use HasFactory, softDeletes;

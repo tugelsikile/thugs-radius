@@ -371,6 +371,9 @@ class CustomerRepository
             $response = collect();
             $customers = Customer::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $customers = $customers->where('id', $request->id);
+            if ($request->has('expired')) {
+                $customers = $customers->whereNotNull('due_at')->whereDate('due_at','<', Carbon::now()->format('Y-m-d H:i:s'));
+            }
             if ($request->has('type')) {
                 if (is_array($request->type)) {
                     $customers = $customers->whereIn('method_type', $request->type);
@@ -383,10 +386,15 @@ class CustomerRepository
             }
             $customers = $customers->get();
             foreach ($customers as $customer) {
+                $invoice = null;
+                if ($request->has('invoice')) {
+                    $invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
+                }
                 $response->push((object) [
                     'value' => $customer->id,
                     'label' => $customer->userObj == null ? $customer->nas_username : $customer->userObj->name,
                     'meta' => (object) [
+                        'invoice' => $invoice,
                         'code' => $customer->code,
                         'user' => $customer->userObj,
                         'nas' => $customer->nasObj,

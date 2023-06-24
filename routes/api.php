@@ -73,6 +73,8 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
     Route::group(['prefix' => 'dashboards'],function () {
         Route::any('/server-statuses', [DashboardController::class, 'serverStatus']);
+        Route::post('/online-customers', [DashboardController::class, 'onlineCustomer']);
+        Route::post('/top-cards', [DashboardController::class, 'topCards']);
     });
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);

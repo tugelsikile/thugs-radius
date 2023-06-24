@@ -31,6 +31,7 @@ class InvoiceController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function payment(Request $request): JsonResponse
     {

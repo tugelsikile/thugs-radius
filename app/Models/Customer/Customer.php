@@ -20,6 +20,7 @@ use Laravolt\Indonesia\Models\Village;
  * @property mixed $nas_password
  * @property mixed $due_at
  * @property mixed $profileObj
+ * @method static whereDate(string $string, string $format)
  */
 class Customer extends Model
 {

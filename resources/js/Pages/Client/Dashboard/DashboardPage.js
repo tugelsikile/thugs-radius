@@ -1,31 +1,40 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
-import {responseMessage, siteData} from "../../../Components/mixedConsts";
+import {customPreventDefault, responseMessage, siteData} from "../../../Components/mixedConsts";
 import PageLoader from "../../../Components/PageLoader";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import MainFooter from "../../../Components/Layout/MainFooter";
-import {DashboardCardStatus, DashboardStatusServer} from "./Tools/Mixed";
+import {DashboardCardStatus, DashboardStatusServer, TableExpiredCustomer, TableOnlineCustomer} from "./Tools/Mixed";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faDatabase, faTachographDigital} from "@fortawesome/free-solid-svg-icons";
-import {serverStatus} from "../../../Services/DasboardService";
+import {faUsers} from "@fortawesome/free-solid-svg-icons";
+import {onlineCustomers, serverStatus, topCards} from "../../../Services/DasboardService";
 import {showError} from "../../../Components/Toaster";
+import {faCalendarXmark} from "@fortawesome/free-regular-svg-icons";
+import {crudCustomers} from "../../../Services/CustomerService";
+import FormPayment from "../Customer/Invoice/Tools/FormPayment";
 
 class DashboardPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, site : false, nas : true, servers : true  },
-            privilege : null, menus : [], site : null, nas : [], servers : [],
+            loadings : { privilege : false, site : false, nas : true, servers : true, online : true, expired : true, cards : true },
+            privilege : null, menus : [], site : null, nas : [], servers : [], online : [], expired : [],
+            cards : {customers:[],payments:[],vouchers:[],pendings:[]},
             filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
+                payment : { open : false, data : null }
             },
             popover : { open : false, anchorEl : null, data : null },
         };
         this.loadServers = this.loadServers.bind(this);
         this.handleReloadServer = this.handleReloadServer.bind(this);
+        this.loadOnline = this.loadOnline.bind(this);
+        this.loadCard = this.loadCard.bind(this);
+        this.loadExpired = this.loadExpired.bind(this);
+        this.togglePayment = this.togglePayment.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -42,6 +51,7 @@ class DashboardPage extends React.Component {
                                 {route : this.props.route, can : false },
                                 {route : 'clients.nas', can: false },
                                 {route : 'clients.nas.select', can: false },
+                                {route : 'clients.customers.invoices.payment', can: false },
                             ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
@@ -49,8 +59,82 @@ class DashboardPage extends React.Component {
                                 .then(()=>{
                                     loadings.servers = false; this.setState({loadings},()=>this.loadServers());
                                 })
+                                .then(()=>{
+                                    loadings.online = false; this.setState({loadings},()=>this.loadOnline());
+                                })
+                                .then(()=>{
+                                    loadings.expired = false; this.setState({loadings},()=>this.loadExpired());
+                                })
+                                .then(()=>{
+                                    loadings.cards = false; this.setState({loadings},()=>this.loadCard());
+                                });
                         });
                     });
+            }
+        }
+    }
+    togglePayment(data = null){
+        let modal = this.state.modal;
+        modal.payment.open = ! this.state.modal.payment.open;
+        modal.payment.data = data;
+        this.setState({modal});
+    }
+    async loadCard() {
+        if (! this.state.loadings.cards) {
+            let loadings = this.state.loadings;
+            loadings.cards = true; this.setState({loadings});
+            try {
+                let response = await topCards();
+                if (response.data.params === null) {
+                    loadings.cards = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.cards = false;
+                    this.setState({loadings,cards:response.data.params});
+                }
+            } catch (e) {
+                loadings.cards = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadExpired(data = null) {
+        if (data !== null) {
+            this.loadCard();
+        }
+        if (! this.state.loadings.expired) {
+            let loadings = this.state.loadings;
+            loadings.expired = true; this.setState({loadings});
+            try {
+                let response = await crudCustomers({expired:true,invoice:true});
+                if (response.data.params === null) {
+                    loadings.expired = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.expired = false; this.setState({loadings,expired:response.data.params});
+                }
+            } catch (e) {
+                loadings.expired = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadOnline() {
+        if (! this.state.loadings.online ) {
+            let loadings = this.state.loadings;
+            loadings.online = true; this.setState({loadings});
+            try {
+                let response = await onlineCustomers();
+                if (response.data.params === null) {
+                    loadings.online = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.online = false;
+                    this.setState({loadings,online:response.data.params});
+                }
+            } catch (e) {
+                loadings.online = false; this.setState({loadings});
+                responseMessage(e);
             }
         }
     }
@@ -123,6 +207,7 @@ class DashboardPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <FormPayment open={this.state.modal.payment.open} data={this.state.modal.payment.data} handleClose={this.togglePayment} handleUpdate={this.loadExpired}/>
                 <PageLoader/>
                 <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
 
@@ -132,31 +217,45 @@ class DashboardPage extends React.Component {
                     <section className="content">
 
                         <div className="container-fluid">
-                            <DashboardCardStatus/>
+                            <DashboardCardStatus onClick={this.loadCard} loading={this.state.loadings.cards} cards={this.state.cards}/>
 
                             <div className="row">
                                 <div className="col-md-3">
                                     <DashboardStatusServer onReload={this.handleReloadServer} loading={this.state.loadings.servers} servers={this.state.servers}/>
                                 </div>
                                 <div className="col-md-9">
-                                    <div className="card card-outline card-primary">
-                                        <div className="card-header">
-                                            <h3 className="card-title">Connected User</h3>
-                                            <div className="card-tools">
-                                                <span className="badge badge-danger">8 Connected Users</span>
-                                                <button type="button" className="btn btn-tool" data-card-widget="collapse">
-                                                    <i className="fas fa-minus"></i>
-                                                </button>
-                                                <button type="button" className="btn btn-tool" data-card-widget="remove">
-                                                    <i className="fas fa-times"></i>
-                                                </button>
+                                    <div className="card card-primary card-outline card-outline-tabs">
+                                        <div className="card-header p-0 border-bottom-0">
+                                            <ul className="nav nav-tabs" id="custom-tabs-four-tab" role="tablist">
+                                                <li className="nav-item">
+                                                    <a onClick={customPreventDefault} className="nav-link active" id="custom-tabs-four-home-tab" data-toggle="pill" href="#custom-tabs-four-home" role="tab" aria-controls="custom-tabs-four-home" aria-selected="true"><FontAwesomeIcon className="mr-1" icon={faUsers} size="sm"/> {Lang.get('labels.online',{Attribute:Lang.get('customers.labels.menu')})}</a>
+                                                </li>
+                                                <li className="nav-item">
+                                                    <a onClick={customPreventDefault} className="nav-link" id="custom-tabs-four-profile-tab" data-toggle="pill" href="#custom-tabs-four-profile" role="tab" aria-controls="custom-tabs-four-profile" aria-selected="false"><FontAwesomeIcon className="mr-1" icon={faCalendarXmark} size="sm"/> {Lang.get('labels.expired',{Attribute:Lang.get('customers.labels.menu')})}</a>
+                                                </li>
+                                                {/*<li className="nav-item">
+                                                    <a className="nav-link" id="custom-tabs-four-messages-tab" data-toggle="pill" href="#custom-tabs-four-messages" role="tab" aria-controls="custom-tabs-four-messages" aria-selected="false">Messages</a>
+                                                </li>
+                                                <li className="nav-item">
+                                                    <a className="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill" href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-settings" aria-selected="false">Settings</a>
+                                                </li>*/}
+                                            </ul>
+                                        </div>
+                                        <div className="p-0 card-body" style={{height:300}}>
+                                            <div className="tab-content" id="custom-tabs-four-tabContent">
+                                                <div className="active show tab-pane fade table-responsive" id="custom-tabs-four-home" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
+                                                    <TableOnlineCustomer privilege={this.state.privilege} onClick={this.loadOnline} loading={this.state.loadings.online} data={this.state.online}/>
+                                                </div>
+
+                                                <div className="tab-pane fade" id="custom-tabs-four-profile" role="tabpanel" aria-labelledby="custom-tabs-four-profile-tab">
+                                                    <TableExpiredCustomer onPayment={this.togglePayment} privilege={this.state.privilege} onClick={this.loadExpired} loading={this.state.loadings.expired} data={this.state.expired}/>
+                                                </div>
+
+                                                {/*<div className="tab-pane fade" id="custom-tabs-four-messages" role="tabpanel" aria-labelledby="custom-tabs-four-messages-tab">
+                                                </div>
+                                                <div className="tab-pane fade " id="custom-tabs-four-settings" role="tabpanel" aria-labelledby="custom-tabs-four-settings-tab">
+                                                </div>*/}
                                             </div>
-                                        </div>
-                                        <div className="card-body p-0 table-responsive">
-                                            supposedly from raddact table
-                                        </div>
-                                        <div className="card-footer">
-                                            pagination
                                         </div>
                                     </div>
                                 </div>

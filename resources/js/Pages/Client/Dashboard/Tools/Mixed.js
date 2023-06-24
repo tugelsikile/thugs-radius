@@ -1,64 +1,96 @@
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
+    faArrowCircleRight,
     faCartShopping,
-    faCashRegister,
-    faMoneyBillTransfer, faPlay, faPowerOff, faRedoAlt, faRefresh, faSyncAlt, faTachographDigital,
+    faCashRegister, faCircleNotch,
+    faMoneyBillTransfer, faRefresh, faSyncAlt,
     faUserTie
 } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
-import {CardPreloader, customPreventDefault} from "../../../../Components/mixedConsts";
+import {
+    CardPreloader,
+    customPreventDefault,
+    formatLocaleDate,
+    formatLocaleString, wordLimit
+} from "../../../../Components/mixedConsts";
 import {MenuIcon} from "../../User/Privilege/Tools/IconTool";
+import {DataNotFound} from "../../../../Components/TableComponent";
+import {FormatPrice, sumGrandtotalCustomer} from "../../Customer/Tools/Mixed";
+import {sumGrandTotalInvoice, sumSubtotalInvoice, sumTotalPaymentInvoice} from "../../Customer/Invoice/Tools/Mixed";
+import {Tooltip} from "@mui/material";
 
 export const DashboardCardStatus = (props) => {
+    let total = 0,paid = 0, taxes = 0;
+    props.cards.pendings.map((item)=>{
+        total += sumGrandTotalInvoice(item);
+    });
+    props.cards.pendings.map((item)=>{
+        paid += sumTotalPaymentInvoice(item);
+    });
+    props.cards.pendings.map((item)=>{
+        let subtotal = sumSubtotalInvoice(item);
+        if (item.meta.taxes.length > 0) {
+            item.meta.taxes.map((tax)=>{
+                if (tax.meta.tax !== null) {
+                    taxes += ( (subtotal * tax.meta.tax.percent ) / 100 );
+                }
+            })
+        }
+    });
+    let left = total - paid;
     return (
         <div className="row">
             <div className="col-lg-3 col-6">
                 <div className="small-box bg-info">
+                    {props.loading && <CardPreloader/>}
                     <div className="inner">
-                        <h3>150</h3>
+                        <h3>{props.cards.customers.length}</h3>
                         <p>{Lang.get('labels.new',{Attribute:Lang.get('customers.labels.menu')})}</p>
                     </div>
-                    <div className="icon">
+                    <div style={{cursor:"pointer"}} onClick={props.onClick} className="icon">
                         <FontAwesomeIcon icon={faUserTie}/>
                     </div>
-                    <a href={`${window.origin}/clients/customers`} className="small-box-footer">More info <i className="fas fa-arrow-circle-right"></i></a>
+                    <a href={`${window.origin}/clients/customers`} className="small-box-footer">{Lang.get('labels.more_info')} <FontAwesomeIcon className="ml-2" size="sm" icon={faArrowCircleRight}/></a>
                 </div>
             </div>
             <div className="col-lg-3 col-6">
                 <div className="small-box bg-success">
+                    {props.loading && <CardPreloader/>}
                     <div className="inner">
-                        <h3>53<sup style={{fontSize:'20px'}}>%</sup></h3>
+                        <h3>{formatLocaleString(paid,0)}</h3>
                         <p>{Lang.get('labels.payment',{Attribute:Lang.get('customers.labels.menu')})}</p>
                     </div>
-                    <div className="icon">
+                    <div style={{cursor:"pointer"}} onClick={props.onClick} className="icon">
                         <FontAwesomeIcon icon={faCartShopping}/>
                     </div>
-                    <a href={`${window.origin}/clients/customers/invoices?paid_date=${moment().format('yyyy-MM-DD')}`} className="small-box-footer">More info <i className="fas fa-arrow-circle-right"></i></a>
+                    <a href={`${window.origin}/clients/customers/invoices?paid_date=${moment().format('yyyy-MM-DD')}`} className="small-box-footer">{Lang.get('labels.more_info')} <FontAwesomeIcon className="ml-2" size="sm" icon={faArrowCircleRight}/></a>
                 </div>
             </div>
             <div className="col-lg-3 col-6">
                 <div className="small-box bg-warning">
+                    {props.loading && <CardPreloader/>}
                     <div className="inner">
-                        <h3>44</h3>
+                        <h3>{formatLocaleString(props.cards.vouchers.reduce((a,b)=> a + b.price,0),0)}</h3>
                         <p>{Lang.get('labels.sales',{Attribute:Lang.get('customers.hotspot.vouchers.menu')})}</p>
                     </div>
-                    <div className="icon">
+                    <div style={{cursor:"pointer"}} onClick={props.onClick} className="icon">
                         <FontAwesomeIcon icon={faCashRegister}/>
                     </div>
-                    <a href={`${window.origin}/clients/customers/hotspot`} className="small-box-footer">More info <i className="fas fa-arrow-circle-right"></i></a>
+                    <a href={`${window.origin}/clients/customers/hotspot`} className="small-box-footer">{Lang.get('labels.more_info')} <FontAwesomeIcon className="ml-2" size="sm" icon={faArrowCircleRight}/></a>
                 </div>
             </div>
             <div className="col-lg-3 col-6">
                 <div className="small-box bg-danger">
+                    {props.loading && <CardPreloader/>}
                     <div className="inner">
-                        <h3>65</h3>
+                        <h3>{formatLocaleString(left)}</h3>
                         <p>{Lang.get('labels.pending',{Attribute:Lang.get('customers.invoices.labels.menu')})}</p>
                     </div>
-                    <div className="icon">
+                    <div style={{cursor:"pointer"}} onClick={props.onClick} className="icon">
                         <FontAwesomeIcon icon={faMoneyBillTransfer}/>
                     </div>
-                    <a href={`${window.origin}/clients/customers/invoices?status=pending`} className="small-box-footer">More info <i className="fas fa-arrow-circle-right"></i></a>
+                    <a href={`${window.origin}/clients/customers/invoices?status=pending`} className="small-box-footer">{Lang.get('labels.more_info')} <FontAwesomeIcon className="ml-2" size="sm" icon={faArrowCircleRight}/></a>
                 </div>
             </div>
         </div>
@@ -79,7 +111,9 @@ export const DashboardStatusServer = (props) => {
                         props.servers.map((item, index)=>
                         <li key={item.id} className="nav-item active">
                             <a href="#" onClick={customPreventDefault} className="nav-link px-2">
-                                <FontAwesomeIcon className={item.value ? 'text-success' : 'text-danger'} icon={MenuIcon(item.icon)} size="sm" style={{width:25}}/>
+                                <Tooltip title={wordLimit(item.message)}>
+                                    <FontAwesomeIcon className={item.value ? 'text-success' : 'text-danger'} icon={MenuIcon(item.icon)} size="sm" style={{width:25}}/>
+                                </Tooltip>
                                 {item.label}
                                 <div className="float-right">
                                 <span className={`badge ${item.value ? 'badge-success' : 'badge-warning'}`}>
@@ -110,5 +144,95 @@ export const DashboardStatusServer = (props) => {
                 </ul>
             </div>
         </div>
+    )
+}
+export const TableOnlineCustomer = (props) => {
+    return (
+        <table className="table table-head-fixed table-hover table-striped table-sm">
+            <thead>
+            <tr>
+                <th width={30} className="pl-2 text-xs align-middle">#</th>
+                <th className="align-middle text-xs">{Lang.get('customers.labels.name')}</th>
+                <th width={100} className="align-middle text-xs">{Lang.get('customers.labels.type')}</th>
+                <th className="align-middle text-xs">{Lang.get('labels.duration',{Attribute:''})}</th>
+                <th className="align-middle text-xs">{Lang.get('labels.ip',{Attribute:Lang.get('customers.labels.menu')})}</th>
+                <th className="align-middle text-xs">{Lang.get('labels.mac',{Attribute:Lang.get('customers.labels.menu')})}</th>
+                <th className="align-middle text-xs">{Lang.get('labels.date',{Attribute:Lang.get('labels.online',{Attribute:Lang.get('customers.labels.menu')})})}</th>
+                <th width={50} className="align-middle text-xs pr-2 text-center">
+                    <button title="Reload" onClick={props.onClick} className="btn btn-tool" type="button" disabled={props.loading}><FontAwesomeIcon spin={props.loading} icon={props.loading ? faCircleNotch : faRefresh} size="xs"/></button>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {props.data.length === 0 ?
+                <DataNotFound colSpan={7} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
+                :
+                props.data.map((item,index)=>
+                    <tr key={item.value}>
+                        <td className="align-middle text-xs text-center pl-2">{index + 1}</td>
+                        <td className="align-middle text-xs">{item.meta.customer === null ? item.label : item.meta.customer.name}</td>
+                        <td className="align-middle text-xs">{item.meta.customer === null ? null : item.meta.customer.method_type}</td>
+                        <td className="align-middle text-xs">{sumDuration(item.meta.duration)}</td>
+                        <td className="align-middle text-xs">{item.meta.ip}</td>
+                        <td className="align-middle text-xs">{item.meta.mac}</td>
+                        <td colSpan={2} className="align-middle text-xs pr-2">{formatLocaleDate(item.meta.at)}</td>
+                    </tr>
+                )
+            }
+            </tbody>
+        </table>
+    )
+}
+export const sumDuration = (minutes) => {
+    let response = null;
+    if (minutes >= 60) {
+        response = formatLocaleString(minutes / 60,0);
+    } else {
+        response = minutes;
+    }
+    return `${response} ${Lang.get('labels.times.hours.short')}`;
+}
+export const TableExpiredCustomer = (props) => {
+    return (
+        <table className="table table-head-fixed table-hover table-striped table-sm">
+            <thead>
+            <tr>
+                <th width={30} className="pl-2 text-xs align-middle">#</th>
+                <th className="align-middle text-xs">{Lang.get('customers.labels.name')}</th>
+                <th width={100} className="align-middle text-xs">{Lang.get('customers.labels.type')}</th>
+                <th width={120} className="align-middle text-xs">{Lang.get('invoices.labels.amount.label')}</th>
+                <th className="align-middle text-xs">{Lang.get('labels.due',{Attribute:Lang.get('customers.invoices.labels.menu')})}</th>
+                <th width={50} className="align-middle text-xs pr-2 text-center">
+                    <button title="Reload" onClick={props.onClick} className="btn btn-tool" type="button" disabled={props.loading}><FontAwesomeIcon spin={props.loading} icon={props.loading ? faCircleNotch : faRefresh} size="xs"/></button>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {props.data.length === 0 ?
+                <DataNotFound colSpan={7} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
+                :
+                props.data.map((item,index)=>
+                    <tr key={item.value}>
+                        <td className="align-middle text-xs text-center pl-2">{index + 1}</td>
+                        <td className="align-middle text-xs">{item.label}</td>
+                        <td className="align-middle text-xs">{item.meta.auth.type}</td>
+                        <td className="align-middle text-xs">{FormatPrice(sumGrandtotalCustomer(item))}</td>
+                        <td colSpan={item.meta.invoice === null ? 2 : props.privilege === null ? 2 : typeof props.privilege.payment === 'undefined' ? 2 : props.privilege.payment ? 1 : 2}
+                            className={item.meta.invoice === null ? "align-middle text-xs pr-2" : props.privilege === null ? "align-middle text-xs pr-2" : typeof props.privilege.payment === 'undefined' ? "align-middle text-xs pr-2" : props.privilege.payment ? "align-middle text-xs" : "align-middle text-xs pr-2"}>
+                            {formatLocaleDate(item.meta.timestamps.due.at)}
+                        </td>
+                        {item.meta.invoice === null ? null :
+                            props.privilege === null ? null :
+                                typeof props.privilege.payment === 'undefined' ? null :
+                                    ! props.privilege.payment ? null :
+                                        <td className="align-middle text-center pr-2">
+                                            <button title={Lang.get('labels.payment',{Attribute:Lang.get('customers.invoices.labels.menu')})} className="btn btn-tool btn-sm" disabled={props.loading} onClick={()=>props.onPayment(item.meta.invoice)}><FontAwesomeIcon icon={faCashRegister} size="xs"/></button>
+                                        </td>
+                        }
+                    </tr>
+                )
+            }
+            </tbody>
+        </table>
     )
 }

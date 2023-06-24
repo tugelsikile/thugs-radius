@@ -39,7 +39,7 @@ export const TableAction = (props) => {
 export const DataNotFound = (props) => {
     return (
         <tr>
-            <td colSpan={props.colSpan} className="align-middle text-center">
+            <td colSpan={props.colSpan} className="align-middle text-xs text-center">
                 <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2 text-warning"/>
                 <strong>{props.message}</strong>
             </td>

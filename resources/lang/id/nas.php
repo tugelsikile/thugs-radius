@@ -109,6 +109,7 @@ return [
             'name' => 'nama_ip_pool',
             'description' => 'keterangan_ip_pool',
             'upload' => 'upload_ke_router',
+            'code' => 'nama_pool_mikrotik',
             'address' => [
                 'first' => 'ip_pertama',
                 'last' => 'ip_terakhir',
@@ -119,6 +120,10 @@ return [
                 'pending' => 'Memuat data Profile IP Pool',
                 'success' => 'Profile IP Pool berhasil dimuat',
                 'error' => 'Gagal memuat data Profile IP Pool',
+            ],
+            'code' => [
+                'label' => 'Nama Pool Mikrotik',
+                'info' => 'Nama ini akan disimpan di mikrotik sebagai nama pool'
             ],
             'select' => 'Pilih Profile IP Pool',
             'menu' => 'Profile IP Pool',

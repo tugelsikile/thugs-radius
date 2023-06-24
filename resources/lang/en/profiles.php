@@ -5,6 +5,7 @@ return [
         'name' => 'service_name',
         'type' => 'service_type',
         'is_additional' => 'additional_service',
+        'code' => 'mikrotik_profile_name',
         'queue' => [
             'name' => 'parent_queue',
             'id' => 'queue_id',
@@ -18,6 +19,7 @@ return [
             'unit' => 'limitation_unit',
         ],
         'address' => [
+            'local' => 'local_address',
             'dns' => 'dns_servers'
         ]
     ],
@@ -29,6 +31,11 @@ return [
         ],
         'menu' => 'Services',
         'menu_info' => 'Manage services',
+        'code' => [
+            'label' => 'Mikrotik :Attribute Profile Name',
+            'info' => 'This will saved as Mikrotik Profile :Attribute Name in mikrotik router',
+            'error' => 'Mikrotik Profile :Attribute Name not allowed white space'
+        ],
         'not_found' => 'No services found',
         'select' => 'Select Services',
         'search' => 'Search Services ...',

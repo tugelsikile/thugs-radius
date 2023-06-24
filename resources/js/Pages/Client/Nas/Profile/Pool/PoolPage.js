@@ -273,7 +273,7 @@ class PoolPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.pools && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header px-2">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.pools}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.pools.labels.menu')})}}
@@ -287,14 +287,14 @@ class PoolPage extends React.Component {
                                         <thead>
                                         <tr>
                                             {this.state.pools.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center" width={30}>
+                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
                                                     <div className="custom-control custom-checkbox">
                                                         <input id="checkAll" data-id="" disabled={this.state.loadings.pools} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor="checkAll" className="custom-control-label"/>
                                                     </div>
                                                 </th>
                                             }
-                                            <th className="align-middle">
+                                            <th className={this.state.pools.filtered.length === 0 ? "align-middle pl-2" : "align-middle"}>
                                                 <BtnSort sort="name"
                                                          name={Lang.get('nas.pools.labels.name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
@@ -314,7 +314,7 @@ class PoolPage extends React.Component {
                                                          name={Lang.get('nas.pools.labels.address.last')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle text-center" width={30}>{Lang.get('messages.action')}</th>
+                                            <th className="align-middle text-center pr-2" width={30}>{Lang.get('messages.action')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -323,14 +323,14 @@ class PoolPage extends React.Component {
                                             :
                                             this.state.pools.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.pools.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.pools} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-xs">{item.label}</td>
                                                     <td className="align-middle text-xs">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
                                                     <td className="align-middle text-xs">{item.meta.address.first}</td>
                                                     <td className="align-middle text-xs">{item.meta.address.last}</td>
-                                                    <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    <TableAction className="pr-2" privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

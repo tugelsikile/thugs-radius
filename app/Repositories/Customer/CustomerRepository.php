@@ -6,6 +6,7 @@
 
 namespace App\Repositories\Customer;
 
+use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerAdditionalService;
@@ -24,11 +25,13 @@ use Throwable;
 class CustomerRepository
 {
     protected $me;
+    protected $radiusDB;
     public function __construct()
     {
         if (auth()->guard('api')->user() != null) {
             $this->me = auth()->guard('api')->user();
         }
+        $this->radiusDB = new RadiusDB();
     }
 
     /* @
@@ -115,6 +118,7 @@ class CustomerRepository
                 }
             }
             $customer->saveOrFail();
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -251,6 +255,8 @@ class CustomerRepository
             if ($request->has(__('customers.form_input.discounts.delete'))) {
                 CustomerDiscount::whereIn('id', $request[__('customers.form_input.discounts.delete')])->delete();
             }
+
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -347,6 +353,7 @@ class CustomerRepository
                     $discount->saveOrFail();
                 }
             }
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

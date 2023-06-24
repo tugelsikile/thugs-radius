@@ -17,8 +17,8 @@ class CreateRadacctsTable extends Migration
             $table->id('radacctid');
             $table->string('acctsessionid',64);
             $table->string('acctuniqueid',32);
-            $table->string('username',64);
-            $table->string('groupname',64);
+            $table->string('username',64)->default('');
+            $table->string('groupname',64)->default('');
             $table->string('realm',64)->nullable();
             $table->ipAddress('nasipaddress');
             $table->string('nasportid',15)->nullable();

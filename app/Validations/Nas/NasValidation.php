@@ -82,6 +82,7 @@ class NasValidation
     public function delete(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 'id' => 'required|array|min:1',
                 'id.*' => 'required|exists:nas,id'

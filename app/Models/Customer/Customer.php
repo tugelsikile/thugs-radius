@@ -13,6 +13,14 @@ use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\Village;
 
+/**
+ * @property mixed $active_at
+ * @property mixed $method_type
+ * @property mixed $nas_username
+ * @property mixed $nas_password
+ * @property mixed $due_at
+ * @property mixed $profileObj
+ */
 class Customer extends Model
 {
     use HasFactory;
@@ -20,6 +28,9 @@ class Customer extends Model
     public $incrementing = false;
     protected $connection = "radius";
 
+    protected $fillable = [
+        'active_at'
+    ];
     protected $hidden = [
         'nas_username',
         'nas_password',

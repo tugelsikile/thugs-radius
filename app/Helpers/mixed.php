@@ -198,3 +198,27 @@ function resetStorageLink() {
     }
     Artisan::call("storage:link");
 }
+function convertToSecond(int $time, string $unit) {
+    $response = 0;
+    $time = (int) $time;
+    switch (strtolower($unit)) {
+        case 'seconds' : $response = $time; break;
+        case 'minutes' : $response = $time * 60; break;
+        case 'hours' : $response = ( $time * 60 ) * 60; break;
+        case 'days' : $response = ( ( $time * 60 ) * 60 ) * 24; break;
+        case 'weeks' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 7; break;
+        case 'months' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 30; break;
+        case 'years' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 365; break;
+    }
+    return $response;
+}
+function convertToBit(int $byte, string $unit) {
+    $response = 0;
+    switch (strtolower($unit)) {
+        case 'b': $response = $byte; break;
+        case 'k': $response = $byte * 1024; break;
+        case 'm': $response = ( $byte * 1024 ) * 1024; break;
+        case 'g': $response = ( ( $byte * 1024 ) * 1024 ); break;
+    }
+    return $response;
+}

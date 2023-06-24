@@ -448,7 +448,7 @@ export const responseMessage = (error) => {
 }
 export const routerConnectionType = [
     { value : 'api', label : Lang.get('nas.labels.connection.type.api') },
-    { value : 'ssl', label : Lang.get('nas.labels.connection.type.ssl') }
+    //{ value : 'ssl', label : Lang.get('nas.labels.connection.type.ssl') }
 ];
 export const hasWhiteSpace = (string) => {
     return /\s/g.test(string);
@@ -463,10 +463,11 @@ export const priorityList = [
     { value : 2, label : 2 },
     { value : 1, label : 1 },
 ]
-export const formatBytes = (bytes, decimals = 0) => {
+export const formatBytes = (bytes, decimals = 0, real = false) => {
     if (!+bytes) return '0 Bytes'
-
-    const k = 1024
+    let k = 1000
+    if (real) k = 1024;
+    bytes = bytes * k;
     const dm = decimals < 0 ? 0 : decimals
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 

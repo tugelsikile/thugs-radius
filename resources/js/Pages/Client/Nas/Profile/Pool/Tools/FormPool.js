@@ -21,7 +21,7 @@ class FormPool extends React.Component {
             loading : false,
             form : {
                 id : null, name : '', description : '', nas : null,
-                first : '', last : '', upload : true,
+                first : '', last : '', upload : true, code : '',
             },
             name_invalid : false,
             modals : { open : false, data : null }
@@ -37,11 +37,11 @@ class FormPool extends React.Component {
         let form = this.state.form;
         if (! props.open) {
             form.id = null, form.name = '', form.description = '', form.first = '', form.last = '',
-                form.nas = null, form.upload = true;
+                form.nas = null, form.upload = true, form.code = '';
         } else {
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.description = props.data.meta.description,
-                    form.upload = true,
+                    form.upload = true, form.code = props.data.meta.address.code,
                     form.first = props.data.meta.address.first, form.last = props.data.meta.address.last,
                     form.nas = props.data.meta.nas === null ? null : {
                         value : props.data.meta.nas.id, label : props.data.meta.nas.shortname,
@@ -78,7 +78,7 @@ class FormPool extends React.Component {
     handleChange(event) {
         let form = this.state.form;
         form[event.currentTarget.name] = event.currentTarget.value;
-        if (event.currentTarget.name === 'name') {
+        if (event.currentTarget.name === 'code') {
             if (hasWhiteSpace(event.currentTarget.value)) {
                 this.setState({name_invalid:true});
             } else {
@@ -95,6 +95,7 @@ class FormPool extends React.Component {
             formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
             if (this.state.form.id !== null) formData.append(Lang.get('nas.pools.form_input.id'), this.state.form.id);
             if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
+            formData.append(Lang.get('nas.pools.form_input.code'), this.state.form.code);
             formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.name);
             formData.append(Lang.get('nas.pools.form_input.description'), this.state.form.description);
             formData.append(Lang.get('nas.pools.form_input.address.first'), this.state.form.first);
@@ -170,13 +171,22 @@ class FormPool extends React.Component {
                             <InputText type="text" labels={{ cols:{ label : 'col-md-3', input : 'col-md-9' },
                                 placeholder : Lang.get('nas.pools.labels.name'), name : Lang.get('nas.pools.labels.name') }}
                                        input={{ name : 'name', value : this.state.form.name, id : 'name', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
-                            {this.state.name_invalid ?
-                                <div className="form-group mt-0">
-                                    <div className="col-md-10 offset-2 text-danger">
-                                        {Lang.get('nas.pools.labels.invalid_name')}
+
+                            <div className="form-group row">
+                                <label htmlFor="input-code" className="col-form-label text-xs col-md-3"><LabelRequired/>{Lang.get('nas.pools.labels.code.label')}</label>
+                                <div className="col-md-9">
+                                    <div className="row">
+                                        <div className="col-md-7">
+                                            <input id="input-code" placeholder={Lang.get('nas.pools.labels.code.label')} className="form-control form-control-sm text-xs" value={this.state.form.code} name="code" onChange={this.handleChange} disabled={this.state.loading}/>
+                                        </div>
                                     </div>
+                                    {this.state.name_invalid ?
+                                        <small className="text-danger">{Lang.get('nas.pools.labels.invalid_name')}</small>
+                                        :
+                                        <small className="text-warning">{Lang.get('nas.pools.labels.code.info')}</small>
+                                    }
                                 </div>
-                                : null}
+                            </div>
 
                             <InputText type="textarea" labels={{ cols:{ label : 'col-md-3', input : 'col-md-9' },
                                 placeholder : Lang.get('nas.pools.labels.description'), name : Lang.get('nas.pools.labels.description') }}

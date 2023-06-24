@@ -7,6 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
+/**
+ * @property mixed $code
+ * @property mixed $poolObj
+ * @property mixed $bandwidthObj
+ * @property mixed $limit_type
+ * @property mixed $limit_rate
+ * @property mixed $limit_rate_unit
+ * @property mixed $is_additional
+ * @property mixed $type
+ */
 class NasProfile extends Model
 {
     use HasFactory;

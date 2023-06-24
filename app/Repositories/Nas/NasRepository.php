@@ -312,6 +312,7 @@ class NasRepository
     {
         try {
             Nas::whereIn('id' , $request->id)->delete();
+            (new Radius())->restartRadiusService($this->me->companyObj);
             return true;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

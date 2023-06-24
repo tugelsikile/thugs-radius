@@ -27,8 +27,8 @@ class CreateCustomersTable extends Migration
             $table->char('village',10)->nullable();
             $table->string('postal',10)->nullable();
             $table->string('phone')->nullable();
-            $table->string('nas_username')->comment('unique berdasarkan nas');
-            $table->string('nas_password')->nullable();
+            $table->string('nas_username',64)->comment('unique berdasarkan nas');
+            $table->string('nas_password',64)->nullable();
             $table->timestamps();
             $table->uuid('created_by')->nullable();
             $table->uuid('updated_by')->nullable();

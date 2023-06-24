@@ -5,7 +5,7 @@ import {
     priorityList,
     responseMessage
 } from "../../../../../../Components/mixedConsts";
-import {crudProfileBandwidth, getParentQueue} from "../../../../../../Services/NasService";
+import {crudProfileBandwidth} from "../../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../../Components/Toaster";
 import {ModalFooter, ModalHeader} from "../../../../../../Components/ModalComponent";
 import {InputText, LabelRequired} from "../../../../../../Components/CustomInput";

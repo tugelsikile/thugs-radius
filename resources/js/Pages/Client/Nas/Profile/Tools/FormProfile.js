@@ -29,10 +29,10 @@ class FormProfile extends React.Component {
             form : {
                 id : null, company : null, pool : null, bandwidth : null, nas : null,
                 description : '', name : '', type : serviceType[0],
-                additional : false, price : 0,
+                additional : false, price : 0, invalid_code : false,
                 address : { local : '', dns : [] },
                 limit : { type : null, rate : 0, unit : null },
-                queue : null,
+                queue : null, code : '',
             },
             modals : {
                 nas : { open : false, data : null },
@@ -64,9 +64,9 @@ class FormProfile extends React.Component {
         if (! props.open) {
             form.id = null, form.company = null, form.pool = null, form.bandwidth = null,
                 form.name = '', form.type = serviceType[0],
-                form.nas = null,
+                form.nas = null, form.code = '',
                 form.additional = false, form.price = 0,
-                form.description = '',
+                form.description = '', form.invalid_code = false,
                 form.address.local = '', form.address.dns = [],
                 form.queue = null;
         } else {
@@ -124,6 +124,9 @@ class FormProfile extends React.Component {
                     form.description = props.data.meta.description,
                     form.additional = props.data.meta.additional,
                     form.limit.rate = props.data.meta.limit.rate,
+                    form.code = props.data.meta.code,
+                    form.invalid_code = hasWhiteSpace(props.data.meta.code),
+                    form.address.local = props.data.meta.local,
                     form.price = props.data.meta.price;
                 index = serviceType.findIndex((f)=> f.value === props.data.meta.type);
                 //console.log(index);
@@ -207,10 +210,15 @@ class FormProfile extends React.Component {
                 case 'value' : form.duration.value = parseInputFloat(event); break;
                 case 'limit' : form.limit.rate = parseInputFloat(event); break;
             }
-        } else if (['name','description','local'].indexOf(event.target.name) !== -1) {
+        } else if (['name','description','local','code'].indexOf(event.target.name) !== -1) {
             if (event.target.name === 'local') {
                 form.address.local = event.target.value;
             } else {
+                if (hasWhiteSpace(form.code)) {
+                    form.invalid_code = true;
+                } else {
+                    form.invalid_code = false;
+                }
                 form[event.target.name] = event.target.value;
             }
         } else if (event.target.name === 'dns') {
@@ -280,7 +288,7 @@ class FormProfile extends React.Component {
     }
     async handleSave(e) {
         e.preventDefault();
-        if (hasWhiteSpace(this.state.form.name) && ! this.state.form.additional) {
+        if (hasWhiteSpace(this.state.form.code) && ! this.state.form.additional) {
             showError(Lang.get('profiles.labels.name_invalid'));
         } else {
             this.setState({loading:true});
@@ -288,7 +296,9 @@ class FormProfile extends React.Component {
                 const formData = new FormData();
                 formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
                 if (this.state.form.id !== null) formData.append(Lang.get('profiles.form_input.id'), this.state.form.id);
+                formData.append(Lang.get('profiles.form_input.code'), this.state.form.code);
                 formData.append(Lang.get('profiles.form_input.is_additional'), this.state.form.additional ? 1 : 0);
+                formData.append(Lang.get('profiles.form_input.address.local'), this.state.form.address.local);
                 if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
                 if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
                 if (this.state.form.pool !== null) formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.pool.value);
@@ -312,7 +322,7 @@ class FormProfile extends React.Component {
                     formData.append(`${Lang.get('profiles.form_input.address.dns')}[${index}]`, item.label);
                 });
 
-                let response = await crudProfile(formData,true);
+                let response = await crudProfile(formData);
                 if (response.data.params === null) {
                     this.setState({loading:false});
                     showError(response.data.message);
@@ -393,13 +403,21 @@ class FormProfile extends React.Component {
                                         }
                                     </div>
 
-                                    {! this.state.hide_type &&
-                                        <div className="form-group row">
-                                            <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
-                                            <div className="col-md-2">
-                                                <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                    {this.state.hide_type ? null :
+                                        this.state.form.id === null ?
+                                            <div className="form-group row">
+                                                <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
+                                                <div className="col-md-2">
+                                                    <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                                </div>
                                             </div>
-                                        </div>
+                                            :
+                                            <div className="form-group row">
+                                                <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
+                                                <div className="col-md-2">
+                                                    <div className="form-control form-control-sm text-xs">{this.state.form.type.value}</div>
+                                                </div>
+                                            </div>
                                     }
 
                                     <div className="form-group row">
@@ -429,7 +447,7 @@ class FormProfile extends React.Component {
                                         {this.state.form.pool === null ? null :
                                             <React.Fragment>
                                                 <label className="col-md-2 col-form-label text-xs">{Lang.get('nas.pools.labels.address.full')}</label>
-                                                <div className="col-md-2">
+                                                <div className="col-md-4">
                                                     <div className="form-control text-xs">{this.state.form.pool.meta.address.first} - {this.state.form.pool.meta.address.last}</div>
                                                 </div>
                                             </React.Fragment>
@@ -545,11 +563,48 @@ class FormProfile extends React.Component {
                                 </React.Fragment>
                             }
 
-                            <InputText type="text" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
+                            <InputText type="text" labels={{ cols:{ label : 'col-md-2', input : 'col-md-10' },
                                 placeholder : Lang.get('profiles.labels.name'), name : Lang.get('profiles.labels.name') }}
                                        input={{ name : 'name', value : this.state.form.name, id : 'name', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
-                            <InputText type="textarea" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-10' },
+                            {! this.state.form.additional &&
+                                <React.Fragment>
+                                    <div className="form-group row">
+                                        <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.code.label',{Attribute:this.state.form.type === null ? '-' : this.state.form.type.value})}</label>
+                                        <div className="col-md-4">
+                                            <div className="row">
+                                                <div className="col-md-7">
+                                                    <input placeholder={Lang.get('profiles.labels.code.label',{Attribute:this.state.form.type === null ? '-' : this.state.form.type.value})} className="form-control-sm form-control text-xs" value={this.state.form.code} name="code" onChange={this.handleChange} disabled={this.state.loading}/>
+                                                </div>
+                                            </div>
+                                            { ! hasWhiteSpace(this.state.form.code) ?
+                                                <small className="text-info">{Lang.get('profiles.labels.code.info',{Attribute:this.state.form.type === null ? '-' : this.state.form.type.value})}</small>
+                                                :
+                                                <small className="text-danger">{Lang.get('profiles.labels.code.error',{Attribute:this.state.form.type === null ? '-' : this.state.form.type.value})}</small>
+                                            }
+                                        </div>
+                                    </div>
+                                    {this.state.form.type === null ? null :
+                                        this.state.form.type.value === 'pppoe' ?
+                                            <div className="form-group row">
+                                                <label htmlFor="input-local-address" className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.local')}</label>
+                                                <div className="col-md-3">
+                                                    <MaskedInput name="local"
+                                                                 id="input-local-address"
+                                                                 guide={false} placeholderChar={'\u2000'}
+                                                                 onChange={this.handleChange}
+                                                                 pipe={pipeIp}
+                                                                 disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                                 placeholder={Lang.get('profiles.labels.address.local')}
+                                                                 value={this.state.form.address.local} className="form-control text-xs form-control-sm"/>
+                                                </div>
+                                            </div>
+                                            : null
+                                    }
+                                </React.Fragment>
+                            }
+
+                            <InputText type="textarea" labels={{ cols:{ label : 'col-md-2', input : 'col-md-10' },
                                 placeholder : Lang.get('profiles.labels.description'), name : Lang.get('profiles.labels.description') }}
                                        input={{ name : 'description', value : this.state.form.description, id : 'description', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
@@ -566,62 +621,64 @@ class FormProfile extends React.Component {
                                                     <NumericFormat className="form-control form-control-sm text-xs" placeholder={Lang.get('profiles.labels.limitation.value')} disabled={this.state.loading} value={this.state.form.limit.rate} decimalScale={0} decimalSeparator="," thousandSeparator="." onChange={this.handleChange} name="limit"/>
                                                 </div>
                                                 <div className="col-md-2">
-                                                    <Select styles={FormControlSMReactSelect} value={this.state.form.limit.unit} onChange={(e)=>this.handleSelect(e,'unit')} options={this.state.form.limit.type === null ? [] : this.state.form.limit.type.value === 'time' ? durationType : durationTypeByte} isDisabled={this.state.loading}/>
+                                                    <Select menuPlacement="top" maxMenuHeight={150} styles={FormControlSMReactSelect} value={this.state.form.limit.unit} onChange={(e)=>this.handleSelect(e,'unit')} options={this.state.form.limit.type === null ? [] : this.state.form.limit.type.value === 'time' ? durationType : durationTypeByte} isDisabled={this.state.loading}/>
                                                 </div>
                                             </>
                                         }
                                     </div>
                                 </>
                             }
-                            <InputText type="numeric" labels={{ cols:{ label : 'col-sm-2', input : 'col-sm-2 text-right' }, placeholder : Lang.get('profiles.labels.price'), name : Lang.get('profiles.labels.price') }}
+                            <InputText type="numeric" labels={{ cols:{ label : 'col-md-2', input : 'col-md-2 text-right' }, placeholder : Lang.get('profiles.labels.price'), name : Lang.get('profiles.labels.price') }}
                                        decimalScale={2} decimalSeparator="," thousandSeparator="."
                                        input={{ name : 'price', value : this.state.form.price, id : 'price', }} required={true} handleChange={this.handleChange} loading={this.state.loading}/>
 
                             {this.state.form.additional ? null :
-                                <>
-                                    <div className="form-group row">
-                                        <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.dns')}</label>
-                                        <div className="col-md-3">
-                                            {this.state.form.address.dns.length === 0 ? null :
-                                                <MaskedInput name="dns"
-                                                             id="dns" data-index={0}
-                                                             guide={false} placeholderChar={'\u2000'}
-                                                             onChange={this.handleChange}
-                                                             pipe={pipeIp}
-                                                             disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
-                                                             placeholder={Lang.get('profiles.labels.address.dns')}
-                                                             value={this.state.form.address.dns[0].label} className="form-control form-control-sm text-xs"/>
-                                            }
-                                        </div>
-                                        <div className="col-md-3">
-                                            <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
-                                            {this.state.form.address.dns.length > 0 &&
-                                                <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
-                                            }
-                                        </div>
-                                    </div>
-                                    {this.state.form.address.dns.length === 1 ? null :
-                                        this.state.form.address.dns.map((item,index)=>
-                                            index === 0 ? null :
-                                                <div key={index} className="form-group row">
-                                                    <div className="col-md-3 offset-2">
+                                this.state.form.type === null ? null :
+                                    this.state.form.type.value === 'hotspot' ? null :
+                                        <React.Fragment>
+                                            <div className="form-group row">
+                                                <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.dns')}</label>
+                                                <div className="col-md-3">
+                                                    {this.state.form.address.dns.length === 0 ? null :
                                                         <MaskedInput name="dns"
-                                                                     id="dns" data-index={index}
+                                                                     id="dns" data-index={0}
                                                                      guide={false} placeholderChar={'\u2000'}
                                                                      onChange={this.handleChange}
                                                                      pipe={pipeIp}
                                                                      disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
                                                                      placeholder={Lang.get('profiles.labels.address.dns')}
-                                                                     value={item.label} className="form-control text-xs form-control-sm"/>
-                                                    </div>
-                                                    <div className="col-md-3">
-                                                        <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
-                                                        <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
-                                                    </div>
+                                                                     value={this.state.form.address.dns[0].label} className="form-control form-control-sm text-xs"/>
+                                                    }
                                                 </div>
-                                        )
-                                    }
-                                </>
+                                                <div className="col-md-3">
+                                                    <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
+                                                    {this.state.form.address.dns.length > 0 &&
+                                                        <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(0)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
+                                                    }
+                                                </div>
+                                            </div>
+                                            {this.state.form.address.dns.length === 1 ? null :
+                                                this.state.form.address.dns.map((item,index)=>
+                                                    index === 0 ? null :
+                                                        <div key={index} className="form-group row">
+                                                            <div className="col-md-3 offset-2">
+                                                                <MaskedInput name="dns"
+                                                                             id="dns" data-index={index}
+                                                                             guide={false} placeholderChar={'\u2000'}
+                                                                             onChange={this.handleChange}
+                                                                             pipe={pipeIp}
+                                                                             disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                                             placeholder={Lang.get('profiles.labels.address.dns')}
+                                                                             value={item.label} className="form-control text-xs form-control-sm"/>
+                                                            </div>
+                                                            <div className="col-md-3">
+                                                                <button type="button" className="btn btn-sm btn-default mr-1" disabled={this.state.loading} onClick={this.handleAddDns}><FontAwesomeIcon icon={faPlus}/></button>
+                                                                <button type="button" className="btn btn-sm btn-default" disabled={this.state.loading} onClick={()=>this.handleRemoveDns(index)}><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/></button>
+                                                            </div>
+                                                        </div>
+                                                )
+                                            }
+                                        </React.Fragment>
                             }
                         </DialogContent>
                         <ModalFooter

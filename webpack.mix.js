@@ -10,6 +10,7 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
+mix.js('resources/js/src/guests/welcome.js','public/js/guests');
 //mix.sass('resources/css/progress-animation.scss','public/css');
 //mix.sass('resources/css/captcha.scss','public/css');
 //mix.js('resources/js/src/auth/login.js','public/js');

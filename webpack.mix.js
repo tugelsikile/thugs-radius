@@ -11,9 +11,11 @@ const mix = require('laravel-mix');
  |
  */
 mix.js('resources/js/src/guests/welcome.js','public/js/guests');
+mix.js('resources/js/src/guests/forgot-password.js','public/js/guests');
+mix.js('resources/js/src/guests/register.js','public/js/guests');
 //mix.sass('resources/css/progress-animation.scss','public/css');
 //mix.sass('resources/css/captcha.scss','public/css');
-//mix.js('resources/js/src/auth/login.js','public/js');
+mix.js('resources/js/src/auth/login.js','public/js');
 /*mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');

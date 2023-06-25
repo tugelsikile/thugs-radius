@@ -9,7 +9,7 @@ import {
     faBars,
     faHouseCircleCheck,
     faPlus,
-    faSearch,
+    faSearch, faTimes,
     faUserCheck,
     faUserPen
 } from "@fortawesome/free-solid-svg-icons";
@@ -32,23 +32,30 @@ export const HeaderSection = () => {
                             <div className="togle_">
                                 <div className="menu_main">
                                     <ul>
-                                        <li><FontAwesomeIcon icon={faUser}/></li>
-                                        <li><a href={`${window.origin}/login`}>login</a></li>
+                                        <li>
+                                            <a href={`${window.origin}/login`}>
+                                                <FontAwesomeIcon className="mr-3" icon={faUser}/>
+                                                login
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
-                                <div className="shoping_bag"><FontAwesomeIcon icon={faSearch}/></div>
+                                {/*<div className="shoping_bag"><FontAwesomeIcon icon={faSearch}/></div>*/}
                             </div>
                             <div id="myNav" className="overlay">
-                                <a href="#" className="closebtn" onClick={(e)=>{e.preventDefault();window.closeNav();}}>&times;</a>
-                                <div className="overlay-content">
+                                <a href="#" className="closebtn" onClick={(e)=>{e.preventDefault();window.closeNav();}}>
+                                    <FontAwesomeIcon icon={faTimes}/>
+                                </a>
+                                <div className="overlay-content mt-5">
                                     <a href="#index.html">Home</a>
                                     <a href="#services.html">{Lang.get('home.services.label')}</a>
                                     <a href="#stories.html">{Lang.get('home.package.title')}</a>
                                     <a href="#team.html">{Lang.get('home.register-step.title')}</a>
+                                    <a href={`${window.origin}/login`}>{Lang.get('messages.users.labels.signin_button')}</a>
                                 </div>
                             </div>
-                            <span className="navbar-toggler-icon"></span>
-                            <span onClick={()=>window.openNav()}>
+                            <span className="navbar-toggler-icon"/>
+                            <span style={{cursor:'pointer'}} onClick={()=>window.openNav()}>
                                 <FontAwesomeIcon icon={faBars} className="toggle_menu"/>
                             </span>
                         </ul>
@@ -135,7 +142,7 @@ export const AboutSection = () => {
     return (
         <div id="about.html" className="about_section layout_padding">
             <div className="container">
-                <div className="row">
+                {/*<div className="row">
                     <div className="col-md-4">
                         <div className="about_taital_main">
                             <h1 className="about_taital">About Us</h1>
@@ -150,7 +157,7 @@ export const AboutSection = () => {
                             <div className="mobile_img1"><img src="images/mobile-img-1.png"/></div>
                         </div>
                     </div>
-                </div>
+                </div>*/}
             </div>
         </div>
     );

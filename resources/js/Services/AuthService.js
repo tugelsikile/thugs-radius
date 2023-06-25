@@ -36,3 +36,17 @@ export const logoutSubmit = async () => {
     });
     return Promise.resolve(request);
 }
+export const registerSubmit = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/register"
+    });
+    return Promise.resolve(request);
+}
+export const forgotPasswordSubmit = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/forgot-password"
+    });
+    return Promise.resolve(request);
+}

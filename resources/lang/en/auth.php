@@ -19,11 +19,21 @@ return [
     'form_input' => [
         'email' => 'email_address',
         'password' => 'password',
+        'confirm' => 'password_confirmation',
         'captcha' => 'security_code',
     ],
     'labels' => [
         'email' => 'Email Address',
         'password' => 'Password',
+        'confirm' => 'Password Confirmation',
         'captcha' => 'Security Code',
+    ],
+    'has_account' => 'Already have an account, i want to sign in',
+    'forgot_password' => [
+        'label' => 'I forgot my password'
+    ],
+    'register_new_member' => [
+        'label' => 'Registration new membership',
+        'submit' => 'Register',
     ]
 ];

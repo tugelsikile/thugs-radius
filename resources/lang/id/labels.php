@@ -10,6 +10,7 @@ return [
         'min' => 'minimal_:Attribute',
         'current' => ':Attribute_sekarang',
     ],
+    'processing' => 'Memproses :Attribute',
     'loading' => 'Memuat :Attribute ...',
     'filter' => 'Saring :Attribute',
     'preview' => 'Pratinjau :Attribute',

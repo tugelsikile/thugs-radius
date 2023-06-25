@@ -18,11 +18,21 @@ return [
     'form_input' => [
         'email' => 'alamat_email',
         'password' => 'kata_sandi',
+        'confirm' => 'kata_sandi_confirmation',
         'captcha' => 'kode_keamanan',
     ],
     'labels' => [
         'email' => 'Alamat Email',
         'password' => 'Kata Sandi',
+        'confirm' => 'Konfirmasi Kata Sandi',
         'captcha' => 'Kode Keamanan',
-    ]
+    ],
+    'has_account' => 'Sudah punya akun, saya ingin masuk',
+    'forgot_password' => [
+        'label' => 'Lupa kata sandi',
+    ],
+    'register_new_member' => [
+        'label' => 'Pendaftaran Akun Baru',
+        'submit' => 'Daftar',
+    ],
 ];

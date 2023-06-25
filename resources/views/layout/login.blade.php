@@ -11,11 +11,13 @@
     <link rel="stylesheet" href="{{asset('theme/adminlte/plugins/icheck-bootstrap/icheck-bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{asset('theme/adminlte/css/adminlte.min.css')}}">
     <link rel="stylesheet" href="{{asset('css/captcha.css')}}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
 </head>
 <body class="hold-transition login-page text-sm">
-<div class="login-box" id="login-box">
+<div id="login-box">
     @yield('contents')
 </div>
+
 
 <script src="{{asset('theme/adminlte/plugins/jquery/jquery.min.js')}}"></script>
 <script src="{{asset('theme/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
@@ -24,9 +26,12 @@
 <script>
     let localeLang = localStorage.getItem('locale_lang');
     if (localeLang === null) {
-        localStorage.setItem('locale_lang','id');
+        localeLang = navigator.language;
+        if (localeLang === null) localeLang = 'id';
+        if (localeLang.length > 2) localeLang = localeLang.substr(0,2);
+        localStorage.setItem('locale_lang', localeLang);
     }
-    Lang.setLocale('id');
+    Lang.setLocale(localeLang);
 </script>
 @yield('scripts')
 </body>

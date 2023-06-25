@@ -10,6 +10,7 @@ return [
         'min' => 'minimum_:Attribute',
         'current' => 'current_:Attribute',
     ],
+    'processing' => 'Processing :Attribute',
     'loading' => 'Loading :Attribute ...',
     'filter' => ':Attribute Filter',
     'preview' => 'Preview :Attribute',

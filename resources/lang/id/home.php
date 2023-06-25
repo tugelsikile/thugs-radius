@@ -4,6 +4,7 @@ return [
         'title' => "Hubungkan<br/>Router Anda<br/>Dengan<br/>Pelanggan",
         'text' => 'Setelah sekian lama sejak 2020, akhirnya ISP management kami telah kami buat untuk digunakan oleh public'
     ],
+    'back_home' => 'Kembali ke Halaman Utama',
     'services' => [
         'label' => 'Layanan',
         'router' => [

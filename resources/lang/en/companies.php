@@ -23,6 +23,7 @@ return [
         ]
     ],
     'labels' => [
+        'other' => 'Company',
         'loading' => [
             'pending' => 'Loading client radius data',
             'success' => 'Client radius data successfully loaded',

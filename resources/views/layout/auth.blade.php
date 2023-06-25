@@ -39,9 +39,12 @@
 <script>
     let localeLang = localStorage.getItem('locale_lang');
     if (localeLang === null) {
-        localStorage.setItem('locale_lang','id');
+        localeLang = navigator.language;
+        if (localeLang === null) localeLang = 'id';
+        if (localeLang.length > 2) localeLang = localeLang.substr(0,2);
+        localStorage.setItem('locale_lang', localeLang);
     }
-    Lang.setLocale('id');
+    Lang.setLocale(localeLang);
 </script>
 @yield('scripts')
 </body>

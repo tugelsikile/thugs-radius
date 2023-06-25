@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::get('/', function(){ return view('home'); });
+Route::get('/forgot-password', function () { return view('forgot-password'); })->name('forgot-password');
+Route::get('/register', function () { return view('register'); })->name('register');
 Route::get('/login', function () { return view('auth.login'); })->name('login');
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });

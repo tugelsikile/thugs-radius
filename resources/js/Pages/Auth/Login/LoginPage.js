@@ -5,6 +5,9 @@ import {LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha} from "react-sim
 import {showError, showSuccess} from "../../../Components/Toaster";
 import {loginSubmit} from "../../../Services/AuthService";
 import {siteData} from "../../../Components/mixedConsts";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faBarcode, faLock} from "@fortawesome/free-solid-svg-icons";
+import {faEnvelope} from "@fortawesome/free-regular-svg-icons";
 
 // noinspection JSUnresolvedVariable
 class LoginPage extends React.Component {
@@ -94,6 +97,7 @@ class LoginPage extends React.Component {
                     localStorage.setItem('token', response.data.params.token);
                     localStorage.setItem('user', JSON.stringify(response.data.params.user));
                     localStorage.setItem('locale_lang', response.data.params.user.meta.locale.lang);
+                    Lang.setLocale(response.data.params.user.meta.locale.lang);
                     localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
                     localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
                     if (response.data.params.user.meta.level.for_client) {
@@ -113,46 +117,48 @@ class LoginPage extends React.Component {
         return (
             <React.StrictMode>
                 <ToastContainer theme="light" pauseOnFocusLoss autoClose={2000} position="top-center" closeOnClick/>
-                <div className="card card-outline card-primary">
-                    <div className="card-header text-center">
-                        <a href={window.origin} className="h1">
-                            <img src={`${window.origin}/images/logo-2.png`} style={{width:100}} alt="logo"/>
-                        </a>
-                    </div>
-                    <div className="card-body">
-                        <p className="login-box-msg">{Lang.get('messages.users.labels.signin_text')}</p>
-                        <form onSubmit={this.handleSave} className="mb-5">
-                            <div className="input-group mb-3">
-                                <input tabIndex={0} id="email" onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
-                                <div className="input-group-append"><div className="input-group-text"><span className="fas fa-envelope"/></div></div>
-                            </div>
-                            <div className="input-group mb-3">
-                                <input tabIndex={1} id="password" onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
-                                <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><span className="fas fa-lock"/></div></div>
-                            </div>
-                            <div className="row">
-                                <div className="col-12 mb-3">
-                                    <LoadCanvasTemplate/>
+                <div className="login-box">
+                    <div className="card card-outline card-primary">
+                        <div className="card-header text-center">
+                            <a href={window.origin} className="h1">
+                                <img src={`${window.origin}/images/logo-2.png`} style={{width:100}} alt="logo"/>
+                            </a>
+                        </div>
+                        <div className="card-body">
+                            <p className="login-box-msg">{Lang.get('messages.users.labels.signin_text')}</p>
+                            <form onSubmit={this.handleSave} className="mb-5">
+                                <div className="input-group mb-3">
+                                    <input tabIndex={0} id="email" onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
+                                    <div className="input-group-append"><div className="input-group-text"><FontAwesomeIcon icon={faEnvelope}/></div></div>
                                 </div>
-                            </div>
-                            <div className="input-group mb-3">
-                                <input tabIndex={2} onChange={this.handleChange} onBlur={this.validateCaptcha} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
-                                <div className="input-group-append"><div className="input-group-text"><span className="fas fa-barcode"/></div></div>
-                            </div>
-                            <div className="row">
-                                <div className="col-8"></div>
-                                <div className="col-4">
-                                    <button tabIndex={3} disabled={this.state.loading} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
+                                <div className="input-group mb-3">
+                                    <input tabIndex={1} id="password" onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
+                                    <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><FontAwesomeIcon icon={faLock}/></div></div>
                                 </div>
-                            </div>
-                        </form>
+                                <div className="row">
+                                    <div className="col-12 mb-3">
+                                        <LoadCanvasTemplate/>
+                                    </div>
+                                </div>
+                                <div className="input-group mb-3">
+                                    <input tabIndex={2} onChange={this.handleChange} onBlur={this.validateCaptcha} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
+                                    <div className="input-group-append"><div className="input-group-text"><FontAwesomeIcon icon={faBarcode}/></div></div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-8"></div>
+                                    <div className="col-4">
+                                        <button tabIndex={3} disabled={this.state.loading} type="submit" className="btn btn-primary btn-block">{Lang.get('messages.users.labels.signin_button')}</button>
+                                    </div>
+                                </div>
+                            </form>
 
-                        <p className="mb-1">
-                            <a href="forgot-password.html">I forgot my password</a>
-                        </p>
-                        <p className="mb-0">
-                            <a href="register.html" className="text-center">Register a new membership</a>
-                        </p>
+                            <p className="mb-1 mt-5">
+                                <a href={`${window.origin}/forgot-password`}>{Lang.get('auth.forgot_password.label')}</a>
+                            </p>
+                            <p className="mb-0">
+                                <a href={`${window.origin}/register`} className="text-center">{Lang.get('auth.register_new_member.label')}</a>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </React.StrictMode>

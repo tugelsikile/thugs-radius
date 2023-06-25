@@ -23,6 +23,7 @@ return [
         ]
     ],
     'labels' => [
+        'other' => 'Perusahaan',
         'loading' => [
             'pending' => 'Memuat data client radius',
             'success' => 'Berhasil memuat data client radius',

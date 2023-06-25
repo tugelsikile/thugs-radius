@@ -1,4 +1,7 @@
 {
     "/js/guests/welcome.js": "/js/guests/welcome.js",
+    "/js/guests/forgot-password.js": "/js/guests/forgot-password.js",
+    "/js/guests/register.js": "/js/guests/register.js",
+    "/js/login.js": "/js/login.js",
     "/js/clients/index.js": "/js/clients/index.js"
 }

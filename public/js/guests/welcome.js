@@ -449,6 +449,120 @@ var convertCurry = convert.bind(null, (react__WEBPACK_IMPORTED_MODULE_1___defaul
 
 /***/ }),
 
+/***/ "./resources/js/Pages/Client/User/Privilege/Tools/IconTool.js":
+/*!********************************************************************!*\
+  !*** ./resources/js/Pages/Client/User/Privilege/Tools/IconTool.js ***!
+  \********************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   MenuIcon: () => (/* binding */ MenuIcon)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.mjs");
+/* harmony import */ var _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @fortawesome/free-regular-svg-icons */ "./node_modules/@fortawesome/free-regular-svg-icons/index.mjs");
+
+
+
+var MenuIcon = function MenuIcon(iconName) {
+  var icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faInfoCircle;
+  switch (iconName) {
+    default:
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faInfoCircle;
+      break;
+    case 'fas fa-thumbs-down':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faThumbsDown;
+      break;
+    case 'fas fa-arrows-alt-v':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faArrowsAltV;
+      break;
+    case 'fas fa-thumbs-up':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faThumbsUp;
+      break;
+    case 'fas fa-database':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faDatabase;
+      break;
+    case 'fas fa-tachograph-digital':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faTachographDigital;
+      break;
+    case 'fas fa-archway':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faArchway;
+      break;
+    case 'fas fa-building':
+      icon = _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_2__.faBuilding;
+      break;
+    case 'fas fa-archive':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faArchive;
+      break;
+    case 'fas fa-file-invoice-dollar':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faFileInvoiceDollar;
+      break;
+    case 'fas fa-check-circle':
+      icon = _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_2__.faCheckCircle;
+      break;
+    case 'fas fa-cash-register':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faCashRegister;
+      break;
+    case 'fas fa-user-secret':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faUserSecret;
+      break;
+    case 'fas fa-user-shield':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faUserShield;
+      break;
+    case 'fas fa-tools':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faTools;
+      break;
+    case 'fas fa-tags':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faTags;
+      break;
+    case 'fas fa-wallet':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faWallet;
+      break;
+    case 'fas fa-money-bill':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faMoneyBill;
+      break;
+    case 'fas fa-atlas':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faAtlas;
+      break;
+    case 'fas fa-server':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faServer;
+      break;
+    case 'fas fa-hand-pointer':
+      icon = _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_2__.faHandPointer;
+      break;
+    case 'fas fa-poll-h':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faPollH;
+      break;
+    case 'fas fa-wifi':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faWifi;
+      break;
+    case 'fas fa-concierge-bell':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faConciergeBell;
+      break;
+    case 'fas fa-user-tie':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faUserTie;
+      break;
+    case 'fas fa-ticket-alt':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faTicketAlt;
+      break;
+    case 'fas fa-file-invoice':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faFileInvoice;
+      break;
+    case 'fas fa-key':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faKey;
+      break;
+    case 'fas fa-cog':
+      icon = _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_1__.faCog;
+      break;
+  }
+  return icon;
+};
+
+/***/ }),
+
 /***/ "./resources/js/Pages/Guest/Welcome/Tools/Mixed.js":
 /*!*********************************************************!*\
   !*** ./resources/js/Pages/Guest/Welcome/Tools/Mixed.js ***!
@@ -471,13 +585,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _public_theme_gariox_images_logo_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../public/theme/gariox/images/logo.png */ "./public/theme/gariox/images/logo.png");
+/* harmony import */ var _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../public/images/logo-1.png */ "./public/images/logo-1.png");
 /* harmony import */ var _public_theme_gariox_images_banner_img_png__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../public/theme/gariox/images/banner-img.png */ "./public/theme/gariox/images/banner-img.png");
 /* harmony import */ var _public_theme_gariox_images_footer_logo_png__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../../../../../public/theme/gariox/images/footer-logo.png */ "./public/theme/gariox/images/footer-logo.png");
 /* harmony import */ var _fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @fortawesome/react-fontawesome */ "./node_modules/@fortawesome/react-fontawesome/index.es.js");
-/* harmony import */ var _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @fortawesome/free-regular-svg-icons */ "./node_modules/@fortawesome/free-regular-svg-icons/index.mjs");
-/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.mjs");
+/* harmony import */ var _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @fortawesome/free-regular-svg-icons */ "./node_modules/@fortawesome/free-regular-svg-icons/index.mjs");
+/* harmony import */ var _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @fortawesome/free-solid-svg-icons */ "./node_modules/@fortawesome/free-solid-svg-icons/index.mjs");
 /* harmony import */ var react_html_parser__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-html-parser */ "./node_modules/react-html-parser/lib/index.js");
+/* harmony import */ var _public_images_server_icon_svg__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../../../../../../public/images/server-icon.svg */ "./public/images/server-icon.svg");
+/* harmony import */ var _public_images_cloud_computing_png__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../../../../../../public/images/cloud-computing.png */ "./public/images/cloud-computing.png");
+/* harmony import */ var _public_images_payment_method_png__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../../../../../../public/images/payment-method.png */ "./public/images/payment-method.png");
+/* harmony import */ var _public_images_easy_png__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../../../../../../public/images/easy.png */ "./public/images/easy.png");
+/* harmony import */ var _public_images_24_hours_support_png__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../../../../../../public/images/24-hours-support.png */ "./public/images/24-hours-support.png");
+/* harmony import */ var _Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../../../Client/User/Privilege/Tools/IconTool */ "./resources/js/Pages/Client/User/Privilege/Tools/IconTool.js");
+
+
+
+
+
+
 
 
 
@@ -498,7 +624,11 @@ var HeaderSection = function HeaderSection() {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: window.origin
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: _public_theme_gariox_images_logo_png__WEBPACK_IMPORTED_MODULE_1__["default"]
+    alt: "logo",
+    style: {
+      height: 50
+    },
+    src: _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__["default"]
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "menu_text"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -506,13 +636,13 @@ var HeaderSection = function HeaderSection() {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "menu_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
-    icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_6__.faUser
+    icon: _fortawesome_free_regular_svg_icons__WEBPACK_IMPORTED_MODULE_12__.faUser
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: "".concat(window.origin, "/login")
   }, "login")))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "shoping_bag"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
-    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__.faSearch
+    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__.faSearch
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     id: "myNav",
     className: "overlay"
@@ -529,22 +659,18 @@ var HeaderSection = function HeaderSection() {
     href: "#index.html"
   }, "Home"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: "#services.html"
-  }, "Services"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#about.html"
-  }, "About"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
+  }, Lang.get('home.services.label')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: "#stories.html"
-  }, "Stories"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
+  }, Lang.get('home.package.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: "#team.html"
-  }, "Team"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#contact.html"
-  }, "Contact Us"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
+  }, Lang.get('home.register-step.title')))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
     className: "navbar-toggler-icon"
   }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
     onClick: function onClick() {
       return window.openNav();
     }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
-    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__.faBars,
+    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__.faBars,
     className: "toggle_menu"
   })))))));
 };
@@ -563,19 +689,7 @@ var BannerSection = function BannerSection() {
     className: "banner_text"
   }, Lang.get('home.banners.text')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "btn_main"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "contact_bt_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-    className: "contact_padding"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
-    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_7__.faPlus
-  })), "Discover")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "contact_bt active"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "contact.html"
-  }, "Contact Now")))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "col-md-6"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
     src: _public_theme_gariox_images_banner_img_png__WEBPACK_IMPORTED_MODULE_2__["default"],
@@ -590,9 +704,7 @@ var ServiceSection = function ServiceSection() {
     className: "container"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
     className: "services_taital"
-  }, "Services"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "services_text"
-  }, "It is a long established fact that a reader will be distracted by the readable content "))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(ServiceSection2, null));
+  }, Lang.get('home.services.label')))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(ServiceSection2, null));
 };
 var ServiceSection2 = function ServiceSection2() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -606,72 +718,57 @@ var ServiceSection2 = function ServiceSection2() {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "images_1"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-1.png"
+    alt: "img-1",
+    src: _public_images_server_icon_svg__WEBPACK_IMPORTED_MODULE_6__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "power_full_text"
-  }, "Powerfull System"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.services.router.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text"
-  }, "It is a long established fact that a reader"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt active"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.services.router.text'))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "box_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "images_1"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-2.png"
+    alt: "img-2",
+    src: _public_images_cloud_computing_png__WEBPACK_IMPORTED_MODULE_7__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "power_full_text"
-  }, "Powerfull System"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.services.database.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text"
-  }, "It is a long established fact that a reader"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.services.database.text'))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "box_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "images_1"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-3.png"
+    alt: "img-2",
+    src: _public_images_payment_method_png__WEBPACK_IMPORTED_MODULE_8__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "power_full_text"
-  }, "Powerfull System"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.services.payment.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text"
-  }, "It is a long established fact that a reader"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.services.payment.text'))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "box_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "images_1"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-4.png"
+    alt: "img-4",
+    src: _public_images_easy_png__WEBPACK_IMPORTED_MODULE_9__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "power_full_text"
-  }, "Powerfull System"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.services.easy.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text"
-  }, "It is a long established fact that a reader"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.services.easy.text'))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "box_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "images_1"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-5.png"
+    alt: "img-5",
+    src: _public_images_24_hours_support_png__WEBPACK_IMPORTED_MODULE_10__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
     className: "power_full_text"
-  }, "Powerfull System"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.services.support.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text"
-  }, "It is a long established fact that a reader"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More"))))));
+  }, Lang.get('home.services.support.text'))))));
 };
 var AboutSection = function AboutSection() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -721,55 +818,55 @@ var WorkSection = function WorkSection() {
     className: "work_taital_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
     className: "work_taital"
-  }, "How Does This App Work"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "work_text"
-  }, "It is a long established fact that a readerwill be e adable content "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.register-step.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "work_section_2"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_left"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "icon_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/icon-1.png"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    className: "text-dark",
+    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__.faUserPen,
+    size: "3x"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_right"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "create_text"
-  }, "Create Your Account"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.register-step.one.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "lorem_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing dolore magna aliqua. Ut enim ad minim veniam,"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.register-step.one.text')))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "work_section_2"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_left"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "icon_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/icon-1.png"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    className: "text-dark",
+    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__.faUserCheck,
+    size: "3x"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_right"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "create_text"
-  }, "Upload Your Picture"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.register-step.two.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "lorem_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing dolore magna aliqua. Ut enim ad minim veniam,"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.register-step.two.text')))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "work_section_2"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_left"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "icon_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/icon-1.png"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    className: "text-dark",
+    icon: _fortawesome_free_solid_svg_icons__WEBPACK_IMPORTED_MODULE_13__.faHouseCircleCheck,
+    size: "3x"
   }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "account_section_right"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "create_text"
-  }, "Get Your Own Time"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.register-step.three.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "lorem_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing dolore magna aliqua. Ut enim ad minim veniam,"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "read_bt_2"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Read More")))))));
+  }, Lang.get('home.register-step.three.text')))))));
 };
 var FooterSectionMain = function FooterSectionMain() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -785,9 +882,7 @@ var FooterSectionMain = function FooterSectionMain() {
     className: "container"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
     className: "stories_taital"
-  }, "Latest Stories"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "stories_text"
-  }, "It is a long established fact that a readerwill be e adable content "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.package.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: ""
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "stories_section_2 layout_padding"
@@ -796,271 +891,184 @@ var FooterSectionMain = function FooterSectionMain() {
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "col-lg-4 col-sm-12"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_box"
+    className: "image_box",
+    style: {
+      minHeight: 350
+    }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "image_6"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-6.png"
+    alt: "logo",
+    style: {
+      height: 100
+    },
+    src: _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "teration_text"
-  }, "Teration in some form"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.basic.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "date_text"
-  }, "( 06 Jun 2019 )"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.basic.price', {
+    Attribute: '75.000'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "ipsum_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.package.basic.text')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", {
+    className: "mt-2 ipsum_text"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.basic.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.basic.list.color'))
+  }), " ", Lang.get('home.package.basic.list.one')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.basic.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.basic.list.color'))
+  }), " ", Lang.get('home.package.basic.list.two', {
+    Attribute: '2'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.basic.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.basic.list.color'))
+  }), " ", Lang.get('home.package.basic.list.three', {
+    Attribute: '2'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.basic.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.basic.list.color'))
+  }), " ", Lang.get('home.package.basic.list.four', {
+    Attribute: '200'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.basic.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.basic.list.color'))
+  }), " ", Lang.get('home.package.basic.list.five', {
+    Attribute: '2.000'
+  }))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "col-lg-4 col-sm-12"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_box"
+    className: "image_box",
+    style: {
+      minHeight: 350
+    }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "image_6"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-7.png"
+    alt: "logo",
+    style: {
+      height: 100
+    },
+    src: _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "teration_text"
-  }, "Teration in some form"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.intermediate.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "date_text"
-  }, "( 06 Jun 2019 )"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.intermediate.price', {
+    Attribute: '200.000'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "ipsum_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, Lang.get('home.package.intermediate.text')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", {
+    className: "mt-2 ipsum_text"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.intermediate.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.intermediate.list.color'))
+  }), " ", Lang.get('home.package.intermediate.list.one')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.intermediate.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.intermediate.list.color'))
+  }), " ", Lang.get('home.package.intermediate.list.two', {
+    Attribute: '5'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.intermediate.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.intermediate.list.color'))
+  }), " ", Lang.get('home.package.intermediate.list.three', {
+    Attribute: '5'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.intermediate.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.intermediate.list.color'))
+  }), " ", Lang.get('home.package.intermediate.list.four', {
+    Attribute: '700'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.intermediate.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.intermediate.list.color'))
+  }), " ", Lang.get('home.package.intermediate.list.five', {
+    Attribute: '10.000'
+  }))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "col-lg-4 col-sm-12"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_box"
+    className: "image_box bg-info",
+    style: {
+      minHeight: 350
+    }
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "image_6"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-8.png"
+    alt: "logo",
+    style: {
+      height: 100
+    },
+    src: _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
     className: "teration_text"
-  }, "Teration in some form"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.isp.title')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "date_text"
-  }, "( 06 Jun 2019 )"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, Lang.get('home.package.isp.price')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "ipsum_text"
-  }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,")))))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "testimonial_section layout_padding"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "container"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
-    className: "testimonial_taital"
-  }, "Testimonial"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "testimonial_text"
-  }, "Lorem Ipsum available, but the majority"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "testimonial_section_2 layout_padding"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    id: "main_slider",
-    className: "carousel slide",
-    "data-ride": "carousel"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "carousel-inner"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "carousel-item active"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_9"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-9.png"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
-    className: "client_name"
-  }, "Believable"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "lorem_ipsum_text"
-  }, "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "quote_icon"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/quote-icon.png"
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "carousel-item"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_9"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-9.png"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
-    className: "client_name"
-  }, "Believable"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "lorem_ipsum_text"
-  }, "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "quote_icon"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/quote-icon.png"
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "carousel-item"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "image_9"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/img-9.png"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
-    className: "client_name"
-  }, "Believable"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
-    className: "lorem_ipsum_text"
-  }, "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you "), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "quote_icon"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/quote-icon.png"
-  })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    className: "carousel-control-prev",
-    href: "#main_slider",
-    role: "button",
-    "data-slide": "prev"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("i", {
-    className: "fa fa-angle-left"
-  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    className: "carousel-control-next",
-    href: "#main_slider",
-    role: "button",
-    "data-slide": "next"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("i", {
-    className: "fa fa-angle-right"
-  })))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    id: "contact.html",
-    className: "contact_section layout_padding"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "container"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "contact_main"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", {
-    className: "contact_taital"
-  }, "Get In Touch"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "mail_section_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
-    type: "text",
-    className: "mail_text",
-    placeholder: "Name",
-    name: "text"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
-    type: "text",
-    className: "mail_text",
-    placeholder: "Email",
-    name: "Email"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
-    type: "text",
-    className: "mail_text",
-    placeholder: "Phone Number",
-    name: "text"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("textarea", {
-    className: "massage-bt",
-    placeholder: "Massage",
-    rows: "5",
-    id: "comment",
-    name: "Massage"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "send_bt_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "SEND")))))));
+  }, Lang.get('home.package.isp.text')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", {
+    className: "mt-2 ipsum_text"
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.isp.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.isp.list.color'))
+  }), " ", Lang.get('home.package.isp.list.one')), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.isp.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.isp.list.color'))
+  }), " ", Lang.get('home.package.isp.list.two', {
+    Attribute: '5'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.isp.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.isp.list.color'))
+  }), " ", Lang.get('home.package.isp.list.three', {
+    Attribute: '5'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.isp.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.isp.list.color'))
+  }), " ", Lang.get('home.package.isp.list.four', {
+    Attribute: '700'
+  })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_fortawesome_react_fontawesome__WEBPACK_IMPORTED_MODULE_4__.FontAwesomeIcon, {
+    icon: (0,_Client_User_Privilege_Tools_IconTool__WEBPACK_IMPORTED_MODULE_11__.MenuIcon)(Lang.get('home.package.isp.list.icon')),
+    size: "sm",
+    className: "mr-2 ".concat(Lang.get('home.package.isp.list.color'))
+  }), " ", Lang.get('home.package.isp.list.five', {
+    Attribute: '10.000'
+  })))))))))));
 };
 var FooterSectionPadding = function FooterSectionPadding() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "footer_section layout_padding"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "container"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h3", {
-    className: "subscribe_text"
-  }, "Subscribe"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "mail_main"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("input", {
-    type: "text",
-    className: "email_text",
-    placeholder: "Enter Your email",
-    name: "Enter Your email"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "right_arrow"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("i", {
-    className: "fa fa-long-arrow-right",
-    style: {
-      fontSize: '24px'
-    }
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "footer_taital_main"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "row"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "col-lg-3 col-sm-6"
+    className: "col-lg-4 col-sm-6"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "footer_logo"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/footer-logo.png"
+    alt: "logo",
+    style: {
+      height: 70
+    },
+    src: _public_images_logo_1_png__WEBPACK_IMPORTED_MODULE_1__["default"]
   })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "dummy_text_1"
-  }, "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of ")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "col-lg-3 col-sm-6"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", {
-    className: "useful_text"
-  }, "Navigation"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "footer_menu"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", {
-    className: "active"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "index.html"
-  }, "Home")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "about.html"
-  }, "About")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "location.html"
-  }, "Location")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "services.html"
-  }, "Services")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "features.html"
-  }, "Features"))))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "col-lg-3 col-sm-6"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", {
-    className: "useful_text"
-  }, "Contact Info"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
-    className: "addres_link"
-  }, "Mantain Office Address:"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
-    className: "addres_link_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/map-icon.png"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-    className: "padding_left_20"
-  }, " New York, NY 36524"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
-    className: "addres_link"
-  }, "Customer Service:"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
-    className: "addres_link_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/call-icon.png"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-    className: "padding_left_20"
-  }, "+( +01 1234567890 )"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h4", {
-    className: "addres_link_1"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/mail-icon.png"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("span", {
-    className: "padding_left_20"
-  }, "demo@gmail.com")))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "col-lg-3 col-sm-6"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", {
-    className: "useful_text"
-  }, "Discover"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "discover_menu"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Help")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "How It Works")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "subscribe")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, "Contact Us")))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
-    className: "social_icon"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/fb-icon.png"
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/twitter-icon.png"
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/instagram-icon.png"
-  }))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
-    href: "#"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
-    src: "images/linkedin-icon.png"
-  }))))))))));
+  }, Lang.get('home.banners.text')))))));
 };
 var FooterSection = function FooterSection() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement((react__WEBPACK_IMPORTED_MODULE_0___default().Fragment), null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(FooterSectionMain, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(FooterSectionPadding, null));
@@ -1076,7 +1084,9 @@ var CopyRightSection = function CopyRightSection() {
     href: "https://html.design"
   }, "Free html Templates"), " Distributed By ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
     href: "https://themewagon.com"
-  }, "ThemeWagon"))));
+  }, "ThemeWagon"), " Created by ", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("a", {
+    href: "https://github.com/tugelsikile"
+  }, "Tugelsikile"))));
 };
 
 /***/ }),
@@ -1134,7 +1144,7 @@ var WelcomePage = /*#__PURE__*/function (_React$Component) {
       }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("img", {
         alt: "logo",
         src: _public_theme_gariox_images_banner_bg_png__WEBPACK_IMPORTED_MODULE_2__["default"]
-      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.HeaderSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.BannerSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.ServiceSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.AboutSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.WorkSection, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.FooterSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.CopyRightSection, null));
+      })), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.HeaderSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.BannerSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.ServiceSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.WorkSection, null)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.FooterSection, null), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_Tools_Mixed__WEBPACK_IMPORTED_MODULE_3__.CopyRightSection, null));
     }
   }]);
   return WelcomePage;
@@ -3614,6 +3624,96 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
 
 /***/ }),
 
+/***/ "./public/images/24-hours-support.png":
+/*!********************************************!*\
+  !*** ./public/images/24-hours-support.png ***!
+  \********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/24-hours-support.png?22232a4eb61ca639ed51f8530f17f8ee");
+
+/***/ }),
+
+/***/ "./public/images/cloud-computing.png":
+/*!*******************************************!*\
+  !*** ./public/images/cloud-computing.png ***!
+  \*******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/cloud-computing.png?9b3d257fc8b253a17f18c75dfe1ae839");
+
+/***/ }),
+
+/***/ "./public/images/easy.png":
+/*!********************************!*\
+  !*** ./public/images/easy.png ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/easy.png?e406d2389c92fc45454f8411928ca276");
+
+/***/ }),
+
+/***/ "./public/images/logo-1.png":
+/*!**********************************!*\
+  !*** ./public/images/logo-1.png ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo-1.png?05da18c489a2ed19b5e56e346f71acbd");
+
+/***/ }),
+
+/***/ "./public/images/payment-method.png":
+/*!******************************************!*\
+  !*** ./public/images/payment-method.png ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/payment-method.png?2a914decda1ddb5b5dd5b03ca9593b32");
+
+/***/ }),
+
+/***/ "./public/images/server-icon.svg":
+/*!***************************************!*\
+  !*** ./public/images/server-icon.svg ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/server-icon.svg?2be6b986fe2321042008dfda4c7eb009");
+
+/***/ }),
+
 /***/ "./public/theme/gariox/images/banner-bg.png":
 /*!**************************************************!*\
   !*** ./public/theme/gariox/images/banner-bg.png ***!
@@ -3656,21 +3756,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/footer-logo.png?3f0d51bf255136d176b15e2df7ce70d0");
-
-/***/ }),
-
-/***/ "./public/theme/gariox/images/logo.png":
-/*!*********************************************!*\
-  !*** ./public/theme/gariox/images/logo.png ***!
-  \*********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ("/images/logo.png?a7dfb2b4cf5e8e9415c2bdd9496d43fe");
 
 /***/ }),
 

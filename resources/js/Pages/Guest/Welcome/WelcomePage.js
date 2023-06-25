@@ -28,7 +28,7 @@ class WelcomePage extends React.Component{
                     <HeaderSection/>
                     <BannerSection/>
                     <ServiceSection/>
-                    <AboutSection/>
+                    {/*<AboutSection/>*/}
                     <WorkSection/>
                 </div>
                 <FooterSection/>

@@ -3,6 +3,7 @@
 return [
     'form_input' => [
         'id' => 'paket',
+        'other' => 'nama_perusahaan',
         'name' => 'nama_client_radius',
         'address' => 'alamat_client_radius',
         'email' => 'email_client_radius',
@@ -23,6 +24,7 @@ return [
         ]
     ],
     'labels' => [
+        'other' => 'Perusahaan',
         'loading' => [
             'pending' => 'Memuat data client radius',
             'success' => 'Berhasil memuat data client radius',

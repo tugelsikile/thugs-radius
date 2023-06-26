@@ -19,11 +19,44 @@ return [
     'form_input' => [
         'email' => 'email_address',
         'password' => 'password',
+        'confirm' => 'password_confirmation',
         'captcha' => 'security_code',
+        'avatar' => 'profile_picture',
     ],
     'labels' => [
         'email' => 'Email Address',
         'password' => 'Password',
+        'confirm' => 'Password Confirmation',
         'captcha' => 'Security Code',
-    ]
+    ],
+    'has_account' => 'Already have an account, i want to sign in',
+    'forgot_password' => [
+        'label' => 'I forgot my password',
+        'message' => 'Reset Password',
+        'submit' => 'Submit Request',
+    ],
+    'register_new_member' => [
+        'label' => 'Registration new membership',
+        'submit' => 'Register',
+        'success' => "Registration successfully Submitted !!\nCheck your email for the next registration step."
+    ],
+    'social' => [
+        'try' => 'Trying to :SignType using :Social<br/>Please wait ...',
+        'success' => ":SignType using :Social Successfully\nPlease wait while redirecting ...",
+        'sign_up' => [
+            'label' => 'Sign up',
+            'doing' => 'signing up',
+            'button' => 'Sign up using :Social',
+            'fail' => 'Failed to sign up using :Social',
+            'success' => 'Successfully signing up using :Social',
+        ],
+        'sign_in' => [
+            'label' => 'Sign in',
+            'doing' => 'signing in',
+            'button' => 'Sign in using :Social'
+        ],
+        'google' => [
+            'label' => 'Google Account',
+        ],
+    ],
 ];

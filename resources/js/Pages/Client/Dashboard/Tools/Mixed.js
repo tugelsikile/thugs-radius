@@ -165,7 +165,7 @@ export const TableOnlineCustomer = (props) => {
             </thead>
             <tbody>
             {props.data.length === 0 ?
-                <DataNotFound colSpan={7} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
+                <DataNotFound colSpan={8} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
                 :
                 props.data.map((item,index)=>
                     <tr key={item.value}>

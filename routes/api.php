@@ -34,7 +34,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::group(['prefix' => 'login'], function () {
+    Route::post('/', [AuthController::class, 'login']);
+    Route::post('/google', [AuthController::class, 'googleLogin']);
+});
+Route::group(['prefix' => 'register'], function () {
+    Route::post('/', [AuthController::class, 'register']);
+    Route::post('/google', [AuthController::class, 'googleRegister']);
+});
+Route::group(['prefix' => 'password'], function () {
+    Route::post('/forgot', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset', [AuthController::class, 'resetPassword']);
+});
+
 Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function () {
     Route::any('/logout', [AuthController::class, 'logout']);
     Route::group(['prefix' => 'me'], function () {

@@ -12,8 +12,13 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/', function(){ return view('home'); });
+Route::get('/', function(){ return view('guest.home'); });
+Route::get('/forgot-password', function () { return view('guest.forgot-password'); })->name('password.request');
+Route::get('/register', function () { return view('guest.register'); })->name('register');
 Route::get('/login', function () { return view('auth.login'); })->name('login');
+Route::get('/reset-password/{token}', function ($token) {
+    return view('guest.reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset');
 Route::group(['prefix' => 'auth'], function () {
     Route::get('/', function () { return view('auth.dashboard.index'); });
     Route::group(['prefix' => 'clients'], function () {

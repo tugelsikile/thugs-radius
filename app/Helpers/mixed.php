@@ -16,13 +16,21 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-function randomString($length = 5) {
+function randomNumeric($length = 5): string
+{
+    return collect(array_merge(range('0', '9'), range('0', '9')))
+        ->shuffle()
+        ->take($length)
+        ->implode('');
+}
+function randomString($length = 5): string
+{
     return collect(array_merge(range('a', 'z'), range('A', 'Z')))
         ->shuffle()
         ->take($length)
         ->implode('');
 }
-function generateCompanyExpired($current, $durString, $durAmmount): ?Carbon
+function generateCompanyExpired($current, string $durString, int $durAmmount): ?Carbon
 {
     $response = null;
     if ($durAmmount > 0) {

@@ -2,6 +2,7 @@
 /** @noinspection DuplicatedCode */
 return [
     'form_input' => [
+        'other' => 'company_name',
         'id' => 'package',
         'name' => 'client_radius_name',
         'address' => 'client_radius_address',
@@ -23,6 +24,7 @@ return [
         ]
     ],
     'labels' => [
+        'other' => 'Company',
         'loading' => [
             'pending' => 'Loading client radius data',
             'success' => 'Client radius data successfully loaded',

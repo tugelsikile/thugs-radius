@@ -4,6 +4,7 @@ return [
         'title' => "Connect<br/>Your Router<br/>With Customer",
         'text' => 'Our ISP Management system we use since 2020 is finally out for public use',
     ],
+    'back_home' => 'Back to Home Page',
     'services' => [
         'label' => 'Services',
         'router' => [

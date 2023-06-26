@@ -83,7 +83,7 @@ class MikrotikAPI
                     $string->push(( $bw->limit_at_up / 1000 ) . 'k/' . ( $bw->limit_at_up / 1000 ) . 'k');
                 }
                 if ($bw->burst_time_up > 0 || $bw->burst_time_down > 0) {
-                    $string->push($bw->burst_time_up . 's/' . $bw->burst_time_down . 's');
+                    $string->push($bw->burst_time_up . '/' . $bw->burst_time_down);
                 }
                 /*if ($bw->max_limit_up > 0 || $bw->max_limit_down > 0) {
                     $string->push($bw->priority . '/' . $bw->priority);

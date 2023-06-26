@@ -2,6 +2,7 @@
 /** @noinspection DuplicatedCode */
 return [
     'form_input' => [
+        'other' => 'company_name',
         'id' => 'package',
         'name' => 'client_radius_name',
         'address' => 'client_radius_address',

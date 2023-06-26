@@ -3,20 +3,26 @@ import ReactDOM from "react-dom/client";
 import {ToastContainer} from "react-toastify";
 import {LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha} from "react-simple-captcha";
 import {showError, showSuccess} from "../../../Components/Toaster";
-import {loginSubmit} from "../../../Services/AuthService";
-import {siteData} from "../../../Components/mixedConsts";
+import {loginSubmit, loginSubmitGoogle, registerGoogleSubmit} from "../../../Services/AuthService";
+import {responseMessage, siteData} from "../../../Components/mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBarcode, faLock} from "@fortawesome/free-solid-svg-icons";
 import {faEnvelope} from "@fortawesome/free-regular-svg-icons";
+import FadeInOut from "../../../Components/FadeInOut";
+import HtmlParser from "react-html-parser";
+import {faGooglePlus} from "@fortawesome/free-brands-svg-icons";
+import {getRootUrl} from "../../../Components/Authentication";
+import {GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {auth} from "../../../Components/Google/Firebase";
 
-// noinspection JSUnresolvedVariable
+// noinspection JSUnresolvedVariable,DuplicatedCode,CommaExpressionJS
 class LoginPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             loading : false, site : null,
             form : {
-                email : '', kode_keamanan : '',
+                email : '', kode_keamanan : '', social : false, avatar : null, name : '',
                 password : {
                     current : { value : '', type : 'password' }
                 },
@@ -27,6 +33,9 @@ class LoginPage extends React.Component {
         this.handleSave = this.handleSave.bind(this);
         this.handleChangePasswordType = this.handleChangePasswordType.bind(this);
         this.validateCaptcha = this.validateCaptcha.bind(this);
+        this.handleGoogle = this.handleGoogle.bind(this);
+        this.submitGoogle = this.submitGoogle.bind(this);
+        this.chaptchaEngine = this.chaptchaEngine.bind(this);
     }
     componentDidMount() {
         siteData().then((response)=>this.setState({site:response}));
@@ -42,6 +51,9 @@ class LoginPage extends React.Component {
                 }
             }
         }
+        this.chaptchaEngine();
+    }
+    chaptchaEngine(){
         loadCaptchaEnginge(6,'black','white','numbers');
     }
     handleChangePasswordType(event) {
@@ -72,6 +84,52 @@ class LoginPage extends React.Component {
             form[event.target.name] = event.target.value;
         }
         this.setState({form});
+    }
+    async submitGoogle() {
+        let form = this.state.form;
+        this.setState({loading:true});
+        try {
+            const formData = new FormData();
+            formData.append(Lang.get('auth.form_input.email'), this.state.form.email);
+            formData.append(Lang.get('auth.form_input.avatar'), this.state.form.avatar);
+            let response = await loginSubmitGoogle(formData);
+            if (response.data.params === null) {
+                form.social = false,form.email = '',form.name = '';
+                this.setState({loading:false,form},()=>this.chaptchaEngine());
+                showError(response.data.message);
+            } else {
+                form.social = false;
+                this.setState({loading:false,form});
+                showSuccess(response.data.message);
+                localStorage.setItem('token', response.data.params.token);
+                localStorage.setItem('user', JSON.stringify(response.data.params.user));
+                window.location.href = getRootUrl();
+            }
+        } catch (e) {
+            form.social = false,form.email = '',form.name = '';
+            this.setState({loading:false,form},()=>this.chaptchaEngine());
+            responseMessage(e);
+        }
+    }
+    async handleGoogle(e) {
+        e.preventDefault();
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({prompt:'select_account'})
+        await signInWithPopup(auth, provider)
+            .then((result)=>{
+                let form = this.state.form;
+                form.email = result.user.email;
+                form.name = result.user.displayName;
+                form.avatar = result.user.photoURL;
+                form.social = true;
+                this.setState({form},()=>this.submitGoogle());
+            })
+            .catch((err)=>{
+                let form = this.state.form;
+                form.social = false;
+                this.setState({form});
+                showError(err.message);
+            })
     }
     async handleSave(e) {
         e.preventDefault();
@@ -129,11 +187,11 @@ class LoginPage extends React.Component {
                             <form onSubmit={this.handleSave} className="mb-5">
                                 <div className="input-group mb-3">
                                     <input tabIndex={0} id="email" onChange={this.handleChange} name="email" value={this.state.form.email} disabled={this.state.loading} type="email" className="form-control" placeholder={Lang.get('messages.users.labels.email')}/>
-                                    <div className="input-group-append"><div className="input-group-text"><FontAwesomeIcon icon={faEnvelope}/></div></div>
+                                    <div className="input-group-append"><div className="input-group-text"><FontAwesomeIcon style={{width:24}} icon={faEnvelope}/></div></div>
                                 </div>
                                 <div className="input-group mb-3">
                                     <input tabIndex={1} id="password" onChange={this.handleChange} value={this.state.form.password.current.value} name="password" disabled={this.state.loading} type={this.state.form.password.current.type} className="form-control" placeholder={Lang.get('messages.users.labels.password')}/>
-                                    <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><FontAwesomeIcon icon={faLock}/></div></div>
+                                    <div className="input-group-append"><div style={{cursor:'pointer'}} onClick={this.handleChangePasswordType} className="input-group-text"><FontAwesomeIcon style={{width:24}} icon={faLock}/></div></div>
                                 </div>
                                 <div className="row">
                                     <div className="col-12 mb-3">
@@ -151,6 +209,22 @@ class LoginPage extends React.Component {
                                     </div>
                                 </div>
                             </form>
+
+                            <FadeInOut show={this.state.form.social} duration={500}>
+                                <div className="text-center my-5">
+                                    <p className="login-box-msg">{HtmlParser(Lang.get('auth.social.try',{SignType:Lang.get('auth.social.sign_in.doing'),Social:Lang.get('auth.social.google.label')}))}</p>
+                                    <img style={{width:100,height:100}} className="profile-user-img img-fluid img-circle" src={this.state.form.avatar} alt="User profile picture"/>
+                                    <h3 className="profile-username mt-3 mb-5 text-center">{this.state.form.name}</h3>
+                                </div>
+                            </FadeInOut>
+
+                            <div className="social-auth-links text-center">
+                                <p>- {Lang.get('labels.or').toUpperCase()} -</p>
+                                <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
+                                    <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
+                                    {Lang.get('auth.social.sign_in.button',{Social:Lang.get('auth.social.google.label')})}
+                                </a>
+                            </div>
 
                             <p className="mb-1 mt-5">
                                 <a href={`${window.origin}/forgot-password`}>{Lang.get('auth.forgot_password.label')}</a>

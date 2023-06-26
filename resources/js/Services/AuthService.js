@@ -38,15 +38,36 @@ export const logoutSubmit = async () => {
 }
 export const registerSubmit = async (data) => {
     let request = Axios({
-        headers : axiosHeader(),
+        headers : axiosHeader(), data : data,
         method : "post", url : window.origin + "/api/register"
+    });
+    return Promise.resolve(request);
+}
+export const loginSubmitGoogle = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/login/google"
+    });
+    return Promise.resolve(request);
+}
+export const registerGoogleSubmit = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/register/google"
     });
     return Promise.resolve(request);
 }
 export const forgotPasswordSubmit = async (data) => {
     let request = Axios({
-        headers : axiosHeader(),
-        method : "post", url : window.origin + "/api/forgot-password"
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/password/forgot"
+    });
+    return Promise.resolve(request);
+}
+export const resetPasswordSubmit = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/password/reset"
     });
     return Promise.resolve(request);
 }

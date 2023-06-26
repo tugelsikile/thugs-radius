@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             UserPrivilegeSeeder::class,
             CurrencySeeder::class,
             TaxSeeder::class,
+            CompanyPackageSeeder::class,
         ]);
     }
 }

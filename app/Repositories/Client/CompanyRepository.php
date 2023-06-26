@@ -268,7 +268,7 @@ class CompanyRepository
      * @return void
      * @throws Exception
      */
-    private function generateDatabase(ClientCompany $clientCompany): void
+    public function generateDatabase(ClientCompany $clientCompany): void
     {
         try {
             /*$configs = [

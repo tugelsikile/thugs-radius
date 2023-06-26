@@ -179,7 +179,7 @@ class PrivilegeRepository
     {
         try {
             $response = collect();
-            $levels = UserLevel::orderBy('created_at', 'asc');
+            $levels = UserLevel::orderBy('created_at', 'asc')->where('for_public',true);
             if (strlen($request->id) > 0) {
                 $levels = $levels->where('id', $request->id);
             } else {

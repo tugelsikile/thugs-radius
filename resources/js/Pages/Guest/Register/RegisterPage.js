@@ -1,3 +1,5 @@
+// noinspection CommaExpressionJS
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getRootUrl} from "../../../Components/Authentication";
@@ -7,16 +9,23 @@ import {faEnvelope, faEye, faEyeSlash, faPaperPlane, faUser} from "@fortawesome/
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBarcode, faBuildingFlag, faCircleNotch} from "@fortawesome/free-solid-svg-icons";
 import {LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha} from "react-simple-captcha";
-import {registerSubmit} from "../../../Services/AuthService";
+import {registerGoogleSubmit, registerSubmit} from "../../../Services/AuthService";
 import {showError, showSuccess} from "../../../Components/Toaster";
+import {auth} from "../../../Components/Google/Firebase";
+import {GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {faGooglePlus} from "@fortawesome/free-brands-svg-icons";
+import HtmlParser from "react-html-parser";
+import FadeInOut from "../../../Components/FadeInOut";
 
+// noinspection DuplicatedCode
 class RegisterPage extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
             loading : false,
             form : {
-                email : '', name : '', company : '', security_code : '',
+                email : '', name : '', company : '', security_code : '', social : false,
+                avatar : null,
                 passwords : {
                     current : { type : 'password', value : '' },
                     confirm : { type : 'password', value : '' }
@@ -27,11 +36,16 @@ class RegisterPage extends React.Component{
         this.handleChange = this.handleChange.bind(this);
         this.togglePassword = this.togglePassword.bind(this);
         this.setLocaleLang = this.setLocaleLang.bind(this);
+        this.handleGoogle = this.handleGoogle.bind(this);
+        this.chaptchaEngine = this.chaptchaEngine.bind(this);
     }
     componentDidMount() {
         if (localStorage.getItem('token') !== null) {
             window.location.href = getRootUrl();
         }
+        this.chaptchaEngine();
+    }
+    chaptchaEngine() {
         loadCaptchaEnginge(6,'black','white','numbers');
     }
     setLocaleLang(event) {
@@ -63,6 +77,55 @@ class RegisterPage extends React.Component{
         }
         this.setState({form});
     }
+    async submitGoogle() {
+        let form = this.state.form;
+        this.setState({loading:true});
+        try {
+            const formData = new FormData();
+            formData.append(Lang.get('companies.form_input.other'), this.state.form.company);
+            formData.append(Lang.get('messages.users.form_input.name'), this.state.form.name);
+            formData.append(Lang.get('auth.form_input.email'), this.state.form.email);
+            formData.append(Lang.get('auth.form_input.avatar'), this.state.form.avatar);
+            let response = await registerGoogleSubmit(formData);
+            if (response.data.params === null) {
+                form.social = false,form.company = '',form.email = '',form.name = '';
+                this.setState({loading:false,form},()=>this.chaptchaEngine());
+                showError(response.data.message);
+            } else {
+                form.social = false;
+                this.setState({loading:false,form});
+                showSuccess(response.data.message);
+                localStorage.setItem('token', response.data.params.token);
+                localStorage.setItem('user', JSON.stringify(response.data.params.user));
+                window.location.href = getRootUrl();
+            }
+        } catch (e) {
+            form.social = false,form.company = '',form.email = '',form.name = '';
+            this.setState({loading:false,form},()=>this.chaptchaEngine());
+            responseMessage(e);
+        }
+    }
+    async handleGoogle(e) {
+        e.preventDefault();
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({prompt:'select_account'})
+        await signInWithPopup(auth, provider)
+            .then((result)=>{
+                let form = this.state.form;
+                form.email = result.user.email;
+                form.name = result.user.displayName;
+                form.company = result.user.displayName;
+                form.avatar = result.user.photoURL;
+                form.social = true;
+                this.setState({form},()=>this.submitGoogle());
+            })
+            .catch((err)=>{
+                let form = this.state.form;
+                form.social = false;
+                this.setState({form});
+                showError(err.message);
+            })
+    }
     async handleSubmit(e) {
         e.preventDefault();
         if (this.state.form.security_code.length === 0) {
@@ -75,6 +138,11 @@ class RegisterPage extends React.Component{
             this.setState({loading:true});
             try {
                 const formData = new FormData();
+                formData.append(Lang.get('companies.form_input.other'), this.state.form.company);
+                formData.append(Lang.get('messages.users.form_input.name'), this.state.form.name);
+                formData.append(Lang.get('auth.form_input.email'), this.state.form.email);
+                formData.append(Lang.get('auth.form_input.password'), this.state.form.passwords.current.value);
+                formData.append(Lang.get('auth.form_input.confirm'), this.state.form.passwords.confirm.value);
                 let response = await registerSubmit(formData);
                 if (response.data.params === null) {
                     form.security_code = '';
@@ -84,8 +152,11 @@ class RegisterPage extends React.Component{
                 } else {
                     form.security_code = '';
                     this.setState({loading:false,form});
-                    showSuccess(response.data.message);
+                    localStorage.setItem('token', response.data.params.token);
+                    localStorage.setItem('user', JSON.stringify(response.data.params.user));
                     validateCaptcha('asd',true);
+                    showSuccess(response.data.message);
+                    window.location.href = window.origin + '/clients';
                 }
             } catch (e) {
                 form.security_code = '';
@@ -118,9 +189,11 @@ class RegisterPage extends React.Component{
                         </li>
                     </ul>
                 </div>
+
                 <div className="login-box my-5">
                     <div className="card card-outline card-primary">
                         <div className="card-body">
+
                             <p className="login-box-msg">{ucFirst(Lang.get('auth.register_new_member.label'))}</p>
                             <form onSubmit={this.handleSubmit}>
                                 <div className="input-group mb-3">
@@ -161,6 +234,22 @@ class RegisterPage extends React.Component{
                                     </div>
                                 </div>
 
+                                <FadeInOut show={this.state.form.social} duration={500}>
+                                    <div className="text-center my-5">
+                                        <p className="login-box-msg">{HtmlParser(Lang.get('auth.social.try',{SignType:Lang.get('auth.social.sign_up.doing'),Social:Lang.get('auth.social.google.label')}))}</p>
+                                        <img style={{width:100,height:100}} className="profile-user-img img-fluid img-circle" src={this.state.form.avatar} alt="User profile picture"/>
+                                        <h3 className="profile-username mt-3 mb-5 text-center">{this.state.form.name}</h3>
+                                    </div>
+                                </FadeInOut>
+
+                                <div className="social-auth-links text-center">
+                                    <p>- {Lang.get('labels.or').toUpperCase()} -</p>
+                                    <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
+                                        <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
+                                        {Lang.get('auth.social.sign_up.button',{Social:Lang.get('auth.social.google.label')})}
+                                    </a>
+                                </div>
+
                                 <p className="mb-1 mt-5">
                                     <a href={`${window.origin}/forgot-password`}>{Lang.get('auth.forgot_password.label')}</a>
                                 </p>
@@ -171,6 +260,7 @@ class RegisterPage extends React.Component{
                                     <a href={window.origin}>{Lang.get('home.back_home')}</a>
                                 </p>
                             </form>
+
                         </div>
                     </div>
                 </div>

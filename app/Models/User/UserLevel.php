@@ -6,6 +6,10 @@ use App\Models\Company\ClientCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property mixed|string $id
+ * @method static where(string $string, mixed|string $value)
+ */
 class UserLevel extends Model
 {
     use HasFactory;
@@ -15,7 +19,8 @@ class UserLevel extends Model
     protected $casts = [
         'super' => 'boolean',
         'is_default' => 'boolean',
-        'for_client' => 'boolean'
+        'for_client' => 'boolean',
+        'for_public' => 'boolean',
     ];
 
     public function companyObj() {

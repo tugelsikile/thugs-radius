@@ -1,8 +1,12 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 echo "cmodding 755 of $SCRIPT_DIR"
 chmod -R 755 "$SCRIPT_DIR"
+echo "chmodding 777 of bootstrap dir"
+BOOTSTRAP_DIR="$SCRIPT_DIR/bootstrap"
+chmod -R 777 "$BOOTSTRAP_DIR"
 echo "chmodding 777 of storage dir"
-chmod -R 777 storage
+STORAGE_DIR="$SCRIPT_DIR/storage"
+chmod -R 777 "$STORAGE_DIR"
 
 vendor_dir="$SCRIPT_DIR/vendor"
 echo "checking if vendor exists"

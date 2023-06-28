@@ -40,6 +40,11 @@ export const ucFirst = (string) => {
         return letter.toUpperCase();
     })
 }
+export const ucWord = (string) => {
+    return string.toLowerCase().replace(/\b[a-z]/g, (letter) => {
+        return letter.toUpperCase();
+    });
+}
 export const serviceType = [
     { value : 'pppoe', label : 'PPPoE' },
     { value : 'hotspot', label : 'Hotspot' }

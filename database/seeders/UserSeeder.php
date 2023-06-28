@@ -19,10 +19,16 @@ class UserSeeder extends Seeder
     {
         $dumps = collect();
         $dumps->push((object) [
-            'name' => 'Super Admin', 'email' => 'super@admin.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id,
+            'name' => 'Super Admin', 'email' => 'super@admin.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id, 'is_ghost' => false,
         ]);
         $dumps->push((object) [
-            'name' => 'Billing', 'email' => 'billing@admin.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name', 'Billing')->first()->id,
+            'name' => 'Duitku Payment Gateway', 'email' => 'gateway@duitku.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id, 'is_ghost' => true,
+        ]);
+        $dumps->push((object) [
+            'name' => 'BRI API Payment Gateway', 'email' => 'gateway@bri.co.id', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id, 'is_ghost' => true,
+        ]);
+        $dumps->push((object) [
+            'name' => 'Billing', 'email' => 'billing@admin.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name', 'Billing')->first()->id, 'is_ghost' => false,
         ]);
         $this->command->getOutput()->progressStart($dumps->count());
         foreach ($dumps as $dump) {
@@ -36,6 +42,7 @@ class UserSeeder extends Seeder
             $user->name = $dump->name;
             $user->level = $dump->level;
             $user->locale = (object) ['lang' => 'id', 'date_format' => 'DD/MM/yyyy HH:mm:ss', 'time_zone' => 'Asia/Jakarta'];
+            $user->is_ghost = $dump->is_ghost;
             $user->saveOrFail();
             $this->command->getOutput()->progressAdvance();
         }

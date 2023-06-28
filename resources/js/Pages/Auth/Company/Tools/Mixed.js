@@ -13,17 +13,17 @@ export const VillageComponent = ({children, ...props}) => {
         </div>
     )
 }
-const getIndex = (props) => {
+export const getIndex = (props) => {
     let index = props.split('-');
     index = index[index.length - 1];
     return parseInt(index) + 1;
 }
-const onMouseOver = (event) => {
+export const onMouseOver = (event) => {
     let element = event.currentTarget;
     element.style.backgroundColor = '#70a7ff';
     element.style.borderBottom = 'solid 1px #70a7ff';
 }
-const onMouseOut = (event) => {
+export const onMouseOut = (event) => {
     let element = event.currentTarget;
     element.style.backgroundColor = '#fff';
     element.style.borderBottom = 'solid 1px #ccc';

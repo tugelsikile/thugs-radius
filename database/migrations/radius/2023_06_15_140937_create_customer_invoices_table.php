@@ -18,7 +18,7 @@ class CreateCustomerInvoicesTable extends Migration
             $table->string('order_id',50)->unique();
             $table->uuid('customer');
             $table->string('code',40)->unique();
-            $table->date('bill_period');
+            $table->dateTime('bill_period');
             $table->text('note')->nullable();
             $table->timestamps();
             $table->softDeletes();

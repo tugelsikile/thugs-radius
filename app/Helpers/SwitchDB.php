@@ -14,6 +14,7 @@ class SwitchDB
         if ($configName != null) {
             if ($configParams != null && is_string($configName) && is_array($configParams)) {
                 Config::set($configName, $configParams);
+                DB::setDefaultConnection("radius");
             } elseif(is_string($configName)) {
                 DB::setDefaultConnection($configName);
             }

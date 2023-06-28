@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @method static where(string $string, mixed $value)
+ * @property mixed $id
+ * @property mixed $company
+ * @property mixed $keys
+ */
 class PaymentGateway extends Model
 {
     use HasFactory;

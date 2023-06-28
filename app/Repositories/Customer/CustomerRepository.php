@@ -6,6 +6,7 @@
 
 namespace App\Repositories\Customer;
 
+use App\Helpers\Radius\Radius;
 use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Customer\Customer;
@@ -371,6 +372,17 @@ class CustomerRepository
             $response = collect();
             $customers = Customer::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $customers = $customers->where('id', $request->id);
+            if ($request->has(__('labels.form_input.keywords'))) {
+                $keyword = $request[__('labels.form_input.keywords')];
+                $customers = $customers->where(function ($query) use ($keyword) {
+                    $query->where('name', 'like', "%$keyword%")
+                        ->orWhere('code', 'like', "%$keyword%")
+                        ->orWhere('phone', 'like', "%$keyword%")
+                        ->orWhere('nas_username', 'like', "%$keyword%")
+                        ->orWhere('nas_password', 'like', "%$keyword%")
+                        ->orWhere('address', 'like', "%$keyword%");
+                })->where('is_voucher', false);
+            }
             if ($request->has('expired')) {
                 $customers = $customers->whereNotNull('due_at')->whereDate('due_at','<', Carbon::now()->format('Y-m-d H:i:s'));
             }
@@ -398,6 +410,7 @@ class CustomerRepository
                     'value' => $customer->id,
                     'label' => $customer->userObj == null ? $customer->nas_username : $customer->userObj->name,
                     'meta' => (object) [
+                        'company' => $this->me->company,
                         'invoice' => $invoice,
                         'code' => $customer->code,
                         'user' => $customer->userObj,
@@ -523,6 +536,33 @@ class CustomerRepository
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(), 500);
+        }
+    }
+
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Throwable
+     */
+    public function renewCustomer(Request $request) {
+        try {
+            $customer = Customer::where('id', $request->id)->first();
+            $profile = $customer->profileObj;
+            if ($profile != null) {
+                if ($profile->limit_type == 'time') {
+                    if ($profile->limit_rate > 0) {
+                        if (in_array($profile->limit_rate_unit,['seconds','minutes','hours','days','weeks','months','years'])) {
+                            $customer->due_at = generateCompanyExpired($customer->due_at, $profile->limit_rate_unit, $profile->limit_rate);
+                            $customer->saveOrFail();
+                            (new RadiusDB())->saveUser($customer);
+                            (new Radius())->kickOnlineUser($customer);
+                        }
+                    }
+                }
+            }
+            return $this->table($request)->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
         }
     }
 }

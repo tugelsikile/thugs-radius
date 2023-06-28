@@ -12,13 +12,14 @@ import {
     CardPreloader,
     customPreventDefault,
     formatLocaleDate,
-    formatLocaleString, wordLimit
+    formatLocaleString, ucFirst, ucWord, wordLimit
 } from "../../../../Components/mixedConsts";
 import {MenuIcon} from "../../User/Privilege/Tools/IconTool";
 import {DataNotFound} from "../../../../Components/TableComponent";
 import {FormatPrice, sumGrandtotalCustomer} from "../../Customer/Tools/Mixed";
 import {sumGrandTotalInvoice, sumSubtotalInvoice, sumTotalPaymentInvoice} from "../../Customer/Invoice/Tools/Mixed";
 import {Tooltip} from "@mui/material";
+import {getIndex, onMouseOut, onMouseOver} from "../../../Auth/Company/Tools/Mixed";
 
 export const DashboardCardStatus = (props) => {
     let total = 0,paid = 0, taxes = 0;
@@ -235,4 +236,59 @@ export const TableExpiredCustomer = (props) => {
             </tbody>
         </table>
     )
+}
+export const PaymentChannelReactSelectComponent = ({children, ...props}) => {
+    //console.log(children,props, getIndex(props.innerProps.id), props.options.length);
+    return (
+        <div onMouseOver={onMouseOver} onMouseOut={onMouseOut} id={props.innerProps.id}
+             style={{cursor:'pointer',borderBottom : getIndex(props.innerProps.id) === props.options.length ? 'none' : 'solid 1px #ccc'}}
+             className="p-2" onClick={()=>props.setValue(props.data)}>
+            <div className="text-sm">
+                <img alt="logo" style={{height:40,width:40}} src={props.data.logo} className="img-thumbnail float-left mr-1"/>
+                <div>
+                    <strong>{props.data.label}</strong><br/>
+                    Fee : {formatLocaleString(props.data.fee)}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export const CustomerReactSelectComponent = ({children, ...props}) => {
+    //console.log(children,props, getIndex(props.innerProps.id), props.options.length);
+    return (
+        <div onMouseOver={onMouseOver} onMouseOut={onMouseOut} id={props.innerProps.id}
+             style={{cursor:'pointer',borderBottom : getIndex(props.innerProps.id) === props.options.length ? 'none' : 'solid 1px #ccc'}}
+             className="p-2" onClick={()=>props.setValue(props.data)}>
+            <div className="text-sm">
+                <FontAwesomeIcon icon={faUserTie} size="xs" className="mr-1"/><strong>{props.data.meta.code}</strong> {props.data.label}
+                <span className="float-right">
+                    {props.data.meta.timestamps.inactive.at !== null ?
+                        <span className="badge badge-danger">{Lang.get('customers.labels.status.inactive')}</span>
+                        :
+                        props.data.meta.timestamps.active.at !== null ?
+                            <span className="badge badge-success">{Lang.get('customers.labels.status.active')}</span>
+                            :
+                            <span className="badge badge-secondary">{Lang.get('customers.labels.status.register')}</span>
+                    }
+                </span>
+            </div>
+            <span className="text-muted text-xs">
+                {props.data.meta.address.street}
+                {props.data.meta.address.village !== null && `, ${ucWord(props.data.meta.address.village.name)}`}
+                {props.data.meta.address.district !== null && `, ${ucWord(props.data.meta.address.district.name)}`}
+                {props.data.meta.address.city !== null && `, ${ucWord(props.data.meta.address.city.name)}`}
+                {props.data.meta.address.province !== null && `, ${ucWord(props.data.meta.address.province.name)}`}
+                {` ${props.data.meta.address.postal}`}
+            </span>
+        </div>
+    )
+}
+export const formatVA = (string) => {
+    let response = "";
+    let explodes = string.match(/.{1,4}/g) ?? [];
+    if (explodes.length > 0) {
+        response = explodes.join('-');
+    }
+    return response;
 }

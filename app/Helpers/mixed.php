@@ -160,6 +160,18 @@ function allowedDateFormat(): array
         'yy/MM/DD HH:mm',
     ];
 }
+function formatResponsePG(int $code, string $message = null, $params = null): JsonResponse
+{
+    if ($code > 550) $code = 500;
+    if ($code < 200) $code = 400;
+    if ($message == null) $message = __('messages.method');
+    if (strlen($message) == 0) $message = __('messages.method');
+    return response()->json([
+        'status_code' => $code,
+        'status_message' => $message,
+        'status_data' => $params,
+    ]);
+}
 function formatResponse($code, $message = null, $params = null): JsonResponse
 {
     if (! is_integer($code)) $code = 400;

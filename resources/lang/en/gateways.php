@@ -8,6 +8,8 @@ return [
         'url' => 'merchant_url',
         'website' => 'website_url',
         'module' => 'module_name',
+        'callback' => 'callback_url',
+        'return' => 'return_url',
         'duitku' => [
             'merchant_code' => 'merchant_code',
             'api_key' => 'api_key',
@@ -24,6 +26,11 @@ return [
         'module' => 'Module',
         'status' => 'Status',
         'description' => 'Description',
+        'va' => 'V.A. Number',
+        'copy_va' => 'Copy Virtual Account Number',
+        'va_copied' => 'Virtual Account Number successfully copied to your clipboard',
+        'grand_total' => 'Grand Total',
+        'reference_code' => 'Reference Code',
         'mode' => [
             'label' => 'Mode',
             'production' => 'Production Mode',
@@ -34,6 +41,13 @@ return [
             'website' => 'Website',
             'production' => 'Production URL',
             'sandbox' => 'Sandbox URL',
+            'callback' => [
+                'label' => 'Callback URL',
+                'copy' => 'Copy Callback URL',
+                'copied' => 'Callback URL successfully copied to your clipboard',
+                'info' => 'Copy this callback URL into your duitku.com project on <strong class="text-primary">"Callback Url Project"</strong> column<br/>This Callback URL is important for your customer validation if they paid using their prefered channel payment',
+            ],
+            'return' => 'Return URL',
         ]
     ],
     'promises' => [
@@ -47,6 +61,10 @@ return [
             'label' => 'Duitku.com',
             'merchant_code' => 'Merchant Code',
             'api_key' => 'API Key',
+            'status' => [
+                'process' => 'Waiting Payment',
+                'success' => 'Successfully Paid'
+            ]
         ],
         'briapi' => [
             'label' => 'BRI API',

@@ -18,6 +18,7 @@ import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import {sortDate} from "../../Client/User/Tools/Mixed";
 import moment from "moment";
 import FormUser from "../../Client/User/Tools/FormUser";
+import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 
 // noinspection DuplicatedCode
 class UserPage extends React.Component {
@@ -54,8 +55,8 @@ class UserPage extends React.Component {
             if (this.state.privilege === null) {
                 getPrivileges([
                     {route : this.props.route, can : false },
-                    {route : 'clients.users.privileges', can : false},
-                    {route : 'clients.users.reset-password', can : false},
+                    {route : 'auth.users.privileges', can : false},
+                    {route : 'auth.users.reset-password', can : false},
                 ])
                     .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>{
@@ -298,11 +299,8 @@ class UserPage extends React.Component {
             <React.StrictMode>
                 <FormUser data={this.state.modal.data} user={this.state.user} levels={this.state.levels} companies={this.state.companies} loadings={this.state.loadings} open={this.state.modal.open} handleClose={this.toggleModal} handleUpdate={this.loadUsers}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('users.labels.menu')} childrens={[]}/>
 

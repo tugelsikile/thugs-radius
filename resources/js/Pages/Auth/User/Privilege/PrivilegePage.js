@@ -16,6 +16,7 @@ import {faExclamationCircle,faPlus} from "@fortawesome/free-solid-svg-icons";
 import {MenuIcon} from "../../../Client/User/Privilege/Tools/IconTool";
 import {Tooltip} from "@mui/material";
 import {InputCheckBox, UserLevelList} from "../../../Client/User/Privilege/Tools/TableTools";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
 
 // noinspection DuplicatedCode
 class PrivilegePage extends React.Component {
@@ -56,8 +57,7 @@ class PrivilegePage extends React.Component {
             if (this.state.privilege === null) {
                 getPrivileges([
                     {route : this.props.route, can : false },
-                    {route : 'clients.users', can : false},
-                    {route : 'clients.customers', can : false},
+                    {route : 'auth.users', can : false},
                 ])
                     .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>this.loadCompanies())
@@ -355,11 +355,7 @@ class PrivilegePage extends React.Component {
                 <FormPrivilege user={this.state.user} level={this.state.filter.level} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadLevels}/>
 
                 <PageLoader/>
-                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
 
                 <div className="content-wrapper">
 

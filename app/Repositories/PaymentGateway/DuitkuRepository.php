@@ -19,6 +19,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -254,6 +255,7 @@ class DuitkuRepository
     public function callback(Request $request): object
     {
         try {
+            Log::info(json_encode($request->all()));
             new SwitchDB("mysql");
             $by = User::where('email', 'gateway@duitku.com')->first();
             $company = ClientCompany::where('id', $request->company)->first();

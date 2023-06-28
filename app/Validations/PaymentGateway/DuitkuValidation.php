@@ -7,6 +7,7 @@ use App\Models\Company\ClientCompany;
 use App\Models\PaymentGateway\PaymentGateway;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -101,6 +102,7 @@ class DuitkuValidation
     public function callback(Request $request): Request
     {
         try {
+            Log::info(json_encode($request->all()));
             $valid = Validator::make($request->all(),[
                 'merchantCode' => 'required|string',
                 'amount' => 'required|numeric|min:0',

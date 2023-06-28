@@ -150,8 +150,10 @@ class MiktorikSSL
             return null;
         }
     }
+
     /* @
      * @param NasProfile $nasProfile
+     * @param $defaultName
      * @return bool|null
      * @throws GuzzleException
      * @throws Throwable

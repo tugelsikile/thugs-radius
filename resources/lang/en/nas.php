@@ -1,6 +1,7 @@
 <?php
 return [
     'form_input' => [
+        'secret' => 'secret',
         'id' => 'router_data',
         'name' => 'router_name',
         'description' => 'router_description',
@@ -20,12 +21,14 @@ return [
             'success' => 'Router [NAS] successfully loaded',
             'error' => 'Failed to load Router [NAS] data',
         ],
+        'secret' => 'Secret',
         'menu' => 'Router [NAS]',
         'menu_info' => 'Router [NAS] Management',
         'not_found' => 'Router Not Found',
         'search' => 'Search Router ...',
         'select' => 'Select Router [NAS]',
         'name' => 'Router Name',
+        'short_name' => 'Router',
         'description' => 'Router Description',
         'type' => 'Router Type',
         'method' => [
@@ -106,6 +109,7 @@ return [
             'name' => 'ip_pool_name',
             'description' => 'ip_pool_description',
             'upload' => 'upload_to_router',
+            'code' => 'mikrotik_pool_name',
             'address' => [
                 'first' => 'first_ip',
                 'last' => 'last_ip',
@@ -116,6 +120,10 @@ return [
                 'pending' => 'Loading IP Pool Profile',
                 'success' => 'IP Pool Profile successfully loaded',
                 'error' => 'Failed to load IP Pool Profile data',
+            ],
+            'code' => [
+                'label' => 'Mikrotik Pool Name',
+                'info' => 'This will saved to mikrotik as pool name'
             ],
             'select' => 'Select IP Pool',
             'menu' => 'Profile IP Pool',

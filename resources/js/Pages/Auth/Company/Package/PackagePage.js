@@ -14,6 +14,10 @@ import BtnSort from "../../User/Tools/BtnSort";
 import {CardPreloader, durationBy, siteData} from "../../../../Components/mixedConsts";
 import FormPackage from "./Tools/FormPackage";
 import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
+import {TableAction} from "../../../../Components/TableComponent";
+import {FormatPrice} from "../../../Client/Customer/Tools/Mixed";
 
 class PackagePage extends React.Component {
     routers;
@@ -303,11 +307,8 @@ class PackagePage extends React.Component {
                 <FormPackage discounts={this.state.discounts} taxes={this.state.taxes} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleForm} handleUpdate={this.loadPackages}/>
 
                 <PageLoader/>
-                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('companies.packages.labels.menu')} childrens={[
@@ -322,40 +323,28 @@ class PackagePage extends React.Component {
                                 {this.state.loadings.packages &&
                                     <CardPreloader/>
                                 }
-                                <div className="card-header">
-                                    <h3 className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.packages} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('companies.packages.create.form')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.packages.selected.length > 0 &&
-                                                    <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.packages} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('companies.packages.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </h3>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('companies.packages.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="card-header pl-2">
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   loading={this.state.loadings.packages}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('companies.packages.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('companies.packages.labels.menu')})}}
+                                                   selected={this.state.packages.selected}
+                                                   handleModal={this.toggleForm}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('companies.packages.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-striped">
                                         <thead>
                                         <tr>
-                                            <th rowSpan={2} className="align-middle text-center" width={30}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.packages} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th rowSpan={2} className="align-middle" width={90}>
+                                            {this.state.packages.filtered.length > 0 &&
+                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
+                                                    <div className="custom-control custom-checkbox">
+                                                        <input data-id="" disabled={this.state.loadings.packages} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
+                                                        <label htmlFor="checkAll" className="custom-control-label"/>
+                                                    </div>
+                                                </th>
+                                            }
+                                            <th rowSpan={2} className={this.state.packages.filtered.length === 0 ? "align-middle pl-2" : "align-middle"} width={90}>
                                                 <BtnSort sort="code"
                                                          filter={this.state.filter}
                                                          name={Lang.get('companies.packages.labels.table_columns.code')}
@@ -367,22 +356,22 @@ class PackagePage extends React.Component {
                                                          name={Lang.get('companies.packages.labels.table_columns.name')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th rowSpan={2} className="align-middle" width={120}>
-                                                <BtnSort sort="price"
-                                                         filter={this.state.filter}
-                                                         name={Lang.get('companies.packages.labels.table_columns.price')}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
                                             <th rowSpan={2} className="align-middle" width={100}>
                                                 <BtnSort sort="duration"
                                                          filter={this.state.filter}
                                                          name={Lang.get('companies.packages.labels.table_columns.duration')}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th colSpan={4} className="align-middle text-center">
+                                            <th colSpan={4} className="align-middle text-xs text-center">
                                                 {Lang.get('companies.packages.labels.table_columns.max.main')}
                                             </th>
-                                            <th rowSpan={2} className="align-middle" width={30}>
+                                            <th rowSpan={2} className="align-middle" width={120}>
+                                                <BtnSort sort="price"
+                                                         filter={this.state.filter}
+                                                         name={Lang.get('companies.packages.labels.table_columns.price')}
+                                                         handleSort={this.handleSort}/>
+                                            </th>
+                                            <th rowSpan={2} className="align-middle text-xs pr-2" width={30}>
                                                 {Lang.get('messages.users.labels.table_action')}
                                             </th>
                                         </tr>
@@ -415,80 +404,67 @@ class PackagePage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.packages.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={10}>Tidak ada data</td></tr>
+                                            <tr><td className="align-middle text-center" colSpan={9}>Tidak ada data</td></tr>
                                             :
                                             this.state.packages.filtered.map((item,index)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pl-2">
                                                         <div className="custom-control custom-checkbox">
                                                             <input checked={this.state.packages.selected.findIndex((f) => f === item.value) >= 0} id={`pack_${item.value}`} data-id={item.value} disabled={this.state.loadings.packages} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                             <label htmlFor={`pack_${item.value}`} className="custom-control-label"/>
                                                         </div>
                                                     </td>
-                                                    <td className="align-middle text-center">{item.meta.code}</td>
-                                                    <td>{item.label}</td>
-                                                    <td className={item.meta.prices.base === 0 ? 'align-middle text-center' : 'align-middle'}>
+                                                    <td className="align-middle text-center text-xs">{item.meta.code}</td>
+                                                    <td colSpan={item.meta.additional ? 6 : 1} className="align-middle text-xs">{item.label}</td>
+                                                    {! item.meta.additional &&
+                                                        <React.Fragment>
+                                                            <td className="align-middle text-xs text-center">
+                                                                {item.meta.duration.amount === 0 ?
+                                                                    <span className="badge badge-success">Unlimited</span>
+                                                                    :
+                                                                    <>{item.meta.duration.amount} {Lang.get(`durations.${item.meta.duration.string}`)}</>
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle text-center text-xs">
+                                                                {item.meta.max.users === 0 ?
+                                                                    <span className="badge badge-success">Unlimited</span>
+                                                                    :
+                                                                    parseFloat(item.meta.max.users).toLocaleString('id-ID',{maximumFractionDigits:0})
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle text-center text-xs">
+                                                                {item.meta.max.customers === 0 ?
+                                                                    <span className="badge badge-success">Unlimited</span>
+                                                                    :
+                                                                    parseFloat(item.meta.max.customers).toLocaleString('id-ID',{maximumFractionDigits:0})
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle text-center text-xs">
+                                                                {item.meta.max.vouchers === 0 ?
+                                                                    <span className="badge badge-success">Unlimited</span>
+                                                                    :
+                                                                    parseFloat(item.meta.max.vouchers).toLocaleString('id-ID',{maximumFractionDigits:0})
+                                                                }
+                                                            </td>
+                                                            <td className="align-middle text-center text-xs">
+                                                                {item.meta.max.vouchers === 0 ?
+                                                                    <span className="badge badge-success">Unlimited</span>
+                                                                    :
+                                                                    parseFloat(item.meta.max.routers).toLocaleString('id-ID',{maximumFractionDigits:0})
+                                                                }
+                                                            </td>
+                                                        </React.Fragment>
+                                                    }
+                                                    <td className={item.meta.prices.base === 0 ? 'align-middle text-xs text-center' : 'text-xs align-middle'}>
                                                         {item.meta.prices.base === 0 ?
                                                             <span className="badge badge-success">FREE</span>
                                                             :
-                                                            <>
-                                                                <span className="float-left">Rp.</span>
-                                                                <span className="float-right">{parseFloat(item.meta.prices).toLocaleString('id-ID',{maximumFractionDigits:0})}</span>
-                                                            </>
+                                                            FormatPrice(item.meta.prices)
                                                         }
                                                     </td>
-                                                    <td className="align-middle text-center">
-                                                        {item.meta.duration.ammount === 0 ?
-                                                            <span className="badge badge-success">Unlimited</span>
-                                                            :
-                                                            <>{item.meta.duration.ammount} {Lang.get(`durations.${item.meta.duration.string}`)}</>
-                                                        }
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        {item.meta.max.users === 0 ?
-                                                            <span className="badge badge-success">Unlimited</span>
-                                                            :
-                                                            parseFloat(item.meta.max.users).toLocaleString('id-ID',{maximumFractionDigits:0})
-                                                        }
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        {item.meta.max.customers === 0 ?
-                                                            <span className="badge badge-success">Unlimited</span>
-                                                            :
-                                                            parseFloat(item.meta.max.customers).toLocaleString('id-ID',{maximumFractionDigits:0})
-                                                        }
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        {item.meta.max.vouchers === 0 ?
-                                                            <span className="badge badge-success">Unlimited</span>
-                                                            :
-                                                            parseFloat(item.meta.max.vouchers).toLocaleString('id-ID',{maximumFractionDigits:0})
-                                                        }
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        {item.meta.max.vouchers === 0 ?
-                                                            <span className="badge badge-success">Unlimited</span>
-                                                            :
-                                                            parseFloat(item.meta.max.routers).toLocaleString('id-ID',{maximumFractionDigits:0})
-                                                        }
-                                                    </td>
-                                                    <td className="align-middle text-center">
-                                                        {this.state.privilege !== null &&
-                                                            <>
-                                                                <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                                    <span className="sr-only">Toggle Dropdown</span>
-                                                                </button>
-                                                                <div className="dropdown-menu" role="menu">
-                                                                    {this.state.privilege.update &&
-                                                                        <button onClick={()=>this.toggleForm(item)} className="dropdown-item text-primary"><i className="fe fe-edit mr-1"/> {Lang.get('companies.packages.update.form')}</button>
-                                                                    }
-                                                                    {this.state.privilege.delete &&
-                                                                        <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fe fe-trash-2 mr-1"/> {Lang.get('companies.packages.delete.form')}</button>
-                                                                    }
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </td>
+                                                    <TableAction
+                                                                 privilege={this.state.privilege} item={item} className="pr-2"
+                                                                 langs={{update:Lang.get('labels.update.label',{Attribute:Lang.get('companies.packages.labels.menu')}), delete:Lang.get('labels.delete.label',{Attribute:Lang.get('companies.packages.labels.menu')})}} toggleModal={this.toggleForm} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

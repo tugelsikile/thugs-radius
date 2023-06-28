@@ -10,10 +10,13 @@ import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../User/Tools/BtnSort";
 import {CardPreloader, formatLocaleDate, siteData, sortActiveCompany, ucFirst} from "../../../Components/mixedConsts";
-import {allProvinces} from "../../../Services/RegionService";
+import {fileRegions} from "../../../Services/RegionService";
 import FormCompany from "./Tools/FormCompany";
 import moment from "moment";
 import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
+import {TableAction} from "../../../Components/TableComponent";
+import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
+import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 
 // noinspection DuplicatedCode
 class CompanyPage extends React.Component {
@@ -39,6 +42,7 @@ class CompanyPage extends React.Component {
         this.toggleForm = this.toggleForm.bind(this);
         this.confirmDelete = this.confirmDelete.bind(this);
         this.confirmActive = this.confirmActive.bind(this);
+        this.loadPackages = this.loadPackages.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -47,7 +51,10 @@ class CompanyPage extends React.Component {
                 siteData().then((response)=>this.setState({site:response}));
                 let loadings = this.state.loadings;
                 loadings.privilege = true; this.setState({loadings});
-                getPrivileges(this.props.route)
+                getPrivileges([
+                    {route : this.props.route, can : false},
+                    {route :'auth.clients.packages', can : false}
+                ])
                     .then((response) => this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>this.loadTaxes())
                     .then(()=>this.loadDiscounts())
@@ -230,9 +237,9 @@ class CompanyPage extends React.Component {
         if (! this.state.loadings.provinces) {
             if (this.state.provinces.length === 0) {
                 let loadings = this.state.loadings;
-                loadings.provinces = true; this.setState({loadings});
+                loadings.provinces = false; this.setState({loadings});
                 try {
-                    let response = await allProvinces();
+                    let response = await fileRegions();
                     if (response.data.params === null) {
                         loadings.provinces = false; this.setState({loadings});
                         showError(response.data.message);
@@ -246,22 +253,38 @@ class CompanyPage extends React.Component {
             }
         }
     }
-    async loadPackages() {
+    async loadPackages(data = null) {
         if (! this.state.loadings.packages) {
-            if (this.state.packages.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.packages = true; this.setState({loadings});
-                try {
-                    let response = await crudCompanyPackage();
-                    if (response.data.params === null) {
-                        loadings.packages = false; this.setState({loadings});
-                        showError(response.data.message);
+            let index;
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let packages = this.state.packages;
+                    loadings.packages = true; this.setState({loadings});
+                    index = packages.findIndex((f) => f.value === data.value);
+                    if (index >= 0) {
+                        packages[index] = data;
                     } else {
-                        loadings.packages = false; this.setState({loadings,packages:response.data.params});
+                        packages.push(data);
                     }
-                } catch (e) {
-                    loadings.packages = false; this.setState({loadings});
-                    showError(e.response.data.message);
+                    loadings.packages = false;
+                    this.setState({loadings,packages});
+                }
+            } else {
+                if (this.state.packages.length === 0) {
+                    loadings.packages = true; this.setState({loadings});
+                    try {
+                        let response = await crudCompanyPackage();
+                        if (response.data.params === null) {
+                            loadings.packages = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.packages = false; this.setState({loadings,packages:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.packages = false; this.setState({loadings});
+                        showError(e.response.data.message);
+                    }
                 }
             }
         }
@@ -306,14 +329,11 @@ class CompanyPage extends React.Component {
         return (
             <React.StrictMode>
 
-                <FormCompany taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.open} data={this.state.modal.data} loadings={this.state.loadings} provinces={this.state.provinces} packages={this.state.packages} handleClose={this.toggleForm} handleUpdate={this.loadCompanies}/>
+                <FormCompany privilege={this.state.privilege} taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.open} data={this.state.modal.data} loadings={this.state.loadings} provinces={this.state.provinces} packages={this.state.packages} handleClose={this.toggleForm} handleUpdate={this.loadCompanies} onUpdatePackages={this.loadPackages}/>
 
                 <PageLoader/>
-                <MainHeader site={this.state.site} root={this.state.root} user={this.state.user}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('companies.labels.menu')} childrens={[]}/>
@@ -326,58 +346,46 @@ class CompanyPage extends React.Component {
                                 {this.state.loadings.companies &&
                                     <CardPreloader/>
                                 }
-                                <div className="card-header">
-                                    <h3 className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button onClick={()=>this.toggleForm()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('companies.create.form')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.companies.selected.length > 0 &&
-                                                    <button onClick={()=>this.confirmDelete()} disabled={this.state.loadings.levels} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('companies.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </h3>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('companies.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="card-header pl-2">
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   loading={this.state.loadings.companies}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('companies.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('companies.labels.menu')})}}
+                                                   selected={this.state.companies.selected}
+                                                   handleModal={this.toggleForm}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('companies.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-striped">
                                         <thead>
                                         <tr>
-                                            <th className="align-middle text-center" width={30}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.companies} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th width={80}>
+                                            {this.state.companies.filtered.length > 0 &&
+                                                <th className="align-middle text-center pl-2" width={30}>
+                                                    <div className="custom-control custom-checkbox">
+                                                        <input data-id="" disabled={this.state.loadings.companies} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
+                                                        <label htmlFor="checkAll" className="custom-control-label"/>
+                                                    </div>
+                                                </th>
+                                            }
+                                            <th className={this.state.companies.filtered.length === 0 ? "align-middle pl-2" : "align-middle"} width={80}>
                                                 <BtnSort sort="code"
                                                          name={Lang.get('companies.labels.table_columns.code')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th>
+                                            <th className="align-middle">
                                                 <BtnSort sort="name"
                                                          name={Lang.get('companies.labels.table_columns.name')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th>
+                                            <th className="align-middle">
                                                 <BtnSort sort="email"
                                                          name={Lang.get('companies.labels.table_columns.email')}
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th>
+                                            <th className="align-middle text-xs">
                                                 {Lang.get('companies.packages.labels.table_columns.name')}
                                             </th>
                                             <th className="align-middle" width={150}>
@@ -392,37 +400,37 @@ class CompanyPage extends React.Component {
                                                          filter={this.state.filter}
                                                          handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.users.labels.table_action')}</th>
+                                            <th className="align-middle text-center text-xs pr-2" width={50}>{Lang.get('messages.users.labels.table_action')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         {this.state.companies.filtered.length === 0 ?
-                                            <tr><td className="align-middle text-center" colSpan={8}>Tidak ada data</td></tr>
+                                            <tr><td className="align-middle text-center" colSpan={7}>Tidak ada data</td></tr>
                                             :
                                             this.state.companies.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pl-2">
                                                         <div className="custom-control custom-checkbox">
                                                             <input id={`cbx_${item.value}`} data-id={item.value} checked={this.state.companies.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.companies} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                             <label htmlFor={`cbx_${item.value}`} className="custom-control-label"/>
                                                         </div>
                                                     </td>
-                                                    <td className="align-middle text-center">{item.meta.code}</td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-center text-xs">{item.meta.code}</td>
+                                                    <td className="align-middle ">
                                                         <strong className="text-primary"><i className="fas fa-info-circle mr-1"/>{item.label}</strong><br/>
                                                         <span className="small text-muted">
                                                             <i className="fas fa-building mr-1"/>{item.meta.address.street}, {ucFirst(item.meta.address.village.name)} {ucFirst(item.meta.address.district.name)} {ucFirst(item.meta.address.city.name)} {ucFirst(item.meta.address.province.name)} {item.meta.address.postal}
                                                         </span>
                                                     </td>
-                                                    <td className="align-middle">{item.meta.address.email}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.email}</td>
                                                     <td className="align-middle">
                                                         <ul className="list-unstyled">
                                                             {item.meta.packages.map((pack)=>
-                                                                <li key={pack.value}><i className="fas fa-minus mr-1"/> {pack.meta.package.label}</li>
+                                                                <li className="text-xs" key={pack.value}><i className="fas fa-minus mr-1"/> {pack.meta.package.label}</li>
                                                             )}
                                                         </ul>
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.timestamps.active.at === null ?
                                                             <button onClick={()=>this.confirmActive(item)} type="button" className="btn btn-xs btn-block btn-outline-warning text-sm">{Lang.get('companies.labels.status.inactive')}</button>
                                                             :
@@ -432,7 +440,7 @@ class CompanyPage extends React.Component {
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.expiry === null ?
                                                             <span className="badge badge-success">Unlimited</span>
                                                             :
@@ -443,26 +451,9 @@ class CompanyPage extends React.Component {
 
                                                         }
                                                     </td>
-                                                    <td className="align-top text-center">
-                                                        {this.state.privilege !== null &&
-                                                            <>
-                                                                <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                                    <span className="sr-only">Toggle Dropdown</span>
-                                                                </button>
-                                                                <div className="dropdown-menu" role="menu">
-                                                                    {this.state.privilege.update &&
-                                                                        <>
-                                                                            <button onClick={()=>this.toggleForm(item)} className="dropdown-item text-primary"><i className="fa fa-pen-alt mr-1"/> {Lang.get('companies.update.form')}</button>
-                                                                            <button onClick={()=>this.confirmActive(item)} className={item.meta.timestamps.active.at === null ? "dropdown-item text-success" : "dropdown-item text-warning"}><i className={item.meta.timestamps.active.at === null ? "fa fa-check-circle mr-1" : "fa fa-times-circle mr-1"}/> {item.meta.timestamps.active.at === null ? Lang.get('companies.active.status.active') : Lang.get('companies.active.status.inactive')}</button>
-                                                                        </>
-                                                                    }
-                                                                    {this.state.privilege.delete &&
-                                                                        <button onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('companies.delete.form')}</button>
-                                                                    }
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </td>
+                                                    <TableAction others={[]}
+                                                                 privilege={this.state.privilege} item={item} className="pr-2"
+                                                                 langs={{update:Lang.get('labels.update.label',{Attribute:Lang.get('companies.labels.menu')}), delete:Lang.get('labels.delete.label',{Attribute:Lang.get('companies.labels.menu')})}} toggleModal={this.toggleForm} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

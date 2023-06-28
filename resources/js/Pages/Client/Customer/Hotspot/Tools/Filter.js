@@ -8,7 +8,7 @@ import {FormControlSMReactSelect, ucFirst} from "../../../../../Components/mixed
 
 export const FilterButton = (props) => {
     return (
-        <button title={Lang.get('messages.filter')} onClick={props.onClick} disabled={props.loading} type="button" className="btn btn-tool"><FontAwesomeIcon size="sm" icon={faFilter}/></button>
+        <button title={Lang.get('labels.filter',{Attribute:Lang.get('customers.hotspot.labels.menu')})} onClick={props.onClick} disabled={props.loading} type="button" className="btn btn-outline-secondary btn-sm mr-1 text-xs"><FontAwesomeIcon size="sm" icon={faFilter}/></button>
     )
 }
 export const FilterWrapper = (props) => {
@@ -19,8 +19,8 @@ export const FilterWrapper = (props) => {
                     <div className="col-sm-3">
                         <Select isLoading={props.loading} isDisabled={props.loading}
                                 options={props.batches}
-                                placeholder={<small>{Lang.get('hotspot.labels.batch.select')}</small>}
-                                noOptionsMessage={()=>Lang.get('hotspot.labels.batch.not_found')}
+                                placeholder={<small>{Lang.get('labels.select.option',{Attribute:Lang.get('customers.hotspot.vouchers.batch')})}</small>}
+                                noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:Lang.get('customers.hotspot.vouchers.batch')})}
                                 className="text-xs"
                                 styles={FormControlSMReactSelect}
                                 isClearable

@@ -5,6 +5,7 @@ return [
         'name' => 'nama_profile',
         'type' => 'jenis_profile',
         'is_additional' => 'layanan_tambahan',
+        'code' => 'nama_profile_mikrotik',
         'queue' => [
             'name' => 'parent_queue',
             'id' => 'id_queue',
@@ -18,6 +19,7 @@ return [
             'unit' => 'unit_limitasi',
         ],
         'address' => [
+            'local' => 'local_address',
             'dns' => 'dns_servers'
         ]
     ],
@@ -29,6 +31,11 @@ return [
         ],
         'menu' => 'Layanan',
         'menu_info' => 'Manage layanan pelanggan',
+        'code' => [
+            'label' => 'Nama Mikrotik :Attribute Profile',
+            'info' => 'Akan disimpan sebagai Nama Profile :Attribute Mikrotik didalam router mikrotik',
+            'error' => 'Nama Profile :Attribute Mikrotik tidak boleh ada spasi',
+        ],
         'not_found' => 'Tidak ada data layanan',
         'select' => 'Pilih Layanan',
         'search' => 'Cari Layanan ...',

@@ -10,15 +10,30 @@ use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\Village;
 
+/**
+ * @method static where(string $string, mixed $company)
+ * @property mixed $radius_db_host
+ * @property mixed $radius_db_name
+ * @property mixed $radius_db_pass
+ * @property mixed $radius_db_user
+ */
 class ClientCompany extends Model
 {
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
 
+    protected $hidden = [
+        'radius_db_host',
+        'radius_db_name',
+        'radius_db_user',
+        'radius_db_pass',
+    ];
     protected $casts = [
         'discount' => 'double',
         'active_at' => 'datetime',
+        'expired_at' => 'datetime',
+        'config' => 'object',
     ];
 
     public function packageObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo

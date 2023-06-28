@@ -13,15 +13,24 @@ use App\Models\Customer\CustomerInvoicePayment;
 use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-function randomString($length = 5) {
+function randomNumeric($length = 5): string
+{
+    return collect(array_merge(range('0', '9'), range('0', '9')))
+        ->shuffle()
+        ->take($length)
+        ->implode('');
+}
+function randomString($length = 5): string
+{
     return collect(array_merge(range('a', 'z'), range('A', 'Z')))
         ->shuffle()
         ->take($length)
         ->implode('');
 }
-function generateCompanyExpired($current, $durString, $durAmmount): ?Carbon
+function generateCompanyExpired($current, string $durString, int $durAmmount): ?Carbon
 {
     $response = null;
     if ($durAmmount > 0) {
@@ -137,7 +146,8 @@ function durationLists(): array
         'minutes', 'hours', 'days', 'weeks', 'months'
     ];
 }
-function allowedDateFormat() {
+function allowedDateFormat(): array
+{
     return [
         'DD/MM/yyyy HH:mm:ss', 'DD/MM/yyyy HH:mm',
         'DD/MM/yy HH:mm', 'DD-MM-yyyy HH:mm:ss',
@@ -149,6 +159,18 @@ function allowedDateFormat() {
         'yyyy/MM/DD HH:mm',
         'yy/MM/DD HH:mm',
     ];
+}
+function formatResponsePG(int $code, string $message = null, $params = null): JsonResponse
+{
+    if ($code > 550) $code = 500;
+    if ($code < 200) $code = 400;
+    if ($message == null) $message = __('messages.method');
+    if (strlen($message) == 0) $message = __('messages.method');
+    return response()->json([
+        'status_code' => $code,
+        'status_message' => $message,
+        'status_data' => $params,
+    ]);
 }
 function formatResponse($code, $message = null, $params = null): JsonResponse
 {
@@ -165,13 +187,58 @@ function formatResponse($code, $message = null, $params = null): JsonResponse
 function getAvatar(User $user) {
     $ava = new Laravolt\Avatar\Avatar();
     if ($user->avatar == null) {
-        return $ava->create($user->name)->toBase64();
+        return $ava->create($user->name)->setBackground('#001f3f')->setBorder(1,'#001f3f')->toBase64();
     } else {
         $tgtFile = storage_path() . '/app/public/avatars/' . $user->avatar;
         if (File::exists($tgtFile)) {
             return asset('/storage/avatars/' . $user->avatar);
         } else {
-            $ava->create($user->name)->toBase64();
+            return $ava->create($user->name)->setBackground('#001f3f')->setBorder(1,'#001f3f')->toBase64();
         }
     }
+}
+function companyLogo(ClientCompany $company) {
+    if ($company->config != null) {
+        if ($company->config->logo != null) {
+            $file = storage_path() . '/app/public/companies/' . $company->id . '/' . $company->config->logo;
+            if (File::exists($file)) {
+                return asset('/storage/companies/' . $company->id . '/' . $company->config->logo);
+            } else {
+                return asset('/images/logo-1.png');
+            }
+        }
+    }
+    return null;
+}
+function resetStorageLink() {
+    $dir = public_path() . '/storage';
+    if (File::exists($dir)) {
+        if (!File::isWritable($dir)) File::chmod($dir,0777);
+        File::delete($dir);
+    }
+    Artisan::call("storage:link");
+}
+function convertToSecond(int $time, string $unit) {
+    $response = 0;
+    $time = (int) $time;
+    switch (strtolower($unit)) {
+        case 'seconds' : $response = $time; break;
+        case 'minutes' : $response = $time * 60; break;
+        case 'hours' : $response = ( $time * 60 ) * 60; break;
+        case 'days' : $response = ( ( $time * 60 ) * 60 ) * 24; break;
+        case 'weeks' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 7; break;
+        case 'months' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 30; break;
+        case 'years' : $response = ( ( ( $time * 60 ) * 60 ) * 24 ) * 365; break;
+    }
+    return $response;
+}
+function convertToBit(int $byte, string $unit) {
+    $response = 0;
+    switch (strtolower($unit)) {
+        case 'b': $response = $byte; break;
+        case 'k': $response = $byte * 1024; break;
+        case 'm': $response = ( $byte * 1024 ) * 1024; break;
+        case 'g': $response = ( ( $byte * 1024 ) * 1024 ); break;
+    }
+    return $response;
 }

@@ -31,6 +31,7 @@ class InvoiceController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function payment(Request $request): JsonResponse
     {
@@ -58,9 +59,11 @@ class InvoiceController extends Controller
             return formatResponse($exception->getCode(), $exception->getMessage());
         }
     }
+
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

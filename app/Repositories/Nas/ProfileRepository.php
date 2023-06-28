@@ -7,9 +7,11 @@ namespace App\Repositories\Nas;
 
 use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
+use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Nas\NasProfile;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Ramsey\Uuid\Uuid;
@@ -36,10 +38,12 @@ class ProfileRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+
     /* @
      * @param Request $request
      * @return mixed
-     * @throws Exception
+     * @throws Throwable
+     * @throws GuzzleException
      */
     public function update(Request $request) {
         try {
@@ -48,6 +52,8 @@ class ProfileRepository
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
                 $profile->type = $request[__('profiles.form_input.type')];
+                $profile->code = $request[__('profiles.form_input.code')];
+                $profile->local_address = $request[__('profiles.form_input.address.local')];
                 $profile->nas = $request[__('nas.form_input.name')];
                 $profile->pool = $request[__('nas.pools.form_input.name')];
                 $profile->bandwidth = $request[__('bandwidths.form_input.name')];
@@ -80,14 +86,13 @@ class ProfileRepository
                     $profile->dns_servers = $dns->toArray();
                 }
             }
-            $defaultName = $profile->name;
+            $defaultName = $profile->code;
             $profile->name = $request[__('profiles.form_input.name')];
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
-            $profile->created_by = $this->me->id;
 
 
-            /*if ($profile->nasObj != null) {
+            if ($profile->nasObj != null) {
                 switch ($profile->nasObj->method) {
                     case 'ssl' :
                         $ssl = new MiktorikSSL($profile->nasObj,'put');
@@ -112,8 +117,9 @@ class ProfileRepository
                         }
                         break;
                 }
-            }*/
+            }
             $profile->saveOrFail();
+            (new RadiusDB())->saveProfile($profile);
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -131,6 +137,8 @@ class ProfileRepository
             $profile->id = Uuid::uuid4()->toString();
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
+                $profile->code = $request[__('profiles.form_input.code')];
+                $profile->local_address = $request[__('profiles.form_input.address.local')];
                 $profile->type = $request[__('profiles.form_input.type')];
                 $profile->nas = $request[__('nas.form_input.name')];
                 $profile->pool = $request[__('nas.pools.form_input.name')];
@@ -160,13 +168,12 @@ class ProfileRepository
                     $profile->dns_servers = $dns->toArray();
                 }
             }
+
             $profile->name = $request[__('profiles.form_input.name')];
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->created_by = $this->me->id;
-
-
-            /*if ($profile->nasObj != null) {
+            if ($profile->nasObj != null) {
                 switch ($profile->nasObj->method) {
                     case 'ssl' :
                         $ssl = new MiktorikSSL($profile->nasObj,'put');
@@ -183,16 +190,17 @@ class ProfileRepository
                         $api = new MikrotikAPI($profile->nasObj);
                         switch ($profile->type) {
                             case 'pppoe' :
-                                $api->saveProfilePPPoE($profile, $profile->name);
+                                $api->saveProfilePPPoE($profile, $profile->code);
                                 break;
                             case 'hotspot' :
-                                $api->saveProfileHotspot($profile, $profile->name);
+                                $api->saveProfileHotspot($profile, $profile->code);
                                 break;
                         }
                         break;
                 }
-            }*/
+            }
             $profile->saveOrFail();
+            (new RadiusDB())->saveProfile($profile);
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -221,9 +229,11 @@ class ProfileRepository
                             'pool' => $profile->poolObj,
                             'bandwidth' => $profile->bandwidthObj,
                             'description' => $profile->description == null ? '' : $profile->description,
+                            'code' => $profile->code,
                             'price' => $profile->price,
                             'type' => $profile->type,
                             'additional' => $profile->is_additional,
+                            'local' => $profile->local_address,
                             'queue' => $profile->parent_queue,
                             'dns' => $profile->dns_servers,
                             'limit' => (object) [

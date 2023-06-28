@@ -1,6 +1,11 @@
 import React from "react";
-import {parseInputFloat, priorityList, responseMessage} from "../../../../../../Components/mixedConsts";
-import {crudProfileBandwidth, getParentQueue} from "../../../../../../Services/NasService";
+import {
+    FormControlSMReactSelect,
+    parseInputFloat,
+    priorityList,
+    responseMessage
+} from "../../../../../../Components/mixedConsts";
+import {crudProfileBandwidth} from "../../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../../Components/Toaster";
 import {ModalFooter, ModalHeader} from "../../../../../../Components/ModalComponent";
 import {InputText, LabelRequired} from "../../../../../../Components/CustomInput";
@@ -194,7 +199,7 @@ class FormBandwidth extends React.Component {
         return (
             <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
-                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('bandwidths.create.form'),update:Lang.get('bandwidths.update.form')}}/>
+                    <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('bandwidths.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('bandwidths.labels.menu')})}}/>
                     <DialogContent dividers>
                         {this.props.user === null ? null :
                             this.props.user.meta.company !== null ? null :
@@ -316,14 +321,15 @@ class FormBandwidth extends React.Component {
                         <div className="form-group row">
                             <label className="col-sm-2 col-form-label">{Lang.get('bandwidths.labels.priority.name')}</label>
                             <div className="col-sm-2">
-                                <Select className="text-sm" noOptionsMessage={()=>Lang.get('bandwidths.labels.priority.not_found')} onChange={(e)=>this.handleSelect(e,'priority')} isDisabled={this.state.loading} options={priorityList} value={this.state.form.priority} placeholder={Lang.get('bandwidths.labels.priority.name')}/>
+                                <Select menuPlacement="top" maxMenuHeight={150} styles={FormControlSMReactSelect} className="text-sm" noOptionsMessage={()=>Lang.get('bandwidths.labels.priority.not_found')} onChange={(e)=>this.handleSelect(e,'priority')} isDisabled={this.state.loading} options={priorityList} value={this.state.form.priority} placeholder={Lang.get('bandwidths.labels.priority.name')}/>
                             </div>
                         </div>
                     </DialogContent>
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
                         buttons={[]} loading={this.state.loading}
-                        langs={{create:Lang.get('bandwidths.create.button'),update:Lang.get('bandwidths.update.button')}}/>
+                        pendings={{create:Lang.get('labels.create.pending',{Attribute:Lang.get('bandwidths.labels.menu')}),update:Lang.get('labels.update.pending',{Attribute:Lang.get('bandwidths.labels.menu')})}}
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('bandwidths.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('bandwidths.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

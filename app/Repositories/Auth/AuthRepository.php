@@ -8,22 +8,187 @@
 
 namespace App\Repositories\Auth;
 
+use App\Models\Company\ClientCompany;
+use App\Models\Company\CompanyPackage;
+use App\Models\Currency;
 use App\Models\Menu\Menu;
 use App\Models\User\User;
+use App\Models\User\UserLevel;
 use App\Models\User\UserLog;
 use App\Models\User\UserPrivilege;
+use App\Repositories\Client\CompanyRepository;
+use Carbon\Carbon;
 use hisorange\BrowserDetect\Parser as Browser;
 use Exception;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
 class AuthRepository
 {
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Exception
+     */
+    public function resetPassword(Request $request) {
+        try {
+            $status = Password::reset([
+                'email' => $request[__('auth.form_input.email')],
+                'password' => $request[__('auth.form_input.password')],
+                'password_confirmation' => $request[__('auth.form_input.confirm')],
+                'token' => $request->token,
+            ], function ($user, $password) {
+                $user->forceFill(['password' => Hash::make($password)])->setRememberToken(Str::random(60));
+                $user->save();
+                event(new PasswordReset($user));
+            });
+            if ($status === Password::PASSWORD_RESET) {
+                return $this->login(new Request([__('auth.form_input.email') => $request[__('auth.form_input.email')]]));
+            } else {
+                throw new Exception(__($status),400);
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return string
+     * @throws Exception
+     */
+    public function forgotPassword(Request $request): string
+    {
+        try {
+            $status = Password::sendResetLink(['email' => $request[__('auth.form_input.email')]]);
+            if ($status === Password::RESET_LINK_SENT) {
+                return $status;
+            } else {
+                throw new Exception(__($status),400);
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object
+     * @throws Throwable
+     */
+    public function googleLogin(Request $request): object
+    {
+        try {
+            return $this->login($request);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Throwable
+     */
+    public function googleRegister(Request $request): ?object
+    {
+        try {
+            $request = $request->merge([__('auth.form_input.password') => Str::random(16)]);
+            return $this->register($request);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Throwable
+     */
+    public function register(Request $request): ?object
+    {
+        try {
+            $response = null;
+            $trialLevel = UserLevel::where('name', 'Admin')->first();
+            if ($trialLevel != null) {
+                $trialPackage = CompanyPackage::where('code', '00000001')->first();
+                if ($trialPackage != null) {
+                    $company = new ClientCompany();
+                    $company->id = Uuid::uuid4()->toString();
+                    $company->name = $request[__('companies.form_input.other')];
+                    $company->package = $trialPackage->id;
+                    $company->code = generateCompanyCode();
+                    $company->email = $request[__('auth.form_input.email')];
+                    $company->active_at = Carbon::now();
+                    $company->expired_at = generateCompanyExpired(Carbon::now(), $trialPackage->duration_string, $trialPackage->duration_ammount);
+                    $company->currency = Currency::where('code', 'IDR')->first()->id;
+                    $company->radius_db_host = config('database.connections.radius.host');
+                    $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
+                    $company->radius_db_user = Str::slug($company->name,'_');
+                    $company->radius_db_pass = 'Ac'. randomString() . randomNumeric() . '!-_';
+                    $company->saveOrFail();
+
+                    $user = new User();
+                    $user->id = Uuid::uuid4()->toString();
+                    $user->level = $trialLevel->id;
+                    $user->company = $company->id;
+                    $user->name = $request[__('messages.users.form_input.name')];
+                    $user->email = $request[__('auth.form_input.email')];
+                    $user->password = Hash::make($request[__('auth.form_input.password')]);
+                    $locale = (object)[];
+                    if ($request->hasHeader('Language')) $locale->lang = $request->header('Language');
+                    $locale->date_format = 'dddd, DD MMMM yyyy, HH:mm:ss';
+                    $locale->time_zone = 'Asia/Jakarta';
+                    $user->locale = $locale;
+                    if ($request->has(__('auth.form_input.avatar'))) {
+                        $tgtDir = storage_path() . '/app/public/avatars/';
+                        if (! File::exists($tgtDir)) File::makeDirectory($tgtDir,0777,true);
+                        if (! File::isWritable($tgtDir)) File::chmod($tgtDir,0777);
+                        $url = $request[__('auth.form_input.avatar')];
+                        $content = file_get_contents($url);
+                        $ext = explode('.', $url);
+                        $ext = end($ext);
+                        if (!in_array(strtolower($ext),['jpg','png','gif','bmp','svg'])) {
+                            $ext = 'jpg';
+                        }
+                        $user->avatar = Uuid::uuid4()->toString() . '.' . $ext;
+                        File::put($tgtDir . $user->avatar, $content);
+                    }
+                    $user->saveOrFail();
+
+                    (new CompanyRepository())->generateDatabase($company);
+                    $response = $this->login(new Request([__('auth.form_input.email') => $user->email]));
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @return bool
+     * @throws Exception
+     */
+    public function logout(): bool
+    {
+        try {
+            $user = auth()->guard('api')->user();
+            if ($user != null) {
+                $user = $user->token();
+                if ($user != null) {
+                    $user->revoke();
+                }
+            }
+            return true;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     public function setStorageLang($lang) {
         try {
             $me = auth()->guard('api')->user();
@@ -163,14 +328,16 @@ class AuthRepository
                     if ($menu != null) {
                         $privilege = UserPrivilege::where('route', $menu->route)->where('level', $user->level)->first();
                         if ($privilege != null) {
-                            $response->push((object) [
-                                'value' => $menu->route,
-                                'func' => $menu->function,
-                                'read' => $privilege->read,
-                                'create' => $privilege->create,
-                                'update' => $privilege->update,
-                                'delete' => $privilege->delete,
-                            ]);
+                            if ($privilege->read) {
+                                $response->push((object) [
+                                    'value' => $menu->route,
+                                    'func' => $menu->function,
+                                    'read' => $privilege->read,
+                                    'create' => $privilege->create,
+                                    'update' => $privilege->update,
+                                    'delete' => $privilege->delete,
+                                ]);
+                            }
                         }
                     }
                 }
@@ -214,7 +381,7 @@ class AuthRepository
     public function login(Request $request): object
     {
         try {
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request[__('auth.form_input.email')])->first();
             DB::table('oauth_access_tokens')->where('user_id', $user->id)->delete();
             auth()->login($user);
             $logs = new UserLog();
@@ -223,7 +390,7 @@ class AuthRepository
             $logs->url = $request->fullUrl();
             $logs->method = strtolower($request->method());
             $requestX = $request->all();
-            $requestX['password'] = '**********';
+            $requestX['password'] = '***HIDDEN***';
             $logs->params = $requestX;
             $logs->ip = $request->ip();
             $logs->browser = Browser::browserFamily() . ' ' . Browser::browserVersion();
@@ -252,6 +419,21 @@ class AuthRepository
             if (strlen($request->id) > 0) $users = $users->where('id', $request->id);
             $users = $users->get();
             foreach ($users as $user) {
+                $company = $user->companyObj;
+                if ($company != null) {
+                    if ($company->config != null) {
+                        if ($company->config->logo != null) {
+                            $logo = companyLogo($company);
+                            if ($logo != null) {
+                                $config = $company->config;
+                                if (property_exists($config,'logo')) {
+                                    $config->logo = $logo;
+                                    $company->config = $config;
+                                }
+                            }
+                        }
+                    }
+                }
                 $response->push((object) [
                     'value' => $user->id,
                     'label' => $user->name,
@@ -260,7 +442,7 @@ class AuthRepository
                         'avatar' => getAvatar($user),
                         'level' => $user->levelObj,
                         'locale' => $user->locale,
-                        'company' => $user->companyObj,
+                        'company' => $company,
                     ]
                 ]);
             }

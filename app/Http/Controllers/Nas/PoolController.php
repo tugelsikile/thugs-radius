@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection DuplicatedCode */
 
 namespace App\Http\Controllers\Nas;
 
@@ -8,6 +8,7 @@ use App\Validations\Nas\PoolValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class PoolController extends Controller
 {
@@ -22,6 +23,7 @@ class PoolController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

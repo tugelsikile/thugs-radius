@@ -3,11 +3,23 @@
 namespace App\Models\Customer;
 
 use App\Models\User\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @method static whereDate(string $string, string $format)
+ * @property mixed|string $id
+ * @property mixed $invoice
+ * @property false|mixed|string $code
+ * @property int|mixed $amount
+ * @property mixed $note
+ * @property array|mixed $pg_response
+ * @property Carbon|mixed $paid_at
+ * @property mixed $created_by
+ */
 class CustomerInvoicePayment extends Model
 {
     use HasFactory, softDeletes;
@@ -18,6 +30,7 @@ class CustomerInvoicePayment extends Model
     protected $casts = [
         'pg_response' => 'object',
         'amount' => 'double',
+        'paid_at' => 'datetime',
     ];
     public function invoiceObj(): BelongsTo
     {

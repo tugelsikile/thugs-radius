@@ -5,10 +5,14 @@ namespace App\Models\User;
 use App\Models\Company\ClientCompany;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
+/**
+ * @method static where(string $string, mixed|string $value)
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -48,12 +52,12 @@ class User extends Authenticatable
         'is_ghost' => 'boolean',
     ];
 
-    public function levelObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function levelObj(): BelongsTo
     {
         return $this->belongsTo(UserLevel::class,'level','id');
     }
-    public function companyObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function companyObj(): BelongsTo
     {
-        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj']);
+        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj','villageObj','districtObj','cityObj','provinceObj']);
     }
 }

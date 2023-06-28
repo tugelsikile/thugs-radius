@@ -40,7 +40,8 @@ class PoolValidation
             $valid = Validator::make($request->all(),[
                 __('nas.pools.form_input.id') => 'required|exists:nas_profile_pools,id',
                 __('nas.form_input.name') => 'required|exists:nas,id',
-                __('nas.pools.form_input.name') => 'required|string|min:1|max:50|unique:nas_profile_pools,name,'.$request[__('nas.pools.form_input.id')].',id,nas,' . $request[__('nas.form_input.name')],
+                __('nas.pools.form_input.name') => 'required|string|min:1|max:199',
+                __('nas.pools.form_input.code') => 'required|string|min:3|max:30|unique:nas_profile_pools,name,'.$request[__('nas.pools.form_input.id')].',id,nas,' . $request[__('nas.form_input.name')],
                 __('nas.pools.form_input.description') => 'nullable',
                 __('nas.pools.form_input.address.first') => 'required|ipv4',
                 __('nas.pools.form_input.address.last') => 'required_with:'.$request[__('nas.pools.form_input.address.first')].'|ipv4',
@@ -77,7 +78,8 @@ class PoolValidation
             new SwitchDB();
             $valid = Validator::make($request->all(),[
                 __('nas.form_input.name') => 'required|exists:nas,id',
-                __('nas.pools.form_input.name') => 'required|string|min:1|max:50|unique:nas_profile_pools,name,null,null,nas,' . $request[__('nas.form_input.name')],
+                __('nas.pools.form_input.name') => 'required|string|min:1|max:199',
+                __('nas.pools.form_input.code') => 'required|string|min:3|max:30|unique:nas_profile_pools,name,null,null,nas,' . $request[__('nas.form_input.name')],
                 __('nas.pools.form_input.description') => 'nullable',
                 __('nas.pools.form_input.address.first') => 'required|ipv4',
                 __('nas.pools.form_input.address.last') => 'required_with:'.$request[__('nas.pools.form_input.address.first')].'|ipv4',

@@ -4,7 +4,6 @@ import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudCompany} from "../../../../Services/CompanyService";
 import {
     CardPreloader, durationType, durationTypeByte,
-    formatBytes,
     formatLocaleString,
     responseMessage,
     siteData
@@ -12,8 +11,6 @@ import {
 import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../../Services/NasService";
 import {getPrivileges, getRootUrl} from "../../../../Components/Authentication";
 import PageLoader from "../../../../Components/PageLoader";
-import MainHeader from "../../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
@@ -24,6 +21,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBriefcase,faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {Popover} from "@mui/material";
 import {DetailBandwidth, DetailNas, DetailPool} from "./Tools/DetailCard";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
 
 // noinspection DuplicatedCode
 class ProfilePage extends React.Component {
@@ -46,6 +44,9 @@ class ProfilePage extends React.Component {
         this.handleCheck = this.handleCheck.bind(this);
         this.loadProfiles = this.loadProfiles.bind(this);
         this.handlePopOver = this.handlePopOver.bind(this);
+        this.loadNas = this.loadNas.bind(this);
+        this.loadBandwidths = this.loadBandwidths.bind(this);
+        this.loadPools = this.loadPools.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -58,7 +59,12 @@ class ProfilePage extends React.Component {
                     .then((response)=>{
                         loadings.site = false;
                         this.setState({loadings,site:response},()=>{
-                            getPrivileges(this.props.route)
+                            getPrivileges([
+                                {route : this.props.route, can : false },
+                                {route : 'clients.nas', can : false },
+                                {route : 'clients.nas.pools', can : false },
+                                {route : 'clients.nas.bandwidths', can : false }
+                            ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
                                 })
@@ -254,61 +260,100 @@ class ProfilePage extends React.Component {
             }
         }
     }
-    async loadNas() {
+    async loadNas(data = null) {
         if (! this.state.loadings.nas) {
-            if (this.state.nas.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.nas = true; this.setState({loadings});
-                try {
-                    let response = await crudNas();
-                    if (response.data.params === null) {
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
+                    } else {
+                        nas.push(data);
+                    }
+                    this.setState({nas});
+                }
+            } else {
+                if (this.state.nas.length === 0) {
+                    loadings.nas = true; this.setState({loadings});
+                    try {
+                        let response = await crudNas();
+                        if (response.data.params === null) {
+                            loadings.nas = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        }
+                    } catch (e) {
                         loadings.nas = false; this.setState({loadings});
-                        showError(response.data.message);
-                    } else {
-                        loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        responseMessage(e);
                     }
-                } catch (e) {
-                    loadings.nas = false; this.setState({loadings});
-                    responseMessage(e);
                 }
             }
         }
     }
-    async loadBandwidths() {
+    async loadBandwidths(data = null) {
         if (! this.state.loadings.bandwidths) {
-            if (this.state.bandwidths.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.bandwidths = true; this.setState({loadings});
-                try {
-                    let response = await crudProfileBandwidth();
-                    if (response.data.params === null) {
-                        loadings.bandwidths = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let bandwidths = this.state.bandwidths;
+                    let index = bandwidths.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        bandwidths[index] = data;
                     } else {
-                        loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params});
+                        bandwidths.push(data);
                     }
-                } catch (e) {
-                    loadings.bandwidths = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({bandwidths});
+                }
+            } else {
+                if (this.state.bandwidths.length === 0) {
+                    loadings.bandwidths = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfileBandwidth();
+                        if (response.data.params === null) {
+                            loadings.bandwidths = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.bandwidths = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
     }
-    async loadPools() {
+    async loadPools(data = null) {
         if (! this.state.loadings.pools ) {
-            if (this.state.pools.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.pools = true; this.setState({loadings});
-                try {
-                    let response = await crudProfilePools();
-                    if (response.data.params === null) {
-                        loadings.pools = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let pools = this.state.pools;
+                    let index = pools.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        pools[index] = data;
                     } else {
-                        loadings.pools = false; this.setState({loadings,pools:response.data.params});
+                        pools.push(data);
                     }
-                } catch (e) {
-                    responseMessage(e);
+                    this.setState({pools});
+                }
+            } else {
+                if (this.state.pools.length === 0) {
+                    loadings.pools = true; this.setState({loadings});
+                    try {
+                        let response = await crudProfilePools();
+                        if (response.data.params === null) {
+                            loadings.pools = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.pools = false; this.setState({loadings,pools:response.data.params});
+                        }
+                    } catch (e) {
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -360,13 +405,12 @@ class ProfilePage extends React.Component {
                     anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }}
                     transformOrigin={{ vertical: 'top', horizontal: 'left', }}
                     onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
-                <FormProfile user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} nas={this.state.nas} pools={this.state.pools} bandwidths={this.state.bandwidths} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadProfiles}/>
+                <FormProfile privilege={this.state.privilege} user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} nas={this.state.nas} onUpdateNas={this.loadNas} pools={this.state.pools} onUpdatePool={this.loadPools} bandwidths={this.state.bandwidths} onUpdateBandwidth={this.loadBandwidths} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadProfiles}/>
+
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('profiles.labels.menu')} childrens={[
                         { url : getRootUrl() + '/nas', label : Lang.get('nas.labels.menu')}
@@ -381,18 +425,18 @@ class ProfilePage extends React.Component {
                                 <div className="card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.profiles}
-                                                   langs={{create:Lang.get('profiles.create.button'),delete:Lang.get('profiles.delete.button')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('profiles.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('profiles.labels.menu')})}}
                                                    selected={this.state.profiles.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}/>
-                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('profiles.labels.search')}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('profiles.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead>
                                         <tr>
                                             {this.state.profiles.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center" width={30}>
+                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
                                                     <div className="custom-control custom-checkbox">
                                                         <input id="checkAll" data-id="" disabled={this.state.loadings.profiles} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor="checkAll" className="custom-control-label"/>
@@ -434,7 +478,7 @@ class ProfilePage extends React.Component {
                                                          name={Lang.get('profiles.labels.customers.length')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
+                                            <th className="align-middle text-center pr-2" width={50}>{Lang.get('messages.action')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -443,10 +487,10 @@ class ProfilePage extends React.Component {
                                             :
                                             this.state.profiles.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.profiles.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.profiles} handleCheck={this.handleCheck}/>
-                                                    <td colSpan={item.meta.additional ? 4 : 1} className="align-middle">
+                                                    <td colSpan={item.meta.additional ? 4 : 1} className="align-middle text-xs">
                                                         {item.meta.additional &&
                                                             <FontAwesomeIcon icon={faBriefcase} className="mr-1 text-info" title={Lang.get('profiles.labels.additional.info_true')}/>
                                                         }
@@ -454,7 +498,7 @@ class ProfilePage extends React.Component {
                                                     </td>
                                                     {! item.meta.additional &&
                                                         <>
-                                                            <td className="align-middle">
+                                                            <td className="align-middle text-xs">
                                                                 {item.meta.nas === null ? null :
                                                                     <>
                                                                         <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
@@ -462,7 +506,7 @@ class ProfilePage extends React.Component {
                                                                     </>
                                                                 }
                                                             </td>
-                                                            <td className="align-middle">
+                                                            <td className="align-middle text-xs">
                                                                 {item.meta.pool === null ? null :
                                                                     <>
                                                                         <FontAwesomeIcon size="xs" data-type="pool" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
@@ -470,7 +514,7 @@ class ProfilePage extends React.Component {
                                                                     </>
                                                                 }
                                                             </td>
-                                                            <td className="align-middle">
+                                                            <td className="align-middle text-xs">
                                                                 {item.meta.bandwidth === null ? null :
                                                                     <>
                                                                         <FontAwesomeIcon size="xs" data-type="bandwidth" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
@@ -480,7 +524,7 @@ class ProfilePage extends React.Component {
                                                             </td>
                                                         </>
                                                     }
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.additional ? null :
                                                             item.meta.limit.rate === 0 ? <span className="badge badge-success">UNLIMITED</span> :
                                                                 item.meta.limit.type === 'time' ?
@@ -489,7 +533,7 @@ class ProfilePage extends React.Component {
                                                                     `${item.meta.limit.rate} ${durationTypeByte[durationTypeByte.findIndex((f) => f.value === item.meta.limit.unit)].label}`
                                                         }
                                                     </td>
-                                                    <td className={item.meta.price === 0 ? "align-middle text-center" : "align-middle"}>
+                                                    <td className={item.meta.price === 0 ? "align-middle text-center text-xs" : "align-middle text-xs"}>
                                                         {item.meta.price === 0 ?
                                                             <span className="badge badge-success">FREE</span>
                                                             :
@@ -499,8 +543,8 @@ class ProfilePage extends React.Component {
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle text-center">{item.meta.customers.length}</td>
-                                                    <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('profiles.update.button'),delete:Lang.get('profiles.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    <td className="align-middle text-center text-xs">{item.meta.customers.length}</td>
+                                                    <TableAction className="pr-2" privilege={this.state.privilege} item={item} langs={{update:Lang.get('labels.update.label',{Attribute:Lang.get('profiles.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('profiles.labels.menu')})}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

@@ -15,7 +15,7 @@ class CreateRadrepliesTable extends Migration
     {
         Schema::connection("radius")->create('radreply', function (Blueprint $table) {
             $table->id();
-            $table->string('username');
+            $table->string('username',64);
             $table->string('attribute');
             $table->char('op',2);
             $table->string('value');

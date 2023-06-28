@@ -401,3 +401,10 @@ export const PageInfoHotspotPage = (props) => {
         </React.Fragment>
     );
 }
+export const listSeparator = [
+    { value : '-', label : '-' },
+    { value : '_', label : '_' },
+    { value : '+', label : '+' },
+    { value : '*', label : '*' },
+    { value : '=', label : '=' },
+];

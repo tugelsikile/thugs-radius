@@ -6,14 +6,15 @@ import {CardPreloader, responseMessage, siteData} from "../../../Components/mixe
 import {crudNas, reloadNasStatus} from "../../../Services/NasService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import PageLoader from "../../../Components/PageLoader";
-import MainHeader from "../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
-import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {crudCompany} from "../../../Services/CompanyService";
 import FormNas from "./Tools/FormNas";
 import StatusNas from "./Tools/StatusNas";
+import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
+import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
+import {TableHeader} from "./Tools/Mixed";
+import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
 
 // noinspection DuplicatedCode
 class NasPage extends React.Component {
@@ -72,7 +73,7 @@ class NasPage extends React.Component {
                 ids.push(item);
             });
         }
-        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas`,Lang.get('nas.delete.warning'),Lang.get('nas.delete.select'),'app.loadNas()');
+        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas`,Lang.get('labels.delete.confirm.title',{Attribute:Lang.get('nas.labels.menu')}),Lang.get('labels.delete.confirm.message',{Attribute:Lang.get('nas.labels.menu')}),'app.loadNas()','error','id',null,Lang.get('labels.delete.confirm.confirm'), Lang.get('labels.delete.confirm.cancel'));
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -133,7 +134,7 @@ class NasPage extends React.Component {
                 ||
                 f.meta.auth.method.indexOf(filter.keywords.toLowerCase()) !== -1
                 ||
-                f.meta.auth.host.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1
+                f.meta.auth.ip.toLowerCase().indexOf(filter.keywords.toLowerCase()) !== -1
             );
         } else {
             nas.filtered = nas.unfiltered;
@@ -275,11 +276,8 @@ class NasPage extends React.Component {
                          companies={this.state.companies} handleClose={this.toggleModal} handleUpdate={this.loadNas}
                          loadings={this.state.loadings}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('nas.labels.menu')} childrens={[]}/>
 
@@ -287,112 +285,42 @@ class NasPage extends React.Component {
 
                         <div className="container-fluid">
 
-                            <StatusNas loading={this.state.loadings.nas} nas={this.state.nas}/>
+                            <StatusNas user={this.state.user} loading={this.state.loadings.nas} nas={this.state.nas}/>
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.nas && <CardPreloader/>}
                                 <div className="card-header">
-                                    <div className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button type="button" onClick={()=>this.toggleModal()} disabled={this.state.loadings.nas} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('nas.create.btn')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.nas.selected.length > 0 &&
-                                                    <button type="button" onClick={()=>this.confirmDelete()} disabled={this.state.loadings.nas} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('nas.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </div>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('nas.labels.search')}/>
-                                            <div className="input-group-append"><button type="submit" className="btn btn-default"><i className="fas fa-search"/></button></div>
-                                        </div>
-                                    </div>
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   loading={this.state.loadings.nas}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.labels.menu')})}}
+                                                   selected={this.state.nas.selected}
+                                                   handleModal={this.toggleModal}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('nas.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-striped">
                                         <thead>
-                                        <tr>
-                                            {this.state.nas.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center" width={30}>
-                                                    <div className="custom-control custom-checkbox">
-                                                        <input data-id="" disabled={this.state.loadings.nas} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th rowSpan={2} className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('nas.labels.name')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th colSpan={5} className="align-middle">{Lang.get('nas.labels.method.label')}</th>
-                                            <th rowSpan={2} className="align-middle">
-                                                <BtnSort sort="status"
-                                                         name={Lang.get('nas.labels.status.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th rowSpan={2} className="align-middle text-center" width={30}>{Lang.get('messages.action')}</th>
-                                        </tr>
-                                        <tr>
-                                            <th className="align-middle">
-                                                <BtnSort sort="method"
-                                                         name={Lang.get('nas.labels.method.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="host"
-                                                         name={Lang.get('nas.labels.ip.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="port"
-                                                         name={Lang.get('nas.labels.port.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="user"
-                                                         name={Lang.get('nas.labels.user.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="pass"
-                                                         name={Lang.get('nas.labels.pass.short')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                        </tr>
+                                            <TableHeader loading={this.state.loadings.nas} nas={this.state.nas} onCheck={this.handleCheck} filter={this.state.filter} onSort={this.handleSort}/>
                                         </thead>
                                         <tbody>
                                         {this.state.nas.filtered.length === 0 ?
-                                            <tr><td colSpan={8} className="align-middle text-center">{Lang.get('messages.no_data')}</td></tr>
+                                            <DataNotFound colSpan={8} message={Lang.get('labels.not_found',{Attribute:Lang.get('nas.labels.menu')})}/>
                                             :
                                             this.state.nas.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
-                                                        <div className="custom-control custom-checkbox">
-                                                            <input id={`cbx_${item.value}`} data-id={item.value} checked={this.state.nas.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.nas} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" />
-                                                            <label htmlFor={`cbx_${item.value}`} className="custom-control-label"/>
-                                                        </div>
-                                                    </td>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.auth.method}</td>
-                                                    <td className="align-middle">
+                                                    <TableCheckBox item={item} className="pl-2"
+                                                                   checked={this.state.nas.selected.findIndex((f) => f === item.value) >= 0}
+                                                                   loading={this.state.loadings.nas} handleCheck={this.handleCheck}/>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.auth.method}</td>
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.auth.method === 'api' ? item.meta.auth.ip : item.meta.auth.host}
                                                     </td>
-                                                    <td className="align-middle">{item.meta.auth.port}</td>
-                                                    <td className="align-middle text-center">*****</td>
-                                                    <td className="align-middle text-center">*****</td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-xs">{item.meta.auth.port}</td>
+                                                    <td className="align-middle text-center text-xs">*****</td>
+                                                    <td className="align-middle text-center text-xs">*****</td>
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.status.success ?
                                                             <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-success">
                                                                 {item.loading && <FontAwesomeIcon icon="circle-notch" spin={true} className="mr-1"/> }
@@ -405,29 +333,16 @@ class NasPage extends React.Component {
                                                             </span>
                                                         }
                                                     </td>
-                                                    <td className="align-middle text-center">
-                                                        {this.state.privilege !== null &&
-                                                            <>
-                                                                <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
-                                                                    <span className="sr-only">Toggle Dropdown</span>
-                                                                </button>
-                                                                <div className="dropdown-menu" role="menu">
-                                                                    {this.state.privilege.update &&
-                                                                        <button type="button" onClick={()=>this.toggleModal(item)} className="dropdown-item text-primary"><i className="fa fa-pencil-alt mr-1"/> {Lang.get('nas.update.btn')}</button>
-                                                                    }
-                                                                    {this.state.privilege.delete &&
-                                                                        <button type="button" onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('nas.delete.btn')}</button>
-                                                                    }
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </td>
+                                                    <TableAction others={[]}
+                                                                 privilege={this.state.privilege} item={item} className="pr-2"
+                                                                 langs={{update:Lang.get('labels.update.label',{Attribute:Lang.get('nas.labels.menu')}), delete:Lang.get('labels.delete.label',{Attribute:Lang.get('nas.labels.menu')})}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }
                                         </tbody>
                                     </table>
                                 </div>
+                                <TablePaging customers={this.state.nas} filter={this.state.filter}/>
                             </div>
 
                         </div>

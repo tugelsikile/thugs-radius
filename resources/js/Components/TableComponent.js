@@ -39,7 +39,7 @@ export const TableAction = (props) => {
 export const DataNotFound = (props) => {
     return (
         <tr>
-            <td colSpan={props.colSpan} className="align-middle text-center">
+            <td colSpan={props.colSpan} className="align-middle text-xs text-center">
                 <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2 text-warning"/>
                 <strong>{props.message}</strong>
             </td>
@@ -91,9 +91,11 @@ export const TablePaging = (props) => {
             <div className="col-sm-6">
                 <div className="float-right">
                     {props.customers.unfiltered.length > 0 &&
-                        <Pagination onChange={(event, page)=>props.handleChangePage(page)}
-                                    max={7}
-                                    pages={props.filter.paging}/>
+                        props.handleChangePage !== null &&
+                            props.filter.paging.length > 0 &&
+                                <Pagination onChange={(event, page)=>props.handleChangePage(page)}
+                                            max={7}
+                                            pages={props.filter.paging}/>
                     }
                 </div>
 

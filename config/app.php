@@ -176,6 +176,8 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Mariuzzo\LaravelJsLocalization\LaravelJsLocalizationServiceProvider::class,
+        \Barryvdh\Debugbar\ServiceProvider::class,
+        \Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
 
     ],
 

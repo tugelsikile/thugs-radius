@@ -1,18 +1,23 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Client\CompanyConfigController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
 use App\Http\Controllers\Client\PackageController;
 use App\Http\Controllers\Config\DiscountController;
+use App\Http\Controllers\Config\PaymentGatewayController;
 use App\Http\Controllers\Config\TaxController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Customer\InvoiceController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\Nas\ProfileController;
+use App\Http\Controllers\PaymentGateway\BRIController;
+use App\Http\Controllers\PaymentGateway\DuitkuController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -31,8 +36,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::group(['prefix' => 'login'], function () {
+    Route::post('/', [AuthController::class, 'login']);
+    Route::post('/google', [AuthController::class, 'googleLogin']);
+});
+Route::group(['prefix' => 'register'], function () {
+    Route::post('/', [AuthController::class, 'register']);
+    Route::post('/google', [AuthController::class, 'googleRegister']);
+});
+Route::group(['prefix' => 'password'], function () {
+    Route::post('/forgot', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset', [AuthController::class, 'resetPassword']);
+});
+
 Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function () {
+    Route::any('/logout', [AuthController::class, 'logout']);
     Route::group(['prefix' => 'me'], function () {
         Route::post('/privileges', [AuthController::class, 'myPrivileges']);
         Route::post('/language', [AuthController::class, 'setLanguage']);
@@ -63,9 +81,15 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
         Route::any('/currencies', [ConfigController::class, 'currencies']);
         Route::any('/taxes', [TaxController::class, 'crud']);
         Route::any('/discounts', [DiscountController::class, 'crud']);
+        Route::patch('/payment-gateways/activate', [PaymentGatewayController::class, 'activate'])->name('auth.configs.payment-gateways.activate');
     });
 });
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
+    Route::group(['prefix' => 'dashboards'],function () {
+        Route::any('/server-statuses', [DashboardController::class, 'serverStatus']);
+        Route::post('/online-customers', [DashboardController::class, 'onlineCustomer']);
+        Route::post('/top-cards', [DashboardController::class, 'topCards']);
+    });
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);
         Route::post('/reload-status', [NasController::class, 'reloadStatus']);
@@ -88,9 +112,19 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::put('/generate', [InvoiceController::class, 'generate']);
         });
     });
+    Route::group(['prefix' => 'configs'], function () {
+        Route::any('/', [CompanyConfigController::class, 'crud']);
+        Route::group(['prefix' => 'payment-gateways'], function () {
+            Route::any('/', [PaymentGatewayController::class, 'crud']);
+            Route::patch('/activate', [PaymentGatewayController::class, 'activate'])->name('clients.configs.payment-gateways.activate');
+            Route::patch('/inactivate', [PaymentGatewayController::class, 'activate']);
+        });
+    });
 });
 Route::group(['prefix' => 'regions'], function () {
     Route::post('/all', [RegionController::class, 'all']);
+    Route::get('/file', [RegionController::class, 'fileRegions']);
+    Route::post('/search', [RegionController::class, 'searchRegions']);
 });
 Route::group(['prefix' => 'configs'], function () {
     Route::get('/times', function () {
@@ -98,4 +132,15 @@ Route::group(['prefix' => 'configs'], function () {
     });
     Route::post('/site', [ConfigController::class, 'site']);
     Route::post('/timezones', [ConfigController::class, 'timezone']);
+});
+Route::group(['prefix' => 'payment-gateways'],function () {
+    Route::group(['prefix' => 'bri'], function () {
+        Route::post('/status', [BRIController::class, 'transactionStatus']);
+    });
+    Route::group(['prefix' => 'duitku'], function () {
+        Route::post('/status', [DuitkuController::class, 'transactionStatus']);
+        Route::post('/qr', [DuitkuController::class, 'generateQR']);
+        Route::post('/channels', [DuitkuController::class, 'paymentChannel']);
+        Route::post('/callback', [DuitkuController::class, 'callback']);
+    });
 });

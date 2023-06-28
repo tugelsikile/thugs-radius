@@ -8,11 +8,23 @@ use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravolt\Indonesia\Models\City;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\Village;
 
+/**
+ * @property mixed $active_at
+ * @property mixed $method_type
+ * @property mixed $nas_username
+ * @property mixed $nas_password
+ * @property mixed $due_at
+ * @property mixed $profileObj
+ * @property mixed $nasObj
+ * @method static whereDate(string $string, string $format)
+ * @method static where(string $string, mixed $value)
+ */
 class Customer extends Model
 {
     use HasFactory;
@@ -20,12 +32,16 @@ class Customer extends Model
     public $incrementing = false;
     protected $connection = "radius";
 
+    protected $fillable = [
+        'active_at'
+    ];
     protected $hidden = [
         'nas_username',
         'nas_password',
     ];
     protected $casts = [
         'is_voucher' => 'boolean',
+        'due_at' => 'datetime',
     ];
     public function userObj(): BelongsTo
     {
@@ -33,11 +49,11 @@ class Customer extends Model
     }
     public function profileObj(): BelongsTo
     {
-        return $this->belongsTo(NasProfile::class,'profile','id')->with(['poolObj','bandwidthObj']);
+        return $this->setConnection('radius')->belongsTo(NasProfile::class,'profile','id')->with(['poolObj','bandwidthObj']);
     }
     public function nasObj(): BelongsTo
     {
-        return $this->belongsTo(Nas::class,'nas','id');
+        return $this->setConnection('radius')->belongsTo(Nas::class,'nas','id');
     }
     public function villageObj(): BelongsTo
     {
@@ -68,5 +84,17 @@ class Customer extends Model
     }
     public function inactiveBy(): BelongsTo {
         return $this->setConnection("mysql")->belongsTo(User::class,'inactive_by','id');
+    }
+    public function additionals(): HasMany
+    {
+        return $this->setConnection('radius')->hasMany(CustomerAdditionalService::class,'customer','id');
+    }
+    public function taxes(): HasMany
+    {
+        return $this->setConnection('radius')->hasMany(CustomerTax::class,'customer','id');
+    }
+    public function discounts(): HasMany
+    {
+        return $this->setConnection('radius')->hasMany(CustomerDiscount::class,'customer','id');
     }
 }

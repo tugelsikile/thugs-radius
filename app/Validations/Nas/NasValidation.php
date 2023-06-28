@@ -6,12 +6,19 @@
 namespace App\Validations\Nas;
 
 use App\Helpers\SwitchDB;
+use App\Models\Nas\Nas;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class NasValidation
 {
+    protected $me;
+    public function __construct()
+    {
+        $this->me = auth()->guard('api')->user();
+    }
+
     /* @
      * @param Request $request
      * @return Request
@@ -75,6 +82,7 @@ class NasValidation
     public function delete(Request $request): Request
     {
         try {
+            new SwitchDB();
             $valid = Validator::make($request->all(),[
                 'id' => 'required|array|min:1',
                 'id.*' => 'required|exists:nas,id'
@@ -137,8 +145,19 @@ class NasValidation
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             new SwitchDB();
+            if ($this->me != null) {
+                if ($this->me->companyObj != null) {
+                    if ($this->me->companyObj->packageObj != null) {
+                        $request = $request->merge([
+                            __('labels.form_input.max',['Attribute' => __('nas.form_input.id')]) => $this->me->companyObj->packageObj->max_routerboards,
+                            __('labels.form_input.current',['Attribute' => __('nas.form_input.id')]) => Nas::orderBy('created_at', 'asc')->get('id')->count() + 1,
+                        ]);
+                    }
+                }
+            }
             $valid = Validator::make($request->all(),[
                 __('nas.form_input.ip') => 'required|ip|ipv4|not_in:0.0.0.0|unique:nas,nasname',
+                __('labels.form_input.current',['Attribute' => __('nas.form_input.id')]) => 'max:' . $request[__('labels.form_input.max',['Attribute' => __('nas.form_input.id')])]
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
             if ($request[__('nas.form_input.method')] == 'ssl') {

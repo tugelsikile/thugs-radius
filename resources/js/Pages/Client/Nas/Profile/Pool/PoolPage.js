@@ -16,6 +16,7 @@ import {PageCardSearch, PageCardTitle} from "../../../../../Components/PageCompo
 import BtnSort from "../../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Components/TableComponent";
 import FormPool from "./Tools/FormPool";
+import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
 
 class PoolPage extends React.Component {
     constructor(props) {
@@ -35,6 +36,7 @@ class PoolPage extends React.Component {
         this.confirmDelete = this.confirmDelete.bind(this);
         this.handleCheck = this.handleCheck.bind(this);
         this.loadPools = this.loadPools.bind(this);
+        this.loadNas = this.loadNas.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -75,7 +77,7 @@ class PoolPage extends React.Component {
                 ids.push(item);
             });
         }
-        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas/profiles/pools`,Lang.get('nas.pools.delete.warning'),Lang.get('nas.pools.delete.select'),'app.loadPools()');
+        confirmDialog(this,ids,'delete',`${window.origin}/api/clients/nas/profiles/pools`,Lang.get('labels.delete.confirm.title',{Attribute:Lang.get('nas.pools.labels.menu')}),Lang.get('labels.delete.confirm.message',{Attribute:Lang.get('nas.pools.labels.menu')}),'app.loadPools()','error');
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -184,22 +186,35 @@ class PoolPage extends React.Component {
             }
         }
     }
-    async loadNas() {
+    async loadNas(data = null) {
         if (! this.state.loadings.nas) {
-            if (this.state.nas.length === 0) {
-                let loadings = this.state.loadings;
-                loadings.nas = true; this.setState({loadings});
-                try {
-                    let response = await crudNas();
-                    if (response.data.params === null) {
-                        loadings.nas = false; this.setState({loadings});
-                        showError(response.data.message);
+            let loadings = this.state.loadings;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
                     } else {
-                        loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        nas.push(data);
                     }
-                } catch (e) {
-                    loadings.nas = false; this.setState({loadings});
-                    responseMessage(e);
+                    this.setState({nas});
+                }
+            } else {
+                if (this.state.nas.length === 0) {
+                    loadings.nas = true; this.setState({loadings});
+                    try {
+                        let response = await crudNas();
+                        if (response.data.params === null) {
+                            loadings.nas = false; this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.nas = false; this.setState({loadings,nas:response.data.params});
+                        }
+                    } catch (e) {
+                        loadings.nas = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
                 }
             }
         }
@@ -244,13 +259,11 @@ class PoolPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <FormPool nas={this.state.nas} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} user={this.state.user} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadPools}/>
+                <FormPool onUpdateNas={this.loadNas} privilege={this.state.privilege} nas={this.state.nas} open={this.state.modal.open} data={this.state.modal.data} companies={this.state.companies} user={this.state.user} loadings={this.state.loadings} handleClose={this.toggleModal} handleUpdate={this.loadPools}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('nas.pools.labels.menu')} childrens={[]}/>
 
@@ -260,28 +273,28 @@ class PoolPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.pools && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header px-2">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.pools}
-                                                   langs={{create:Lang.get('nas.pools.create.button'),delete:Lang.get('nas.pools.delete.button')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.pools.labels.menu')})}}
                                                    selected={this.state.pools.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}/>
-                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('nas.pools.labels.search')}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('nas.pools.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead>
                                         <tr>
                                             {this.state.pools.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center" width={30}>
+                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
                                                     <div className="custom-control custom-checkbox">
                                                         <input id="checkAll" data-id="" disabled={this.state.loadings.pools} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor="checkAll" className="custom-control-label"/>
                                                     </div>
                                                 </th>
                                             }
-                                            <th className="align-middle">
+                                            <th className={this.state.pools.filtered.length === 0 ? "align-middle pl-2" : "align-middle"}>
                                                 <BtnSort sort="name"
                                                          name={Lang.get('nas.pools.labels.name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
@@ -301,7 +314,7 @@ class PoolPage extends React.Component {
                                                          name={Lang.get('nas.pools.labels.address.last')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle text-center" width={30}>{Lang.get('messages.action')}</th>
+                                            <th className="align-middle text-center pr-2" width={30}>{Lang.get('messages.action')}</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -310,14 +323,14 @@ class PoolPage extends React.Component {
                                             :
                                             this.state.pools.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.pools.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.pools} handleCheck={this.handleCheck}/>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
-                                                    <td className="align-middle">{item.meta.address.first}</td>
-                                                    <td className="align-middle">{item.meta.address.last}</td>
-                                                    <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.first}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.last}</td>
+                                                    <TableAction className="pr-2" privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

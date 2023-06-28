@@ -14,6 +14,13 @@ export const langSelect = [
     { value : 'id', label : 'Bahasa Indonesia'},
     { value : 'en', label : 'English' }
 ]
+export const wordLimit = (words, maxWord = 20, separator = ' ') => {
+    if (words === null) return words;
+    if (words.length <= maxWord) return words;
+    let cut = words.indexOf(separator, maxWord);
+    if (cut === -1) return words;
+    return words.substr(0, cut);
+}
 export const dateFormatSelect = [
     { value : 'DD/MM/yyyy HH:mm:ss', label : 'DD/MM/yyyy HH:mm:ss'},
     { value : 'DD/MM/yyyy HH:mm', label : 'DD/MM/yyyy HH:mm'},
@@ -32,6 +39,11 @@ export const ucFirst = (string) => {
     return string.toLowerCase().replace(/\b[a-z]/g, (letter) => {
         return letter.toUpperCase();
     })
+}
+export const ucWord = (string) => {
+    return string.toLowerCase().replace(/\b[a-z]/g, (letter) => {
+        return letter.toUpperCase();
+    });
 }
 export const serviceType = [
     { value : 'pppoe', label : 'PPPoE' },
@@ -278,11 +290,25 @@ export const grandTotalCompanyForm = (form) => {
     return subtotal - discount;
 }
 export const sumTotalAfterTaxCompanyPackageForm = (form) => {
-    return sumTotalTaxCompanyPackageForm(form) + form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    let response = 0;
+    let tax = sumTotalTaxCompanyPackageForm(form);
+    form.packages.map((item)=>{
+        if (item.package !== null) {
+            response += item.package.meta.price * item.qty;
+        }
+    })
+    return response + tax;
+    //return sumTotalTaxCompanyPackageForm(form) + form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
 }
 export const sumTaxCompanyPackageForm = (form, currentTax) => {
     let response = 0;
-    let subtotal = form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
+    let subtotal = 0;
+    form.packages.map((item)=>{
+        if (item.package !== null) {
+            subtotal += item.package.meta.prices * item.qty;
+        }
+    })
+    //form.packages.reduce((a,b) => a + b.package === null ? 0 : b.package.meta.prices * b.qty, 0);
     if (currentTax.tax !== null) {
         response = ( currentTax.tax.meta.percent * subtotal ) / 100;
     }
@@ -434,7 +460,7 @@ export const responseMessage = (error) => {
 }
 export const routerConnectionType = [
     { value : 'api', label : Lang.get('nas.labels.connection.type.api') },
-    { value : 'ssl', label : Lang.get('nas.labels.connection.type.ssl') }
+    //{ value : 'ssl', label : Lang.get('nas.labels.connection.type.ssl') }
 ];
 export const hasWhiteSpace = (string) => {
     return /\s/g.test(string);
@@ -449,12 +475,13 @@ export const priorityList = [
     { value : 2, label : 2 },
     { value : 1, label : 1 },
 ]
-export const formatBytes = (bytes, decimals = 0) => {
+export const formatBytes = (bytes, decimals = 0, real = false) => {
     if (!+bytes) return '0 Bytes'
-
-    const k = 1024
+    let k = 1000
+    if (real) k = 1024;
+    bytes = bytes * k;
     const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
@@ -548,3 +575,4 @@ export const listSupportedLanguage = [
     { value : 'id', label : "Bahasa Indonesia", flag : 'fi fi-id' },
     { value : 'en', label : "English US", flag : 'fi fi-us' },
 ];
+const imageExtensions = ['.gif', '.jpg', '.jpeg', '.png'];

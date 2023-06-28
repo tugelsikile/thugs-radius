@@ -27,7 +27,7 @@ class ProfileValidation
                 __('profiles.form_input.queue.name') => 'nullable',
                 __('profiles.form_input.queue.id') => 'nullable',
                 __('profiles.form_input.queue.target') => 'nullable',
-                __('profiles.form_input.name') => 'required|string|min:2|max:50|unique:nas_profiles,name,null,null,nas,' . $request[__('nas.form_input.name')],
+                __('profiles.form_input.name') => 'required|string|min:2|max:199',
                 __('profiles.form_input.description') => 'nullable',
                 __('profiles.form_input.price') => 'required|numeric|min:0',
                 __('profiles.form_input.limitation.type') => 'nullable',
@@ -37,6 +37,18 @@ class ProfileValidation
                 __('profiles.form_input.address.dns') . '.*' => 'required|ip',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request[__('profiles.form_input.is_additional')] == 0) {
+                $valid = Validator::make($request->all(),[
+                    __('profiles.form_input.code') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|string|min:2|max:50|unique:nas_profiles,name,null,null,nas,' . $request[__('nas.form_input.name')],
+                ]);
+                if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+                if ($request[__('profiles.form_input.type')] == 'pppoe') {
+                    $valid = Validator::make($request->all(),[
+                        __('profiles.form_input.address.local') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|ip',
+                    ]);
+                    if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+                }
+            }
             return $request;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),400);
@@ -82,7 +94,7 @@ class ProfileValidation
                 __('profiles.form_input.queue.name') => 'nullable',
                 __('profiles.form_input.queue.id') => 'nullable',
                 __('profiles.form_input.queue.target') => 'nullable',
-                __('profiles.form_input.name') => 'required|string|min:2|max:50|unique:nas_profiles,name,'.$request[__('profiles.form_input.id')].',id,nas,' . $request[__('nas.form_input.name')],
+                __('profiles.form_input.name') => 'required|string|min:2|max:199|',
                 __('profiles.form_input.description') => 'nullable',
                 __('profiles.form_input.price') => 'required|numeric|min:0',
                 __('profiles.form_input.limitation.type') => 'nullable',
@@ -92,6 +104,18 @@ class ProfileValidation
                 __('profiles.form_input.address.dns') . '.*' => 'required|ip',
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request[__('profiles.form_input.is_additional')] == 0) {
+                $valid = Validator::make($request->all(),[
+                    __('profiles.form_input.code') => 'required|string|min:2|max:50|unique:nas_profiles,name,'.$request[__('profiles.form_input.id')].',id,nas,' . $request[__('nas.form_input.name')],
+                ]);
+                if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+                if ($request[__('profiles.form_input.type')] == 'pppoe') {
+                    $valid = Validator::make($request->all(),[
+                        __('profiles.form_input.address.local') => 'required_if:' . __('profiles.form_input.is_additional') . ',0|ip',
+                    ]);
+                    if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+                }
+            }
             return $request;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),400);

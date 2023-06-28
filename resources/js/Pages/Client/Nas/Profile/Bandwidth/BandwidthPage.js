@@ -16,6 +16,7 @@ import MainFooter from "../../../../../Components/Layout/MainFooter";
 import BtnSort from "../../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Components/TableComponent";
 import FormBandwidth from "./Tools/FormBandwidth";
+import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
 
 class BandwidthPage extends React.Component {
     constructor(props) {
@@ -249,11 +250,9 @@ class BandwidthPage extends React.Component {
             <React.StrictMode>
                 <FormBandwidth open={this.state.modal.open} data={this.state.modal.data} user={this.state.user} loadings={this.state.loadings} nas={this.state.nas} companies={this.state.companies} handleClose={this.toggleModal} handleUpdate={this.loadBandwidths}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
                     <PageTitle title={Lang.get('bandwidths.labels.menu')} childrens={[]}/>
 
@@ -266,18 +265,18 @@ class BandwidthPage extends React.Component {
                                 <div className="card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.bandwidths}
-                                                   langs={{create:Lang.get('bandwidths.create.button'),delete:Lang.get('bandwidths.delete.button')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('bandwidths.labels.menu')}),delete:Lang.get('labels.update.label',{Attribute:Lang.get('bandwidths.labels.menu')})}}
                                                    selected={this.state.bandwidths.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}/>
-                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('bandwidths.labels.search')}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('bandwidths.labels.menu')})}/>
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead>
                                         <tr>
                                             {this.state.bandwidths.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center" width={30}>
+                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
                                                     <div className="custom-control custom-checkbox">
                                                         <input id="checkAll" data-id="" disabled={this.state.loadings.bandwidths} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
                                                         <label htmlFor="checkAll" className="custom-control-label"/>
@@ -289,17 +288,17 @@ class BandwidthPage extends React.Component {
                                                          name={Lang.get('bandwidths.labels.name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th className="align-middle text-center" colSpan={2}>{Lang.get('bandwidths.labels.max_limit.main')}</th>
-                                            <th className="align-middle text-center" colSpan={2}>{Lang.get('bandwidths.labels.burst_limit.main')}</th>
-                                            <th className="align-middle text-center" colSpan={2}>{Lang.get('bandwidths.labels.threshold.main')}</th>
-                                            <th className="align-middle text-center" colSpan={2}>{Lang.get('bandwidths.labels.time.main')}</th>
-                                            <th className="align-middle text-center" colSpan={2}>{Lang.get('bandwidths.labels.limit_at.main')}</th>
+                                            <th className="align-middle text-center text-xs" colSpan={2}>{Lang.get('bandwidths.labels.max_limit.main')}</th>
+                                            <th className="align-middle text-center text-xs" colSpan={2}>{Lang.get('bandwidths.labels.burst_limit.main')}</th>
+                                            <th className="align-middle text-center text-xs" colSpan={2}>{Lang.get('bandwidths.labels.threshold.main')}</th>
+                                            <th className="align-middle text-center text-xs" colSpan={2}>{Lang.get('bandwidths.labels.time.main')}</th>
+                                            <th className="align-middle text-center text-xs" colSpan={2}>{Lang.get('bandwidths.labels.limit_at.main')}</th>
                                             <th rowSpan={2} className="align-middle text-center" width={50}>
                                                 <BtnSort sort="priority"
                                                          name={Lang.get('bandwidths.labels.priority.name')}
                                                          filter={this.state.filter} handleSort={this.handleSort}/>
                                             </th>
-                                            <th rowSpan={2} className="align-middle text-center" width={30}>{Lang.get('messages.action')}</th>
+                                            <th rowSpan={2} className="align-middle text-center pr-2" width={30}>{Lang.get('messages.action')}</th>
                                         </tr>
                                         <tr>
                                             <th className="align-middle" width={60}>
@@ -360,42 +359,42 @@ class BandwidthPage extends React.Component {
                                             :
                                             this.state.bandwidths.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.bandwidths.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.bandwidths} handleCheck={this.handleCheck}/>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.max_limit.up === 0 ? <span className="badge badge-success">UNL</span> :formatBytes(item.meta.max_limit.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.max_limit.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.max_limit.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.burst.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.burst.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.burst.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.burst.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.threshold.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.threshold.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.threshold.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.threshold.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.burst.up === 0 ? <span className="badge badge-success">UNL</span> : `${item.meta.time.up}s`}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.burst.down === 0 ? <span className="badge badge-success">UNL</span> : `${item.meta.time.down}s`}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.limit_at.up === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.limit_at.up)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center text-xs">
                                                         {item.meta.limit_at.down === 0 ? <span className="badge badge-success">UNL</span> : formatBytes(item.meta.limit_at.down)}
                                                     </td>
-                                                    <td className="align-middle text-center">{item.meta.priority}</td>
-                                                    <TableAction privilege={this.state.privilege} item={item} langs={{update:Lang.get('bandwidths.update.button'),delete:Lang.get('bandwidths.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    <td className="align-middle text-center text-xs">{item.meta.priority}</td>
+                                                    <TableAction className="pr-2" privilege={this.state.privilege} item={item} langs={{update:Lang.get('labels.update.label',{Attribute:Lang.get('bandwidths.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('bandwidths.labels.menu')})}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }

@@ -95,79 +95,88 @@ class PrivilegePage extends React.Component {
         modal.data = data; this.setState({modal});
     }
     handleCheckPrivilege(event) {
+        let indexLevel = -1;
+        let filter = this.state.filter;
         let levels = this.state.levels;
-        let indexLevel = parseInt(event.currentTarget.getAttribute('data-index-level'));
-        if (indexLevel >= 0) {
-            let type = event.currentTarget.getAttribute('data-type');
-            let isChild = eval(event.currentTarget.getAttribute('data-child'));
-            if (! isChild) { //is parent
-                let indexMenu = parseInt(event.currentTarget.getAttribute('data-index'));
-                //console.log(indexLevel, type, isChild, indexMenu, levels.filtered[indexLevel]);
-                if (indexMenu >= 0) {
-                    let filterMenu = levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client);
-                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can[type] = ! this.state.levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can[type];
-                    switch (type) {
-                        case 'read' :
-                            if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.read) {
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.create = false;
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.update = false;
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.delete = false;
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.childrens.map((item,index)=>{
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.childrens[index].meta.can.read = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.childrens[index].meta.can.create = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.childrens[index].meta.can.update = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.childrens[index].meta.can.delete = false;
-                                });
-                            }
-                            break;
-                        case 'create' :
-                            if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.create) {
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.update = false;
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.delete = false;
-                            }
-                            break;
-                        case 'update' :
-                            if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.update) {
-                                levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexMenu].meta.can.delete = false;
-                            }
-                            break;
-                    }
-                }
-            } else {
-                let indexParent = parseInt(event.currentTarget.getAttribute('data-index-parent'));
-                if (indexParent >= 0) {
-                    let indexMenu = parseInt(event.currentTarget.getAttribute('data-index'));
-                    if (indexMenu >= 0) {
-                        levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can[type] = ! this.state.levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can[type];
-                        switch (type) {
-                            case 'read' :
-                                if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.read) {
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.create = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.update = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.delete = false;
-                                }
-                                break;
-                            case 'create' :
-                                if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.create) {
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.update = false;
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.delete = false;
-                                }
-                                break;
-                            case 'update' :
-                                if (! levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.update) {
-                                    levels.filtered[indexLevel].meta.privileges.filter((f) => f.meta.client === levels.filtered[indexLevel].meta.client)[indexParent].meta.childrens[indexMenu].meta.can.delete = false;
-                                }
-                                break;
+        let levelIndex = levels.filtered.findIndex((f)=> f.value === filter.level.value);
+        if (levelIndex >= 0) {
+            let menuId = event.currentTarget.getAttribute('data-id');
+            let dataType = event.currentTarget.getAttribute('data-type');
+            if (menuId !== null) {
+                if (menuId.length > 10) {
+                    let menuIndex = null, menuChildIndex = null;
+                    filter.level.meta.privileges.map((menu, indexMenu)=>{
+                        if (menu.value === menuId) {
+                            menuIndex = indexMenu;
                         }
+                        menu.meta.childrens.map((children, indexChildren)=>{
+                            if (children.value === menuId) {
+                                menuChildIndex = indexChildren;
+                                menuIndex = indexMenu;
+                            }
+                        })
+                    });
+                    if (menuIndex >= 0) {
+                        if (menuChildIndex !== null && menuChildIndex >= 0) { //ini adalah children
+                            filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can[dataType] = ! filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can[dataType];
+                            switch (dataType) {
+                                case 'read' :
+                                    if (! filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.read) {
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.create = false;
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.update = false;
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.delete = false;
+                                    }
+                                    break;
+                                case 'create':
+                                    if (! filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.create) {
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.update = false;
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.delete = false;
+                                    }
+                                    break;
+                                case 'update' :
+                                    if (! filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.update) {
+                                        filter.level.meta.privileges[menuIndex].meta.childrens[menuChildIndex].meta.can.delete = false;
+                                    }
+                                    break;
+                            }
+                        } else { //ini adalah parent
+                            filter.level.meta.privileges[menuIndex].meta.can[dataType] = ! filter.level.meta.privileges[menuIndex].meta.can[dataType];
+                            switch (dataType) {
+                                case 'read' :
+                                    if (! filter.level.meta.privileges[menuIndex].meta.can.read) {
+                                        filter.level.meta.privileges[menuIndex].meta.can.create = false;
+                                        filter.level.meta.privileges[menuIndex].meta.can.update = false;
+                                        filter.level.meta.privileges[menuIndex].meta.can.delete = false;
+                                        filter.level.meta.privileges[menuIndex].meta.childrens.map((children,indexChildren)=>{
+                                            filter.level.meta.privileges[menuIndex].meta.childrens[indexChildren].meta.can.read = false;
+                                            filter.level.meta.privileges[menuIndex].meta.childrens[indexChildren].meta.can.create = false;
+                                            filter.level.meta.privileges[menuIndex].meta.childrens[indexChildren].meta.can.update = false;
+                                            filter.level.meta.privileges[menuIndex].meta.childrens[indexChildren].meta.can.delete = false;
+                                        })
+                                    }
+                                    break;
+                                case 'create' :
+                                    if (! filter.level.meta.privileges[menuIndex].meta.can.create) {
+                                        filter.level.meta.privileges[menuIndex].meta.can.update = false;
+                                        filter.level.meta.privileges[menuIndex].meta.can.delete = false;
+                                    }
+                                    break;
+                                case 'update' :
+                                    if (! filter.level.meta.privileges[menuIndex].meta.can.update) {
+                                        filter.level.meta.privileges[menuIndex].meta.can.delete = false;
+                                    }
+                                    break;
+                            }
+                        }
+                        const formData = new FormData();
+                        formData.append('_method','patch');
+                        formData.append('id', event.currentTarget.getAttribute('data-id'));
+                        formData.append('type', event.currentTarget.getAttribute('data-type'));
+                        this.setState({filter},()=>this.setPrivilege(formData));
                     }
                 }
             }
         }
-        const formData = new FormData();
-        formData.append('_method','patch');
-        formData.append('id', event.currentTarget.getAttribute('data-id'));
-        formData.append('type', event.currentTarget.getAttribute('data-type'));
-        this.setState({levels},()=>this.setPrivilege(formData));
     }
     handleSort(event) {
         let filter = this.state.filter;

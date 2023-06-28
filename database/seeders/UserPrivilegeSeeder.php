@@ -46,6 +46,59 @@ class UserPrivilegeSeeder extends Seeder
                             $privilege->update = true;
                             $privilege->delete = true;
                         }
+                    } elseif ($level->name == 'Admin'  && $level->for_client && $level->is_default) {
+                        if ($menu->for_client) {
+                            $privilege->read = true;
+                            $privilege->create = true;
+                            $privilege->update = true;
+                            $privilege->delete = true;
+                        }
+                    } elseif ($level->name == 'Billing' && ! $level->for_client && $level->is_default) {
+                        if (! $menu->for_client) {
+                            switch ($menu->route) {
+                                case 'auth.clients':
+                                case 'auth.clients.packages':
+                                case 'auth.configs':
+                                    $privilege->read = true;
+                                    $privilege->create = false;
+                                    $privilege->update = false;
+                                    $privilege->delete = false;
+                                    break;
+                                case 'auth.clients.invoices':
+                                case 'auth.clients.invoices.payments':
+                                case 'auth.configs.discounts':
+                                case 'auth.configs.taxes':
+                                    $privilege->read = true;
+                                    $privilege->create = true;
+                                    $privilege->update = true;
+                                    $privilege->delete = false;
+                                    break;
+                            }
+                        }
+                    } elseif ($level->name == 'Operator' && $level->for_client && $level->is_default) {
+                        if ($menu->for_client) {
+                            switch ($menu->route) {
+                                case 'clients.nas':
+                                case 'clients.nas.select':
+                                case 'clients.nas.pools':
+                                case 'clients.nas.bandwidths':
+                                case 'clients.nas.profiles':
+                                case 'clients.customers':
+                                case 'clients.customers.pppoe':
+                                case 'clients.customers.hotspot':
+                                    $privilege->read = true;
+                                    $privilege->create = true;
+                                    $privilege->update = true;
+                                    $privilege->delete = false;
+                                    break;
+                                case 'clients.customers.invoices':
+                                    $privilege->read = true;
+                                    $privilege->create = false;
+                                    $privilege->update = false;
+                                    $privilege->delete = false;
+                                    break;
+                            }
+                        }
                     } else {
                         if ($level->for_client) {
                             if ($menu->for_client) {

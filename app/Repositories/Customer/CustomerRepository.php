@@ -6,6 +6,8 @@
 
 namespace App\Repositories\Customer;
 
+use App\Helpers\Radius\Radius;
+use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerAdditionalService;
@@ -24,11 +26,13 @@ use Throwable;
 class CustomerRepository
 {
     protected $me;
+    protected $radiusDB;
     public function __construct()
     {
         if (auth()->guard('api')->user() != null) {
             $this->me = auth()->guard('api')->user();
         }
+        $this->radiusDB = new RadiusDB();
     }
 
     /* @
@@ -115,6 +119,7 @@ class CustomerRepository
                 }
             }
             $customer->saveOrFail();
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -251,6 +256,8 @@ class CustomerRepository
             if ($request->has(__('customers.form_input.discounts.delete'))) {
                 CustomerDiscount::whereIn('id', $request[__('customers.form_input.discounts.delete')])->delete();
             }
+
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -347,6 +354,7 @@ class CustomerRepository
                     $discount->saveOrFail();
                 }
             }
+            $this->radiusDB->saveUser($customer);
             return $this->table(new Request(['id' => $customer->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -364,6 +372,20 @@ class CustomerRepository
             $response = collect();
             $customers = Customer::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $customers = $customers->where('id', $request->id);
+            if ($request->has(__('labels.form_input.keywords'))) {
+                $keyword = $request[__('labels.form_input.keywords')];
+                $customers = $customers->where(function ($query) use ($keyword) {
+                    $query->where('name', 'like', "%$keyword%")
+                        ->orWhere('code', 'like', "%$keyword%")
+                        ->orWhere('phone', 'like', "%$keyword%")
+                        ->orWhere('nas_username', 'like', "%$keyword%")
+                        ->orWhere('nas_password', 'like', "%$keyword%")
+                        ->orWhere('address', 'like', "%$keyword%");
+                })->where('is_voucher', false);
+            }
+            if ($request->has('expired')) {
+                $customers = $customers->whereNotNull('due_at')->whereDate('due_at','<', Carbon::now()->format('Y-m-d H:i:s'));
+            }
             if ($request->has('type')) {
                 if (is_array($request->type)) {
                     $customers = $customers->whereIn('method_type', $request->type);
@@ -376,10 +398,20 @@ class CustomerRepository
             }
             $customers = $customers->get();
             foreach ($customers as $customer) {
+                $invoice = null;
+                if ($request->has('invoice')) {
+                    $invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
+                    if ($invoice == null) {
+                        (new InvoiceRepository())->generate(new Request([ __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d') ]));
+                        $invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
+                    }
+                }
                 $response->push((object) [
                     'value' => $customer->id,
                     'label' => $customer->userObj == null ? $customer->nas_username : $customer->userObj->name,
                     'meta' => (object) [
+                        'company' => $this->me->company,
+                        'invoice' => $invoice,
                         'code' => $customer->code,
                         'user' => $customer->userObj,
                         'nas' => $customer->nasObj,
@@ -504,6 +536,33 @@ class CustomerRepository
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(), 500);
+        }
+    }
+
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Throwable
+     */
+    public function renewCustomer(Request $request) {
+        try {
+            $customer = Customer::where('id', $request->id)->first();
+            $profile = $customer->profileObj;
+            if ($profile != null) {
+                if ($profile->limit_type == 'time') {
+                    if ($profile->limit_rate > 0) {
+                        if (in_array($profile->limit_rate_unit,['seconds','minutes','hours','days','weeks','months','years'])) {
+                            $customer->due_at = generateCompanyExpired($customer->due_at, $profile->limit_rate_unit, $profile->limit_rate);
+                            $customer->saveOrFail();
+                            (new RadiusDB())->saveUser($customer);
+                            (new Radius())->kickOnlineUser($customer);
+                        }
+                    }
+                }
+            }
+            return $this->table($request)->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
         }
     }
 }

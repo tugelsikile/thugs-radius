@@ -1,20 +1,27 @@
 import React from "react";
-import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
+import {Dialog, DialogContent} from "@mui/material";
 import {showError, showSuccess} from "../../../../Components/Toaster";
 import {crudCompany} from "../../../../Services/CompanyService";
 import {
     durationType,
-    formatLocaleString,
+    formatLocaleString, FormControlSMReactSelect,
     grandTotalCompanyForm,
-    parseInputFloat, subtotalAfterTaxFormCompany, subtotalDiscountFormCompany,
+    parseInputFloat, responseMessage, subtotalAfterTaxFormCompany, subtotalDiscountFormCompany,
     subtotalFormCompany,
     subtotalTaxFormCompany,
-    sumTaxCompanyPackageForm,
-    sumTotalAfterTaxCompanyPackageForm,
-    sumTotalTaxCompanyPackageForm
+    sumTaxCompanyPackageForm
 } from "../../../../Components/mixedConsts";
-import Select from "react-select";
 import { NumericFormat } from 'react-number-format';
+import {ModalFooter, ModalHeader} from "../../../../Components/ModalComponent";
+import AsyncSelect from 'react-select/async';
+import {allProvinces, searchRegions} from "../../../../Services/RegionService";
+import Select from "react-select";
+import {VillageComponent} from "./Mixed";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faTrashAlt} from "@fortawesome/free-regular-svg-icons";
+import {faPlus, faTimes} from "@fortawesome/free-solid-svg-icons";
+import {FormatPrice} from "../../../Client/Customer/Tools/Mixed";
+import FormPackage from "../Package/Tools/FormPackage";
 
 // noinspection DuplicatedCode,JSCheckFunctionSignatures,JSUnresolvedVariable,CommaExpressionJS
 class FormCompany extends React.Component {
@@ -22,13 +29,21 @@ class FormCompany extends React.Component {
         super(props);
         this.state = {
             loading : false,
+            regions : {
+                provinces : { select : [], loading : false },
+                cities : { select : [], loading : false },
+                districts : { select : [], loading : false },
+                villages : { select : [], loading : false },
+            },
             form : {
                 id : null, packages : [], email : '', name : '', address : '', discounts : [],
                 postal : '', village : null, district : null, city : null, province : null,
                 phone : '', deleted : [], taxes : [],
                 delete_taxes : [], delete_discounts : [],
-            }
+            },
+            modal : { open : false, data : null },
         };
+        this.timer = null;
         this.handleSave = this.handleSave.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSelectRegion = this.handleSelectRegion.bind(this);
@@ -42,6 +57,10 @@ class FormCompany extends React.Component {
         this.handleAddDiscount = this.handleAddDiscount.bind(this);
         this.handleRemoveDiscount = this.handleRemoveDiscount.bind(this);
         this.handleSelectDiscount = this.handleSelectDiscount.bind(this);
+        this.handleSearchRegions = this.handleSearchRegions.bind(this);
+        this.loadRegions = this.loadRegions.bind(this);
+        this.onSelectClose = this.onSelectClose.bind(this);
+        this.toggleModal = this.toggleModal.bind(this);
     }
     componentWillReceiveProps(props) {
         let form = this.state.form;
@@ -70,6 +89,9 @@ class FormCompany extends React.Component {
                         item.meta.tax.label = item.meta.tax.meta.code;
                         form.taxes.push({value:item.value,tax:item.meta.tax});
                     })
+                }
+                if (props.data.meta.address.village !== null) {
+                    this.handleSearchRegions(props.data.meta.address.village.name,'villages',true,props.data.meta.address.village.code);
                 }
                 if (props.provinces.length > 0) {
                     if (props.data.meta.address.province !== null) {
@@ -125,6 +147,11 @@ class FormCompany extends React.Component {
             }
         }
         this.setState({form});
+    }
+    toggleModal(data = null) {
+        let modal = this.state.modal;
+        modal.open = ! this.state.modal.open;
+        modal.data = null; this.setState({modal});
     }
     handleAddDiscount() {
         if (this.props.discounts.length === 0) {
@@ -195,7 +222,7 @@ class FormCompany extends React.Component {
     handleAddPackage() {
         let form = this.state.form;
         form.packages.push({
-            package : this.props.packages.length === 0 ? null : this.props.packages[0],
+            package : null,
             value : null,
             qty : 1,
             otp : false,
@@ -218,37 +245,100 @@ class FormCompany extends React.Component {
     }
     handleSelectRegion(event, name) {
         let form = this.state.form;
+        let index;
         form[name] = event;
-        if (name === 'province') {
-            if (form.province.meta.cities.length > 0) {
-                form.city = form.province.meta.cities[0];
-                if (form.city.meta.districts.length > 0) {
-                    form.district = form.city.meta.districts[0];
-                    if (form.district.meta.villages.length > 0) {
-                        form.village = form.district.meta.villages[0];
-                        if (form.village !== null) {
-                            form.postal = form.village.meta.location.pos === 'NULL' ? '' : form.village.meta.location.pos;
+        switch (name) {
+            case 'village':
+                if (form.village === null) {
+                    form.district = null, form.city = null, form.province = null, form.postal = '';
+                } else {
+                    if (['NULL',null].indexOf(form.village.meta.postal) !== 0) {
+                        form.postal = form.village.meta.postal;
+                    }
+                    if (form.village.meta.district !== null) {
+                        form.district = form.village.meta.district;
+                        if (form.district !== null) {
+                            if (form.district.meta.city !== null) {
+                                form.city = form.district.meta.city;
+                                if (form.city !== null) {
+                                    if (form.city.meta.province !== null) {
+                                        form.province = form.city.meta.province;
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            }
-        } else if (name === 'city') {
-            if (form.city.meta.districts.length > 0) {
-                form.district = form.city.meta.districts[0];
-                if (form.district.meta.villages.length > 0) {
-                    form.village = form.district.meta.villages[0];
+                break;
+            case 'district' :
+                if (form.district === null) {
+                    form.city = null, form.province = null, form.village = null;
+                } else {
+                    if (form.district.meta.villages.length > 0) {
+                        if (form.village !== null) {
+                            index = this.state.regions.villages.select.findIndex((f) => f.value === form.village.value);
+                            if (index >= 0) {
+                                form.village = this.state.regions.villages[index];
+                            } else {
+                                form.village = this.state.regions.villages[0];
+                            }
+                        }
+                    }
+                    if (form.district.meta.city !== null) {
+                        form.city = form.district.meta.city;
+                        if (form.city !== null) {
+                            if (form.city.meta.province !== null) {
+                                form.province = form.city.meta.province;
+                            }
+                        }
+                    }
                 }
-            }
-        } else if (name === 'district') {
-            if (form.district.meta.villages.length > 0) {
-                form.village = form.district.meta.villages[0];
-            }
-        } else if (name === 'village') {
-            if (form.village !== null) {
-                form.postal = form.village.meta.location.pos === 'NULL' ? '' : form.village.meta.location.pos;
-            }
+                break;
         }
         this.setState({form});
+    }
+    onSelectClose(type) {
+        let regions = this.state.regions;
+        regions[type].loading = false;
+        this.setState({regions});
+    }
+    handleSearchRegions(keywords, type, forceSelect = false, selectValue = null) {
+        let regions = this.state.regions;
+        let index;
+        regions[type].loading = true; this.setState({regions});
+        clearTimeout(this.timer);
+        this.timer = setTimeout(()=> {
+            if (keywords.length >= 2) {
+                const formData = new FormData();
+                formData.append(Lang.get('labels.form_input.keywords'), keywords);
+                formData.append(Lang.get('labels.form_input.search_type'), type);
+                this.loadRegions(formData)
+                    .then((response)=>{
+                        regions[type].select = response;
+                        regions[type].loading = false;
+                        this.setState({regions},()=>{
+                            if (forceSelect && selectValue !== null) {
+                                index = regions.villages.select.findIndex((f) => f.value === selectValue);
+                                if (index >= 0) {
+                                    this.handleSelectRegion(regions.villages.select[index],'village');
+                                }
+                            }
+                        });
+                    });
+            }
+        }, 1000);
+    }
+    async loadRegions(formData) {
+        try {
+            let response = await searchRegions(formData);
+            if (response.data.params === null) {
+                return [];
+            } else {
+                return response.data.params;
+            }
+        } catch (e) {
+            return [];
+        }
     }
     async handleSave(e) {
         e.preventDefault();
@@ -313,282 +403,315 @@ class FormCompany extends React.Component {
     }
     render() {
         return (
-            <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
-                <form onSubmit={this.handleSave}>
-                    <DialogTitle>
-                        <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
-                        </button>
-                        <span className="modal-title text-sm">
-                            {this.state.form.id === null ?
-                                Lang.get('companies.create.form')
-                                :
-                                Lang.get('companies.update.form')
-                            }
-                        </span>
-                    </DialogTitle>
-                    <DialogContent dividers>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputName">{Lang.get('companies.labels.name')}</label>
-                            <div className="col-sm-10">
-                                <input id="inputName" disabled={this.state.loading} onChange={this.handleChange} name="name" value={this.state.form.name} className="form-control text-sm" placeholder={Lang.get('companies.labels.name')}/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputEmail">{Lang.get('companies.labels.email')}</label>
-                            <div className="col-sm-4">
-                                <input className="form-control text-sm" disabled={this.state.loading} value={this.state.form.email} id="inputEmail" name="email" placeholder={Lang.get('companies.labels.email')} onChange={this.handleChange}/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputAddress">{Lang.get('companies.labels.address')}</label>
-                            <div className="col-sm-10">
-                                <textarea onChange={this.handleChange} id="inputAddress" className="form-control text-sm" disabled={this.state.loading} value={this.state.form.address} name="address" placeholder={Lang.get('companies.labels.address')} style={{resize:'none'}}/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('regions.village.label')}</label>
-                            <div className="col-sm-4">
-                                <Select onChange={(e)=>this.handleSelectRegion(e,'village')} value={this.state.form.village} options={this.state.form.district === null ? [] : this.state.form.district.meta.villages} isLoading={this.props.loadings.provinces} isDisabled={this.props.loadings.provinces || this.state.loading} placeholder={<small>{Lang.get('regions.village.select')}</small>} className="text-sm"/>
-                            </div>
-                            <label className="col-sm-2 col-form-label">{Lang.get('regions.district.label')}</label>
-                            <div className="col-sm-4">
-                                <Select onChange={(e)=>this.handleSelectRegion(e,'district')} value={this.state.form.district} options={this.state.form.city === null ? [] : this.state.form.city.meta.districts} isLoading={this.props.loadings.provinces} isDisabled={this.props.loadings.provinces || this.state.loading} placeholder={<small>{Lang.get('regions.district.select')}</small>} className="text-sm"/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('regions.city.label')}</label>
-                            <div className="col-sm-4">
-                                <Select onChange={(e)=>this.handleSelectRegion(e,'city')} value={this.state.form.city} options={this.state.form.province === null ? [] : this.state.form.province.meta.cities} isLoading={this.props.loadings.provinces} isDisabled={this.props.loadings.provinces || this.state.loading} placeholder={<small>{Lang.get('regions.city.select')}</small>} className="text-sm"/>
-                            </div>
-                            <label className="col-sm-2 col-form-label">{Lang.get('regions.province.label')}</label>
-                            <div className="col-sm-4">
-                                <Select onChange={(e)=>this.handleSelectRegion(e,'province')} value={this.state.form.province} options={this.props.provinces} isLoading={this.props.loadings.provinces} isDisabled={this.props.loadings.provinces || this.state.loading} placeholder={<small>{Lang.get('regions.province.select')}</small>} className="text-sm"/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputPostal">{Lang.get('companies.labels.postal')}</label>
-                            <div className="col-sm-2">
-                                <input onChange={this.handleChange} className="form-control text-sm" disabled={this.state.loading || this.props.loadings.provinces} value={this.state.form.postal} name="postal" id="inputPostal" placeholder={Lang.get('companies.labels.postal')}/>
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label" htmlFor="inputPhone">{Lang.get('companies.labels.phone')}</label>
-                            <div className="col-sm-4">
-                                <input className="form-control text-sm" disabled={this.state.loading} name="phone" id="inputPhone" value={this.state.form.phone} placeholder={Lang.get('companies.labels.phone')} onChange={this.handleChange}/>
-                            </div>
-                        </div>
-                        <div className="card card-outline card-primary mt-4">
-                            <div className="card-header">
-                                <h3 className="card-title">
-                                    {Lang.get('companies.packages.labels.menu')}
-                                </h3>
-                                <div className="card-tools">
-                                    <button onClick={this.handleAddPackage} type="button" className="btn btn-tool" disabled={this.state.loading || this.props.loadings.packages || this.props.loadings.provinces}><i className="fas fa-plus mr-1"/> {Lang.get('companies.packages.labels.add')} </button>
+            <React.Fragment>
+                <FormPackage open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.props.onUpdatePackages}/>
+                <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+                    <form onSubmit={this.handleSave}>
+                        <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('companies.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('companies.labels.menu')})}}/>
+                        <DialogContent dividers>
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs" htmlFor="inputName">{Lang.get('companies.labels.name')}</label>
+                                <div className="col-md-10">
+                                    <input id="inputName" disabled={this.state.loading} onChange={this.handleChange} name="name" value={this.state.form.name} className="form-control form-control-sm text-xs" placeholder={Lang.get('companies.labels.name')}/>
                                 </div>
                             </div>
-                            <div className="card-body p-0">
-                                <table className="table table-sm table-striped table-bordered">
-                                    <thead>
-                                    <tr>
-                                        <th className="align-middle text-center" width={50}>
-                                            <i className="fas fa-trash-alt"/>
-                                        </th>
-                                        <th className="align-middle text-center">{Lang.get('companies.packages.labels.menu')}</th>
-                                        <th width={50} className="align-middle text-center" title={Lang.get('messages.otp')}>OTP</th>
-                                        <th width={100} className="align-middle text-center">{Lang.get('companies.packages.labels.duration')}</th>
-                                        <th width={70} className="align-middle text-center">{Lang.get('companies.packages.labels.qty')}</th>
-                                        <th className="align-middle text-center" width={120}>{Lang.get('companies.packages.labels.price')}</th>
-                                        <th className="align-middle text-center" width={150}>{Lang.get('companies.packages.labels.sub_total')}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {this.state.form.packages.map((item, index)=>
-                                        <tr key={index}>
-                                            <td className="align-middle text-center">
-                                                {index === 0 ? <i className="fas fa-trash-alt"/> :
-                                                    <button className="btn btn-outline-warning btn-sm" type="button" onClick={()=>this.handleDeletePackage(index)} disabled={this.state.loading || this.props.loadings.provinces}>
-                                                        <i className="fas fa-trash-alt"/>
-                                                    </button>
-                                                }
-                                            </td>
-                                            <td>
-                                                <Select options={this.props.packages}
-                                                        onChange={(e)=>this.handleSelectTable(e,'package',index)}
-                                                        value={item.package} className="text-sm" noOptionsMessage={()=>Lang.get('companies.packages.labels.no_select')}
-                                                        isLoading={this.props.loadings.packages} placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>}
-                                                        isDisabled={this.props.loadings.packages || this.state.loading}/>
-                                            </td>
-                                            <td className="align-middle text-center">
-                                                {index === 0 ? <span className="fas fa-times text-muted"/> :
-                                                    <div className="custom-control custom-checkbox">
-                                                        <input onChange={this.handleCheckOTP}
-                                                               checked={item.otp} id={`otp_${index}`} data-index={index} data-id={item.value} disabled={this.state.loading} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor={`otp_${index}`} className="custom-control-label"/>
-                                                    </div>
-                                                }
-                                            </td>
-                                            <td className="align-middle text-center">
-                                                {item.package !== null &&
-                                                    `${item.package.meta.duration.amount} ${Lang.get(`durations.${durationType[durationType.findIndex((f) => f.value === item.package.meta.duration.string)].value}`)}`
-                                                }
-                                            </td>
-                                            <td className="align-middle text-center">
-                                                {index === 0 ? 1 :
-                                                    <NumericFormat className="form-control form-control-sm text-center text-sm text-right"
-                                                                   value={item.qty} data-index={index}
-                                                                   name="qty" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                                                }
-                                            </td>
-                                            <td className="align-middle text-right">
-                                                {item.package !== null &&
-                                                    <span>
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(item.package.meta.prices)}</span>
-                                                    </span>
-                                                }
-                                            </td>
-                                            <td className="align-middle">
-                                                <span className="float-left">Rp.</span>
-                                                <span className="float-right">
-                                                    {item.package === null ? '-' :
-                                                        formatLocaleString(item.package.meta.prices * item.qty)
-                                                    }
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    )}
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total')}</th>
-                                        <th className="align-middle">
-                                            <span className="float-left">Rp.</span>
-                                            <span className="float-right">
-                                                {formatLocaleString(subtotalFormCompany(this.state.form),0)}
-                                            </span>
-                                        </th>
-                                    </tr>
-                                    {this.state.form.taxes.length === 0 ?
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs" htmlFor="inputEmail">{Lang.get('companies.labels.email')}</label>
+                                <div className="col-md-4">
+                                    <input className="form-control form-control-sm text-xs" disabled={this.state.loading} value={this.state.form.email} id="inputEmail" name="email" placeholder={Lang.get('companies.labels.email')} onChange={this.handleChange}/>
+                                </div>
+                            </div>
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs" htmlFor="inputPhone">{Lang.get('companies.labels.phone')}</label>
+                                <div className="col-md-4">
+                                    <input className="form-control form-control-sm text-xs" disabled={this.state.loading} name="phone" id="inputPhone" value={this.state.form.phone} placeholder={Lang.get('companies.labels.phone')} onChange={this.handleChange}/>
+                                </div>
+                            </div>
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs" htmlFor="inputAddress">{Lang.get('companies.labels.address')}</label>
+                                <div className="col-md-10">
+                                    <textarea rows={2} onChange={this.handleChange} id="inputAddress" className="form-control form-control-sm text-xs" disabled={this.state.loading} value={this.state.form.address} name="address" placeholder={Lang.get('companies.labels.address')} style={{resize:'none'}}/>
+                                </div>
+                            </div>
+
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.village.label')}</label>
+                                <div className="col-md-4">
+                                    <Select onChange={(e)=>this.handleSelectRegion(e,'village')}
+                                            value={this.state.form.village}
+                                            components={{Option:VillageComponent}}
+                                            maxMenuHeight={200}
+                                            options={this.state.regions.villages.select}
+                                            isLoading={this.state.regions.villages.loading}
+                                            onInputChange={(e)=>this.handleSearchRegions(e,'villages')}
+                                            onMenuClose={()=>this.onSelectClose('villages')}
+                                            isDisabled={this.state.loading}
+                                            placeholder={<small>{Lang.get('labels.select.option',{ Attribute : Lang.get('regions.village.label')})}</small>}
+                                            noOptionsMessage={()=>Lang.get('labels.select.not_found',{ Attribute : Lang.get('regions.village.label')})}
+                                            styles={FormControlSMReactSelect}
+                                            className="text-xs"/>
+                                </div>
+                                <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.district.label')}</label>
+                                <div className="col-md-4">
+                                    <Select onChange={(e)=>this.handleSelectRegion(e,'district')}
+                                            value={this.state.form.district} cacheOptions
+                                            options={this.state.regions.districts.select}
+                                            isLoading={this.state.regions.districts.loading}
+                                            onInputChange={(e)=>this.handleSearchRegions(e,'districts')}
+                                            onMenuClose={()=>this.onSelectClose('districts')}
+                                            isDisabled={true}
+                                            placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.district.label')})}</small>}
+                                            noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.district.label')})}
+                                            styles={FormControlSMReactSelect}
+                                            className="text-xs"/>
+                                </div>
+                            </div>
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs">{Lang.get('regions.city.label')}</label>
+                                <div className="col-md-4">
+                                    <Select onChange={(e)=>this.handleSelectRegion(e,'city')}
+                                            value={this.state.form.city} cacheOptions
+                                            options={this.state.regions.cities.select}
+                                            isLoading={this.state.regions.cities.loading}
+                                            onInputChange={(e)=>this.handleSearchRegions(e,'cities')}
+                                            onMenuClose={()=>this.onSelectClose('cities')}
+                                            isDisabled={true}
+                                            placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.city.label')})}</small>}
+                                            noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.city.label')})}
+                                            styles={FormControlSMReactSelect}
+                                            className="text-xs"/>
+                                </div>
+                                <label className="col-md-2 col-form-label">{Lang.get('regions.province.label')}</label>
+                                <div className="col-md-4">
+                                    <Select onChange={(e)=>this.handleSelectRegion(e,'province')}
+                                            value={this.state.form.province} cacheOptions
+                                            options={this.state.regions.provinces.select}
+                                            isLoading={this.state.regions.provinces.loading}
+                                            onInputChange={(e)=>this.handleSearchRegions(e,'provinces')}
+                                            onMenuClose={()=>this.onSelectClose('provinces')}
+                                            isDisabled={true}
+                                            placeholder={<small>{Lang.get('labels.select.option',{Attribute : Lang.get('regions.province.label')})}</small>}
+                                            noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute : Lang.get('regions.province.label')})}
+                                            styles={FormControlSMReactSelect}
+                                            className="text-xs"/>
+                                </div>
+                            </div>
+                            <div className="form-group row">
+                                <label className="col-md-2 col-form-label text-xs" htmlFor="inputPostal">{Lang.get('companies.labels.postal')}</label>
+                                <div className="col-md-2">
+                                    <input onChange={this.handleChange} className="form-control form-control-sm text-xs" disabled={this.state.loading || this.props.loadings.provinces} value={this.state.form.postal} name="postal" id="inputPostal" placeholder={Lang.get('companies.labels.postal')}/>
+                                </div>
+                            </div>
+
+                            <div className="card card-outline card-primary mt-4">
+                                <div className="card-header">
+                                    <h3 className="card-title text-xs">
+                                        {Lang.get('companies.packages.labels.menu')}
+                                    </h3>
+                                    <div className="card-tools">
+                                        {this.props.privilege !== null &&
+                                            this.props.privilege.packages !== null &&
+                                                this.props.privilege.packages.create &&
+                                                    <button onClick={this.toggleModal} type="button" className="btn btn-outline-info btn-sm text-xs mr-1" disabled={this.state.loading}><FontAwesomeIcon icon={faPlus} className="mr-1" size="sm"/>{Lang.get('labels.create.label',{Attribute:Lang.get('companies.packages.labels.menu')})}</button>
+                                        }
+                                        <button onClick={this.handleAddPackage} type="button" className="btn btn-outline-primary btn-sm text-xs" disabled={this.state.loading || this.props.loadings.packages || this.props.loadings.provinces}><i className="fas fa-plus mr-1"/> {Lang.get('companies.packages.labels.add')}</button>
+                                    </div>
+                                </div>
+                                <div className="card-body p-0 table-responsive">
+                                    <table className="table table-sm table-striped table-bordered">
+                                        <thead>
                                         <tr>
-                                            <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.vat')}</th>
-                                            <th className="align-middle">
-                                                <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.props.loadings.taxes} className="btn-block btn btn-tool btn-sm"><i className="fas fa-plus mr-1"/>{Lang.get('taxes.create.button')}</button>
+                                            <th className="align-middle text-center pl-2" width={50}>
+                                                <FontAwesomeIcon icon={faTrashAlt} size="sm"/>
+                                            </th>
+                                            <th className="align-middle text-center text-xs">{Lang.get('companies.packages.labels.menu')}</th>
+                                            <th width={50} className="align-middle text-center text-xs" title={Lang.get('messages.otp')}>OTP</th>
+                                            <th width={100} className="align-middle text-center text-xs">{Lang.get('companies.packages.labels.duration')}</th>
+                                            <th width={70} className="align-middle text-center text-xs">{Lang.get('companies.packages.labels.qty')}</th>
+                                            <th className="align-middle text-center text-xs" width={120}>{Lang.get('companies.packages.labels.price')}</th>
+                                            <th className="align-middle text-center pr-2 text-xs" width={150}>{Lang.get('companies.packages.labels.sub_total')}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {this.state.form.packages.map((item, index)=>
+                                            <tr key={index}>
+                                                <td className="align-middle text-center text-xs pl-2">
+                                                    {index === 0 ? <i className="fas fa-trash-alt"/> :
+                                                        <button className="btn btn-outline-warning btn-sm" type="button" onClick={()=>this.handleDeletePackage(index)} disabled={this.state.loading || this.props.loadings.provinces}>
+                                                            <FontAwesomeIcon icon={faTrashAlt} size="sm"/>
+                                                        </button>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <Select options={index === 0 ? this.props.packages.filter((f) => ! f.meta.additional) : this.props.packages.filter((f) => f.meta.additional)}
+                                                            styles={FormControlSMReactSelect}
+                                                            onChange={(e)=>this.handleSelectTable(e,'package',index)}
+                                                            value={item.package} className="text-sm" noOptionsMessage={()=>Lang.get('companies.packages.labels.no_select')}
+                                                            isLoading={this.props.loadings.packages} placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>}
+                                                            isDisabled={this.props.loadings.packages || this.state.loading}/>
+                                                </td>
+                                                <td className="align-middle text-center text-xs">
+                                                    {index === 0 ? <FontAwesomeIcon icon={faTimes}/> :
+                                                        <div className="custom-control custom-checkbox">
+                                                            <input onChange={this.handleCheckOTP}
+                                                                   checked={item.otp} id={`otp_${index}`} data-index={index} data-id={item.value} disabled={this.state.loading} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
+                                                            <label htmlFor={`otp_${index}`} className="custom-control-label"/>
+                                                        </div>
+                                                    }
+                                                </td>
+                                                <td className="align-middle text-center text-xs">
+                                                    {item.package !== null &&
+                                                        `${item.package.meta.duration.amount} ${Lang.get(`durations.${durationType[durationType.findIndex((f) => f.value === item.package.meta.duration.string)].value}`)}`
+                                                    }
+                                                </td>
+                                                <td className="align-middle text-center text-xs">
+                                                    {index === 0 ? 1 :
+                                                        <NumericFormat className="form-control form-control-sm text-center text-sm text-right"
+                                                                       value={item.qty} data-index={index}
+                                                                       name="qty" onChange={this.handleChange} allowLeadingZeros={false} decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                                    }
+                                                </td>
+                                                <td className="align-middle text-right text-xs">
+                                                    {item.package !== null &&
+                                                        FormatPrice(item.package.meta.prices)
+                                                    }
+                                                </td>
+                                                <td className="align-middle pr-2 text-xs">
+                                                    {item.package === null ? null : FormatPrice(item.package.meta.prices * item.qty)}
+                                                </td>
+                                            </tr>
+                                        )}
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.sub_total')}</th>
+                                            <th className="align-middle text-xs pr-2">
+                                                {FormatPrice(subtotalFormCompany(this.state.form))}
                                             </th>
                                         </tr>
-                                        :
-                                        <>
-                                            {
-                                                this.state.form.taxes.map((item,index)=>
-                                                    <tr key={index.value === null ? index : item.value}>
-                                                        <th className="align-middle text-right" colSpan={3}>
-                                                            {Lang.get('companies.packages.labels.vat')}
-                                                            <button onClick={this.handleAddTax} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-sm"><i className="fas fa-plus"/></button>
-                                                            <button title={Lang.get('taxes.delete.form_company')} onClick={()=>this.handleRemoveTax(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-sm"><i className="fas fa-trash-alt"/></button>
+                                        {this.state.form.taxes.length === 0 ?
+                                            <tr>
+                                                <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.vat')}</th>
+                                                <th className="align-middle">
+                                                    <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.props.loadings.taxes} className="btn-block btn btn-tool text-xs btn-sm">
+                                                        <FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/>
+                                                        <small>{Lang.get('taxes.create.button')}</small>
+                                                    </button>
+                                                </th>
+                                            </tr>
+                                            :
+                                            <>
+                                                {
+                                                    this.state.form.taxes.map((item,index)=>
+                                                        <tr key={index.value === null ? index : item.value}>
+                                                            <th className="align-middle text-right text-xs" colSpan={3}>
+                                                                {Lang.get('companies.packages.labels.vat')}
+                                                                <button onClick={this.handleAddTax} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-xs">
+                                                                    <FontAwesomeIcon icon={faPlus} size="sm"/>
+                                                                </button>
+                                                                <button title={Lang.get('taxes.delete.form_company')} onClick={()=>this.handleRemoveTax(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-xs">
+                                                                    <FontAwesomeIcon icon={faTrashAlt} size="sm"/>
+                                                                </button>
+                                                            </th>
+                                                            <th colSpan={2} className="align-middle">
+                                                                <Select noOptionsMessage={()=>Lang.get('taxes.labels.not_found')}
+                                                                        onChange={(e)=>this.handleSelectTax(e,index)}
+                                                                        styles={FormControlSMReactSelect}
+                                                                        options={this.props.taxes}
+                                                                        isLoading={this.props.loadings.taxes} isDisabled={this.state.loading || this.props.loadings.taxes} value={item.tax}/>
+                                                            </th>
+                                                            <th className="align-middle text-right text-xs">
+                                                                {item.tax === null ? '-' :
+                                                                    `${formatLocaleString(item.tax.meta.percent,2)}%`
+                                                                }
+                                                            </th>
+                                                            <th className="align-middle text-xs pr-2">
+                                                                {item.tax === null ? '-' :
+                                                                    FormatPrice(sumTaxCompanyPackageForm(this.state.form, item))
+                                                                }
+                                                            </th>
+                                                        </tr>
+                                                    )
+                                                }
+                                                <tr>
+                                                    <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_vat')}</th>
+                                                    <th className="align-middle text-xs pr-2">
+                                                        {FormatPrice(subtotalTaxFormCompany(this.state.form))}
+                                                    </th>
+                                                </tr>
+                                                <tr>
+                                                    <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_after')}</th>
+                                                    <th className="align-middle text-xs pr-2">
+                                                        {FormatPrice(subtotalAfterTaxFormCompany(this.state.form))}
+                                                    </th>
+                                                </tr>
+                                            </>
+                                        }
+
+                                        {this.state.form.discounts.length === 0 ?
+                                            <tr>
+                                                <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.discount')}</th>
+                                                <th className="align-middle text-xs">
+                                                    <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading || this.props.loadings.discounts} className="btn-block btn btn-tool btn-sm text-xs">
+                                                        <FontAwesomeIcon icon={faPlus} className="mr-1" size="xs"/>
+                                                        <small>{Lang.get('discounts.create.button')}</small>
+                                                    </button>
+                                                </th>
+                                            </tr>
+                                            :
+                                            <>
+                                                {this.state.form.discounts.map((item,index)=>
+                                                    <tr key={item.value === null ? index : item.value}>
+                                                        <th className="align-middle text-right text-xs" colSpan={4}>
+                                                            {Lang.get('companies.packages.labels.discount')}
+                                                            <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-sm">
+                                                                <FontAwesomeIcon icon={faPlus} size="sm"/>
+                                                            </button>
+                                                            <button title={Lang.get('discounts.delete.form_company')} onClick={()=>this.handleRemoveDiscount(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-sm">
+                                                                <FontAwesomeIcon icon={faTrashAlt} size="sm"/>
+                                                            </button>
                                                         </th>
                                                         <th colSpan={2} className="align-middle">
-                                                            <Select noOptionsMessage={()=>Lang.get('taxes.labels.not_found')}
-                                                                    onChange={(e)=>this.handleSelectTax(e,index)}
-                                                                    options={this.props.taxes}
-                                                                    isLoading={this.props.loadings.taxes} isDisabled={this.state.loading || this.props.loadings.taxes} value={item.tax}/>
+                                                            <Select noOptionsMessage={()=>Lang.get('discounts.labels.not_found')}
+                                                                    styles={FormControlSMReactSelect}
+                                                                    onChange={(e)=>this.handleSelectDiscount(e,index)}
+                                                                    options={this.props.discounts} aria-label={item.discount !== null ? item.discount.meta.label : ''}
+                                                                    isLoading={this.props.loadings.discounts} isDisabled={this.state.loading || this.props.loadings.discounts} value={item.discount}/>
                                                         </th>
-                                                        <th className="align-middle text-right">
-                                                            {item.tax === null ? '-' :
-                                                                `${formatLocaleString(item.tax.meta.percent,2)}%`
-                                                            }
-                                                        </th>
-                                                        <th className="align-middle">
-                                                            {item.tax === null ? '-' :
-                                                                <>
-                                                                    <span className="float-left">Rp.</span>
-                                                                    <span className="float-right">{formatLocaleString(sumTaxCompanyPackageForm(this.state.form, item),2)}</span>
-                                                                </>
+                                                        <th className="align-middle pr-2 text-xs">
+                                                            {item.discount === null ? '-' :
+                                                                FormatPrice(item.discount.meta.amount)
                                                             }
                                                         </th>
                                                     </tr>
-                                                )
-                                            }
-                                            <tr>
-                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_vat')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(subtotalTaxFormCompany(this.state.form),2)}</span>
-                                                </th>
-                                            </tr>
-                                            <tr>
-                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.sub_total_after')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(subtotalAfterTaxFormCompany(this.state.form),2)}</span>
-                                                </th>
-                                            </tr>
-                                        </>
-                                    }
-
-                                    {this.state.form.discounts.length === 0 ?
-                                        <tr>
-                                            <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.discount')}</th>
-                                            <th className="align-middle">
-                                                <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading || this.props.loadings.discounts} className="btn-block btn btn-tool btn-sm text-xs"><i className="fas fa-plus mr-1"/>{Lang.get('discounts.create.button')}</button>
-                                            </th>
-                                        </tr>
-                                        :
-                                        <>
-                                            {this.state.form.discounts.map((item,index)=>
-                                                <tr key={item.value === null ? index : item.value}>
-                                                    <th className="align-middle text-right" colSpan={4}>
-                                                        {Lang.get('companies.packages.labels.discount')}
-                                                        <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading} className="btn btn-tool ml-3 btn-sm"><i className="fas fa-plus"/></button>
-                                                        <button title={Lang.get('discounts.delete.form_company')} onClick={()=>this.handleRemoveDiscount(index)} type="button" disabled={this.state.loading} className="btn btn-tool ml-1 btn-sm"><i className="fas fa-trash-alt"/></button>
-                                                    </th>
-                                                    <th colSpan={2} className="align-middle">
-                                                        <Select noOptionsMessage={()=>Lang.get('discounts.labels.not_found')}
-                                                                onChange={(e)=>this.handleSelectDiscount(e,index)}
-                                                                options={this.props.discounts} aria-label={item.discount !== null ? item.discount.meta.label : ''}
-                                                                isLoading={this.props.loadings.discounts} isDisabled={this.state.loading || this.props.loadings.discounts} value={item.discount}/>
-                                                    </th>
-                                                    <th className="align-middle">
-                                                        {item.discount === null ? '-' :
-                                                            <>
-                                                                <span className="float-left">Rp.</span>
-                                                                <span className="float-right">{formatLocaleString(item.discount.meta.amount,2)}</span>
-                                                            </>
-                                                        }
+                                                )}
+                                                <tr>
+                                                    <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.discount_total')}</th>
+                                                    <th className="align-middle text-xs pr-2">
+                                                        {FormatPrice(subtotalDiscountFormCompany(this.state.form))}
                                                     </th>
                                                 </tr>
-                                            )}
-                                            <tr>
-                                                <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.discount_total')}</th>
-                                                <th className="align-middle">
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(subtotalDiscountFormCompany(this.state.form),2)}</span>
-                                                </th>
-                                            </tr>
-                                        </>
-                                    }
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={6}>{Lang.get('companies.packages.labels.grand_total')}</th>
-                                        <th className="align-middle">
-                                            <span className="float-left">Rp.</span>
-                                            <span className="float-right">{formatLocaleString(grandTotalCompanyForm(this.state.form))}</span>
-                                        </th>
-                                    </tr>
-                                    </tfoot>
-                                </table>
+                                            </>
+                                        }
+                                        <tr>
+                                            <th className="align-middle text-right text-xs" colSpan={6}>{Lang.get('companies.packages.labels.grand_total')}</th>
+                                            <th className="align-middle text-xs pr-2">
+                                                {FormatPrice(grandTotalCompanyForm(this.state.form))}
+                                            </th>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    </DialogContent>
-                    <DialogActions className="justify-content-between">
-                        <button type="submit" className="btn btn-success" disabled={this.state.loading}>
-                            {this.state.loading ? <i className="fas fa-spin fa-circle-notch mr-1"/> : <i className="fas fa-save mr-1"/> }
-                            {this.state.form.id === null ? Lang.get('companies.create.button') : Lang.get('companies.update.button',null, 'id')}
-                        </button>
-                        <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
-                        </button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+
+                        </DialogContent>
+                        <ModalFooter
+                            form={this.state.form} handleClose={()=>this.props.handleClose()}
+                            loading={this.state.loading}
+                            langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('companies.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('companies.labels.menu')})}}/>
+                    </form>
+                </Dialog>
+            </React.Fragment>
         )
     }
 }

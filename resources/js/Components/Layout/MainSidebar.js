@@ -1,7 +1,10 @@
 import React from "react";
-import {logout} from "../Authentication";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTachometerAlt} from "@fortawesome/free-solid-svg-icons";
+import {faAngleLeft, faPowerOff} from "@fortawesome/free-solid-svg-icons";
+import {SideBarBrand, SideBarMenuDashboard, SideBarUser} from "./Layout";
+import {MenuIcon} from "../../Pages/Client/User/Privilege/Tools/IconTool";
+import {logout} from "../Authentication";
+import {Skeleton} from "@mui/material";
 
 // noinspection JSUnresolvedVariable,SpellCheckingInspection
 class MainSidebar extends React.Component {
@@ -12,54 +15,46 @@ class MainSidebar extends React.Component {
         return (
             <React.Fragment>
                 <aside id="app-main-sidebar" className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
-                    <a href={this.props.root} className="brand-link bg-navy">
-                        <img src={window.origin + '/theme/adminlte/img/AdminLTELogo.png'} alt={this.props.site !== null ? this.props.site.name : 'app-name'} className="brand-image img-circle elevation-3" style={{opacity:.8}}/>
-                        <span className="brand-text font-weight-light">{this.props.site !== null && this.props.site.name}</span>
-                    </a>
+                    {this.props.loadings.site ?
+                        <Skeleton animation="wave" variant="rectangular" height={50} />
+                        :
+                        <SideBarBrand site={this.props.site} user={this.props.user}/>
+                    }
 
                     <div className="sidebar">
-                        {this.props.user !== null &&
-                            <div className="user-panel mt-3 pb-3 mb-3 d-flex">
-                                <div className="image">
-                                    <img src={this.props.user.meta.avatar} className="img-circle elevation-2" alt={ this.props.user.label}/>
-                                </div>
-                                <div className="info">
-                                    <a href={window.origin + '/profile/' + this.props.user.value} className="d-block">{this.props.user.label}</a>
-                                </div>
-                            </div>
-                        }
+                        <SideBarUser user={this.props.user}/>
 
                         <nav className="mt-2">
                             <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-                                <li className={this.props.route === 'auth' || this.props.route === 'clients' ? 'nav-item active' : 'nav-item'}>
-                                    <a href={this.props.root} className={this.props.route === 'auth' || this.props.route === 'clients' ? 'nav-link active' : 'nav-link'}>
-                                        <FontAwesomeIcon icon={faTachometerAlt} className="nav-icon mr-1"/>
-                                        <p>Dashboard</p>
-                                    </a>
-                                </li>
+                                {this.props.loadings.privilege ?
+                                    <Skeleton className="mx-2 mb-2" animation="wave" variant="rectangular" height={30} />
+                                    :
+                                    <SideBarMenuDashboard route={this.props.route}/>
+                                }
+
                                 {this.props.menus.length > 0 &&
                                     this.props.menus.map((parent) =>
-                                        parent.meta.childrens.length === 0 ?
+                                        parent.meta.childrens.length === 0 || parent.meta.childrens.length === 1 ?
                                             <li key={parent.value} className="nav-item">
                                                 <a href={parent.meta.url} className={this.props.route === parent.meta.route ? 'nav-link active' : 'nav-link'}>
-                                                    <i className={`nav-icon ${parent.meta.icon}`}/>
+                                                    <FontAwesomeIcon style={{height:'12px'}} icon={MenuIcon(parent.meta.icon)} className="nav-icon" size="xs"/>
                                                     <p>{Lang.get(`${parent.meta.lang}`)}</p>
                                                 </a>
                                             </li>
                                             :
                                             <li key={parent.value} className={parent.meta.childrens.findIndex((f) => f.meta.route === this.props.route) >= 0 ? 'nav-item menu-open' : 'nav-item'}>
                                                 <a href="#" className={parent.meta.childrens.findIndex((f) => f.meta.route === this.props.route) >= 0 ? 'nav-link active' : 'nav-link'}>
-                                                    <i className={`nav-icon ${parent.meta.icon}`}/>
+                                                    <FontAwesomeIcon style={{height:'12px'}} icon={MenuIcon(parent.meta.icon)} className="nav-icon" size="xs"/>
                                                     <p>
                                                         {Lang.get(`${parent.meta.lang}`)}
-                                                        <i className="right fas fa-angle-left"/>
+                                                        <FontAwesomeIcon icon={faAngleLeft} size="xs" className="right"/>
                                                     </p>
                                                 </a>
                                                 <ul className="nav nav-treeview" style={{display:parent.meta.childrens.findIndex((f) => f.meta.route === this.props.route) >= 0 ? 'block' : 'none'}}>
                                                     {parent.meta.childrens.map((children)=>
                                                         <li key={children.value} className="nav-item">
                                                             <a href={children.meta.url} className={children.meta.route === this.props.route ? 'nav-link active' : 'nav-link'}>
-                                                                <i className={`nav-icon ${children.meta.icon}`}/>
+                                                                <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={MenuIcon(children.meta.icon)} className="nav-icon"/>
                                                                 <p>{Lang.get(`${children.meta.lang}`)}</p>
                                                             </a>
                                                         </li>
@@ -68,12 +63,16 @@ class MainSidebar extends React.Component {
                                             </li>
                                     )
                                 }
-                                <li className="nav-item">
-                                    <a onClick={()=>logout()} href="#" className="nav-link">
-                                        <i className="nav-icon fe fe-log-out text-danger"></i>
-                                        <p className="text text-danger">{Lang.get('messages.users.labels.sign_out')}</p>
-                                    </a>
-                                </li>
+                                {this.props.loadings.privilege ?
+                                    <Skeleton className="mx-2" animation="wave" variant="rectangular" height={30}/>
+                                    :
+                                    <li className="nav-item">
+                                        <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
+                                            <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
+                                            <p className="text text-danger text-sm">{Lang.get('messages.users.labels.sign_out')}</p>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </nav>
                     </div>

@@ -7,6 +7,7 @@ namespace App\Repositories\Nas;
 
 use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
+use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Nas\NasProfilePool;
 use Exception;
@@ -57,7 +58,8 @@ class PoolRepository
                 $pool->company = $request[__('companies.form_input.name')];
             }
             $pool->nas = $request[__('nas.form_input.name')];
-            $defaultName = $pool->name;
+            $defaultName = $pool->code;
+            $pool->code = $request[__('nas.pools.form_input.code')];
             $pool->name = $request[__('nas.pools.form_input.name')];
             $pool->description = strlen($request[__('nas.pools.form_input.description')]) == 0 ? '' : $request[__('nas.pools.form_input.description')];
             if ($pool->first_address != $request[__('nas.pools.form_input.address.first')]) {
@@ -69,7 +71,7 @@ class PoolRepository
             }
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->updated_by = $me->id;
-            /*switch ($pool->nasObj->method) {
+            switch ($pool->nasObj->method) {
                 case 'api' :
                     $api = new MikrotikAPI($pool->nasObj);
                     $api->saveIPPool($pool, $defaultName);
@@ -78,11 +80,12 @@ class PoolRepository
                     $ssl = new MiktorikSSL($pool->nasObj);
                     $ssl->saveIPPool($pool, $defaultName);
                     break;
-            }*/
+            }
             $pool->saveOrFail();
             if ($regenerate) {
                 @generateIPAvailable($pool);
             }
+            (new RadiusDB())->saveProfilePool($pool, $defaultName);
             return $this->table(new Request(['id' => $pool->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -101,6 +104,7 @@ class PoolRepository
             if ($request->has(__('companies.form_input.name'))) {
                 $pool->company = $request[__('companies.form_input.name')];
             }
+            $pool->code = $request[__('nas.pools.form_input.code')];
             $pool->nas = $request[__('nas.form_input.name')];
             $pool->name = $request[__('nas.pools.form_input.name')];
             $pool->description = strlen($request[__('nas.pools.form_input.description')]) == 0 ? '' : $request[__('nas.pools.form_input.description')];
@@ -108,19 +112,19 @@ class PoolRepository
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->created_by = $me->id;
 
-            /*switch ($pool->nasObj->method) {
+            switch ($pool->nasObj->method) {
                 case 'api' :
                     $api = new MikrotikAPI($pool->nasObj);
-                    $api->saveIPPool($pool, $pool->name);
+                    $api->saveIPPool($pool, $pool->code);
                     break;
                 case 'ssl' :
                     $ssl = new MiktorikSSL($pool->nasObj);
-                    $ssl->saveIPPool($pool, $pool->name);
+                    $ssl->saveIPPool($pool, $pool->code);
                     break;
-            }*/
+            }
 
             $pool->saveOrFail();
-
+            (new RadiusDB())->saveProfilePool($pool, $pool->code);
             @generateIPAvailable($pool);
             return $this->table(new Request(['id' => $pool->id]))->first();
         } catch (Exception $exception) {
@@ -152,6 +156,7 @@ class PoolRepository
                             'description' => $pool->description,
                             'nas' => $pool->nasObj,
                             'address' => (object) [
+                                'code' => $pool->code,
                                 'id' =>$pool->mikrotik_id,
                                 'first' => $pool->first_address,
                                 'last' => $pool->last_address,

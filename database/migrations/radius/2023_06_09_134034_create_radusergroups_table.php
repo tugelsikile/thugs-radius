@@ -13,9 +13,9 @@ class CreateRadusergroupsTable extends Migration
      */
     public function up()
     {
-        Schema::connection("radius")->create('radusergroups', function (Blueprint $table) {
-            $table->string('username');
-            $table->string('groupname');
+        Schema::connection("radius")->create('radusergroup', function (Blueprint $table) {
+            $table->string('username',64);
+            $table->string('groupname',64);
             $table->integer('priority');
         });
     }
@@ -27,6 +27,6 @@ class CreateRadusergroupsTable extends Migration
      */
     public function down()
     {
-        Schema::connection("radius")->dropIfExists('radusergroups');
+        Schema::connection("radius")->dropIfExists('radusergroup');
     }
 }

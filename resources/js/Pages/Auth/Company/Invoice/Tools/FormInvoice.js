@@ -2,14 +2,14 @@
 
 import React from "react";
 import moment from "moment";
-import {Dialog, DialogActions, DialogContent, DialogTitle} from "@mui/material";
+import {Dialog, DialogActions, DialogContent, DialogTitle, Tooltip} from "@mui/material";
 import {crudCompanyInvoice} from "../../../../../Services/CompanyService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {logout} from "../../../../../Components/Authentication";
 import {
     CardPreloader,
     formatLocaleDate,
-    formatLocaleString,
+    formatLocaleString, FormControlSMReactSelect,
     parseInputFloat, sumGrandTotalFormInvoice, sumSubtotalDiscountFormInvoice,
     sumSubtotalFormInvoice,
     sumSubtotalTaxFormInvoice,
@@ -23,6 +23,14 @@ import id from "date-fns/locale/id";
 import en from "date-fns/locale/en-US";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Select from "react-select";
+import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
+import {faPencilAlt, faPencilSquare, faPlus} from "@fortawesome/free-solid-svg-icons";
+import FormCompany from "../../Tools/FormCompany";
+import FormPackage from "../../Package/Tools/FormPackage";
+import {faPlusSquare, faTrashAlt} from "@fortawesome/free-regular-svg-icons";
+import {FormatPrice} from "../../../../Client/Customer/Tools/Mixed";
+import FormTax from "../../../Configs/Tax/Tools/FormTax";
+import FormDiscount from "../../../Configs/Discount/Tools/FormDiscount";
 registerLocale("id", id);
 registerLocale("en", en);
 
@@ -43,6 +51,12 @@ class FormInvoice extends React.Component {
                     current: [], delete: []
                 },
                 code : null, paid : false,
+            },
+            modals : {
+                company : { open : false, data : null },
+                package : { open : false, data : null },
+                tax : { open : false, data : null },
+                discount : { open : false, data : null },
             }
         };
         this.handleSave = this.handleSave.bind(this);
@@ -59,6 +73,10 @@ class FormInvoice extends React.Component {
         this.handleRemoveDiscount = this.handleRemoveDiscount.bind(this);
         this.handleSelectDiscount = this.handleSelectDiscount.bind(this);
         this.handleGenInvoice = this.handleGenInvoice.bind(this);
+        this.toggleCompany = this.toggleCompany.bind(this);
+        this.togglePackage = this.togglePackage.bind(this);
+        this.toggleDiscount = this.toggleDiscount.bind(this);
+        this.toggleTax = this.toggleTax.bind(this);
     }
     componentWillReceiveProps(props) {
         let form = this.state.form;
@@ -138,6 +156,30 @@ class FormInvoice extends React.Component {
             }
         }
         this.setState({form});
+    }
+    toggleCompany(data = null) {
+        let modals = this.state.modals;
+        modals.company.open = ! this.state.modals.company.open;
+        modals.company.data = data;
+        this.setState({modals});
+    }
+    togglePackage(data = null) {
+        let modals = this.state.modals;
+        modals.package.open = ! this.state.modals.package.open;
+        modals.package.data = data;
+        this.setState({modals});
+    }
+    toggleDiscount(data = null) {
+        let modals = this.state.modals;
+        modals.discount.open = ! this.state.modals.discount.open;
+        modals.discount.data = data;
+        this.setState({modals});
+    }
+    toggleTax(data = null) {
+        let modals = this.state.modals;
+        modals.tax.open = ! this.state.modals.tax.open;
+        modals.tax.data = data;
+        this.setState({modals});
     }
     handleSelectDiscount(event, index) {
         let form = this.state.form;
@@ -331,326 +373,375 @@ class FormInvoice extends React.Component {
     }
     render() {
         return (
-            <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
-                <form onSubmit={this.handleSave}>
-                    <DialogTitle>
-                        <button type="button" className="close float-right" onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <span aria-hidden="true">×</span>
-                        </button>
-                        <span className="modal-title text-sm">
-                            {this.state.form.id === null ? Lang.get('companies.invoices.create.form') : Lang.get('companies.invoices.update.form')}
-                        </span>
-                    </DialogTitle>
-                    <DialogContent className="modal-body" dividers>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.invoices.labels.code')}</label>
-                            <div className="col-sm-4">
-                                <div className="form-control text-sm">
-                                    {this.state.form.code === null ? Lang.get('companies.invoices.labels.code_generate') : this.state.form.code}
+            <React.Fragment>
+                <FormDiscount user={this.props.user} loadings={this.props.loadings} open={this.state.modals.discount.open} data={this.state.modals.discount.data} companies={this.props.companies} handleClose={this.toggleDiscount} handleUpdate={this.props.onUpdateDiscounts}/>
+                <FormTax user={this.props.user} loadings={this.props.loadings} open={this.state.modals.tax.open} data={this.state.modals.tax.data} companies={this.props.companies} handleClose={this.toggleTax} handleUpdate={this.props.onUpdateTaxes}/>
+                <FormPackage privilege={this.props.privilege} loadings={this.props.loadings} user={this.props.user} open={this.state.modals.package.open} data={this.state.modals.package.data} handleClose={this.togglePackage} handleUpdate={this.props.onUpdatePackages}/>
+                <FormCompany privilege={this.props.privilege} provinces={[]} loadings={this.props.loadings} user={this.props.user} packages={this.props.packages} discounts={this.props.discounts} taxes={this.props.taxes} open={this.state.modals.company.open} data={this.state.modals.company.data} handleClose={this.toggleCompany} handleUpdate={this.props.onUpdateCompanies}/>
+
+                <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+                    <form onSubmit={this.handleSave}>
+                        <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('companies.invoices.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('companies.invoices.labels.menu')})}}/>
+                        <DialogContent className="modal-body" dividers>
+                            <div className="form-group row">
+                                <label className="col-md-2 text-xs col-form-label">{Lang.get('companies.invoices.labels.code')}</label>
+                                <div className="col-md-4">
+                                    <div className="form-control form-control-sm text-xs">
+                                        {this.state.form.code === null ? Lang.get('companies.invoices.labels.code_generate') : this.state.form.code}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.invoices.labels.periode')}</label>
-                            <div className="col-sm-3">
-                                {this.state.form.id === null ?
-                                    <DatePicker
-                                                selected={this.state.form.periode} maxDate={new Date()} title={Lang.get('companies.invoices.labels.select_periode')}
-                                                className="form-control text-sm" disabled={this.state.loading}
-                                                locale={localStorage.getItem('locale_lang') === 'id' ? id : en }
-                                                onChange={this.handleDate} dateFormat="dd MMMM yyyy"/>
-                                    :
-                                    <div className="form-control text-sm">{formatLocaleDate(this.state.form.periode)}</div>
+                            <div className="form-group row">
+                                <label className="col-md-2 text-xs col-form-label">{Lang.get('companies.invoices.labels.periode')}</label>
+                                <div className="col-md-2">
+                                    {this.state.form.id === null ?
+                                        <DatePicker
+                                            selected={this.state.form.periode} maxDate={new Date()} title={Lang.get('companies.invoices.labels.select_periode')}
+                                            className="form-control form-control-sm text-xs" disabled={this.state.loading}
+                                            locale={localStorage.getItem('locale_lang') === 'id' ? id : en } showMonthYearPicker showFullMonthYearPicker
+                                            onChange={this.handleDate} dateFormat="MMMM yyyy"/>
+                                        :
+                                        <div className="form-control form-control-sm text-xs">{formatLocaleDate(this.state.form.periode)}</div>
+                                    }
+                                </div>
+                            </div>
+                            <div className="form-group row">
+                                <label className="col-md-2 text-xs col-form-label">{Lang.get('companies.labels.name')}</label>
+                                <div className="col-md-4">
+                                    {this.state.form.id !== null ?
+                                        <div className="form-control form-control-sm text-xs">{this.state.form.company.label}</div>
+                                        :
+                                        <Select noOptionsMessage={()=><small>{Lang.get('companies.labels.no_select')}</small>}
+                                                className="text-xs" styles={FormControlSMReactSelect}
+                                                value={this.state.form.company}
+                                                onChange={this.handleSelectCompany} placeholder={<small>{Lang.get('companies.labels.select')}</small>} options={this.props.companies.filter((f) => f.meta.timestamps.active.at !== null)} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies}/>
+                                    }
+                                </div>
+                                {this.state.form.id === null &&
+                                    this.props.privilege !== null &&
+                                        typeof this.props.privilege.clients !== 'undefined' &&
+                                            this.props.privilege.clients !== null &&
+                                                <div className="col-md-6">
+                                                    {this.props.privilege.clients.create && this.state.form.company === null &&
+                                                        <Tooltip title={Lang.get('labels.create.label',{Attribute:Lang.get('companies.labels.menu')})}>
+                                                            <button onClick={()=>this.toggleCompany(null)} type="button" disabled={this.state.loading} className="btn btn-sm btn-outline-primary"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
+                                                        </Tooltip>
+                                                    }
+                                                    {this.props.privilege.clients.update && this.state.form.company !== null &&
+                                                        <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('companies.labels.menu')})}>
+                                                            <button onClick={()=>this.toggleCompany(this.state.form.company)} type="button" disabled={this.state.loading} className="btn btn-sm btn-outline-primary"><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
+                                                        </Tooltip>
+                                                    }
+                                                </div>
                                 }
                             </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.name')}</label>
-                            <div className="col-sm-4">
-                                {this.state.form.id !== null ?
-                                    <div className="form-control text-sm">{this.state.form.company.label}</div>
-                                    :
-                                    <Select noOptionsMessage={()=><small>{Lang.get('companies.labels.no_select')}</small>}
-                                            className="text-sm"
-                                            value={this.state.form.company}
-                                            onChange={this.handleSelectCompany} placeholder={<small>{Lang.get('companies.labels.select')}</small>} options={this.props.companies.filter((f) => f.meta.timestamps.active.at !== null)} isLoading={this.props.loadings.companies} isDisabled={this.state.loading || this.props.loadings.companies}/>
-                                }
-                            </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.address')}</label>
-                            <div className="col-sm-10">
-                                <div className="form-control text-sm">
-                                    {this.state.form.company === null ?
-                                        <span>&nbsp;</span>
-                                        :
-                                        <>
-                                            {this.state.form.company.meta.address.street},&nbsp;
-                                            {this.state.form.company.meta.address.village !== null && ucFirst(this.state.form.company.meta.address.village.name)}&nbsp;
-                                            {this.state.form.company.meta.address.district !== null && ucFirst(this.state.form.company.meta.address.district.name)}&nbsp;
-                                            {this.state.form.company.meta.address.city !== null && ucFirst(this.state.form.company.meta.address.city.name)}&nbsp;
-                                            {this.state.form.company.meta.address.province !== null && ucFirst(this.state.form.company.meta.address.province.name)}&nbsp;
-                                            {this.state.form.company.meta.address.postal}
-                                        </>
-                                    }
+                            <div className="form-group row">
+                                <label className="col-md-2 text-xs col-form-label">{Lang.get('companies.labels.address')}</label>
+                                <div className="col-md-10">
+                                    <div className="form-control form-control-sm text-xs">
+                                        {this.state.form.company === null ?
+                                            <span>&nbsp;</span>
+                                            :
+                                            <>
+                                                {this.state.form.company.meta.address.street},&nbsp;
+                                                {this.state.form.company.meta.address.village !== null && ucFirst(this.state.form.company.meta.address.village.name)}&nbsp;
+                                                {this.state.form.company.meta.address.district !== null && ucFirst(this.state.form.company.meta.address.district.name)}&nbsp;
+                                                {this.state.form.company.meta.address.city !== null && ucFirst(this.state.form.company.meta.address.city.name)}&nbsp;
+                                                {this.state.form.company.meta.address.province !== null && ucFirst(this.state.form.company.meta.address.province.name)}&nbsp;
+                                                {this.state.form.company.meta.address.postal}
+                                            </>
+                                        }
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="form-group row">
-                            <label className="col-sm-2 col-form-label">{Lang.get('companies.labels.phone')}</label>
-                            <div className="col-sm-3">
-                                <div className="form-control text-sm">
-                                    {this.state.form.company === null ?
-                                        <span>&nbsp;</span>
-                                        :
-                                        this.state.form.company.meta.address.phone
-                                    }
+                            <div className="form-group row">
+                                <label className="col-md-2 text-xs col-form-label">{Lang.get('companies.labels.phone')}</label>
+                                <div className="col-md-3">
+                                    <div className="form-control form-control-sm text-xs">
+                                        {this.state.form.company === null ?
+                                            <span>&nbsp;</span>
+                                            :
+                                            this.state.form.company.meta.address.phone
+                                        }
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="card card-outline card-info">
-                            <div className="card-header">
-                                <h3 className="card-title">{Lang.get('companies.invoices.labels.package.input')}</h3>
-                                <div className="card-tools">
-                                    {this.state.form.paid ? null :
-                                        <button onClick={this.handleAddPackage} disabled={this.state.loading || this.state.form.company === null} type="button" className="btn btn-tool"><i className="fas fa-plus mr-1"/> {Lang.get('companies.invoices.labels.package.add')}</button>
-                                    }
+                            <div className="card card-outline card-info">
+                                <div className="card-header">
+                                    <h3 className="card-title text-sm">{Lang.get('companies.invoices.labels.package.input')}</h3>
+                                    <div className="card-tools">
+                                        {this.state.form.paid ? null :
+                                            <React.Fragment>
+                                                {this.state.form.company !== null &&
+                                                    this.props.privilege !== null &&
+                                                        typeof this.props.privilege.packages !== 'undefined' &&
+                                                            this.props.privilege.packages.create &&
+                                                                <button type="button" className="btn btn-sm btn-outline-info mr-1 text-xs" disabled={this.state.loading} onClick={()=>this.togglePackage()}><FontAwesomeIcon icon={faPencilAlt} size="sm" className="mr-1"/>{Lang.get('labels.create.label',{Attribute:Lang.get('companies.packages.labels.menu')})}</button>
+                                                }
+                                                {this.state.form.company !== null &&
+                                                    <button onClick={this.handleAddPackage} disabled={this.state.loading || this.state.form.company === null} type="button" className="btn btn-outline-primary btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/> {Lang.get('companies.invoices.labels.package.add')}</button>
+                                                }
+                                            </React.Fragment>
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="card-body p-0">
-                                <table className="table table-sm table-striped">
-                                    <thead>
-                                    <tr>
-                                        <th className="align-middle text-center" width={30}>
-                                            <i className="fas fa-trash-alt"/>
-                                        </th>
-                                        <th className="align-middle">{Lang.get('companies.invoices.labels.package.name')}</th>
-                                        <th className="align-middle" width={100}>{Lang.get('companies.invoices.labels.package.qty')}</th>
-                                        <th className="align-middle text-right" width={150}>{Lang.get('companies.invoices.labels.package.price')}</th>
-                                        <th className="align-middle text-right" width={200}>{Lang.get('companies.invoices.labels.subtotal.item')}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {this.state.form.packages.current.length === 0 ?
-                                        <tr><td className="align-middle text-center" colSpan={5}>{Lang.get('messages.no_data')}</td></tr>
-                                        :
-                                        this.state.form.packages.current.map((item,index)=>
-                                            <tr key={index}>
-                                                <td className="align-middle text-center">
-                                                    {this.state.form.paid ?
-                                                        <i className="fas fa-trash-alt"/>
-                                                        :
-                                                        <button onClick={this.handleRemovePackage} disabled={this.state.loading} data-index={index} type="button" className="btn btn-outline-warning btn-sm"><i className="fas fa-trash-alt"/></button>
-                                                    }
-                                                </td>
-                                                <td className={this.state.form.paid ? 'align-middle' : null}>
-                                                    {this.state.form.paid ?
-                                                        item.package.label
-                                                        :
-                                                        <Select options={this.props.packages} value={item.package}
-                                                                noOptionsMessage={()=>Lang.get('companies.packages.labels.no_select')}
-                                                                onChange={(e)=>this.handleSelectPackage(e, index)}
-                                                                className="text-sm" isClearable
-                                                                placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>}
-                                                                isDisabled={this.state.loading || this.props.loadings.packages}/>
-                                                    }
-                                                </td>
-                                                <td className="align-middle text-center">
-                                                    {this.state.form.paid ? item.qty :
-                                                        <NumericFormat disabled={this.state.loading} className="form-control text-sm text-right"
-                                                                       value={item.qty} placeholder={Lang.get('companies.packages.labels.qty')}
-                                                                       data-index={index}
-                                                                       name="qty" onChange={this.handleChange} allowLeadingZeros={false}
-                                                                       decimalScale={0} decimalSeparator="," thousandSeparator="."/>
-                                                    }
-                                                </td>
-                                                <td className="align-middle text-right">
-                                                    {item.package === null ? '-' :
-                                                        <>
-                                                            <span className="float-left">Rp.</span>
-                                                            <span className="float-right">{formatLocaleString(item.price,2)}</span>
-                                                        </>
-                                                    }
-                                                </td>
-                                                <td className="align-middle text-right">
-                                                    {item.package === null ? '-' :
-                                                        <>
-                                                            <span className="float-left">Rp.</span>
-                                                            <span className="float-right">{formatLocaleString(item.qty * item.price,2)}</span>
-                                                        </>
-                                                    }
-                                                </td>
-                                            </tr>
-                                        )
-                                    }
-                                    </tbody>
-                                    <tfoot>
-                                    {this.state.form.company === null ? null :
-                                        this.state.form.packages.current.length === 0 ? null :
-                                            <tr>
-                                                <th className="align-middle text-right" colSpan={4}>{Lang.get('companies.packages.labels.sub_total')}</th>
-                                                <th className="align-middle text-right">
-                                                    {sumSubtotalFormInvoice(this.state.form) === 0 ? '-' :
-                                                        <>
-                                                            <span className="float-left">Rp.</span>
-                                                            <span className="float-right">{formatLocaleString(sumSubtotalFormInvoice(this.state.form),2)}</span>
-                                                        </>
-                                                    }
-                                                </th>
-                                            </tr>
-                                    }
-                                    {this.state.form.company === null ? null :
-                                        this.state.form.packages.current.length === 0 ? null :
-                                            this.state.form.taxes.current.length === 0 ?
-                                                <tr>
-                                                    <th className="align-middle text-right" colSpan={4}>{Lang.get('companies.invoices.labels.vat')}</th>
-                                                    <th className="align-middle">
-                                                        {this.state.form.paid ? null :
-                                                            <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-plus mr-1"/>{Lang.get('taxes.create.button')}</button>
-                                                        }
-                                                    </th>
-                                                </tr>
-                                                :
-                                                <>
-                                                    {this.state.form.taxes.current.map((item,index)=>
-                                                        <tr key={`tax_index_${index}`}>
-                                                            <th className="align-middle text-right" colSpan={2}>
-                                                                {Lang.get('companies.invoices.labels.vat')}
-                                                                {this.state.form.paid ? null :
-                                                                    <>
-                                                                        <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-plus"/></button>
-                                                                        <button onClick={()=>this.handleRemoveTax(index)} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-trash-alt"/></button>
-                                                                    </>
-                                                                }
-                                                            </th>
-                                                            <th className="align-middle text-right">
-                                                                {item.tax === null ? '-' : `${formatLocaleString(item.tax.meta.percent)}%`}
-                                                            </th>
-                                                            <th className="align-middle">
-                                                                {this.state.form.paid ? item.tax.label :
-                                                                    <Select options={this.props.taxes} isClearable
-                                                                            value={item.tax} onChange={(e)=>this.handleSelectTax(e,index)}
-                                                                            noOptionsMessage={()=>Lang.get('taxes.labels.not_found')}
-                                                                            placeholder={<small>{Lang.get('taxes.labels.select')}</small>}
-                                                                            className="text-xs"
-                                                                            isLoading={this.props.loadings.taxes} isDisabled={this.props.loadings.taxes || this.state.loading}/>
-                                                                }
-                                                            </th>
-                                                            <th className="align-middle text-right">
-                                                                {item.tax === null ? '-' :
-                                                                    <>
-                                                                        <span className="float-left">Rp.</span>
-                                                                        <span className="float-right">{formatLocaleString(sumTaxPriceFormInvoice(this.state.form,index),2)}</span>
-                                                                    </>
-                                                                }
-                                                            </th>
-                                                        </tr>
-                                                    )}
-                                                    <tr>
-                                                        <th className="align-middle text-right" colSpan={4}>{Lang.get('companies.invoices.labels.subtotal.tax')}</th>
-                                                        <th className="align-middle text-right">
-                                                            {sumSubtotalTaxFormInvoice(this.state.form) === 0 ? '-' :
-                                                                <>
-                                                                    <span className="float-left">Rp.</span>
-                                                                    <span className="float-right">{formatLocaleString(sumSubtotalTaxFormInvoice(this.state.form),2)}</span>
-                                                                </>
-                                                            }
+                                <div className="card-body p-0 table-responsive">
+                                    <table className="table table-sm table-striped">
+                                        <thead>
+                                        <tr>
+                                            <th className="align-middle text-center pl-2" width={30}>
+                                                <FontAwesomeIcon icon={faTrashAlt} size="sm"/>
+                                            </th>
+                                            {this.props.privilege !== null &&
+                                                typeof this.props.privilege.packages !== 'undefined' &&
+                                                    this.props.privilege.packages.update &&
+                                                        <th className="align-middle text-center" width={30}>
+                                                            <FontAwesomeIcon icon={faPencilAlt} size="sm"/>
                                                         </th>
-                                                    </tr>
-                                                </>
-                                    }
-                                    {this.state.form.company === null ? null :
-                                        this.state.form.packages.current.length === 0 ? null :
-                                            this.state.form.discounts.current.length === 0 ?
-                                                <tr>
-                                                    <th className="align-middle text-right" colSpan={4}>{Lang.get('companies.invoices.labels.discount')}</th>
-                                                    <th className="align-middle">
-                                                        {this.state.form.paid ? null :
-                                                            <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-plus mr-1"/>{Lang.get('discounts.create.button')}</button>
-                                                        }
-                                                    </th>
-                                                </tr>
-                                                :
-                                                <>
-                                                    {this.state.form.discounts.current.map((item, index)=>
-                                                        <tr key={`discount_index_${index}`}>
-                                                            <th className="align-middle text-right" colSpan={3}>
-                                                                {Lang.get('companies.invoices.labels.discount')}
-                                                                {this.state.form.paid ? null :
-                                                                    <>
-                                                                        <button onClick={this.handleAddDiscount} title={Lang.get('discounts.create.button')} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-plus"/></button>
-                                                                        <button onClick={()=>this.handleRemoveDiscount(index)} title={Lang.get('discounts.delete.button')} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><i className="fas fa-trash-alt"/></button>
-                                                                    </>
-                                                                }
-                                                            </th>
-                                                            <th className="align-middle">
-                                                                {this.state.form.paid ?
-                                                                    item.discount.label :
-                                                                    <Select options={this.props.discounts} isClearable
-                                                                            value={item.discount} onChange={(e)=>this.handleSelectDiscount(e, index)}
-                                                                            noOptionsMessage={()=>Lang.get('discounts.labels.not_found')}
-                                                                            placeholder={<small>{Lang.get('discounts.labels.select')}</small>}
-                                                                            className="text-xs"
-                                                                            isLoading={this.props.loadings.discounts} isDisabled={this.props.loadings.discounts || this.state.loading}/>
-                                                                }
-                                                            </th>
-                                                            <th className="align-middle text-right">
-                                                                {item.discount === null ? '-' :
-                                                                    <>
-                                                                        <span className="float-left">Rp.</span>
-                                                                        <span className="float-right">{formatLocaleString(item.discount.meta.amount)}</span>
-                                                                    </>
-                                                                }
-                                                            </th>
-                                                        </tr>
-                                                    )}
-                                                    <tr>
-                                                        <th className="align-middle text-right" colSpan={4}>{Lang.get('discounts.labels.subtotal')}</th>
-                                                        <th className="align-middle text-right">
-                                                            {sumSubtotalDiscountFormInvoice(this.state.form) === 0 ? '-' :
-                                                                <>
-                                                                    <span className="float-left">Rp.</span>
-                                                                    <span className="float-right">{formatLocaleString(sumSubtotalDiscountFormInvoice(this.state.form),2)}</span>
-                                                                </>
-                                                            }
-                                                        </th>
-                                                    </tr>
-                                                </>
-                                    }
-                                    <tr>
-                                        <th className="align-middle text-right" colSpan={4}>{Lang.get('companies.invoices.labels.subtotal.main')}</th>
-                                        <th className="align-middle text-right">
-                                            {sumGrandTotalFormInvoice(this.state.form) === 0 ? '-' :
-                                                <>
-                                                    <span className="float-left">Rp.</span>
-                                                    <span className="float-right">{formatLocaleString(sumGrandTotalFormInvoice(this.state.form),2)}</span>
-                                                </>
                                             }
-                                        </th>
-                                    </tr>
-                                    </tfoot>
-                                </table>
+                                            <th className="align-middle text-xs">{Lang.get('companies.invoices.labels.package.name')}</th>
+                                            <th className="align-middle text-xs" width={100}>{Lang.get('companies.invoices.labels.package.qty')}</th>
+                                            <th className="align-middle text-xs text-right" width={150}>{Lang.get('companies.invoices.labels.package.price')}</th>
+                                            <th className="align-middle text-xs text-right pr-2" width={200}>{Lang.get('companies.invoices.labels.subtotal.item')}</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {this.state.form.packages.current.length === 0 ?
+                                            <tr><td className="align-middle text-center" colSpan={6}>{Lang.get('messages.no_data')}</td></tr>
+                                            :
+                                            this.state.form.packages.current.map((item,index)=>
+                                                <tr key={index}>
+                                                    <td className="align-middle text-center text-xs pl-2">
+                                                        {this.state.form.paid ?
+                                                            <i className="fas fa-trash-alt"/>
+                                                            :
+                                                            <button onClick={this.handleRemovePackage} disabled={this.state.loading} data-index={index} type="button" className="btn btn-outline-warning btn-sm"><i className="fas fa-trash-alt"/></button>
+                                                        }
+                                                    </td>
+                                                    {this.props.privilege !== null &&
+                                                        typeof this.props.privilege.packages !== 'undefined' &&
+                                                            this.props.privilege.packages.update &&
+                                                                <td className="align-middle text-center text-xs" width={30}>
+                                                                    {this.state.form.paid ?
+                                                                        <FontAwesomeIcon icon={faPencilAlt} size="sm"/>
+                                                                        : item.package === null ? <FontAwesomeIcon icon={faPencilAlt} size="sm"/>
+                                                                            :
+                                                                            <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('companies.packages.labels.menu')})}>
+                                                                                <button type="button" disabled={this.state.loading} className="btn btn-outline-info btn-sm text-xs" onClick={()=>this.togglePackage(item.package)}><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
+                                                                            </Tooltip>
+                                                                    }
+                                                                </td>
+                                                    }
+                                                    <td className={this.state.form.paid ? 'align-middle text-xs' : 'text-xs'}>
+                                                        {this.state.form.paid ?
+                                                                item.package.label
+                                                                :
+                                                                <Select options={this.props.packages} value={item.package}
+                                                                        noOptionsMessage={()=>Lang.get('companies.packages.labels.no_select')}
+                                                                        styles={FormControlSMReactSelect} menuPlacement="top" maxMenuHeight={150}
+                                                                        onChange={(e)=>this.handleSelectPackage(e, index)}
+                                                                        className="text-xs" isClearable
+                                                                        placeholder={<small>{Lang.get('companies.packages.labels.select')}</small>}
+                                                                        isDisabled={this.state.loading || this.props.loadings.packages}/>
+                                                        }
+                                                    </td>
+                                                    <td className="align-middle text-xs text-center">
+                                                        {this.state.form.paid ? item.qty :
+                                                            <NumericFormat disabled={this.state.loading} className="form-control text-xs form-control-sm text-right"
+                                                                           value={item.qty} placeholder={Lang.get('companies.packages.labels.qty')}
+                                                                           data-index={index}
+                                                                           name="qty" onChange={this.handleChange} allowLeadingZeros={false}
+                                                                           decimalScale={0} decimalSeparator="," thousandSeparator="."/>
+                                                        }
+                                                    </td>
+                                                    <td className="align-middle text-xs text-right">
+                                                        {item.package === null ? '-' :
+                                                            FormatPrice(item.price)
+                                                        }
+                                                    </td>
+                                                    <td className="align-middle text-right text-xs pr-2">
+                                                        {item.package === null ? '-' :
+                                                            FormatPrice(item.qty * item.price)
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            )
+                                        }
+                                        </tbody>
+                                        <tfoot>
+                                        {this.state.form.company === null ? null :
+                                            this.state.form.packages.current.length === 0 ? null :
+                                                <tr>
+                                                    <th colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}
+                                                        className="align-middle text-right text-xs">{Lang.get('companies.packages.labels.sub_total')}</th>
+                                                    <th className="align-middle text-right text-xs pr-2">
+                                                        {sumSubtotalFormInvoice(this.state.form) === 0 ? '-' :
+                                                            FormatPrice(sumSubtotalFormInvoice(this.state.form))
+                                                        }
+                                                    </th>
+                                                </tr>
+                                        }
+                                        {this.state.form.company === null ? null :
+                                            this.state.form.packages.current.length === 0 ? null :
+                                                this.state.form.taxes.current.length === 0 ?
+                                                    <tr>
+                                                        <th className="align-middle text-right text-xs" colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}>{Lang.get('companies.invoices.labels.vat')}</th>
+                                                        <th className="align-middle text-xs pr-2">
+                                                            {this.state.form.paid ? null :
+                                                                <React.Fragment>
+                                                                    <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/> {Lang.get('taxes.create.button')}</button>
+                                                                </React.Fragment>
+                                                            }
+                                                        </th>
+                                                    </tr>
+                                                    :
+                                                    <React.Fragment>
+                                                        {this.state.form.taxes.current.map((item,index)=>
+                                                            <tr key={`tax_index_${index}`}>
+                                                                <th className="align-middle text-xs text-right" colSpan={this.props.privilege === null ? 2 : typeof this.props.privilege.packages === 'undefined' ? 2 : this.props.privilege.packages.update ? 3 : 2}>
+                                                                    {Lang.get('companies.invoices.labels.vat')}
+                                                                    {this.state.form.paid ? null :
+                                                                        <React.Fragment>
+                                                                            {this.props.privilege !== null &&
+                                                                                    typeof this.props.privilege.taxes !== 'undefined' &&
+                                                                                        <React.Fragment>
+                                                                                            {this.props.privilege.taxes.create &&
+                                                                                                <Tooltip title={Lang.get('labels.create.label',{Attribute:Lang.get('taxes.labels.menu')})}>
+                                                                                                    <button type="button" disabled={this.state.loading} className="btn btn-sm btn-outline-primary text-xs mr-1 ml-1" onClick={()=>this.toggleTax()}><FontAwesomeIcon icon={faPlusSquare} size="sm"/></button>
+                                                                                                </Tooltip>
+                                                                                            }
+                                                                                            {item.tax !== null &&
+                                                                                                this.props.privilege.taxes.update &&
+                                                                                                    <Tooltip title={Lang.get('labels.update.label',{Attribute:Lang.get('taxes.labels.menu')})}>
+                                                                                                        <button type="button" disabled={this.state.loading} className="btn btn-outline-info btn-sm text-xs mr-1 ml-1" onClick={()=>this.toggleTax(item.tax)}><FontAwesomeIcon icon={faPencilSquare} size="sm"/></button>
+                                                                                                    </Tooltip>
+                                                                                            }
+                                                                                        </React.Fragment>
+                                                                            }
+                                                                            <button onClick={this.handleAddTax} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
+                                                                            <button onClick={()=>this.handleRemoveTax(index)} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool btn-sm text-xs"><FontAwesomeIcon icon={faTrashAlt} size="sm"/></button>
+                                                                        </React.Fragment>
+                                                                    }
+                                                                </th>
+                                                                <th className="align-middle text-xs text-right">
+                                                                    {item.tax === null ? '-' : `${formatLocaleString(item.tax.meta.percent)}%`}
+                                                                </th>
+                                                                <th className="align-middle">
+                                                                    {this.state.form.paid ? item.tax.label :
+                                                                        <Select options={this.props.taxes.filter((f) => f.meta.company === null)} isClearable
+                                                                                styles={FormControlSMReactSelect} menuPlacement="top" maxMenuHeight={150}
+                                                                                value={item.tax} onChange={(e)=>this.handleSelectTax(e,index)}
+                                                                                noOptionsMessage={()=>Lang.get('taxes.labels.not_found')}
+                                                                                placeholder={<small>{Lang.get('taxes.labels.select')}</small>}
+                                                                                className="text-xs"
+                                                                                isLoading={this.props.loadings.taxes} isDisabled={this.props.loadings.taxes || this.state.loading}/>
+                                                                    }
+                                                                </th>
+                                                                <th className="align-middle text-right text-xs pr-2">
+                                                                    {item.tax === null ? '-' :
+                                                                        FormatPrice(sumTaxPriceFormInvoice(this.state.form,index))
+                                                                    }
+                                                                </th>
+                                                            </tr>
+                                                        )}
+                                                        <tr>
+                                                            <th className="align-middle text-xs text-right" colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}>{Lang.get('companies.invoices.labels.subtotal.tax')}</th>
+                                                            <th className="align-middle text-xs text-right pr-2">
+                                                                {sumSubtotalTaxFormInvoice(this.state.form) === 0 ? '-' :
+                                                                    FormatPrice(sumSubtotalTaxFormInvoice(this.state.form))
+                                                                }
+                                                            </th>
+                                                        </tr>
+                                                    </React.Fragment>
+                                        }
+                                        {this.state.form.company === null ? null :
+                                            this.state.form.packages.current.length === 0 ? null :
+                                                this.state.form.discounts.current.length === 0 ?
+                                                    <tr>
+                                                        <th className="align-middle text-xs text-right" colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}>
+                                                            {Lang.get('companies.invoices.labels.discount')}
+                                                        </th>
+                                                        <th className="align-middle text-xs pr-2">
+                                                            {this.state.form.paid ? null :
+                                                                <React.Fragment>
+                                                                    <button onClick={this.handleAddDiscount} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm" className="mr-1"/>{Lang.get('discounts.create.button')}</button>
+                                                                </React.Fragment>
+                                                            }
+                                                        </th>
+                                                    </tr>
+                                                    :
+                                                    <>
+                                                        {this.state.form.discounts.current.map((item, index)=>
+                                                            <tr key={`discount_index_${index}`}>
+                                                                <th className="align-middle text-xs text-right" colSpan={this.props.privilege === null ? 3 : typeof this.props.privilege.packages === 'undefined' ? 3 : this.props.privilege.packages.update ? 4 : 3}>
+                                                                    {Lang.get('companies.invoices.labels.discount')}
+                                                                    {this.state.form.paid ? null :
+                                                                        <React.Fragment>
+                                                                            {this.props.privilege !== null &&
+                                                                                typeof this.props.privilege.discounts !== 'undefined' &&
+                                                                                    <React.Fragment>
+                                                                                        {this.props.privilege.discounts.create &&
+                                                                                            <button type="button" disabled={this.state.loading} className="btn btn-outline-primary btn-sm text-xs ml-1 mr-1" onClick={()=>this.toggleDiscount()}><FontAwesomeIcon icon={faPlusSquare} size="sm"/></button>
+                                                                                        }
+                                                                                        {this.props.privilege.discounts.update && item.discount !== null &&
+                                                                                            <button onClick={()=>this.toggleDiscount(item.discount)} type="button" className="btn btn-outline-info btn-sm text-xs mr-1" disabled={this.state.loading}><FontAwesomeIcon icon={faPencilAlt} size="sm"/></button>
+                                                                                        }
+                                                                                    </React.Fragment>
+                                                                            }
+                                                                            <button onClick={this.handleAddDiscount} title={Lang.get('discounts.create.button')} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool btn-sm text-xs"><FontAwesomeIcon icon={faPlus} size="sm"/></button>
+                                                                            <button onClick={()=>this.handleRemoveDiscount(index)} title={Lang.get('discounts.delete.button')} type="button" disabled={this.state.loading || this.state.company === null} className="btn btn-tool"><FontAwesomeIcon icon={faTrashAlt} size="sm"/></button>
+                                                                        </React.Fragment>
+                                                                    }
+                                                                </th>
+                                                                <th className="align-middle text-xs">
+                                                                    {this.state.form.paid ?
+                                                                        item.discount.label :
+                                                                        <Select options={this.props.discounts} isClearable
+                                                                                styles={FormControlSMReactSelect}
+                                                                                value={item.discount} onChange={(e)=>this.handleSelectDiscount(e, index)}
+                                                                                noOptionsMessage={()=>Lang.get('discounts.labels.not_found')}
+                                                                                placeholder={<small>{Lang.get('discounts.labels.select')}</small>}
+                                                                                className="text-xs"
+                                                                                isLoading={this.props.loadings.discounts} isDisabled={this.props.loadings.discounts || this.state.loading}/>
+                                                                    }
+                                                                </th>
+                                                                <th className="align-middle text-right text-xs pr-2">
+                                                                    {item.discount === null ? '-' :
+                                                                        FormatPrice(item.discount.meta.amount)
+                                                                    }
+                                                                </th>
+                                                            </tr>
+                                                        )}
+                                                        <tr>
+                                                            <th className="align-middle text-right text-xs" colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}>{Lang.get('discounts.labels.subtotal')}</th>
+                                                            <th className="align-middle text-right text-xs pr-2">
+                                                                {sumSubtotalDiscountFormInvoice(this.state.form) === 0 ? '-' :
+                                                                    FormatPrice(sumSubtotalDiscountFormInvoice(this.state.form))
+                                                                }
+                                                            </th>
+                                                        </tr>
+                                                    </>
+                                        }
+                                        <tr>
+                                            <th className="align-middle text-right text-xs" colSpan={this.props.privilege === null ? 4 : typeof this.props.privilege.packages === 'undefined' ? 4 : this.props.privilege.packages.update ? 5 : 4}>{Lang.get('companies.invoices.labels.subtotal.main')}</th>
+                                            <th className="align-middle text-right text-xs pr-2">
+                                                {sumGrandTotalFormInvoice(this.state.form) === 0 ? '-' :
+                                                    FormatPrice(sumGrandTotalFormInvoice(this.state.form))
+                                                }
+                                            </th>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
-                    </DialogContent>
-                    <DialogActions className="justify-content-between">
-                        {! this.state.form.paid &&
-                            <button type="submit" className="btn btn-success" disabled={this.state.loading}>
-                                {this.state.loading ?
-                                    <FontAwesomeIcon icon="fa-circle-notch" className="fa-spin"/>
-                                    :
-                                    <FontAwesomeIcon icon="fas fa-save"/>
-                                }
-                                <span className="mr-1"/>
-                                {this.state.form.id === null ? Lang.get('companies.packages.create.button') : Lang.get('companies.packages.update.button',null, 'id')}
-                            </button>
-                        }
-                        <button type="button" className="btn btn-default" disabled={this.state.loading} onClick={()=>this.state.loading ? null : this.props.handleClose()}>
-                            <i className="fas fa-times mr-1"/> {Lang.get('messages.close')}
-                        </button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+                        </DialogContent>
+                        <ModalFooter
+                            form={this.state.form} handleClose={()=>this.props.handleClose()}
+                            loading={this.state.loading}
+                            langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('companies.invoices.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('companies.invoices.labels.menu')})}}/>
+                    </form>
+                </Dialog>
+            </React.Fragment>
         )
     }
 }

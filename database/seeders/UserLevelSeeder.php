@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User\UserLevel;
 use Illuminate\Database\Seeder;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class UserLevelSeeder extends Seeder
 {
@@ -12,24 +13,28 @@ class UserLevelSeeder extends Seeder
      * Run the database seeds.
      *
      * @return void
+     * @throws Throwable
      */
     public function run()
     {
         $dumps = collect();
         $dumps->push((object) [
-            'name' => 'Super Admin', 'description' => 'Super admin privilege', 'super' => true, 'is_default' => true, 'for_client' => false,
+            'name' => 'Super Admin', 'description' => 'Super admin privilege', 'super' => true, 'is_default' => true, 'for_client' => false, 'for_public' => true,
         ]);
         $dumps->push((object) [
-            'name' => 'Billing', 'description' => 'Billing', 'super' => false, 'is_default' => true, 'for_client' => false,
+            'name' => 'Billing', 'description' => 'Billing', 'super' => false, 'is_default' => true, 'for_client' => false, 'for_public' => true,
         ]);
         $dumps->push((object) [
-            'name' => 'Admin', 'description' => 'Admin', 'super' => false, 'is_default' => true, 'for_client' => true,
+            'name' => 'Admin', 'description' => 'Admin', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
         ]);
         $dumps->push((object) [
-            'name' => 'Operator', 'description' => 'Operator Clients', 'super' => false, 'is_default' => true, 'for_client' => true,
+            'name' => 'Operator', 'description' => 'Operator Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
         ]);
         $dumps->push((object) [
-            'name' => 'Customer', 'description' => 'Customer Clients', 'super' => false, 'is_default' => true, 'for_client' => true,
+            'name' => 'Customer', 'description' => 'Customer Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
+        ]);
+        $dumps->push((object) [
+            'name' => 'Trial User', 'description' => 'Trial User', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => false,
         ]);
         $this->command->getOutput()->progressStart($dumps->count());
         foreach ($dumps as $dump) {
@@ -43,6 +48,7 @@ class UserLevelSeeder extends Seeder
             $level->super = $dump->super;
             $level->is_default = $dump->is_default;
             $level->for_client = $dump->for_client;
+            $level->for_public = $dump->for_public;
             $level->saveOrFail();
             $this->command->getOutput()->progressAdvance();
         }

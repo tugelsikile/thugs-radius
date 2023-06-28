@@ -54,8 +54,8 @@ class UserPage extends React.Component {
             if (this.state.privilege === null) {
                 getPrivileges([
                     {route : this.props.route, can : false },
-                    {route : 'clients.users.privileges', can : false},
-                    {route : 'clients.users.reset-password', can : false},
+                    {route : 'auth.users.privileges', can : false},
+                    {route : 'auth.users.reset-password', can : false},
                 ])
                     .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>{

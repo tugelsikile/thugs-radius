@@ -56,8 +56,7 @@ class PrivilegePage extends React.Component {
             if (this.state.privilege === null) {
                 getPrivileges([
                     {route : this.props.route, can : false },
-                    {route : 'clients.users', can : false},
-                    {route : 'clients.customers', can : false},
+                    {route : 'auth.users', can : false},
                 ])
                     .then((response)=>this.setState({privilege:response.privileges,menus:response.menus}))
                     .then(()=>this.loadCompanies())

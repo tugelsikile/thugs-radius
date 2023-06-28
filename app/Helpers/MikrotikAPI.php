@@ -4,6 +4,7 @@
 
 namespace App\Helpers;
 
+use App\Models\Customer\Customer;
 use App\Models\Nas\Nas;
 use App\Models\Nas\NasProfile;
 use App\Models\Nas\NasProfileBandwidth;
@@ -271,6 +272,53 @@ class MikrotikAPI
                     if (array_key_exists('ret', $res['after'])) {
                         $nasProfile->profile_id = $res['after']['ret'];
                         $nasProfile->saveOrFail();
+                    }
+                }
+            }
+        } catch (Exception $exception) {
+            return;
+        }
+    }
+
+    /* @
+     * @param Customer $customer
+     * @return void
+     */
+    public function kickOnlinePPPoE(Customer $customer) {
+        try {
+            $this->query = (new Query("/ppp/active/print"))
+                ->where('name', $customer->nas_username);
+            $responses = $this->client->query($this->query)->read();
+            if (collect($responses)->count() > 0) {
+                foreach (collect($responses) as $item) {
+                    if ($item['name'] == $customer->nas_username) {
+                        $this->query = (new Query("/ppp/active/remove"))
+                            ->equal('.id', $item['.id']);
+                        $this->client->query($this->query)->read();
+                    }
+                }
+            }
+            return;
+        } catch (Exception $exception) {
+            return;
+        }
+    }
+
+    /* @
+     * @param Customer $customer
+     * @return void
+     */
+    public function kickOnlineHostpot(Customer $customer) {
+        try {
+            $this->query = (new Query("/ip/hotspot/active/print"))
+                ->where('user', $customer->nas_username);
+            $responses = $this->client->query($this->query)->read();
+            if (collect($responses)->count() > 0) {
+                foreach (collect($responses) as $item) {
+                    if ($item['user'] == $customer->nas_username) {
+                        $this->query = (new Query("/ip/hotspot/active/remove"))
+                            ->equal('.id', $item['.id']);
+                        $this->client->query($this->query)->read();
                     }
                 }
             }

@@ -143,6 +143,21 @@ class PaymentGatewayRepository
                 if (property_exists($keys,'consumer_secret')) $updating = true;
                 unset($keys->consumer_secret);
             }
+            if ($request->has(__('gateways.form_input.callback'))) {
+                if (property_exists($keys,'callback_url') && $keys->callback_url != $request[__('gateways.form_input.callback')]) $updating = true;
+                $keys->callback_url = $request[__('gateways.form_input.callback')];
+            } else {
+                if (property_exists($keys, 'callback_url')) $updating = true;
+                unset($keys->callback_url);
+            }
+            if ($request->has(__('gateways.form_input.return'))) {
+                if (property_exists($keys,'return_url') && $keys->return_url != $request[__('gateways.form_input.return')]) $updating = true;
+                $keys->return_url = $request[__('gateways.form_input.return')];
+            } else {
+                if (property_exists($keys, 'return_url')) $updating = true;
+                unset($keys->return_url);
+            }
+
             $gateway->keys = $keys;
             if ($updating) $gateway->updated_by = $this->me->id;
             $gateway->saveOrFail();
@@ -183,6 +198,12 @@ class PaymentGatewayRepository
             if ($request->has(__('gateways.form_input.briapi.consumer_key')) && $request->has(__('gateways.form_input.briapi.consumer_secret'))) {
                 $keys->consumer_key = $request[__('gateways.form_input.briapi.consumer_key')];
                 $keys->consumer_secret = $request[__('gateways.form_input.briapi.consumer_secret')];
+            }
+            if ($request->has(__('gateways.form_input.callback'))) {
+                $keys->callback_url = $request[__('gateways.form_input.callback')];
+            }
+            if ($request->has(__('gateways.form_input.return'))) {
+                $keys->return_url = $request[__('gateways.form_input.return')];
             }
             $gateway->keys = $keys;
             $gateway->saveOrFail();

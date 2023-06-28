@@ -259,13 +259,14 @@ class InvoiceRepository
                     if ($invoice->paid_at == null) {
                         $invoice->paid_at = Carbon::now()->format('Y-m-d H:i:s');
                         $invoice->paid_by = $this->me->id;
-                        $customer = Customer::where('id', $invoice->customer)->first();
+                        (new CustomerRepository())->renewCustomer(new Request(['id' => $invoice->customer]));
+                        /*$customer = Customer::where('id', $invoice->customer)->first();
                         if ($customer != null) {
                             if (Carbon::parse($customer->due_at)->isBefore(Carbon::now())) {
                                 $customer->due_at = generateCompanyExpired(Carbon::parse($customer->due_at), $customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate)->format('Y-m-d H:i:s');
                                 $customer->saveOrFail();
                             }
-                        }
+                        }*/
                     }
                 } else {
                     $invoice->paid_at = null;
@@ -413,6 +414,80 @@ class InvoiceRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function regenerateInvoice(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+            if ($customer != null) {
+                $profile = $customer->profileObj;
+                if ($profile != null) {
+                    if ($profile->price > 0) {
+                        if ($customer->due_at->isBefore(Carbon::now())) {
+                            $findInvoice = CustomerInvoice::where('bill_period', $customer->due_at)->get();
+                            if ($findInvoice->count() == 0) {
+                                $invoice = new CustomerInvoice();
+                                $invoice->id = Uuid::uuid4()->toString();
+                                $invoice->order_id = randomNumeric(10);
+                                $invoice->customer = $customer->id;
+                                $invoice->code = generateCustomerInvoiceCode(Carbon::now());
+                                $invoice->bill_period = $customer->due_at;
+                                $invoice->note = 'Regenerate';
+                                if ($this->me != null) $invoice->created_by = $this->me->id;
+                                $invoice->saveOrFail();
+                                $invoiceService = new CustomerInvoiceService();
+                                $invoiceService->id = Uuid::uuid4()->toString();
+                                $invoiceService->invoice = $invoice->id;
+                                $invoiceService->service = $profile->id;
+                                $invoiceService->order = 0;
+                                $invoiceService->amount = $profile->price;
+                                $invoiceService->note = $profile->name;
+                                if ($this->me != null) $invoiceService->created_by = $this->me->id;
+                                $invoiceService->saveOrFail();
+                                foreach ($customer->additionals()->get() as $index => $additional) {
+                                    $invoiceService = new CustomerInvoiceService();
+                                    $invoiceService->id = Uuid::uuid4()->toString();
+                                    $invoiceService->invoice = $invoice->id;
+                                    $invoiceService->service = $additional->serviceObj->id;
+                                    $invoiceService->order = $index + 1;
+                                    $invoiceService->amount = $additional->serviceObj->price;
+                                    $invoiceService->note = $additional->serviceObj->name;
+                                    if ($this->me != null) $invoiceService->created_by = $this->me->id;
+                                    $invoiceService->saveOrFail();
+                                }
+                                foreach ($customer->taxes()->get() as $item) {
+                                    $tax = new CustomerInvoiceTax();
+                                    $tax->id = Uuid::uuid4()->toString();
+                                    $tax->invoice = $invoice->id;
+                                    $tax->tax = $item->taxObj->id;
+                                    if ($this->me != null) $tax->created_by = $this->me->id;
+                                    $tax->saveOrFail();
+                                }
+                                foreach ($customer->discounts()->get() as $item) {
+                                    $discount = new CustomerInvoiceDiscount();
+                                    $discount->id = Uuid::uuid4()->toString();
+                                    $discount->invoice = $invoice->id;
+                                    $discount->discount = $item->discountObj->id;
+                                    if ($this->me != null) $discount->created_by = $this->me->id;
+                                    $discount->saveOrFail();
+                                }
+                                $response->push($invoice);
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return Collection|null
@@ -430,6 +505,12 @@ class InvoiceRepository
             }
             if ($request->has(__('customers.form_input.id'))) {
                 $invoices = $invoices->where('customer', $request[__('customers.form_input.id')]);
+                if ($request->has('regenerate')) {
+                    $includes = $this->regenerateInvoice($request);
+                    if ($includes->count() > 0) {
+                        $invoices = CustomerInvoice::whereIn('id', $includes->map(function ($q){ return $q->id; })->toArray());
+                    }
+                }
             }
             $invoices = $invoices->get();
             if ($invoices->count() > 0) {

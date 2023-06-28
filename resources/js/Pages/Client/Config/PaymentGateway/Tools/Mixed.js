@@ -1,5 +1,10 @@
 import React from "react";
 import BtnSort from "../../../../Auth/User/Tools/BtnSort";
+import {showSuccess} from "../../../../../Components/Toaster";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCopy} from "@fortawesome/free-solid-svg-icons";
+import {LabelRequired} from "../../../../../Components/mixedConsts";
+import HtmlParser from "react-html-parser";
 export const TableHeader = (props) => {
     return (
         <tr>
@@ -36,8 +41,8 @@ export const TableHeader = (props) => {
     )
 }
 export const listModulePaymentGateway = [
-    { value : 'duitku', label : Lang.get('gateways.module.duitku.label'), meta : { merchant_code : '', api_key : '', urls : { sandbox : 'https://sandbox.duitku.com/webapi/api', production : 'https://passport.duitku.com/webapi/api', website : 'https://duitku.com' } } },
-    { value : 'briapi', label : Lang.get('gateways.module.briapi.label'), meta : { consumer_key : '', consumer_secret : '', urls : { sandbox : 'https://sandbox.partner.api.bri.co.id', production : 'https://partner.api.bri.co.id', website : 'https://developers.bri.co.id/id'} } }
+    { value : 'duitku', label : Lang.get('gateways.module.duitku.label'), meta : { merchant_code : '', api_key : '', urls : { sandbox : 'https://sandbox.duitku.com', production : 'https://passport.duitku.com', website : 'https://duitku.com', callback : `${window.origin}/api/payment-gateways/duitku/callback`, return : `${window.origin}/payment-gateway/duitku/status` } } },
+    { value : 'briapi', label : Lang.get('gateways.module.briapi.label'), meta : { consumer_key : '', consumer_secret : '', urls : { sandbox : 'https://sandbox.partner.api.bri.co.id', production : 'https://partner.api.bri.co.id', website : 'https://developers.bri.co.id/id', callback : `${window.origin}/api/payment-gateways/briapi/callback`, return : `${window.origin}/payment-gateway/briapi/status`} } }
 ];
 export const FormModule = (props) => {
     if (props.form.module !== null) {
@@ -73,15 +78,33 @@ export const FormModuleDuitku = (props) => {
     return (
         <React.Fragment>
             <div className="form-group row">
-                <label htmlFor="input-merchant-code" className="col-md-4 col-form-label text-xs">{Lang.get('gateways.module.duitku.merchant_code')}</label>
+                <label htmlFor="input-merchant-code" className="col-md-4 col-form-label text-xs"><LabelRequired/>{Lang.get('gateways.module.duitku.merchant_code')}</label>
                 <div className="col-md-4">
                     <input id="input-merchant-code" name="merchant_code" data-parent="keys" onChange={props.onChange} value={props.form.keys.merchant_code} placeholder={Lang.get('gateways.module.duitku.merchant_code')} className="form-control form-control-sm text-xs" disabled={props.loading} />
                 </div>
             </div>
             <div className="form-group row">
-                <label htmlFor="input-api-key" className="col-md-4 col-form-label text-xs">{Lang.get('gateways.module.duitku.api_key')}</label>
+                <label htmlFor="input-api-key" className="col-md-4 col-form-label text-xs"><LabelRequired/>{Lang.get('gateways.module.duitku.api_key')}</label>
                 <div className="col-md-8">
                     <input id="input-api-key" name="api_key" data-parent="keys" onChange={props.onChange} value={props.form.keys.api_key} placeholder={Lang.get('gateways.module.duitku.api_key')} className="form-control form-control-sm text-xs" disabled={props.loading} />
+                </div>
+            </div>
+            <div className="form-group row">
+                <label className="col-md-4 col-form-label text-xs">{Lang.get('gateways.labels.url.callback.label')}</label>
+                <div className="col-md-8">
+                    <div className="input-group input-group-sm">
+                        <div className="form-control-sm form-control text-xs">
+                            {props.form.module.meta.urls.callback}
+                        </div>
+                        <div className="input-group-append">
+                            <span onClick={(e)=>{
+                                e.preventDefault();
+                                navigator.clipboard.writeText(props.form.module.meta.urls.callback)
+                                    .then(()=>showSuccess(Lang.get('gateways.labels.url.callback.copied')));
+                            }} title={Lang.get('gateways.labels.url.callback.copy')} style={{cursor:'pointer'}} className="input-group-text"><FontAwesomeIcon icon={faCopy} size="sm"/></span>
+                        </div>
+                    </div>
+                    <small className="text-muted">{HtmlParser(Lang.get('gateways.labels.url.callback.info'))}</small>
                 </div>
             </div>
         </React.Fragment>

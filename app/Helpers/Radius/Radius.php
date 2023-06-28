@@ -2,7 +2,9 @@
 
 namespace App\Helpers\Radius;
 
+use App\Helpers\MikrotikAPI;
 use App\Models\Company\ClientCompany;
+use App\Models\Customer\Customer;
 use App\Models\Nas\Nas;
 use DivineOmega\SSHConnection\SSHConnection;
 use Exception;
@@ -175,6 +177,55 @@ class Radius
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function kickOnlinePPPoE(Customer $customer) {
+        try {
+            $nas = $customer->nasObj;
+            if ($nas != null) {
+                switch ($nas->method) {
+                    case 'api':
+                        (new MikrotikAPI($nas))->kickOnlinePPPoE($customer);
+                        break;
+                    case 'ssl':
+                        break;
+                }
+            }
+            return;
+        } catch (Exception $exception) {
+            return;
+        }
+    }
+    public function kickOnlineHostpot(Customer $customer) {
+        try {
+            $nas = $customer->nasObj;
+            if ($nas != null) {
+                switch ($nas->method) {
+                    case 'api':
+                        (new MikrotikAPI($nas))->kickOnlineHostpot($customer);
+                        break;
+                    case 'ssl':
+                        break;
+                }
+            }
+            return;
+        } catch (Exception $exception) {
+            return;
+        }
+    }
+    public function kickOnlineUser(Customer $customer) {
+        try {
+            switch ($customer->method_type) {
+                case 'pppoe':
+                    $this->kickOnlinePPPoE($customer);
+                    break;
+                case 'hotspot':
+                    $this->kickOnlineHostpot($customer);
+                    break;
+            }
+            return;
+        } catch (Exception $exception) {
+            return;
         }
     }
 }

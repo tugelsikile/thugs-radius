@@ -8,6 +8,8 @@ return [
         'url' => 'url_merchant',
         'website' => 'url_website',
         'module' => 'nama_modul',
+        'callback' => 'url_callback',
+        'return' => 'url_return',
         'duitku' => [
             'merchant_code' => 'kode_merchant',
             'api_key' => 'kunci_api',
@@ -24,6 +26,11 @@ return [
         'module' => 'Modul',
         'status' => 'Status',
         'description' => 'Keterangan',
+        'va' => 'Nomor Virtual Account',
+        'copy_va' => 'Salin nomor virtual account',
+        'va_copied' => 'Nomor virtual account berhasil disalin ke clipboard',
+        'grand_total' => 'Grand Total',
+        'reference_code' => 'Nomor Referensi',
         'mode' => [
             'label' => 'Mode',
             'production' => 'Mode Production',
@@ -34,6 +41,13 @@ return [
             'website' => 'Website',
             'production' => 'Production URL',
             'sandbox' => 'Sandbox URL',
+            'callback' => [
+                'label' => ' URL Callback',
+                'copy' => 'Salin URL Callback',
+                'copied' => 'Berhasil menyalin URL Callback kedalam clipboard',
+                'info' => 'Salin  URL callback ini kedalam project duitku.com pada kolom bagian <strong class="text-primary">"Url Callback Proyek"</strong><br/>URL Callback ini sangat penting untuk validasi pada saat pelanggan melakukan pembayaran dengan channel pembayaran yang mereka inginkan',
+            ],
+            'return' => 'URL Kembali',
         ]
     ],
     'promises' => [
@@ -47,6 +61,10 @@ return [
             'label' => 'Duitku.com',
             'merchant_code' => 'Kode Merchant',
             'api_key' => 'Kunci API',
+            'status' => [
+                'process' => 'Menunggu Pembayaran',
+                'success' => 'Lunas Pembayaran'
+            ]
         ],
         'briapi' => [
             'label' => 'BRI API',

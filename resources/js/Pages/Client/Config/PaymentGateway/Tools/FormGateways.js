@@ -6,6 +6,8 @@ import {FormControlSMReactSelect, LabelRequired, responseMessage} from "../../..
 import {FormModule, listModulePaymentGateway} from "./Mixed";
 import {crudPaymentGatewayClient} from "../../../../../Services/ConfigService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCopy, faExternalLink} from "@fortawesome/free-solid-svg-icons";
 
 // noinspection DuplicatedCode,CommaExpressionJS
 class FormGateways extends React.Component {
@@ -110,6 +112,8 @@ class FormGateways extends React.Component {
                 formData.append(Lang.get('gateways.form_input.module'), this.state.form.module.value);
                 formData.append(Lang.get('gateways.form_input.url'), this.state.form.production ? this.state.form.module.meta.urls.production : this.state.form.module.meta.urls.sandbox);
                 formData.append(Lang.get('gateways.form_input.website'), this.state.form.module.meta.urls.website);
+                formData.append(Lang.get('gateways.form_input.callback'), this.state.form.module.meta.urls.callback);
+                formData.append(Lang.get('gateways.form_input.return'), this.state.form.module.meta.urls.return);
                 switch (this.state.form.module.value) {
                     case 'duitku':
                         formData.append(Lang.get('gateways.form_input.duitku.merchant_code'), this.state.form.keys.merchant_code);
@@ -138,7 +142,7 @@ class FormGateways extends React.Component {
     }
     render() {
         return (
-            <Dialog fullWidth maxWidth="sm" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+            <Dialog fullWidth maxWidth="md" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                 <form onSubmit={this.handleSave}>
                     <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('gateways.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('gateways.labels.menu')})}}/>
                     <DialogContent dividers>
@@ -177,6 +181,11 @@ class FormGateways extends React.Component {
                                         placeholder={<small>{Lang.get('labels.select.option',{Attribute:Lang.get('gateways.module.name')})}</small>}
                                         noOptionsMessage={()=>Lang.get('labels.select.no_option',{Attribute:Lang.get('gateways.module.name')})} className="text-xs"/>
                             </div>
+                            <div className="col-md-4">
+                                {this.state.form.module !== null &&
+                                    <button onClick={()=>window.open(this.state.form.module.meta.urls.website,'_blank')} className="btn btn-outline-info btn-sm" type="button"><FontAwesomeIcon icon={faExternalLink} size="sm"/></button>
+                                }
+                            </div>
                         </div>
                         {this.state.form.module !== null &&
                             <React.Fragment>
@@ -208,7 +217,7 @@ class FormGateways extends React.Component {
                     <ModalFooter
                         form={this.state.form} handleClose={()=>this.props.handleClose()}
                         loading={this.state.loading || this.props.loadings.nas || this.props.loadings.provinces || this.props.loadings.profiles}
-                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('gateways.labels.name')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('gateways.labels.name')})}}/>
+                        langs={{create:Lang.get('labels.create.submit',{Attribute:Lang.get('gateways.labels.menu')}),update:Lang.get('labels.update.submit',{Attribute:Lang.get('gateways.labels.menu')})}}/>
                 </form>
             </Dialog>
         )

@@ -8,20 +8,22 @@ import PageTitle from "../../../Components/Layout/PageTitle";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import {DashboardCardStatus, DashboardStatusServer, TableExpiredCustomer, TableOnlineCustomer} from "./Tools/Mixed";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faUsers} from "@fortawesome/free-solid-svg-icons";
+import {faCashRegister, faUsers} from "@fortawesome/free-solid-svg-icons";
 import {onlineCustomers, serverStatus, topCards} from "../../../Services/DasboardService";
 import {showError} from "../../../Components/Toaster";
 import {faCalendarXmark} from "@fortawesome/free-regular-svg-icons";
 import {crudCustomers} from "../../../Services/CustomerService";
 import FormPayment from "../Customer/Invoice/Tools/FormPayment";
+import {crudPaymentGatewayClient} from "../../../Services/ConfigService";
+import OnlinePayment from "./Tools/OnlinePayment";
 
 class DashboardPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, site : false, nas : true, servers : true, online : true, expired : true, cards : true },
-            privilege : null, menus : [], site : null, nas : [], servers : [], online : [], expired : [],
+            loadings : { privilege : false, site : false, nas : true, servers : true, online : true, expired : true, cards : true, payment_gateways : true },
+            privilege : null, menus : [], site : null, nas : [], servers : [], online : [], expired : [], payment_gateways : [],
             cards : {customers:[],payments:[],vouchers:[],pendings:[]},
             filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
@@ -67,6 +69,9 @@ class DashboardPage extends React.Component {
                                 })
                                 .then(()=>{
                                     loadings.cards = false; this.setState({loadings},()=>this.loadCard());
+                                })
+                                .then(()=>{
+                                    loadings.payment_gateways = false; this.setState({loadings},()=>this.loadPaymentGateway());
                                 });
                         });
                     });
@@ -78,6 +83,27 @@ class DashboardPage extends React.Component {
         modal.payment.open = ! this.state.modal.payment.open;
         modal.payment.data = data;
         this.setState({modal});
+    }
+    async loadPaymentGateway() {
+        if (! this.state.loadings.payment_gateways) {
+            if (this.state.payment_gateways.length === 0) {
+                let loadings = this.state.loadings;
+                loadings.payment_gateways = true; this.setState({loadings});
+                try {
+                    let response = await crudPaymentGatewayClient();
+                    if (response.data.params === null) {
+                        loadings.payment_gateways = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        loadings.payment_gateways = false;
+                        this.setState({loadings,payment_gateways:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.payment_gateways = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
     }
     async loadCard() {
         if (! this.state.loadings.cards) {
@@ -233,15 +259,15 @@ class DashboardPage extends React.Component {
                                                 <li className="nav-item">
                                                     <a onClick={customPreventDefault} className="nav-link" id="custom-tabs-four-profile-tab" data-toggle="pill" href="#custom-tabs-four-profile" role="tab" aria-controls="custom-tabs-four-profile" aria-selected="false"><FontAwesomeIcon className="mr-1" icon={faCalendarXmark} size="sm"/> {Lang.get('labels.expired',{Attribute:Lang.get('customers.labels.menu')})}</a>
                                                 </li>
-                                                {/*<li className="nav-item">
-                                                    <a className="nav-link" id="custom-tabs-four-messages-tab" data-toggle="pill" href="#custom-tabs-four-messages" role="tab" aria-controls="custom-tabs-four-messages" aria-selected="false">Messages</a>
-                                                </li>
                                                 <li className="nav-item">
+                                                    <a className="nav-link" id="custom-tabs-four-payment-tab" data-toggle="pill" href="#custom-tabs-four-payment" role="tab" aria-controls="custom-tabs-four-payment" aria-selected="false"><FontAwesomeIcon icon={faCashRegister} size="sm" className="mr-1"/> {Lang.get('labels.payment',{Attribute:"Online"})}</a>
+                                                </li>
+                                                {/*<li className="nav-item">
                                                     <a className="nav-link" id="custom-tabs-four-settings-tab" data-toggle="pill" href="#custom-tabs-four-settings" role="tab" aria-controls="custom-tabs-four-settings" aria-selected="false">Settings</a>
                                                 </li>*/}
                                             </ul>
                                         </div>
-                                        <div className="p-0 card-body" style={{height:300}}>
+                                        <div className="p-0 card-body" style={{minHeight:300}}>
                                             <div className="tab-content" id="custom-tabs-four-tabContent">
                                                 <div className="active show tab-pane fade table-responsive" id="custom-tabs-four-home" role="tabpanel" aria-labelledby="custom-tabs-four-home-tab">
                                                     <TableOnlineCustomer privilege={this.state.privilege} onClick={this.loadOnline} loading={this.state.loadings.online} data={this.state.online}/>
@@ -251,9 +277,10 @@ class DashboardPage extends React.Component {
                                                     <TableExpiredCustomer onPayment={this.togglePayment} privilege={this.state.privilege} onClick={this.loadExpired} loading={this.state.loadings.expired} data={this.state.expired}/>
                                                 </div>
 
-                                                {/*<div className="tab-pane fade" id="custom-tabs-four-messages" role="tabpanel" aria-labelledby="custom-tabs-four-messages-tab">
+                                                <div className="tab-pane fade" id="custom-tabs-four-payment" role="tabpanel" aria-labelledby="custom-tabs-four-payment-tab">
+                                                    <OnlinePayment loadings={this.state.loadings} user={this.state.user} privilege={this.state.privilege} payment_gateways={this.state.payment_gateways} onUpdate={this.loadExpired}/>
                                                 </div>
-                                                <div className="tab-pane fade " id="custom-tabs-four-settings" role="tabpanel" aria-labelledby="custom-tabs-four-settings-tab">
+                                                {/*<div className="tab-pane fade " id="custom-tabs-four-settings" role="tabpanel" aria-labelledby="custom-tabs-four-settings-tab">
                                                 </div>*/}
                                             </div>
                                         </div>

@@ -16,6 +16,8 @@ use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\Nas\ProfileController;
+use App\Http\Controllers\PaymentGateway\BRIController;
+use App\Http\Controllers\PaymentGateway\DuitkuController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -130,4 +132,15 @@ Route::group(['prefix' => 'configs'], function () {
     });
     Route::post('/site', [ConfigController::class, 'site']);
     Route::post('/timezones', [ConfigController::class, 'timezone']);
+});
+Route::group(['prefix' => 'payment-gateways'],function () {
+    Route::group(['prefix' => 'bri'], function () {
+        Route::post('/status', [BRIController::class, 'transactionStatus']);
+    });
+    Route::group(['prefix' => 'duitku'], function () {
+        Route::post('/status', [DuitkuController::class, 'transactionStatus']);
+        Route::post('/qr', [DuitkuController::class, 'generateQR']);
+        Route::post('/channels', [DuitkuController::class, 'paymentChannel']);
+        Route::post('/callback', [DuitkuController::class, 'callback']);
+    });
 });

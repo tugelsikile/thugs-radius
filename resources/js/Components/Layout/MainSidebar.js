@@ -4,6 +4,7 @@ import {faAngleLeft, faPowerOff} from "@fortawesome/free-solid-svg-icons";
 import {SideBarBrand, SideBarMenuDashboard, SideBarUser} from "./Layout";
 import {MenuIcon} from "../../Pages/Client/User/Privilege/Tools/IconTool";
 import {logout} from "../Authentication";
+import {Skeleton} from "@mui/material";
 
 // noinspection JSUnresolvedVariable,SpellCheckingInspection
 class MainSidebar extends React.Component {
@@ -14,14 +15,22 @@ class MainSidebar extends React.Component {
         return (
             <React.Fragment>
                 <aside id="app-main-sidebar" className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
-                    <SideBarBrand site={this.props.site} user={this.props.user}/>
+                    {this.props.loadings.site ?
+                        <Skeleton animation="wave" variant="rectangular" height={50} />
+                        :
+                        <SideBarBrand site={this.props.site} user={this.props.user}/>
+                    }
 
                     <div className="sidebar">
                         <SideBarUser user={this.props.user}/>
 
                         <nav className="mt-2">
                             <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-                                <SideBarMenuDashboard route={this.props.route}/>
+                                {this.props.loadings.privilege ?
+                                    <Skeleton className="mx-2 mb-2" animation="wave" variant="rectangular" height={30} />
+                                    :
+                                    <SideBarMenuDashboard route={this.props.route}/>
+                                }
 
                                 {this.props.menus.length > 0 &&
                                     this.props.menus.map((parent) =>
@@ -54,12 +63,16 @@ class MainSidebar extends React.Component {
                                             </li>
                                     )
                                 }
-                                <li className="nav-item">
-                                    <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
-                                        <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
-                                        <p className="text text-danger">{Lang.get('messages.users.labels.sign_out')}</p>
-                                    </a>
-                                </li>
+                                {this.props.loadings.privilege ?
+                                    <Skeleton className="mx-2" animation="wave" variant="rectangular" height={30}/>
+                                    :
+                                    <li className="nav-item">
+                                        <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
+                                            <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
+                                            <p className="text text-danger text-sm">{Lang.get('messages.users.labels.sign_out')}</p>
+                                        </a>
+                                    </li>
+                                }
                             </ul>
                         </nav>
                     </div>

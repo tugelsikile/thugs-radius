@@ -60,6 +60,8 @@ class PaymentGatewayValidation
                 __('gateways.form_input.module') => 'required|in:duitku,briapi',
                 __('gateways.form_input.url') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
                 __('gateways.form_input.website') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
+                __('gateways.form_input.callback') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
+                __('gateways.form_input.return') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
 
                 /***** DUITKU VALIDATION *****/
                 __('gateways.form_input.duitku.merchant_code') => 'required_if:' . __('gateways.form_input.module') . ',duitku',
@@ -92,6 +94,8 @@ class PaymentGatewayValidation
                 __('gateways.form_input.module') => 'required|in:duitku,briapi',
                 __('gateways.form_input.url') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
                 __('gateways.form_input.website') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
+                __('gateways.form_input.callback') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
+                __('gateways.form_input.return') => 'required_with:' . $request[__('gateways.form_input.module')] . '|url',
 
                 /***** DUITKU VALIDATION *****/
                 __('gateways.form_input.duitku.merchant_code') => 'required_if:' . __('gateways.form_input.module') . ',duitku',

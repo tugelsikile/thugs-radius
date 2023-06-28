@@ -81,6 +81,7 @@
     }
     Lang.setLocale(localeLang);
 </script>
+
 @yield('scripts')
 </body>
 </html>

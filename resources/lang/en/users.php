@@ -4,6 +4,13 @@ return [
         'id' => 'user_data',
         'name' => 'user_name',
         'email' => 'user_email',
+        'require_nas' => 'nas_required',
+        'nas' => [
+            'input' => 'nas_input',
+            'id' => 'nas_data',
+            'name' => 'nas_name',
+            'delete' => 'nas_delete',
+        ],
         'password' => [
             'current' => 'password',
             'confirm' => 'password_confirmation'

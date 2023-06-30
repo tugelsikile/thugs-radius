@@ -4,6 +4,13 @@ return [
         'id' => 'data_pengguna',
         'name' => 'nama_pengguna',
         'email' => 'alamat_email_pengguna',
+        'require_nas' => 'ada_nas',
+        'nas' => [
+            'input' => 'input_nas',
+            'id' => 'data_nas',
+            'name' => 'nama_nas',
+            'delete' => 'hapus_nas',
+        ],
         'password' => [
             'current' => 'kata_sandi',
             'confirm' => 'kata_sandi_confirmation'

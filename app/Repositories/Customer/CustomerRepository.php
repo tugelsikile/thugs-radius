@@ -552,7 +552,7 @@ class CustomerRepository
                 if ($profile->limit_type == 'time') {
                     if ($profile->limit_rate > 0) {
                         if (in_array($profile->limit_rate_unit,['seconds','minutes','hours','days','weeks','months','years'])) {
-                            $customer->due_at = generateCompanyExpired($customer->due_at, $profile->limit_rate_unit, $profile->limit_rate);
+                            $customer->due_at = generateCompanyExpired(Carbon::now(), $profile->limit_rate_unit, $profile->limit_rate);
                             $customer->saveOrFail();
                             (new RadiusDB())->saveUser($customer);
                             (new Radius())->kickOnlineUser($customer);

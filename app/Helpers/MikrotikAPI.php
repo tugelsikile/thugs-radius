@@ -72,16 +72,32 @@ class MikrotikAPI
                 $bw = $profileBandwidth;
                 $string = collect();
                 if ($bw->max_limit_up > 0 || $bw->max_limit_down > 0) {
-                    $string->push(( $bw->max_limit_up / 1000 )  . 'M/' . ( $bw->max_limit_down / 1000 ). 'M');
+                    if (($bw->max_limit_up / 1000) < 1 || ($bw->max_limit_down / 1000) < 1) {
+                        $string->push( $bw->max_limit_up . 'K/' . $bw->max_limit_down . 'K');
+                    } else {
+                        $string->push(( $bw->max_limit_up / 1000 )  . 'M/' . ( $bw->max_limit_down / 1000 ). 'M');
+                    }
                 }
                 if ($bw->burst_limit_down > 0 || $bw->burst_limit_up > 0) {
-                    $string->push(( $bw->burst_limit_up / 1000 ) . 'M/' . ( $bw->burst_limit_down / 1000 ) .'M');
+                    if (($bw->burst_limit_down / 1000) < 1 || ($bw->burst_limit_up / 1000) < 1) {
+                        $string->push($bw->burst_limit_up . 'K/' . $bw->burst_limit_down . 'K');
+                    } else {
+                        $string->push(( $bw->burst_limit_up / 1000 ) . 'M/' . ( $bw->burst_limit_down / 1000 ) .'M');
+                    }
                 }
                 if ($bw->threshold_up > 0 || $bw->threshold_down > 0) {
-                    $string->push( ( $bw->threshold_up / 1000 ) . 'k/' . ( $bw->threshold_down / 1000 ).'k');
+                    if (($bw->threshold_up / 1000) < 1 || ($bw->threshold_down / 1000) < 1) {
+                        $string->push( $bw->threshold_up . 'K/' .  $bw->threshold_down .'K');
+                    } else {
+                        $string->push( ( $bw->threshold_up / 1000 ) . 'M/' . ( $bw->threshold_down / 1000 ).'M');
+                    }
                 }
-                if ($bw->limit_at_up > 0 || $bw->limit_at_up > 0) {
-                    $string->push(( $bw->limit_at_up / 1000 ) . 'k/' . ( $bw->limit_at_up / 1000 ) . 'k');
+                if ($bw->limit_at_up > 0 || $bw->limit_at_down > 0) {
+                    if (($bw->limit_at_up / 1000) < 1 || ($bw->limit_at_down / 1000) < 1) {
+                        $string->push($bw->limit_at_up . 'K/' . $bw->limit_at_up . 'K');
+                    } else {
+                        $string->push(( $bw->limit_at_up / 1000 ) . 'M/' . ( $bw->limit_at_up / 1000 ) . 'M');
+                    }
                 }
                 if ($bw->burst_time_up > 0 || $bw->burst_time_down > 0) {
                     $string->push($bw->burst_time_up . '/' . $bw->burst_time_down);

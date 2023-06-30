@@ -27,11 +27,11 @@ mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 /*
 mix.js('resources/js/src/auth/login.js','public/js');
 mix.js('resources/js/src/auth/index.js','public/js/auth');
-
+*/
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
-mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');*/
-mix.js('resources/js/src/auth/companies/index.js','public/js/auth/companies');
+mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
 /*
+mix.js('resources/js/src/auth/companies/index.js','public/js/auth/companies');
 mix.js('resources/js/src/auth/companies/packages.js','public/js/auth/companies');
 mix.js('resources/js/src/auth/companies/invoices.js','public/js/auth/companies');
 mix.js('resources/js/src/auth/companies/print-invoices.js','public/js/auth/companies');
@@ -56,9 +56,8 @@ mix.js('resources/js/src/clients/customers/index.js','public/js/clients/customer
 mix.js('resources/js/src/clients/customers/pppoe.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/customers/hotspot.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/customers');
-
+*/
 mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
 
 
-*/

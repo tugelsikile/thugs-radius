@@ -7,6 +7,7 @@ use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Nas extends Model
@@ -34,5 +35,9 @@ class Nas extends Model
     public function deletedBy(): BelongsTo
     {
         return $this->belongsTo(User::class,'deleted_by','id');
+    }
+    public function nasGroups(): HasMany
+    {
+        return $this->hasMany(NasUserGroup::class,'nas','id');
     }
 }

@@ -15,12 +15,14 @@ class UserLevel extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     protected $casts = [
         'super' => 'boolean',
         'is_default' => 'boolean',
         'for_client' => 'boolean',
         'for_public' => 'boolean',
+        'require_nas' => 'boolean',
     ];
 
     public function companyObj() {

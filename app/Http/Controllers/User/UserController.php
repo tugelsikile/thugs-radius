@@ -8,6 +8,7 @@ use App\Validations\User\UserValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class UserController extends Controller
 {
@@ -22,6 +23,7 @@ class UserController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

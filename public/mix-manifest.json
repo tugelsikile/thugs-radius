@@ -1,8 +1,6 @@
 {
     "/js/auth/users/index.js": "/js/auth/users/index.js",
     "/js/auth/users/privileges.js": "/js/auth/users/privileges.js",
-    "/js/clients/index.js": "/js/clients/index.js",
-    "/js/clients/configs/payment-gateways.js": "/js/clients/configs/payment-gateways.js",
     "/js/clients/users/index.js": "/js/clients/users/index.js",
     "/js/clients/users/privileges.js": "/js/clients/users/privileges.js"
 }

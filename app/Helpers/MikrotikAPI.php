@@ -66,7 +66,8 @@ class MikrotikAPI
             return (object) ['message' => $exception->getMessage(), 'success' => false];
         }
     }
-    public function rateLimit(NasProfileBandwidth $profileBandwidth = null) {
+    public function rateLimit(NasProfileBandwidth $profileBandwidth = null): ?string
+    {
         try {
             if ($profileBandwidth != null) {
                 $bw = $profileBandwidth;

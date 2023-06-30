@@ -13,6 +13,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -53,7 +54,28 @@ class BRIRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
-
+    private function generateSha256rsa(PaymentGateway $paymentGateway, string $timestamp) {
+        try {
+            $string = $paymentGateway->keys->consumer_secret . '|' . $timestamp;
+            $new_key_pair = openssl_pkey_new([
+                'private_key_bits' => 2048,
+                'private_key_type' => OPENSSL_KEYTYPE_RSA
+            ]);
+            openssl_pkey_export($new_key_pair, $private_key_pem);
+            $details = openssl_pkey_get_details($new_key_pair);
+            $public_key_pem = $details['key'];
+            openssl_sign($string, $signature, $private_key_pem,OPENSSL_ALGO_SHA256);
+            $targetDir = storage_path() . '/bri';
+            if (!File::exists($targetDir)) File::makeDirectory($targetDir,0777,true);
+            File::put($targetDir . 'private_key.pem', $private_key_pem);
+            File::put($targetDir . 'public_key.pem', $public_key_pem);
+            File::put($targetDir . 'signature.date', $signature);
+            $r = openssl_verify($string, $signature, $public_key_pem,"sha256WithRSAEncryption");
+            return $r;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param PaymentGateway $paymentGateway
      * @return mixed
@@ -62,25 +84,36 @@ class BRIRepository
      */
     private function createToken(PaymentGateway $paymentGateway) {
         try {
+            $timestamp = Carbon::now();
             $uri = $paymentGateway->keys->url . "/oauth/client_credential/accesstoken?grant_type=client_credentials";
+            $signature = $this->generateSha256rsa($paymentGateway, $timestamp);
+            dd($signature);
             $this->guzzle_params['form_params'] = [
                 'client_id' => $paymentGateway->keys->consumer_key,
                 'client_secret' => $paymentGateway->keys->consumer_secret,
             ];
-            $request = $this->clients->request('post', $uri, $this->guzzle_params);
-            $response = json_decode($request->getBody()->getContents());
-            if (property_exists($response,'access_token') && property_exists($response,'expires_in')) {
-                $paymentGatewayToken = new PaymentGatewayToken();
-                $paymentGatewayToken->id = Uuid::uuid4()->toString();
-                $paymentGatewayToken->gateway = $paymentGateway->id;
-                $paymentGatewayToken->company = $paymentGateway->company;
-                $paymentGatewayToken->token = $response->access_token;
-                $paymentGatewayToken->params = $response;
-                $paymentGatewayToken->expired_at = Carbon::now()->addSeconds($response->expires_in);
-                $paymentGatewayToken->saveOrFail();
-                return $paymentGatewayToken->token;
-            } else {
-                throw new Exception("Undefined error",500);
+            try {
+                $request = $this->clients->request('post', $uri, $this->guzzle_params);
+                $response = json_decode($request->getBody()->getContents());
+                if ($response != null) {
+                    if (property_exists('access_token',$response) && property_exists('expires_in',$response)) {
+                        $paymentGatewayToken = new PaymentGatewayToken();
+                        $paymentGatewayToken->id = Uuid::uuid4()->toString();
+                        $paymentGatewayToken->gateway = $paymentGateway->id;
+                        $paymentGatewayToken->company = $paymentGateway->company;
+                        $paymentGatewayToken->token = $response->access_token;
+                        $paymentGatewayToken->params = $response;
+                        $paymentGatewayToken->expired_at = Carbon::now()->addSeconds($response->expires_in);
+                        $paymentGatewayToken->saveOrFail();
+                        return $paymentGatewayToken->token;
+                    } else {
+                        throw new Exception("Undefined error",500);
+                    }
+                } else {
+                    throw new Exception("Undefined error",500);
+                }
+            } catch (ClientException $clientException) {
+                throw new Exception($clientException->getResponse()->getBody()->getContents());
             }
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -138,7 +171,6 @@ class BRIRepository
             ]);
             $invoice = CustomerInvoice::where('order_id', $request->order_id)->first();
 
-            dd($this->generateQR());
             $this->guzzle_params['headers']['Authorization'] = "Bearer " . $tokenPG;
             $this->guzzle_params['headers']['Content-Type'] = "application/json";
             $this->guzzle_params['headers']['X-TIMESTAMP'] = $timestamp;

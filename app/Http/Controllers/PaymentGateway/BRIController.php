@@ -32,9 +32,9 @@ class BRIController extends Controller
     public function transactionStatus(Request $request): JsonResponse
     {
         try {
-            return formatResponsePG($this->status, $this->message, $this->repository->generateQR($this->validation->transactionStatus($request)));
+            return formatResponse($this->status, $this->message, $this->repository->transactionStatus($this->validation->transactionStatus($request)));
         } catch (Exception $exception) {
-            return formatResponsePG($exception->getCode(), $exception->getMessage());
+            return formatResponse($exception->getCode(), $exception->getMessage());
         }
     }
 }

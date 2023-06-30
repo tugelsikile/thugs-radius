@@ -63,6 +63,7 @@ class MikrotikAPI
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return (object) ['message' => $exception->getMessage(), 'success' => false];
         }
     }
@@ -112,6 +113,7 @@ class MikrotikAPI
             }
             return null;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return null;
         }
     }
@@ -148,6 +150,7 @@ class MikrotikAPI
             }
             return  $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return null;
         }
     }
@@ -182,6 +185,7 @@ class MikrotikAPI
                 ->where("parent","none");
             return collect($this->client->query($this->query)->read());
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return null;
         }
     }
@@ -234,6 +238,7 @@ class MikrotikAPI
                 $this->query = $this->query->equal('rate-limit', $rl);
             }
             $res = $this->client->query($this->query)->read();
+            Log::info($res);
 
             if ($res != null) {
                 if (array_key_exists('after', $res)) {
@@ -244,6 +249,7 @@ class MikrotikAPI
                 }
             }
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return;
         }
         //dd('ddd', $res,array_key_exists('ret', $res['after']));
@@ -293,6 +299,7 @@ class MikrotikAPI
                 }
             }
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return;
         }
     }
@@ -317,6 +324,7 @@ class MikrotikAPI
             }
             return;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return;
         }
     }
@@ -340,6 +348,7 @@ class MikrotikAPI
                 }
             }
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             return;
         }
     }

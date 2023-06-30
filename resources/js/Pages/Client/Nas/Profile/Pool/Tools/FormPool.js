@@ -11,6 +11,7 @@ import {InputText, LabelRequired} from "../../../../../../Components/CustomInput
 import FormNas from "../../../Tools/FormNas";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPencilAlt, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {poolModuleList} from "./Mixed";
 
 
 // noinspection DuplicatedCode,CommaExpressionJS
@@ -20,7 +21,7 @@ class FormPool extends React.Component {
         this.state = {
             loading : false,
             form : {
-                id : null, name : '', description : '', nas : null,
+                id : null, name : '', description : '', nas : null, module : poolModuleList[0],
                 first : '', last : '', upload : true, code : '',
             },
             name_invalid : false,
@@ -35,9 +36,10 @@ class FormPool extends React.Component {
     componentWillReceiveProps(props) {
         this.setState({loading:true});
         let form = this.state.form;
+        let index;
         if (! props.open) {
             form.id = null, form.name = '', form.description = '', form.first = '', form.last = '',
-                form.nas = null, form.upload = true, form.code = '';
+                form.nas = null, form.upload = true, form.code = '', form.module = poolModuleList[0];
         } else {
             if (props.data !== null) {
                 form.id = props.data.value, form.name = props.data.label, form.description = props.data.meta.description,
@@ -55,7 +57,11 @@ class FormPool extends React.Component {
                                 pass : props.data.meta.nas.password
                             }
                         }
-                    }
+                    };
+                index = poolModuleList.findIndex((f)=> f.value === props.data.meta.address.module);
+                if (index >= 0) {
+                    form.module = poolModuleList[index];
+                }
             }
         }
         this.setState({form,loading:false});
@@ -95,6 +101,7 @@ class FormPool extends React.Component {
             formData.append('_method', this.state.form.id === null ? 'put' : 'patch');
             if (this.state.form.id !== null) formData.append(Lang.get('nas.pools.form_input.id'), this.state.form.id);
             if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
+            if (this.state.form.module !== null) formData.append(Lang.get('nas.pools.form_input.module'), this.state.form.module.value);
             formData.append(Lang.get('nas.pools.form_input.code'), this.state.form.code);
             formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.name);
             formData.append(Lang.get('nas.pools.form_input.description'), this.state.form.description);
@@ -191,6 +198,18 @@ class FormPool extends React.Component {
                             <InputText type="textarea" labels={{ cols:{ label : 'col-md-3', input : 'col-md-9' },
                                 placeholder : Lang.get('nas.pools.labels.description'), name : Lang.get('nas.pools.labels.description') }}
                                        input={{ name : 'description', value : this.state.form.description, id : 'description', }} required={false} handleChange={this.handleChange} loading={this.state.loading}/>
+
+                            <div className="form-group row">
+                                <label className="col-md-3 col-form-label text-xs"><LabelRequired/> {Lang.get('nas.pools.labels.module')}</label>
+                                <div className="col-md-4">
+                                    <Select options={poolModuleList} value={this.state.form.module}
+                                            className="text-xs"
+                                            styles={FormControlSMReactSelect}
+                                            noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:Lang.get('nas.pools.labels.module')})}
+                                            placeholder={<small>{Lang.get('labels.select.option',{Attribute:Lang.get('nas.pools.labels.module')})}</small>}
+                                            onChange={(event)=>this.handleSelect(event,'module')}/>
+                                </div>
+                            </div>
 
                             <InputText type="ip" labels={{ cols:{ label : 'col-md-3', input : 'col-md-4' },
                                 placeholder : Lang.get('nas.pools.labels.address.first'), name : Lang.get('nas.pools.labels.address.first') }}

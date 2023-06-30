@@ -121,11 +121,34 @@ class RadiusDB
      * @return void
      * @throws Throwable
      */
+    public function saveUserPoolName(Customer $customer) {
+        try {
+            $poolName = Radcheck::where('username', $customer->nas_username)->where('attribute', 'Pool-Name')->first();
+            if ($poolName == null) {
+                $poolName = new Radcheck();
+                $poolName->username = $customer->nas_username;
+                $poolName->attribute = 'Pool-Name';
+                $poolName->op = ':=';
+            }
+            $poolName->value = $customer->profileObj->poolObj->code;
+            $poolName->saveOrFail();
+            return;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return;
+        }
+    }
+    /* @
+     * @param Customer $customer
+     * @return void
+     * @throws Throwable
+     */
     public function saveUserPPPoE(Customer $customer) {
         try {
             $this->saveClearTextPassword($customer);
             $this->saveExpiration($customer);
             $this->saveRadUserGroup($customer);
+            $this->saveUserPoolName($customer);
 
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
@@ -167,6 +190,7 @@ class RadiusDB
         try {
             $this->saveRadReply($customer);
             $this->saveRadUserGroup($customer);
+            $this->saveUserPoolName($customer);
             return;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
@@ -326,7 +350,7 @@ class RadiusDB
      * @return void|null
      * @throws Throwable
      */
-    public function saveFramedPool(NasProfile $nasProfile) {
+    public function savePoolName(NasProfile $nasProfile) {
         try {
             $framedPool = Radgroupreply::where('groupname', $nasProfile->code)->where('attribute','Framed-Pool')->first();
             if ($nasProfile->poolObj != null) {
@@ -334,7 +358,7 @@ class RadiusDB
                     $framedPool = new Radgroupreply();
                     $framedPool->groupname = $nasProfile->code;
                     $framedPool->attribute = 'Framed-Pool';
-                    $framedPool->op = '=';
+                    $framedPool->op = ':=';
                 }
                 $framedPool->value = $nasProfile->poolObj->code;
                 $framedPool->saveOrFail();
@@ -358,7 +382,7 @@ class RadiusDB
             $this->saveFramedProtocol($nasProfile);
             $this->saveMikrotikGroup($nasProfile);
             $this->saveRateLimit($nasProfile);
-            $this->saveFramedPool($nasProfile);
+            $this->savePoolName($nasProfile);
             $this->saveSimultanousUse($nasProfile);
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
@@ -446,7 +470,7 @@ class RadiusDB
             $this->saveRateLimit($nasProfile);
             $this->saveServiceType($nasProfile);
             $this->saveMaxAllSession($nasProfile);
-            $this->saveFramedPool($nasProfile);
+            $this->savePoolName($nasProfile);
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             return;
@@ -480,10 +504,13 @@ class RadiusDB
      */
     public function saveProfilePool(NasProfilePool $profilePool, string $defaultName) {
         try {
-            $mikrotikGroups = Radgroupreply::where('value', $defaultName)->where('attribute', 'Mikrotik-Group')->get();
+            $mikrotikGroups = Radgroupreply::where('value', $defaultName)->whereIn('attribute', ['Mikrotik-Group','Pool-Name'])->get();
             foreach ($mikrotikGroups as $mikrotikGroup) {
                 $mikrotikGroup->value = $profilePool->code;
                 $mikrotikGroup->saveOrFail();
+            }
+            if ($profilePool->module == 'mikrotik') {
+                Radgroupreply::where('value', $defaultName)->where('attribute', 'Pool-Name')->delete();
             }
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());

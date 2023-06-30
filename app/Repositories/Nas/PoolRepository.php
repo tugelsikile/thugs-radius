@@ -71,6 +71,9 @@ class PoolRepository
             }
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->updated_by = $me->id;
+            if ($request->has(__('nas.pools.form_input.module'))) {
+                $pool->module = $request[__('nas.pools.form_input.module')];
+            }
             switch ($pool->nasObj->method) {
                 case 'api' :
                     $api = new MikrotikAPI($pool->nasObj);
@@ -112,6 +115,9 @@ class PoolRepository
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->created_by = $me->id;
 
+            if ($request->has(__('nas.pools.form_input.module'))) {
+                $pool->module = $request[__('nas.pools.form_input.module')];
+            }
             switch ($pool->nasObj->method) {
                 case 'api' :
                     $api = new MikrotikAPI($pool->nasObj);
@@ -122,7 +128,6 @@ class PoolRepository
                     $ssl->saveIPPool($pool, $pool->code);
                     break;
             }
-
             $pool->saveOrFail();
             (new RadiusDB())->saveProfilePool($pool, $pool->code);
             @generateIPAvailable($pool);
@@ -156,6 +161,7 @@ class PoolRepository
                             'description' => $pool->description,
                             'nas' => $pool->nasObj,
                             'address' => (object) [
+                                'module' => $pool->module,
                                 'code' => $pool->code,
                                 'id' =>$pool->mikrotik_id,
                                 'first' => $pool->first_address,

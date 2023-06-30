@@ -17,6 +17,7 @@ use App\Models\User\UserLevel;
 use App\Models\User\UserLog;
 use App\Models\User\UserPrivilege;
 use App\Repositories\Client\CompanyRepository;
+use App\Repositories\Nas\NasRepository;
 use Carbon\Carbon;
 use hisorange\BrowserDetect\Parser as Browser;
 use Exception;
@@ -443,6 +444,7 @@ class AuthRepository
                         'level' => $user->levelObj,
                         'locale' => $user->locale,
                         'company' => $company,
+                        'nas' => (new NasRepository())->tableNasGroup(new Request(['user' => $user->id]))
                     ]
                 ]);
             }

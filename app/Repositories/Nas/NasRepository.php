@@ -12,7 +12,10 @@ use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
 use App\Helpers\Radius\Radius;
 use App\Helpers\SwitchDB;
+use App\Models\Company\ClientCompany;
 use App\Models\Nas\Nas;
+use App\Models\Nas\NasUserGroup;
+use App\Models\User\User;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -50,6 +53,49 @@ class NasRepository
         }
     }
 
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function tableNasGroup(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $user = User::where('id', $request->user)->first();
+            if ($user != null) {
+                $company = ClientCompany::where('id', $user->company)->first();
+                if ($company != null) {
+                    new SwitchDB("database.connections.radius",[
+                        'charset' => 'utf8mb4',
+                        'collation' => 'utf8mb4_unicode_ci',
+                        'driver' => 'mysql',
+                        'host' => $company->radius_db_host,
+                        'port' => env('DB_RADIUS_PORT'),
+                        'database' => $company->radius_db_name,
+                        'username' => $company->radius_db_user,
+                        'password' => $company->radius_db_pass
+                    ]);
+                    $nasGroups = NasUserGroup::where('user', $user->id)->orderBy('created_at','asc')->get();
+                    if ($nasGroups->count() > 0) {
+                        foreach ($nasGroups as $nasGroup) {
+                            $response->push((object) [
+                                'value' => $nasGroup->id,
+                                'label' => $nasGroup->nasObj->shortname,
+                                'meta' => (object) [
+                                    'nas' => $nasGroup->nasObj,
+                                    'user' => $nasGroup->userObj
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     public function reloadStatus(Request $request) {
         try {
             $response = null;
@@ -236,14 +282,39 @@ class NasRepository
     {
         try {
             $response = collect();
-            new SwitchDB();
-            $nass = Nas::orderBy('shortname', 'asc');
-            if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
-            if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();
-            /*if ($me != null) {
-                if ($me->company != null) $nass = $nass->where('company', $me->company);
-            }*/
-            $nass = $nass->get();
+            if ($this->me->company == null) {
+                $clientCompanies = ClientCompany::all();
+                $nass = collect();
+                foreach ($clientCompanies as $company) {
+                    new SwitchDB("database.connections.radius",[
+                        'charset' => 'utf8mb4',
+                        'collation' => 'utf8mb4_unicode_ci',
+                        'driver' => 'mysql',
+                        'host' => $company->radius_db_host,
+                        'port' => env('DB_RADIUS_PORT'),
+                        'database' => $company->radius_db_name,
+                        'username' => $company->radius_db_user,
+                        'password' => $company->radius_db_pass
+                    ]);
+                    $nassX = Nas::orderBy('shortname', 'asc');
+                    if (strlen($request->id) > 0) $nassX = $nassX->where('id', $request->id);
+                    if (strlen($request->trash) > 0) $nassX = $nassX->onlyTrashed();
+                    $nassX = $nassX->get();
+                    $nass = $nass->merge($nassX);
+                }
+                $nass = $nass->values();
+            } else {
+                new SwitchDB();
+                $nass = Nas::orderBy('shortname', 'asc');
+                if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
+                if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();
+                if ($this->me != null) {
+                    if ($this->me->nasGroups()->get()->count() > 0) {
+                        $nass = $nass->whereIn('id', $this->me->nasGroups()->map(function ($q){ return $q->nas; }));
+                    }
+                }
+                $nass = $nass->get();
+            }
             if ($nass->count() > 0) {
                 foreach ($nass as $nas) {
                     $status = (object) ['message' => null, 'success' => false ];

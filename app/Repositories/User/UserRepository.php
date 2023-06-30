@@ -1,12 +1,16 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
+<?php /** @noinspection DuplicatedCode */
+/** @noinspection PhpUndefinedMethodInspection */
 
 /** @noinspection PhpUndefinedFieldInspection */
 
 namespace App\Repositories\User;
 
+use App\Helpers\SwitchDB;
+use App\Models\Nas\NasUserGroup;
 use App\Models\User\User;
 use App\Models\User\UserLevel;
 use App\Models\User\UserLog;
+use App\Repositories\Nas\NasRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -78,7 +82,16 @@ class UserRepository
             ];
             $user->created_by = $this->me->id;
             $user->saveOrFail();
-
+            if ($request->has(__('users.form_input.nas.input'))) {
+                new SwitchDB();
+                foreach ($request[__('users.form_input.nas.input')] as $item) {
+                    $nasGroup = new NasUserGroup();
+                    $nasGroup->id = Uuid::uuid4()->toString();
+                    $nasGroup->user = $user->id;
+                    $nasGroup->nas = $item[__('users.form_input.nas.name')];
+                    $nasGroup->saveOrFail();
+                }
+            }
             return $this->table(new Request(['id' => $user->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -88,19 +101,20 @@ class UserRepository
     /* @
      * @param Request $request
      * @return mixed
-     * @throws Exception
+     * @throws Exception|Throwable
      */
     public function update(Request $request) {
         try {
+            //new SwitchDB("mysql");
             $adminLevel = UserLevel::where('name', 'Admin')->first();
             $updating = false;
 
             $user = User::where('id', $request[__('users.form_input.id')])->first();
             if ($request[__('users.privileges.form_input.name')] != $adminLevel->id) {
-                $adminCounter = User::where('level', $adminLevel->id)->where('company', $user->company)->count();
+                /*$adminCounter = User::where('level', $adminLevel->id)->where('company', $user->company)->count();
                 if (($adminCounter - 1) == 0) {
                     throw new Exception(__('users.update.error_admin'),400);
-                }
+                }*/
             }
             if ($request[__('users.privileges.form_input.name')] != $user->level) $updating = true;
             if ($user->name != $request[__('users.form_input.name')]) $updating = true;
@@ -130,6 +144,25 @@ class UserRepository
             }
             $user->saveOrFail();
 
+            new SwitchDB();
+            if ($request->has(__('users.form_input.nas.input'))) {
+                foreach ($request[__('users.form_input.nas.input')] as $item) {
+                    if (array_key_exists(__('users.form_input.nas.id'),$item)) {
+                        $nasGroup = NasUserGroup::where('id', $item[__('users.form_input.nas.id')])->first();
+                    } else {
+                        $nasGroup = new NasUserGroup();
+                        $nasGroup->id = Uuid::uuid4()->toString();
+                        $nasGroup->user = $user->id;
+                    }
+                    $nasGroup->nas = $item[__('users.form_input.nas.name')];
+                    $nasGroup->saveOrFail();
+                }
+            } else {
+                NasUserGroup::where('user', $user->id)->delete();
+            }
+            if ($request->has(__('users.form_input.nas.delete'))) {
+                NasUserGroup::whereIn('id', $request[__('users.form_input.nas.delete')])->delete();
+            }
             return $this->table(new Request(['id' => $user->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -145,6 +178,7 @@ class UserRepository
     {
         try {
             $response = collect();
+            new SwitchDB("mysql");
             $levelCustomer = UserLevel::where('name', 'Customer')->get('id');
             $users = User::orderBy('created_at', 'asc')->where('is_ghost',false)->whereNotIn('level', $levelCustomer->toArray());
             if (strlen($request->id) > 0) {
@@ -166,7 +200,8 @@ class UserRepository
                         'email' => $user->email,
                         'locale' => $user->locale,
                         'company' => $user->companyObj,
-                        'level' => $this->levelRepository->table(new Request(['id' => $user->level]))->first(),
+                        'level' => (new PrivilegeRepository())->table(new Request(['id' => $user->level]))->first(),
+                        'nas' => (new NasRepository())->tableNasGroup(new Request(['user' => $user->id])),
                         'last' => (object) [
                             'login' => UserLog::where('user', $user->id)->orderBy('created_at', 'desc')->where('url', url('/api/login'))->first(),
                             'activity' => UserLog::where('user', $user->id)->orderBy('created_at', 'desc')->first(),

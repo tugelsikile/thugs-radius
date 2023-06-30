@@ -11,6 +11,7 @@ return [
         'current' => 'current_:Attribute',
         'name' => 'full_:Attribute',
     ],
+    'by' => ':Attribute By',
     'qr_code' => ':Attribute QR Code',
     'qr_info' => 'Scan QR Code :Attribute above with your favourite mobile banking apps to start payment',
     'fee' => 'Service Charge',
@@ -71,6 +72,7 @@ return [
         'pending' => 'Generating :Attribute ...',
     ],
     'active' => [
+        'label' => 'Active',
         'success' => 'Active Status of :Attribute successfully updated',
         'button' => 'Activate :Attribute',
         'confirm' => [
@@ -81,6 +83,7 @@ return [
         ]
     ],
     'inactive' => [
+        'label' => 'Inactive',
         'success' => 'Inactive status of :Attribute successfully changed',
         'button' => 'Inactivate :Attribute',
         'confirm' => [

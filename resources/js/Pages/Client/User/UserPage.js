@@ -19,6 +19,7 @@ import {sortDate} from "./Tools/Mixed";
 import moment from "moment";
 import FormUser from "./Tools/FormUser";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
+import {crudNas} from "../../../Services/NasService";
 
 // noinspection DuplicatedCode
 class UserPage extends React.Component {
@@ -26,8 +27,8 @@ class UserPage extends React.Component {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin, site : null,
-            loadings : { privilege : false, levels : true, companies : true, site : false, users : true },
-            privilege : null, menus : [], companies : [], levels : [],
+            loadings : { privilege : false, levels : true, companies : true, site : false, users : true, nas : true },
+            privilege : null, menus : [], companies : [], levels : [], nas : [],
             users : { filtered : [], unfiltered : [], selected : [], },
             filter : {
                 keywords : '', level : null,
@@ -65,6 +66,9 @@ class UserPage extends React.Component {
                     })
                     .then(()=>{
                         loadings.users = false; this.setState({loadings},()=>this.loadUsers());
+                    })
+                    .then(()=>{
+                        loadings.nas = false; this.setState({loadings},()=>this.loadNas());
                     })
                     .then(()=>{
                         loadings.privilege = false;
@@ -249,6 +253,39 @@ class UserPage extends React.Component {
             }
         }
     }
+    async loadNas(data = null) {
+        if (! this.state.loadings.nas) {
+            let nas = this.state.nas;
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
+                    } else {
+                        nas.push(data);
+                    }
+                    this.setState({nas});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                nas = [];
+                loadings.nas = true; this.setState({loadings,nas});
+                try {
+                    let response = await crudNas();
+                    if (response.data.params === null) {
+                        loadings.nas = false; this.setState({loadings});
+                        showError(response.data.message);
+                    } else {
+                        loadings.nas = false;
+                        this.setState({loadings,nas:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.nas = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
     async loadUsers(data = null) {
         if (!this.state.loadings.users) {
             let loadings = this.state.loadings;
@@ -295,7 +332,7 @@ class UserPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <FormUser data={this.state.modal.data} user={this.state.user} levels={this.state.levels} companies={this.state.companies} loadings={this.state.loadings} open={this.state.modal.open} handleClose={this.toggleModal} handleUpdate={this.loadUsers}/>
+                <FormUser onUpdateNas={this.loadNas} nas={this.state.nas} data={this.state.modal.data} user={this.state.user} levels={this.state.levels} companies={this.state.companies} loadings={this.state.loadings} open={this.state.modal.open} handleClose={this.toggleModal} handleUpdate={this.loadUsers}/>
                 <PageLoader/>
 
                 <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>

@@ -19,22 +19,22 @@ class UserLevelSeeder extends Seeder
     {
         $dumps = collect();
         $dumps->push((object) [
-            'name' => 'Super Admin', 'description' => 'Super admin privilege', 'super' => true, 'is_default' => true, 'for_client' => false, 'for_public' => true,
+            'name' => 'Super Admin', 'description' => 'Super admin privilege', 'super' => true, 'is_default' => true, 'for_client' => false, 'for_public' => true, 'require_nas' => false,
         ]);
         $dumps->push((object) [
-            'name' => 'Billing', 'description' => 'Billing', 'super' => false, 'is_default' => true, 'for_client' => false, 'for_public' => true,
+            'name' => 'Billing', 'description' => 'Billing', 'super' => false, 'is_default' => true, 'for_client' => false, 'for_public' => true, 'require_nas' => false,
         ]);
         $dumps->push((object) [
-            'name' => 'Admin', 'description' => 'Admin', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
+            'name' => 'Admin', 'description' => 'Admin', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => false,
         ]);
         $dumps->push((object) [
-            'name' => 'Operator', 'description' => 'Operator Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
+            'name' => 'Operator', 'description' => 'Operator Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => true,
         ]);
         $dumps->push((object) [
-            'name' => 'Customer', 'description' => 'Customer Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true,
+            'name' => 'Customer', 'description' => 'Customer Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => false,
         ]);
         $dumps->push((object) [
-            'name' => 'Trial User', 'description' => 'Trial User', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => false,
+            'name' => 'Trial User', 'description' => 'Trial User', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => false, 'require_nas' => false,
         ]);
         $this->command->getOutput()->progressStart($dumps->count());
         foreach ($dumps as $dump) {
@@ -49,6 +49,7 @@ class UserLevelSeeder extends Seeder
             $level->is_default = $dump->is_default;
             $level->for_client = $dump->for_client;
             $level->for_public = $dump->for_public;
+            $level->require_nas = $dump->require_nas;
             $level->saveOrFail();
             $this->command->getOutput()->progressAdvance();
         }

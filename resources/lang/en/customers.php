@@ -243,5 +243,9 @@ return [
                 'menu_info' => 'Manually paid customers billing',
             ]
         ],
+    ],
+    'menus' => [
+        'service' => 'My Service',
+        'invoice' => 'My Billing',
     ]
 ];

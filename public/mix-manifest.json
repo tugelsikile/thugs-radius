@@ -1,3 +1,6 @@
 {
-    "/js/clients/nas/profiles/pools.js": "/js/clients/nas/profiles/pools.js"
+    "/js/login.js": "/js/login.js",
+    "/js/auth/index.js": "/js/auth/index.js",
+    "/js/clients/index.js": "/js/clients/index.js",
+    "/js/customers/index.js": "/js/customers/index.js"
 }

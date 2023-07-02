@@ -110,6 +110,7 @@ return [
             'description' => 'ip_pool_description',
             'upload' => 'upload_to_router',
             'code' => 'mikrotik_pool_name',
+            'module' => 'ip_pool_module',
             'address' => [
                 'first' => 'first_ip',
                 'last' => 'last_ip',
@@ -125,6 +126,7 @@ return [
                 'label' => 'Mikrotik Pool Name',
                 'info' => 'This will saved to mikrotik as pool name'
             ],
+            'module' => 'IP Pool Module',
             'select' => 'Select IP Pool',
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',

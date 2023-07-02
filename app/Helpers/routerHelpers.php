@@ -5,17 +5,40 @@
 use App\Models\Nas\Nas;
 use App\Models\Nas\NasIpAvailable;
 use App\Models\Nas\NasProfilePool;
+use App\Models\Radius\Radippool;
 use Illuminate\Support\Collection;
 use Ramsey\Uuid\Uuid;
 use RouterOS\Client;
 use RouterOS\Query;
 
+function generateIPAvailable(NasProfilePool $nasProfilePool) {
+    try {
+        if ($nasProfilePool->module == 'radius') {
+            ini_set('memory_limit',"5120M");
+            $start = ip2long($nasProfilePool->first_address);
+            $end = ip2long($nasProfilePool->last_address);
+            $pools = collect(array_map('long2ip', range($start, $end)));
+            $pools = fixHostIP($pools);
+            foreach ($pools as $pool) {
+                $available = Radippool::where('framedipaddress', $pool)->first();
+                if ($available == null) {
+                    $available = new Radippool();
+                    $available->pool_name = $nasProfilePool->code;
+                    $available->framedipaddress = $pool;
+                    $available->saveOrFail();
+                }
+            }
+        }
+    } catch (Exception $exception) {
+        throw new Exception($exception->getMessage(),500);
+    }
+}
 /* @
  * @param NasProfilePool $nasProfilePool
  * @return void
  * @throws Throwable
  */
-function generateIPAvailable(NasProfilePool $nasProfilePool) {
+function generateIPAvailableBak(NasProfilePool $nasProfilePool) {
     try {
         ini_set('memory_limit',"5120M");
         $start = ip2long($nasProfilePool->first_address);

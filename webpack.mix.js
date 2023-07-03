@@ -24,6 +24,7 @@ mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 */
 
 /******* AUTH ***********/
+
 /*
 mix.js('resources/js/src/auth/login.js','public/js');
 mix.js('resources/js/src/auth/index.js','public/js/auth');
@@ -40,6 +41,7 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');*/
 
 
 /*---------- CLIENTS ----------*/
+
 /*
 mix.js('resources/js/src/clients/index.js','public/js/clients');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
@@ -47,9 +49,7 @@ mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');
-*/
 mix.js('resources/js/src/clients/nas/profiles/pools.js','public/js/clients/nas/profiles');
-/*
 mix.js('resources/js/src/clients/nas/profiles/bandwidths.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/nas/profiles/index.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/customers/index.js','public/js/clients/customers');
@@ -60,3 +60,5 @@ mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
 */
 
+/********* CUSTOMERS ***********/
+mix.js('resources/js/src/customer/index.js', 'public/js/customers');

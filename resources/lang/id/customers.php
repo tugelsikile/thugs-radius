@@ -243,5 +243,9 @@ return [
                 'menu_info' => 'Melakukan pembayaran tagihan pelanggan secara manual',
             ]
         ],
+    ],
+    'menus' => [
+        'service' => 'Layanan',
+        'invoice' => 'Tagihan',
     ]
 ];

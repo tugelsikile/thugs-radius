@@ -72,5 +72,9 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });
 });
-
+Route::group(['prefix' => 'customer'], function () {
+    Route::get('/', function () { return view('customers.dashboard'); });
+    Route::get('/service', function () { return view('customers.dashboard'); });
+    Route::get('/invoice', function () { return view('customers.dashboard'); });
+});
 Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);

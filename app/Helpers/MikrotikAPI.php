@@ -119,36 +119,38 @@ class MikrotikAPI
     }
     public function saveIPPool(NasProfilePool $nasProfilePool, $defaultName) {
         try {
-            $this->query = (new Query("/ip/pool/print"))
-                ->where('name', $defaultName);
-            $find = $this->client->query($this->query)->read();
-            if (collect($find)->count() == 0) {
-                $this->query = (new Query("/ip/pool/add"))
-                    ->equal("name", $defaultName)
-                    ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
-                    //->equal("comment", $this->me == null ? '' : "created by "  . $this->me->name . ' at ' . Carbon::now()->translatedFormat('d F Y, H:i:s'));
-            } else {
-                if (array_key_exists('.id', $find)) {
-                    $this->query = (new Query("/ip/pool/set"))
-                        ->where('.id', $find['.id'])
+            if ($this->client != null) {
+                $this->query = (new Query("/ip/pool/print"))
+                    ->where('name', $defaultName);
+                $find = $this->client->query($this->query)->read();
+                if (collect($find)->count() == 0) {
+                    $this->query = (new Query("/ip/pool/add"))
                         ->equal("name", $defaultName)
                         ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
+                    //->equal("comment", $this->me == null ? '' : "created by "  . $this->me->name . ' at ' . Carbon::now()->translatedFormat('d F Y, H:i:s'));
+                } else {
+                    if (array_key_exists('.id', $find)) {
+                        $this->query = (new Query("/ip/pool/set"))
+                            ->where('.id', $find['.id'])
+                            ->equal("name", $defaultName)
+                            ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
                         //->equal("comment", $this->me == null ? '' : "updated by " . $this->me->name . ' at ' . Carbon::now()->translatedFormat('d F Y, H:i:s'));
+                    }
                 }
+                $response = $this->client->query($this->query)->read();
+                if (array_key_exists('ret', $response) || array_key_exists('after', $response)) {
+                    if ($nasProfilePool->pool_id == null) {
+                        $nasProfilePool->pool_id = $response['after']['ret'];
+                        $nasProfilePool->saveOrFail();
+                    }
+                } else {
+                    if ($nasProfilePool->pool_id == null) {
+                        $nasProfilePool->pool_id = $response['.id'];
+                        $nasProfilePool->saveOrFail();
+                    }
+                }
+                return  $response;
             }
-            $response = $this->client->query($this->query)->read();
-            if (array_key_exists('ret', $response) || array_key_exists('after', $response)) {
-                if ($nasProfilePool->pool_id == null) {
-                    $nasProfilePool->pool_id = $response['after']['ret'];
-                    $nasProfilePool->saveOrFail();
-                }
-            } else {
-                if ($nasProfilePool->pool_id == null) {
-                    $nasProfilePool->pool_id = $response['.id'];
-                    $nasProfilePool->saveOrFail();
-                }
-            }
-            return  $response;
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             return null;
@@ -191,60 +193,61 @@ class MikrotikAPI
     }
     public function saveProfilePPPoE(NasProfile $nasProfile, $defaultName) {
         try {
-            $this->query = (new Query("/ppp/profile/print"))
-                ->where("name", $defaultName);
-            if ($nasProfile->profile_id != null) {
+            if ($this->client != null) {
                 $this->query = (new Query("/ppp/profile/print"))
-                    ->where('.id', $nasProfile->profile_id);
-            }
-
-            $res = $this->client->query($this->query)->read();
-            if (collect($res)->count() > 0) {
-                $res = collect($res)->first();
-                $this->query = (new Query("/ppp/profile/set"))
-                    ->equal("name", $nasProfile->code)
-                    ->equal('local-address', $nasProfile->local_address)
-                    ->equal('remote-address', $nasProfile->poolObj->code)
-                    ->equal('session-timeout','01:00:00')
-                    ->equal('idle-timeout','00:30:00')
-                    ->equal('only-one','yes');
-                if (array_key_exists('.id', $res)) {
-                    $this->query = $this->query->equal('.id', $res['.id']);
-                    if ($nasProfile->profile_id == null) {
-                        $nasProfile->profile_id = $res['.id'];
-                        $nasProfile->saveOrFail();
-                    }
-                } else {
-                    $this->query = $this->query->equal('name', $nasProfile->code);
+                    ->where("name", $defaultName);
+                if ($nasProfile->profile_id != null) {
+                    $this->query = (new Query("/ppp/profile/print"))
+                        ->where('.id', $nasProfile->profile_id);
                 }
-                //dd($this->query);
-            } else {
-                $this->query = (new Query("/ppp/profile/add"))
-                    ->equal('name', $nasProfile->code)
-                    ->equal('local-address', $nasProfile->local_address)
-                    ->equal('remote-address', $nasProfile->poolObj->code)
-                    ->equal('session-timeout','01:00:00')
-                    ->equal('idle-timeout','00:30:00')
-                    ->equal('only-one','yes');
-            }
-            if ($nasProfile->dns_servers != null) {
-                $this->query = $this->query->equal('dns-server', collect($nasProfile->dns_servers)->join(','));
-            }
-            if ($nasProfile->parent_queue != null) {
-                $this->query = $this->query->equal('parent-queue', $nasProfile->parent_queue->name);
-            }
-            $rl = $this->rateLimit($nasProfile->bandwidthObj);
-            if ($rl != null || strlen($rl) > 3) {
-                $this->query = $this->query->equal('rate-limit', $rl);
-            }
-            $res = $this->client->query($this->query)->read();
-            Log::info($res);
+                $res = $this->client->query($this->query)->read();
+                if (collect($res)->count() > 0) {
+                    $res = collect($res)->first();
+                    $this->query = (new Query("/ppp/profile/set"))
+                        ->equal("name", $nasProfile->code)
+                        ->equal('local-address', $nasProfile->local_address)
+                        ->equal('remote-address', $nasProfile->poolObj->code)
+                        ->equal('session-timeout','01:00:00')
+                        ->equal('idle-timeout','00:30:00')
+                        ->equal('only-one','yes');
+                    if (array_key_exists('.id', $res)) {
+                        $this->query = $this->query->equal('.id', $res['.id']);
+                        if ($nasProfile->profile_id == null) {
+                            $nasProfile->profile_id = $res['.id'];
+                            $nasProfile->saveOrFail();
+                        }
+                    } else {
+                        $this->query = $this->query->equal('name', $nasProfile->code);
+                    }
+                    //dd($this->query);
+                } else {
+                    $this->query = (new Query("/ppp/profile/add"))
+                        ->equal('name', $nasProfile->code)
+                        ->equal('local-address', $nasProfile->local_address)
+                        ->equal('remote-address', $nasProfile->poolObj->code)
+                        ->equal('session-timeout','01:00:00')
+                        ->equal('idle-timeout','00:30:00')
+                        ->equal('only-one','yes');
+                }
+                if ($nasProfile->dns_servers != null) {
+                    $this->query = $this->query->equal('dns-server', collect($nasProfile->dns_servers)->join(','));
+                }
+                if ($nasProfile->parent_queue != null) {
+                    $this->query = $this->query->equal('parent-queue', $nasProfile->parent_queue->name);
+                }
+                $rl = $this->rateLimit($nasProfile->bandwidthObj);
+                if ($rl != null || strlen($rl) > 3) {
+                    $this->query = $this->query->equal('rate-limit', $rl);
+                }
+                $res = $this->client->query($this->query)->read();
+                Log::info($res);
 
-            if ($res != null) {
-                if (array_key_exists('after', $res)) {
-                    if (array_key_exists('ret', $res['after'])) {
-                        $nasProfile->profile_id = $res['after']['ret'];
-                        $nasProfile->saveOrFail();
+                if ($res != null) {
+                    if (array_key_exists('after', $res)) {
+                        if (array_key_exists('ret', $res['after'])) {
+                            $nasProfile->profile_id = $res['after']['ret'];
+                            $nasProfile->saveOrFail();
+                        }
                     }
                 }
             }

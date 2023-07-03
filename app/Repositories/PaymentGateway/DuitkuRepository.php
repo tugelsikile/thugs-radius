@@ -219,6 +219,16 @@ class DuitkuRepository
                 try {
                     $request = $this->client->request('POST', $uri, $this->headers);
                     $response = json_decode($request->getBody()->getContents());
+                    if (property_exists($response,'statusMessage')) {
+                        if (strtolower($response->statusMessage) == 'expired') {
+                            $invoice->order_id = randomNumeric(15);
+                            $invoice->saveOrFail();
+                            $request->order_id = $invoice->order_id;
+                            return $this->transactionStatus(new Request([
+                                'order_id' => $invoice->order_id, 'company' => $company->id, 'gateway' => $paymentGateway->id,
+                            ]));
+                        }
+                    }
                     $response->invoice = $invoice;
                     return $response;
                 } catch (ClientException $exception) {

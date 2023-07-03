@@ -25,8 +25,9 @@ mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 
 /******* AUTH ***********/
 
-/*
+mix.js('resources/js/src/auth/users/profile.js','public/js/auth/users');
 mix.js('resources/js/src/auth/login.js','public/js');
+/*
 mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
@@ -61,4 +62,6 @@ mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users')
 */
 
 /********* CUSTOMERS ***********/
+/*
 mix.js('resources/js/src/customer/index.js', 'public/js/customers');
+*/

@@ -1,6 +1,7 @@
 <?php
 return [
     'form_input' => [
+        'avatar' => 'gambar_profil',
         'id' => 'data_pengguna',
         'name' => 'nama_pengguna',
         'email' => 'alamat_email_pengguna',
@@ -12,13 +13,19 @@ return [
             'delete' => 'hapus_nas',
         ],
         'password' => [
+            'old' => 'kata_sandi_lama',
             'current' => 'kata_sandi',
             'confirm' => 'kata_sandi_confirmation'
         ],
         'lang' => 'bahasa',
-        'date_format' => 'format_tanggal'
+        'date_format' => 'format_tanggal',
+        'time_zone' => 'zona_waktu',
     ],
     'labels' => [
+        'account' => [
+            'label' => 'Akun',
+            'success' => 'Akun berhasil disimpan'
+        ],
         'menu' => 'Pengguna',
         'menu_info' => 'Manajemen pengguna aplikasi',
         'name' => 'Nama Pengguna',
@@ -33,9 +40,23 @@ return [
             'label' => 'Pilih Pengguna'
         ],
         'password' => [
+            'old' => 'Kata Sandi Lama',
             'current' => 'Kata Sandi',
             'confirm' => 'Konfirmasi Kata Sandi'
-        ]
+        ],
+        'profile' => 'Profile :User',
+        'avatar' => [
+            'label' => 'File gambar profil',
+            'width' => 'Lebar file gambar profil',
+            'height' => 'Tinggi file gambar profil',
+            'success' => 'Gambar profil berhasil diubah',
+        ],
+        'locale' => [
+            'lang' => 'Bahasa',
+            'label' => 'Lokalisasi',
+            'date_time' => 'Format Tanggal',
+            'time_zone' => 'Zona Waktu',
+        ],
     ],
     'create' => [
         'button' => 'Tambah Pengguna',

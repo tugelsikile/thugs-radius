@@ -22,6 +22,7 @@ class ClientCompany extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     protected $hidden = [
         'radius_db_host',

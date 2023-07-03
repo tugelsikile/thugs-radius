@@ -54,6 +54,10 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     Route::group(['prefix' => 'me'], function () {
         Route::post('/privileges', [AuthController::class, 'myPrivileges']);
         Route::post('/language', [AuthController::class, 'setLanguage']);
+        Route::patch('/avatar', [AuthController::class, 'updateAvatar']);
+        Route::patch('/account', [AuthController::class, 'updateAccount']);
+        Route::patch('/password', [AuthController::class, 'updatePassword']);
+        Route::patch('/locale', [AuthController::class, 'updateLocale']);
     });
     Route::group(['prefix' => 'users'], function () {
         Route::any('/', [UserController::class, 'crud']);

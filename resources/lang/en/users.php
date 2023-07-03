@@ -1,6 +1,7 @@
 <?php
 return [
     'form_input' => [
+        'avatar' => 'profile_picture',
         'id' => 'user_data',
         'name' => 'user_name',
         'email' => 'user_email',
@@ -12,13 +13,19 @@ return [
             'delete' => 'nas_delete',
         ],
         'password' => [
+            'old' => 'old_password',
             'current' => 'password',
             'confirm' => 'password_confirmation'
         ],
         'lang' => 'language',
-        'date_format' => 'date_format'
+        'date_format' => 'date_format',
+        'time_zone' => 'time_zone',
     ],
     'labels' => [
+        'account' => [
+            'label' => 'Account',
+            'success' => 'Account successfully updated'
+        ],
         'menu' => 'Users',
         'menu_info' => 'Manage users',
         'name' => 'User Name',
@@ -33,9 +40,23 @@ return [
             'label' => 'Select User'
         ],
         'password' => [
+            'old' => 'Old Password',
             'current' => 'Password',
             'confirm' => 'Confirm Password'
-        ]
+        ],
+        'profile' => ':User Profile',
+        'avatar' => [
+            'label' => 'Profile picture file',
+            'width' => 'Profile picture file width',
+            'height' => 'Profile picture file height',
+            'success' => 'Profile picture successfully updated',
+        ],
+        'locale' => [
+            'lang' => 'Language',
+            'label' => 'Locale',
+            'date_time' => 'Date Format',
+            'time_zone' => 'Time Zone',
+        ],
     ],
     'create' => [
         'button' => 'Create User',

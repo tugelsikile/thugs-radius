@@ -71,3 +71,31 @@ export const resetPasswordSubmit = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const updateAvatar = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/avatar"
+    });
+    return Promise.resolve(request);
+}
+export const updateAccount = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/account"
+    });
+    return Promise.resolve(request);
+}
+export const updatePassword = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/password"
+    });
+    return Promise.resolve(request);
+}
+export const updateLocale = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/locale"
+    });
+    return Promise.resolve(request);
+}

@@ -179,11 +179,12 @@ class UserRepository
         try {
             $response = collect();
             new SwitchDB("mysql");
-            $levelCustomer = UserLevel::where('name', 'Customer')->get('id');
-            $users = User::orderBy('created_at', 'asc')->where('is_ghost',false)->whereNotIn('level', $levelCustomer->toArray());
+            $users = User::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) {
                 $users = $users->where('id', $request->id);
             } else {
+                $levelCustomer = UserLevel::where('name', 'Customer')->get('id');
+                $users = $users->where('is_ghost',false)->whereNotIn('level', $levelCustomer->toArray());
                 if ($this->me != null) {
                     if ($this->me->company != null) {
                         $users = $users->where('company', $this->me->company);

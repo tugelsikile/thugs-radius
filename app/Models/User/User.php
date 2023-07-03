@@ -60,7 +60,7 @@ class User extends Authenticatable
     }
     public function companyObj(): BelongsTo
     {
-        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj','villageObj','districtObj','cityObj','provinceObj']);
+        return $this->setConnection('mysql')->belongsTo(ClientCompany::class,'company','id')->with(['packageObj','villageObj','districtObj','cityObj','provinceObj']);
     }
     public function nasGroups(): HasMany
     {

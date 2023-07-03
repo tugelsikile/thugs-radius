@@ -48,6 +48,8 @@ export const MainSidebar = (props) => {
     )
 }
 import Logo from "../../../../../public/images/logo-1.png";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faHome} from "@fortawesome/free-solid-svg-icons";
 export const MainNavbar = (props) => {
     return (
         <nav className="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
@@ -190,4 +192,26 @@ export const langSwitch = (event)=> {
         localStorage.setItem('locale_lang', event.currentTarget.getAttribute('lang'));
         window.location.reload();
     }
+}
+export const BreadCrumb = (props) => {
+    return (
+        <div className="page-header flex-wrap">
+            <div className="header-left">
+
+            </div>
+            <div className="header-right d-flex flex-wrap mt-2 mt-sm-0">
+                <div className="d-flex align-items-center">
+                    <a href={getRootUrl()}><p className="m-0 pr-3"><FontAwesomeIcon icon={faHome}/></p></a>
+                    {typeof props.childrens === 'undefined' ? null :
+                        props.childrens === null ? null :
+                            props.childrens.map((item,index)=>
+                                <a key={`bc_${index}`} className="pl-3 mr-4" href={item.url}>
+                                    <p className="m-0">{item.label}</p>
+                                </a>
+                            )
+                    }
+                </div>
+            </div>
+        </div>
+    );
 }

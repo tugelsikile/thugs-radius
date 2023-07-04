@@ -37,7 +37,13 @@ class MikrotikAPI
         $this->query = '';
         $this->me = auth()->guard('api')->user();
     }
-    public function testConnection(Request $request = null) {
+
+    /* @
+     * @param Request|null $request
+     * @return object
+     */
+    public function testConnection(Request $request = null): object
+    {
         try {
             $response = (object) ['message' => '', 'success' => false];
             if ($request != null) {
@@ -45,8 +51,6 @@ class MikrotikAPI
                 $this->client = new Client([
                     "host" => $hostname, "user" => $request[__('nas.form_input.user')], "pass" => $request[__('nas.form_input.pass')], "timeout" => 1, "attempts" => 1
                 ]);
-            }
-            if ($this->client != null) {
                 if ($this->client->connect()) {
                     $this->query = (new Query('/system/identity/print'));
                     try {
@@ -57,7 +61,7 @@ class MikrotikAPI
                             $response->success = true;
                         }
                     } catch (Exception $exception) {
-                        return $response;
+                        throw new Exception($exception->getMessage(),500);
                     }
                 }
             }

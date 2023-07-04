@@ -43,20 +43,24 @@ return [
         ],
         'ip' => [
             'label' => 'IP Router Koneksi',
-            'short' => 'IP / Hostname'
+            'short' => 'IP / Hostname',
+            'api' => 'IP Router API',
         ],
         'port' => [
             'label' => 'Port Router Koneksi',
             'short' => 'Port',
+            'api' => 'Port API',
         ],
         'user' => [
             'label' => 'User Router Koneksi',
-            'short' => 'User'
+            'short' => 'User',
+            'api' => 'User API',
         ],
         'pass' => [
             'label' => 'Password Router Koneksi',
             'short' => 'Password',
             'confirm' => 'Konfirmasi Password Router',
+            'api' => 'Password API',
         ],
         'status' => [
             'label' => 'Status Koneksi',

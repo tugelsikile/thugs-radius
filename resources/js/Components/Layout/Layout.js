@@ -1,9 +1,21 @@
 import MainHeader from "./MainHeader";
 import MainSidebar from "./MainSidebar";
 import React from "react";
-import {getRootUrl} from "../Authentication";
+import {getRootUrl, logout} from "../Authentication";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTachometerAlt} from "@fortawesome/free-solid-svg-icons";
+import {
+    faAngleLeft,
+    faBars,
+    faExpandArrowsAlt,
+    faList,
+    faPowerOff,
+    faTachometerAlt
+} from "@fortawesome/free-solid-svg-icons";
+import {ToastContainer} from "react-toastify";
+import DigitalClock from "./DigitalClock";
+import {listSupportedLanguage} from "../mixedConsts";
+import {Skeleton} from "@mui/material";
+import {MenuIcon} from "../../Pages/Client/User/Privilege/Tools/IconTool";
 const changeFavIcon = (props) => {
     let logo = `${window.origin}/images/logo-1.png`;
     let link = document.querySelector("link[rel~='icon']");
@@ -29,6 +41,73 @@ export const HeaderAndSideBar = (props) => {
         <React.Fragment>
             <MainHeader loadings={props.loadings} root={props.root} user={props.user} site={props.site}/>
             <MainSidebar loadings={props.loadings} route={props.route} site={props.site} menus={props.menus} root={props.root} user={props.user}/>
+        </React.Fragment>
+    )
+}
+export const EmptyMainSidebar = (props) => {
+    return (
+        <React.Fragment>
+            <aside id="app-main-sidebar" className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
+                {props.loadings.site ?
+                    <Skeleton animation="wave" variant="rectangular" height={50} />
+                    :
+                    <SideBarBrand site={props.site} user={props.user}/>
+                }
+                <div className="sidebar">
+                    <SideBarUser user={props.user}/>
+
+                    <nav className="mt-2">
+                        <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
+                            {[0,1,2,3,4,5,6,7].map((item)=>
+                                item <= props.steps.max &&
+                                    <li key={`sbMenu_${item}`} className="nav-item">
+                                        <a onClick={props.onStep} data-step={item} href="#" className={props.steps.current === item ? 'nav-link active' : 'nav-link'}>
+                                            <FontAwesomeIcon style={{height:'12px'}} icon={MenuIcon(Lang.get(`wizard.steps.${item}.icon`))} className="nav-icon" size="xs"/>
+                                            <p>{Lang.get(`wizard.steps.${item}.menu`)}</p>
+                                        </a>
+                                    </li>
+                            )}
+                            {props.loadings.privilege ?
+                                <Skeleton className="mx-2" animation="wave" variant="rectangular" height={30}/>
+                                :
+                                <li className="nav-item">
+                                    <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
+                                        <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
+                                        <p className="text text-danger text-sm">{Lang.get('messages.users.labels.sign_out')}</p>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+        </React.Fragment>
+    )
+}
+export const EmptyMainHeader = (props)=> {
+    return (
+        <React.Fragment>
+            <ToastContainer theme="light" pauseOnFocusLoss autoClose={10000} position="top-right" closeOnClick/>
+            <nav className="main-header navbar layout-navbar-fixed navbar-expand navbar-white navbar-light">
+                <ul className="navbar-nav">
+                    <li className="nav-item">
+                        <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon={faBars}/></a>
+                    </li>
+                    <li className="nav-item d-none d-sm-inline-block">
+                        <DigitalClock/>
+                    </li>
+                </ul>
+                <ul className="navbar-nav ml-auto">
+                </ul>
+            </nav>
+        </React.Fragment>
+    )
+}
+export const EmptyHeaderAndSideBar = (props) => {
+    return (
+        <React.Fragment>
+            <EmptyMainHeader/>
+            <EmptyMainSidebar onStep={props.onStep} steps={props.steps} loadings={props.loadings} user={props.user}/>
         </React.Fragment>
     )
 }

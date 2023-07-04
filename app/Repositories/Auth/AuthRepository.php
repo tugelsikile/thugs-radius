@@ -553,4 +553,16 @@ class AuthRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @return mixed
+     * @throws Exception
+     */
+    public function me() {
+        try {
+            return $this->table(new Request(['id' => auth()->guard('api')->user()->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
 }

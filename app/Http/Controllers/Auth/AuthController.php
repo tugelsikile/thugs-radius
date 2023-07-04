@@ -21,6 +21,17 @@ class AuthController extends Controller
     }
 
     /* @
+     * @return JsonResponse
+     */
+    public function me(): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->me());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
      * @param Request $request
      * @return JsonResponse
      */

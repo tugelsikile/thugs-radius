@@ -11,7 +11,7 @@ export const loginSubmit = async (data) => {
 export const getMe = async () => {
     let request = Axios({
         headers : axiosHeader(),
-        method : "post", url : window.origin + "/api/auth/me",
+        method : "get", url : window.origin + "/api/auth/me",
     });
     return Promise.resolve(request);
 }

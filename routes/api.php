@@ -52,6 +52,7 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function () {
     Route::any('/logout', [AuthController::class, 'logout']);
     Route::group(['prefix' => 'me'], function () {
+        Route::get('/', [AuthController::class, 'me']);
         Route::post('/privileges', [AuthController::class, 'myPrivileges']);
         Route::post('/language', [AuthController::class, 'setLanguage']);
         Route::patch('/avatar', [AuthController::class, 'updateAvatar']);

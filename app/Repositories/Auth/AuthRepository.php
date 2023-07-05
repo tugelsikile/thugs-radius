@@ -30,6 +30,26 @@ use Throwable;
 
 class AuthRepository
 {
+    public function finishWizard() {
+        try {
+            $user = User::where('id', auth()->guard('api')->user()->id)->first();
+            $company = $user->companyObj()->first();
+            if ($company != null) {
+                $companyUsers = User::where('company', $company->id)->get();
+                foreach ($companyUsers as $companyUser) {
+                    $locale = $companyUser->locale;
+                    if (! property_exists($locale,'finish_wizard')) {
+                        $locale->finish_wizard = true;
+                    }
+                    $companyUser->locale = $locale;
+                    $companyUser->saveOrFail();
+                }
+                return $this->table(new Request(['id' => $user->id]))->first();
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     public function updateLocale(Request $request) {
         try {
             $user = User::where('id', auth()->guard('api')->user()->id)->first();
@@ -549,6 +569,18 @@ class AuthRepository
                 ]);
             }
             return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+
+    /* @
+     * @return mixed
+     * @throws Exception
+     */
+    public function me() {
+        try {
+            return $this->table(new Request(['id' => auth()->guard('api')->user()->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

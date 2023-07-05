@@ -23,6 +23,18 @@ class CustomerController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function testConnectionWizard(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->testConnectionWizard($this->validation->testConnectionWizard($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
      * @throws Throwable
      */
     public function generate(Request $request): JsonResponse

@@ -1,4 +1,4 @@
 {
-    "/js/auth/users/profile.js": "/js/auth/users/profile.js",
-    "/js/login.js": "/js/login.js"
+    "/js/clients/index.js": "/js/clients/index.js",
+    "/js/clients/wizard.js": "/js/clients/wizard.js"
 }

@@ -52,12 +52,14 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function () {
     Route::any('/logout', [AuthController::class, 'logout']);
     Route::group(['prefix' => 'me'], function () {
+        Route::get('/', [AuthController::class, 'me']);
         Route::post('/privileges', [AuthController::class, 'myPrivileges']);
         Route::post('/language', [AuthController::class, 'setLanguage']);
         Route::patch('/avatar', [AuthController::class, 'updateAvatar']);
         Route::patch('/account', [AuthController::class, 'updateAccount']);
         Route::patch('/password', [AuthController::class, 'updatePassword']);
         Route::patch('/locale', [AuthController::class, 'updateLocale']);
+        Route::post('/finish-wizard', [AuthController::class, 'finishWizard']);
     });
     Route::group(['prefix' => 'users'], function () {
         Route::any('/', [UserController::class, 'crud']);
@@ -96,6 +98,7 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
     });
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);
+        Route::post('/ip-address', [NasController::class, 'interfaceIpAddress']);
         Route::post('/reload-status', [NasController::class, 'reloadStatus']);
         Route::post('/test-connection', [NasController::class, 'testConnection']);
         Route::post('/decrypt-encrypt', [NasController::class, 'encryptDecrypt']);
@@ -114,6 +117,9 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/', [InvoiceController::class,'crud']);
             Route::any('/payments', [InvoiceController::class, 'payment']);
             Route::put('/generate', [InvoiceController::class, 'generate']);
+        });
+        Route::group(['prefix' => 'test-connection'],function () {
+            Route::post('/wizard', [CustomerController::class, 'testConnectionWizard']);
         });
     });
     Route::group(['prefix' => 'configs'], function () {

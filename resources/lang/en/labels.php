@@ -34,6 +34,7 @@ return [
     'select' => [
         'option' => 'Select :Attribute',
         'not_found' => ':Attribute not found',
+        'loading' => 'Searching :Attribute',
     ],
     'add' => [
         'label' => 'Add :Attribute',
@@ -62,6 +63,10 @@ return [
         ],
         'select' => 'Delete Selected :Attribute',
         'success' => ':Attribute successfully deleted'
+    ],
+    'connection' => [
+        'submit' => 'Check Connection',
+        'pending' => 'Checking Connection',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',

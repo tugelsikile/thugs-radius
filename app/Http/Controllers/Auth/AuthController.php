@@ -24,6 +24,29 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function finishWizard(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->finishWizard());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @return JsonResponse
+     */
+    public function me(): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->me());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function updateLocale(Request $request): JsonResponse
     {
         try {

@@ -78,10 +78,20 @@ class UserRepository
             $user->locale = (object) [
                 'lang' => $request[__('users.form_input.lang')],
                 'date_format' => $request[__('users.form_input.date_format')],
-                'time_zone' => 'Asia/Jakarta'
+                'time_zone' => 'Asia/Jakarta',
             ];
             $user->created_by = $this->me->id;
             $user->saveOrFail();
+
+            if ($this->me != null) {
+                $myLocale = $this->me->locale;
+                if (property_exists($myLocale,'finish_wizard')) {
+                    $localeUser = $user->locale;
+                    $localeUser->finish_wizard = $myLocale->finish_wizard;
+                    $user->locale = $localeUser;
+                    $user->saveOrFail();
+                }
+            }
             if ($request->has(__('users.form_input.nas.input'))) {
                 new SwitchDB();
                 foreach ($request[__('users.form_input.nas.input')] as $item) {

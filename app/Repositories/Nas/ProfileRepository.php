@@ -225,6 +225,7 @@ class ProfileRepository
                         'value' => $profile->id,
                         'label' => $profile->name,
                         'meta' => (object) [
+                            'mikrotik_id' => $profile->profile_id,
                             'nas' => $profile->nasObj,
                             'pool' => $profile->poolObj,
                             'bandwidth' => $profile->bandwidthObj,

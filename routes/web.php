@@ -73,6 +73,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });
+    Route::get('/wizard', function () { return view('clients.wizard'); });
 });
 Route::group(['prefix' => 'customer'], function () {
     Route::get('/', function () { return view('customers.dashboard'); });

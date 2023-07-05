@@ -17,14 +17,26 @@ import {
     faConciergeBell,
     faUserTie,
     faTicketAlt,
-    faFileInvoice, faKey, faCog, faArchway, faTachographDigital, faDatabase, faThumbsDown, faArrowsAltV, faThumbsUp
+    faFileInvoice,
+    faKey,
+    faCog,
+    faArchway,
+    faTachographDigital,
+    faDatabase,
+    faThumbsDown,
+    faArrowsAltV,
+    faThumbsUp,
+    faUserCheck, faFlagCheckered
 } from "@fortawesome/free-solid-svg-icons";
-import {faBuilding, faCheckCircle, faHandPointer} from "@fortawesome/free-regular-svg-icons";
+import {faBuilding, faCheckCircle, faFlag, faHandPointer} from "@fortawesome/free-regular-svg-icons";
 
 export const MenuIcon = (iconName) => {
     let icon = faInfoCircle;
     switch (iconName) {
         default : icon = faInfoCircle; break;
+        case 'fas fa-flag-checkered': icon = faFlagCheckered; break;
+        case 'fas fa-user-check': icon = faUserCheck; break;
+        case 'fas fa-flag': icon = faFlag; break;
         case 'fas fa-thumbs-down': icon = faThumbsDown; break;
         case 'fas fa-arrows-alt-v': icon = faArrowsAltV; break;
         case 'fas fa-thumbs-up': icon = faThumbsUp; break;

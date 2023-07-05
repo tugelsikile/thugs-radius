@@ -258,7 +258,11 @@ class NasRepository
                     $api = new MikrotikAPI();
                     $r = $api->testConnection($request);
                     if ($r != null) {
-                        return __('nas.labels.connection.success') . $r->message;
+                        if ($r->success) {
+                            return __('nas.labels.connection.success') . $r->message;
+                        } else {
+                            throw new Exception($r->message,500);
+                        }
                     }
                     break;
                 case 'ssl' :
@@ -402,6 +406,20 @@ class NasRepository
             } else {
                 return  Crypt::decryptString($request->value);
             }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+
+    /* @
+     * @param Request $request
+     * @return Collection|null
+     * @throws Exception
+     */
+    public function interfaceIpAddress(Request $request): ?Collection
+    {
+        try {
+            return (new MikrotikAPI())->interfaceIpAddressRequest($request);
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

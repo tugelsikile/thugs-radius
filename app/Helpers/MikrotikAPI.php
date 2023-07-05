@@ -37,7 +37,53 @@ class MikrotikAPI
         $this->query = '';
         $this->me = auth()->guard('api')->user();
     }
-    public function testConnection(Request $request = null) {
+    public function statusUserPPPoE(Customer $customer) {
+        try {
+            $this->query = (new Query("/ppp/active/print"))
+                ->where('name', $customer->nas_username);
+            if (!$this->client->connect()) throw new Exception(__('wizard.errors.mikrotik.not_connect'),500);
+            $res = collect($this->client->query($this->query)->read());
+            if ($res->count() > 0) {
+                $res = $res->first();
+            } else {
+                throw new Exception(__('labels.select.not_found',['Attribute' => __('customers.labels.menu')]),400);
+            }
+            return $res;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function interfaceIpAddressRequest(Request $request) {
+        try {
+            $this->client = new Client([
+                "host" => $request[__('nas.form_input.ip')] . ':' . $request[__('nas.form_input.port')],
+                "user" => $request[__('nas.form_input.user')], "attempts" => 1,
+                "pass" => $request[__('nas.form_input.pass')], "timeout" => 1,
+            ]);
+            $this->query = (new Query("/ip/address/print"));
+            $response = $this->client->query($this->query)->read();
+            if (collect($response)->count() > 0) {
+                return collect($response)->map(function ($data){
+                    return (object) [
+                        'value' => $data['.id'],
+                        'label' => $data['interface'],
+                        'meta' => (object) [
+                            'address' => $data['address'],
+                            'network' => $data['network'],
+                        ]
+                    ];
+                });
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request|null $request
+     * @return object
+     */
+    public function testConnection(Request $request = null): object
+    {
         try {
             $response = (object) ['message' => '', 'success' => false];
             if ($request != null) {
@@ -45,8 +91,6 @@ class MikrotikAPI
                 $this->client = new Client([
                     "host" => $hostname, "user" => $request[__('nas.form_input.user')], "pass" => $request[__('nas.form_input.pass')], "timeout" => 1, "attempts" => 1
                 ]);
-            }
-            if ($this->client != null) {
                 if ($this->client->connect()) {
                     $this->query = (new Query('/system/identity/print'));
                     try {
@@ -57,7 +101,7 @@ class MikrotikAPI
                             $response->success = true;
                         }
                     } catch (Exception $exception) {
-                        return $response;
+                        throw new Exception($exception->getMessage(),500);
                     }
                 }
             }

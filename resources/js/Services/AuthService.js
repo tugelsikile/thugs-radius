@@ -11,7 +11,7 @@ export const loginSubmit = async (data) => {
 export const getMe = async () => {
     let request = Axios({
         headers : axiosHeader(),
-        method : "post", url : window.origin + "/api/auth/me",
+        method : "get", url : window.origin + "/api/auth/me",
     });
     return Promise.resolve(request);
 }
@@ -96,6 +96,13 @@ export const updateLocale = async (data) => {
     let request = Axios({
         headers : axiosHeader(), data : data,
         method : "post", url : window.origin + "/api/auth/me/locale"
+    });
+    return Promise.resolve(request);
+}
+export const finishWizard = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/finish-wizard"
     });
     return Promise.resolve(request);
 }

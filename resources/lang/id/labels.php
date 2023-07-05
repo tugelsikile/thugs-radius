@@ -34,6 +34,7 @@ return [
     'select' => [
         'option' => 'Pilih :Attribute',
         'not_found' => ':Attribute tidak ditemukan',
+        'loading' => 'Mencari :Attribute',
     ],
     'add' => [
         'label' => 'Tambah :Attribute',
@@ -62,6 +63,10 @@ return [
         ],
         'select' => 'Hapus :Attribute terpilih',
         'success' => ':Attribute berhasil dihapus'
+    ],
+    'connection' => [
+        'submit' => 'Periksa Koneksi',
+        'pending' => 'Memeriksa Koneksi',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',

@@ -43,20 +43,25 @@ return [
         ],
         'ip' => [
             'label' => 'Connection Router IP',
-            'short' => 'IP'
+            'short' => 'IP',
+            'api' => 'API IP Router',
+            'interface' => 'Interface IP Address',
         ],
         'port' => [
             'label' => 'Connection Router Port',
             'short' => 'Port',
+            'api' => 'API Port',
         ],
         'user' => [
             'label' => 'Connection Router User',
-            'short' => 'User'
+            'short' => 'User',
+            'api' => 'API User'
         ],
         'pass' => [
             'label' => 'Connection Router Password',
             'short' => 'Password',
             'confirm' => 'Router Password Confirmation',
+            'api' => 'API Password',
         ],
         'status' => [
             'label' => 'Connection Status',

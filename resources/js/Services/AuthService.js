@@ -99,3 +99,10 @@ export const updateLocale = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const finishWizard = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/auth/me/finish-wizard"
+    });
+    return Promise.resolve(request);
+}

@@ -2,11 +2,21 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import {EmptyHeaderAndSideBar} from "../../../Components/Layout/Layout";
 import MainFooter from "../../../Components/Layout/MainFooter";
-import {WizardStep0, WizardStep1, WizardStep2, WizardStep3, WizardStep4, WizardStepWrapper} from "./Step";
+import {
+    WizardStep0,
+    WizardStep1,
+    WizardStep2,
+    WizardStep3,
+    WizardStep4,
+    WizardStep5,
+    WizardStep6, WizardStep7, WizardStep8, WizardStep9,
+    WizardStepWrapper
+} from "./Step";
 import {responseMessage, siteData} from "../../../Components/mixedConsts";
 import {getMe} from "../../../Services/AuthService";
 import {showError} from "../../../Components/Toaster";
-import {crudNas, crudProfilePools} from "../../../Services/NasService";
+import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../Services/NasService";
+import {crudCustomers} from "../../../Services/CustomerService";
 
 // noinspection DuplicatedCode
 class WizardPage extends React.Component {
@@ -23,6 +33,9 @@ class WizardPage extends React.Component {
         this.handleMe = this.handleMe.bind(this);
         this.loadNas = this.loadNas.bind(this);
         this.loadPools = this.loadPools.bind(this);
+        this.loadBandwidths = this.loadBandwidths.bind(this);
+        this.loadProfiles = this.loadProfiles.bind(this);
+        this.loadCustomers = this.loadCustomers.bind(this);
     }
     componentDidMount() {
         let loadings = this.state.loadings;
@@ -33,6 +46,15 @@ class WizardPage extends React.Component {
             })
             .then(()=>{
                 loadings.pools = false; this.setState({loadings},()=>this.loadPools());
+            })
+            .then(()=>{
+                loadings.bandwidths = false; this.setState({loadings},()=>this.loadBandwidths());
+            })
+            .then(()=>{
+                loadings.profiles = false; this.setState({loadings},()=>this.loadProfiles());
+            })
+            .then(()=>{
+                loadings.customers = false; this.setState({loadings},()=>this.loadCustomers());
             })
             .then(()=>{
                 let steps = this.state.steps;
@@ -46,7 +68,7 @@ class WizardPage extends React.Component {
     }
     handleStepBody() {
         let steps = this.state.steps;
-        if (steps.current >= 0 && steps.current <= 6) {
+        if (steps.current >= 0 && steps.current <= 9) {
             switch (steps.current){
                 case 0:
                     steps.body = <WizardStep0 onStep={this.handleStep} site={this.state.site}/>;
@@ -73,6 +95,31 @@ class WizardPage extends React.Component {
                     steps.allowNext = this.state.pools.length > 0;
                     steps.allowSkip = false;
                     break;
+                case 5:
+                    steps.body = <WizardStep5 pools={this.state.pools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} nas={this.state.nas} onStep={this.handleStep}/>;
+                    steps.allowNext = this.state.bandwidths.length > 0;
+                    steps.allowSkip = false;
+                    break;
+                case 6:
+                    steps.body = <WizardStep6 user={this.state.user} pools={this.state.pools} bandwidths={this.state.bandwidths} nas={this.state.nas} profiles={this.state.profiles} onProfile={this.loadProfiles} onStep={this.handleStep}/>;
+                    steps.allowNext = this.state.profiles.length > 0;
+                    steps.allowSkip = false;
+                    break;
+                case 7:
+                    steps.body = <WizardStep7 user={this.state.user} pools={this.state.pools} bandwidths={this.state.bandwidths} nas={this.state.nas} profiles={this.state.profiles} customers={this.state.customers} onCustomer={this.loadCustomers} onStep={this.handleStep}/>;
+                    steps.allowNext = this.state.customers.length > 0;
+                    steps.allowSkip = false;
+                    break;
+                case 8:
+                    steps.body = <WizardStep8 customers={this.state.customers} nas={this.state.nas} onStep={this.handleStep}/>;
+                    steps.allowNext = true;
+                    steps.allowSkip = false;
+                    break;
+                case 9:
+                    steps.body = <WizardStep9 onStep={this.handleStep}/>;
+                    steps.allowNext = false;
+                    steps.allowSkip = false;
+                    break;
             }
         }
         this.setState({steps});
@@ -92,6 +139,60 @@ class WizardPage extends React.Component {
                     localStorage.setItem('static_step', JSON.stringify(this.state.steps));
                     this.setState({steps},()=>this.handleStepBody());
                 }
+            }
+        }
+    }
+    async loadCustomers() {
+        if (! this.state.loadings.customers ) {
+            let loadings = this.state.loadings;
+            loadings.customers = true; this.setState({loadings});
+            try {
+                let response = await crudCustomers();
+                if (response.data.params === null) {
+                    loadings.customers = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.customers = false; this.setState({loadings,customers:response.data.params},()=>this.handleStepBody());
+                }
+            } catch (e) {
+                loadings.customers = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadProfiles() {
+        if (! this.state.loadings.profiles) {
+            let loadings = this.state.loadings;
+            loadings.profiles = true; this.setState({loadings});
+            try {
+                let response = await crudProfile();
+                if (response.data.params === null) {
+                    loadings.profiles = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.profiles = false; this.setState({loadings,profiles:response.data.params},()=>this.handleStepBody());
+                }
+            } catch (e) {
+                loadings.profiles = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadBandwidths() {
+        if (! this.state.loadings.bandwidths ) {
+            let loadings = this.state.loadings;
+            loadings.bandwidths = true; this.setState({loadings});
+            try {
+                let response = await crudProfileBandwidth();
+                if (response.data.params === null) {
+                    loadings.bandwidths = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.bandwidths = false; this.setState({loadings,bandwidths:response.data.params},()=>this.handleStepBody());
+                }
+            } catch (e) {
+                loadings.bandwidths = false; this.setState({loadings});
+                responseMessage(e);
             }
         }
     }

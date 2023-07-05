@@ -15,6 +15,24 @@ class CustomerValidation
      * @return Request
      * @throws Exception
      */
+    public function testConnectionWizard(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                __('customers.form_input.id') => 'required|exists:customers,id'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function generate(Request $request): Request
     {
         try {

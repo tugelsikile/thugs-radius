@@ -45,6 +45,7 @@ return [
             'label' => 'Connection Router IP',
             'short' => 'IP',
             'api' => 'API IP Router',
+            'interface' => 'Interface IP Address',
         ],
         'port' => [
             'label' => 'Connection Router Port',

@@ -58,7 +58,7 @@ export const EmptyMainSidebar = (props) => {
 
                     <nav className="mt-2">
                         <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-                            {[0,1,2,3,4,5,6,7].map((item)=>
+                            {[0,1,2,3,4,5,6,7,8,9].map((item)=>
                                 item <= props.steps.max &&
                                     <li key={`sbMenu_${item}`} className="nav-item">
                                         <a onClick={props.onStep} data-step={item} href="#" className={props.steps.current === item ? 'nav-link active' : 'nav-link'}>

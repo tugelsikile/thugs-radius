@@ -410,4 +410,18 @@ class NasRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @param Request $request
+     * @return Collection|null
+     * @throws Exception
+     */
+    public function interfaceIpAddress(Request $request): ?Collection
+    {
+        try {
+            return (new MikrotikAPI())->interfaceIpAddressRequest($request);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
 }

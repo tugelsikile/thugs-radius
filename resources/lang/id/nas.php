@@ -45,6 +45,7 @@ return [
             'label' => 'IP Router Koneksi',
             'short' => 'IP / Hostname',
             'api' => 'IP Router API',
+            'interface' => 'Alamat IP Interface',
         ],
         'port' => [
             'label' => 'Port Router Koneksi',

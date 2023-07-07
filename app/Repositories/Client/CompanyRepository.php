@@ -1,10 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
-/** @noinspection PhpUndefinedVariableInspection */
-/** @noinspection DuplicatedCode */
-/** @noinspection SpellCheckingInspection */
-/** @noinspection PhpUndefinedFieldInspection */
-
-/** @noinspection PhpUndefinedMethodInspection */
+<?php
 
 namespace App\Repositories\Client;
 
@@ -27,6 +21,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use phpseclib3\Net\SSH2;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -57,6 +52,64 @@ class CompanyRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+    public function deleteRadiusConfig(ClientCompany $clientCompany) {
+        try {
+            $radiusDir = env('MIX_RADIUS_DIRECTORY');
+            if ($radiusDir != null) {
+                $sqlCompanyNames = collect();
+                $allCompanies = ClientCompany::where('id','!=', $clientCompany->id)->orderBy('created_at', 'asc')->get('radius_db_name');
+                if ($allCompanies->count() > 0) {
+                    foreach ($allCompanies as $allCompany) {
+                        $sqlCompanyNames->push('sql_' . $allCompany->radius_db_name);
+                    }
+                }
+
+                $sqlName = "sql_$clientCompany->radius_db_name";
+                $targetSQLFile = $radiusDir . '/mods-available/' . $sqlName;
+                $targetSQLLink = $radiusDir . '/mods-enabled/' . $sqlName;
+                $siteAvailableFile = $radiusDir . '/sites-available/default';
+
+                $ssh = new SSH2(env('MIX_RADIUS_SSH_HOST'),env('MIX_RADIUS_SSH_PORT'));
+                $ssh->login(env('MIX_RADIUS_SSH_USER'), env('MIX_RADIUS_SSH_PASS'));
+                $ssh->exec("rm -fr $targetSQLFile"); //delete file
+                $ssh->exec("rm -fr $targetSQLLink");
+                $ssh->exec("cp $siteAvailableFile $siteAvailableFile.backup"); //make backup first
+                $ssh->exec("sed -i '/$sqlName/d' $siteAvailableFile");
+                /*
+                 * $innerTunnelFile = $radiusDir . '/sites-available/inner-tunnel';
+                $ssh->exec("sed -i '/$sqlName/d $innerTunnelFile");
+                */
+                //sqlippool
+                if ($sqlCompanyNames->count() > 0) {
+                    $sqlCounterFile = $radiusDir . '/mods-available/sqlcounter';
+                    $ssh->exec("cp $sqlCounterFile $sqlCounterFile.bak");
+                    $ssh->exec("sed -i '/sql_module_instance =/d' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_DAILYCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_MONTHLYCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_NORESETCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_EXPIREONLOGIN$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+
+                    $masterSQLIpPoolFile = $radiusDir . '/mods-available/sqlippool';
+                    $ssh->exec("cp $masterSQLIpPoolFile $masterSQLIpPoolFile.bak");
+                    $ssh->exec("sed -i '/sql_module_instance=/d' $masterSQLIpPoolFile");
+                    $ssh->exec("sed -i '/###APPEND_SQL_MODULE_INSTANCE$/a \tsql_module_instance=".$sqlCompanyNames->join(',')." ' $masterSQLIpPoolFile");
+                }
+                $ssh->exec("chown -R freerad:freerad $radiusDir");
+                $ssh->exec("service " . env('MIX_RADIUS_SSH_DAEMON') . " stop");
+                sleep(2);
+                $ssh->disconnect();
+                $ssh = new SSH2(env('MIX_RADIUS_SSH_HOST'),env('MIX_RADIUS_SSH_PORT'));
+                $ssh->login(env('MIX_RADIUS_SSH_USER'), env('MIX_RADIUS_SSH_PASS'));
+                $ssh->exec("service " . env('MIX_RADIUS_SSH_DAEMON') . " start");
+                sleep(2);
+                $ssh->disconnect();
+            }
+            return;
+        } catch (Exception $exception) {
+            $clientCompany->delete();
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return bool
@@ -74,6 +127,7 @@ class CompanyRepository
                     "DROP USER '$company->radius_db_user'@'%';"
                     . "DROP DATABASE $company->radius_db_name;"
                 );
+                $this->deleteRadiusConfig($company);
                 $company->delete();
             }
             return true;
@@ -194,7 +248,7 @@ class CompanyRepository
             $company->radius_db_host = config('database.connections.radius.host');
             $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
             $company->radius_db_user = Str::slug($company->name,'_');
-            $company->radius_db_pass = Str::random(8) . '-_';
+            $company->radius_db_pass = strtoupper(randomString()) . strtolower(randomString()) . randomNumeric() . '-_';
             $company->active_at = Carbon::now();
             $company->active_by = auth()->guard('api')->user()->id;
             if ($company->packageObj != null) {
@@ -257,12 +311,86 @@ class CompanyRepository
             $this->generateDatabase($company);
             return $this->table(new Request(['id' => $company->id]))->first();
         } catch (Exception $exception) {
-            $company->delete();
+            if ($company != null) $company->delete();
             if ($user != null) $user->delete();
             throw new Exception($exception->getMessage(),500);
         }
     }
+    public function generateRadiusConfig(ClientCompany $clientCompany) {
+        try {
+            $radiusDir = env('MIX_RADIUS_DIRECTORY');
+            if ($radiusDir != null) {
+                $sqlCompanyNames = collect();
+                $allCompanies = ClientCompany::orderBy('created_at', 'asc')->get('radius_db_name');
+                if ($allCompanies->count() > 0) {
+                    foreach ($allCompanies as $allCompany) {
+                        $sqlCompanyNames->push('sql_' . $allCompany->radius_db_name);
+                    }
+                }
+                $sqlName = "sql_$clientCompany->radius_db_name";
+                $masterSQLFile = $radiusDir . '/mods-available/sql_master_edit_this';
+                $targetSQLFile = $radiusDir . '/mods-available/' . $sqlName;
+                $targetSQLLink = $radiusDir . '/mods-enabled/' . $sqlName;
+                $sqlPort = env('DB_RADIUS_PORT');
+                $siteAvailableFile = $radiusDir . '/sites-available/default';
 
+                $ssh = new SSH2(env('MIX_RADIUS_SSH_HOST'),env('MIX_RADIUS_SSH_PORT'));
+                $ssh->login(env('MIX_RADIUS_SSH_USER'), env('MIX_RADIUS_SSH_PASS'));
+
+                $ssh->exec("cp $masterSQLFile $targetSQLFile"); //copy file
+                $ssh->exec("ln -s $targetSQLFile $targetSQLLink");
+                $ssh->exec("sed -i 's/SERVER_HOST/$clientCompany->radius_db_host/g' $targetSQLFile");
+                $ssh->exec("sed -i 's/SERVER_PORT/$sqlPort/g' $targetSQLFile");
+                $ssh->exec("sed -i 's/SERVER_USER/$clientCompany->radius_db_user/g' $targetSQLFile");
+                $ssh->exec("sed -i 's/SERVER_PASS/$clientCompany->radius_db_pass/g' $targetSQLFile");
+                $ssh->exec("sed -i 's/SERVER_DB_NAME/$clientCompany->radius_db_name/g' $targetSQLFile");
+                $ssh->exec("sed -i 's/SQL_NAME/$sqlName/g' $targetSQLFile");
+                /*
+                 * $innerTunnelFile = $radiusDir . '/sites-available/inner-tunnel';
+                $ssh->exec("cp $innerTunnelFile $innerTunnelFile.backup"); //backup inner tunnel
+                $ssh->exec("sed -i /### APPEND_SQL_AUTHORIZE_TUNNEL ###$/a \t$sqlName $innerTunnelFile");
+                $ssh->exec("sed -i /### APPEND_SQL_SESSION_TUNNEL ###$/a \t$sqlName $innerTunnelFile");
+                $ssh->exec("sed -i /### APPEND_SQL_POST_AUTH_TUNNEL ###$/a \t$sqlName $innerTunnelFile");
+                $ssh->exec("sed -i /### APPEND_SQL_POST_AUTH_TUNNEL ###$/a \t$sqlName $innerTunnelFile");
+                $ssh->exec("sed -i /### APPEND_SQL_POST_AUTH_REJECT_TUNNEL ###$/a \t$sqlName $innerTunnelFile");
+                */
+                $ssh->exec("cp $siteAvailableFile $siteAvailableFile.backup"); //make backup first
+                $ssh->exec("sed -i '/###APPEND_SQL_AUTHORIZE$/a \t$sqlName' $siteAvailableFile");
+                $ssh->exec("sed -i '/###APPEND_SQL_ACCOUNTING$/a \t$sqlName' $siteAvailableFile");
+                $ssh->exec("sed -i '/###APPEND_SQL_SESSION$/a \t$sqlName' $siteAvailableFile");
+                $ssh->exec("sed -i '/###APPEND_SQL_POST_AUTH$/a \t$sqlName' $siteAvailableFile");
+                $ssh->exec("sed -i '/###APPEND_SQL_POST_AUTH_TYPE_REJECT$/a \t$sqlName' $siteAvailableFile");
+                //sqlippool
+                if ($sqlCompanyNames->count() > 0) {
+                    $sqlCounterFile = $radiusDir . '/mods-available/sqlcounter';
+                    $ssh->exec("cp $sqlCounterFile $sqlCounterFile.bak");
+                    $ssh->exec("sed -i '/sql_module_instance =/d' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_DAILYCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_MONTHLYCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_NORESETCOUNTER$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $ssh->exec("sed -i '/###APPEND_EXPIREONLOGIN$/a \tsql_module_instance = " . $sqlCompanyNames->join(",") . "' $sqlCounterFile");
+                    $masterSQLIpPoolFile = $radiusDir . '/mods-available/sqlippool';
+                    $ssh->exec("cp $masterSQLIpPoolFile $masterSQLIpPoolFile.bak");
+                    $ssh->exec("sed -i '/sql_module_instance=/d' $masterSQLIpPoolFile");
+                    $ssh->exec("sed -i '/###APPEND_SQL_MODULE_INSTANCE$/a \tsql_module_instance=".$sqlCompanyNames->join(',')." ' $masterSQLIpPoolFile");
+                }
+
+                $ssh->exec("chown -R freerad:freerad $radiusDir");
+                $ssh->exec("service " . env('MIX_RADIUS_SSH_DAEMON') . " stop");
+                sleep(2);
+                $ssh->disconnect();
+                $ssh = new SSH2(env('MIX_RADIUS_SSH_HOST'),env('MIX_RADIUS_SSH_PORT'));
+                $ssh->login(env('MIX_RADIUS_SSH_USER'), env('MIX_RADIUS_SSH_PASS'));
+                $ssh->exec("service " . env('MIX_RADIUS_SSH_DAEMON') . " start");
+                sleep(2);
+                $ssh->disconnect();
+            }
+            return;
+        } catch (Exception $exception) {
+            $clientCompany->delete();
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param ClientCompany $clientCompany
      * @return void
@@ -271,15 +399,6 @@ class CompanyRepository
     public function generateDatabase(ClientCompany $clientCompany): void
     {
         try {
-            /*$configs = [
-                'host' => $clientCompany->radius_db_host,
-                'port' => config('database.connections.radius.port'),
-                'database' => $clientCompany->radius_db_name,
-                'username' => $clientCompany->radius_db_user,
-                'password' => $clientCompany->radius_db_pass,
-                'charset' => 'utf8mb4',
-                'collation' => 'utf8mb4_unicode_ci',
-            ];*/
             Config::set("database.connections.radius.host", env('DB_RADIUS_HOST'));
             Config::set("database.connections.radius.port", env('DB_RADIUS_PORT'));
             Config::set("database.connections.radius.username", env('DB_RADIUS_USERNAME'));
@@ -290,7 +409,7 @@ class CompanyRepository
                 . "CREATE USER '$clientCompany->radius_db_user'@'%' IDENTIFIED BY '$clientCompany->radius_db_pass';"
                 . "GRANT ALL PRIVILEGES ON $clientCompany->radius_db_name.*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
                 . "GRANT ALL PRIVILEGES ON ".config('database.connections.mysql.database').".*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;"
-                . "GRANT ALL PRIVILEGES ON *.*  TO '".config('database.connections.mysql.username')."'@'%' WITH GRANT OPTION;"
+                //. "GRANT ALL PRIVILEGES ON *.*  TO '".config('database.connections.mysql.username')."'@'%' WITH GRANT OPTION;"
                 . "FLUSH PRIVILEGES;"
             );
             //. "GRANT ALL PRIVILEGES ON $clientCompany->radius_db_name.*  TO '$clientCompany->radius_db_user'@'%' WITH GRANT OPTION;";
@@ -312,9 +431,11 @@ class CompanyRepository
                     '--path' => 'database/migrations/radius'
                 ]);
                 DB::purge('radius');
+                $this->generateRadiusConfig($clientCompany);
                 return;
             }
         } catch (Exception $exception) {
+            $clientCompany->delete();
             throw new Exception($exception->getMessage(),500);
         }
     }

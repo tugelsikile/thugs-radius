@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @method static where(string $column, mixed|string|null $value)
+ * @method static orderBy(string $column, string $direction)
+ */
 class Nas extends Model
 {
     use HasFactory, softDeletes;

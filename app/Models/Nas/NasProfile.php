@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed $limit_rate_unit
  * @property mixed $is_additional
  * @property mixed $type
+ * @property mixed $id
+ * @property mixed $dns_servers
  */
 class NasProfile extends Model
 {

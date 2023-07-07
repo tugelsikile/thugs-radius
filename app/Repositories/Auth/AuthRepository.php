@@ -240,7 +240,7 @@ class AuthRepository
                     $company->radius_db_host = config('database.connections.radius.host');
                     $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
                     $company->radius_db_user = Str::slug($company->name,'_');
-                    $company->radius_db_pass = 'Ac'. randomString() . randomNumeric() . '!-_';
+                    $company->radius_db_pass = strtoupper(randomString()) . strtolower(randomString()) . randomNumeric() . '-_';
                     $company->saveOrFail();
 
                     $user = new User();

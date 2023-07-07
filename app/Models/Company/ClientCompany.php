@@ -3,6 +3,7 @@
 namespace App\Models\Company;
 
 use App\Models\User\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravolt\Indonesia\Models\City;
@@ -11,11 +12,32 @@ use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\Village;
 
 /**
- * @method static where(string $string, mixed $company)
+ * @method static where(string $column, null|string $operator, mixed|string $value)
+ * @method static whereIn(string $column, mixed|array $value)
+ * @method static orderBy(string $column, string $orderDirection)
  * @property mixed $radius_db_host
  * @property mixed $radius_db_name
  * @property mixed $radius_db_pass
  * @property mixed $radius_db_user
+ * @property mixed $config
+ * @property mixed|string $id
+ * @property mixed $name
+ * @property mixed $package
+ * @property mixed|string $code
+ * @property mixed $email
+ * @property Carbon|mixed $active_at
+ * @property Carbon|mixed|null $expired_at
+ * @property mixed $currency
+ * @property mixed $address
+ * @property mixed|null $domain
+ * @property mixed $province
+ * @property mixed $city
+ * @property mixed $district
+ * @property mixed $village
+ * @property mixed $postal
+ * @property mixed $phone
+ * @property mixed $active_by
+ * @property mixed $packageObj
  */
 class ClientCompany extends Model
 {

@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property mixed $code
+ * @property mixed $module
+ * @property mixed $first_address
+ * @property mixed $last_address
  */
 class NasProfilePool extends Model
 {

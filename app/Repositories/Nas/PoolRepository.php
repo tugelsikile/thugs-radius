@@ -72,7 +72,10 @@ class PoolRepository
             $pool->last_address = $request[__('nas.pools.form_input.address.last')];
             $pool->updated_by = $me->id;
             if ($request->has(__('nas.pools.form_input.module'))) {
+                if ($pool->module != $request[__('nas.pools.form_input.module')]) $regenerate = true;
                 $pool->module = $request[__('nas.pools.form_input.module')];
+            } else {
+                if ($pool->module != 'mikrotik') $regenerate = true;
             }
             switch ($pool->nasObj->method) {
                 case 'api' :
@@ -86,7 +89,7 @@ class PoolRepository
             }
             $pool->saveOrFail();
             if ($regenerate) {
-                @generateIPAvailable($pool);
+                (new RadiusDB())->generateRadIpPool($pool);
             }
             (new RadiusDB())->saveProfilePool($pool, $defaultName);
             return $this->table(new Request(['id' => $pool->id]))->first();
@@ -130,7 +133,7 @@ class PoolRepository
             }
             $pool->saveOrFail();
             (new RadiusDB())->saveProfilePool($pool, $pool->code);
-            @generateIPAvailable($pool);
+            (new RadiusDB())->generateRadIpPool($pool);
             return $this->table(new Request(['id' => $pool->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

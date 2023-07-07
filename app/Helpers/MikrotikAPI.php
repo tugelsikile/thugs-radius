@@ -91,18 +91,18 @@ class MikrotikAPI
                 $this->client = new Client([
                     "host" => $hostname, "user" => $request[__('nas.form_input.user')], "pass" => $request[__('nas.form_input.pass')], "timeout" => 1, "attempts" => 1
                 ]);
-                if ($this->client->connect()) {
-                    $this->query = (new Query('/system/identity/print'));
-                    try {
-                        $res = collect($this->client->query($this->query)->read());
-                        if ($res->count() > 0) {
-                            $res = $res->first();
-                            $response->message = $res['name'];
-                            $response->success = true;
-                        }
-                    } catch (Exception $exception) {
-                        throw new Exception($exception->getMessage(),500);
+            }
+            if ($this->client->connect()) {
+                $this->query = (new Query('/system/identity/print'));
+                try {
+                    $res = collect($this->client->query($this->query)->read());
+                    if ($res->count() > 0) {
+                        $res = $res->first();
+                        $response->message = $res['name'];
+                        $response->success = true;
                     }
+                } catch (Exception $exception) {
+                    throw new Exception($exception->getMessage(),500);
                 }
             }
             return $response;
@@ -250,10 +250,12 @@ class MikrotikAPI
                     $this->query = (new Query("/ppp/profile/set"))
                         ->equal("name", $nasProfile->code)
                         ->equal('local-address', $nasProfile->local_address)
-                        ->equal('remote-address', $nasProfile->poolObj->code)
                         ->equal('session-timeout','01:00:00')
                         ->equal('idle-timeout','00:30:00')
                         ->equal('only-one','yes');
+                    if ($nasProfile->poolObj->module == 'mikrotik') {
+                        $this->query = $this->query->equal('remote-address', $nasProfile->poolObj->code);
+                    }
                     if (array_key_exists('.id', $res)) {
                         $this->query = $this->query->equal('.id', $res['.id']);
                         if ($nasProfile->profile_id == null) {
@@ -268,10 +270,12 @@ class MikrotikAPI
                     $this->query = (new Query("/ppp/profile/add"))
                         ->equal('name', $nasProfile->code)
                         ->equal('local-address', $nasProfile->local_address)
-                        ->equal('remote-address', $nasProfile->poolObj->code)
                         ->equal('session-timeout','01:00:00')
                         ->equal('idle-timeout','00:30:00')
                         ->equal('only-one','yes');
+                    if ($nasProfile->poolObj->module == 'mikrotik') {
+                        $this->query = $this->query->equal('remote-address', $nasProfile->poolObj->code);
+                    }
                 }
                 if ($nasProfile->dns_servers != null) {
                     $this->query = $this->query->equal('dns-server', collect($nasProfile->dns_servers)->join(','));
@@ -327,8 +331,9 @@ class MikrotikAPI
                     ->equal('mac-cookie-timeout','1d 00:00:00')
                     ->equal('add-mac-cookie','yes');
             }
-            $this->query = $this->query->equal("address-pool", $nasProfile->poolObj->code);
-
+            if ($nasProfile->poolObj->module == 'mikrotik') {
+                $this->query = $this->query->equal("address-pool", $nasProfile->poolObj->code);
+            }
             $rl = $this->rateLimit($nasProfile->bandwidthObj);
             if ($rl != null || strlen($rl) > 3) {
                 $this->query = $this->query->equal('rate-limit', $rl);

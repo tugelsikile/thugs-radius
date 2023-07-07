@@ -20,7 +20,8 @@ return [
         ],
         'address' => [
             'local' => 'local_address',
-            'dns' => 'dns_servers'
+            'dns' => 'dns_servers',
+            'subnet' => 'subnet_mask',
         ]
     ],
     'labels' => [
@@ -66,6 +67,7 @@ return [
             'dns' => 'DNS Servers',
             'add_dns' => 'Tambah DNS Server',
             'remove_dns' => 'Hapus DNS Server',
+            'interface' => 'Interface',
         ],
         'customers' => [
             'length' => 'Jml. Pelanggan',

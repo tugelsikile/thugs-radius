@@ -9,7 +9,12 @@ use Illuminate\Support\Str;
 
 class Server
 {
-    public function execServer($command) {
+    /* @
+     * @param $command
+     * @return string|null
+     */
+    public function execServer($command): ?string
+    {
         try {
             $response = null;
             $connection = (new SSHConnection())

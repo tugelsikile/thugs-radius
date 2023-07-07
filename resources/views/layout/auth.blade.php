@@ -63,6 +63,8 @@
         }
         const encrypt = CryptoJS.AES.encrypt(JSON.stringify(localCrypt), window.location.hostname).toString();
         localStorage.setItem('fireCrypt', encrypt);
+        const vapidKey = CryptoJS.AES.encrypt("{{env('MIX_FIREBASE_MESSAGING_KEY_PAIR')}}", window.location.hostname).toString();
+        localStorage.setItem('fireVapidKey', vapidKey);
         //const decrypt = CryptoJS.AES.decrypt(encrypt, window.location.hostname);
         //console.log(encrypt, JSON.parse(decrypt.toString(CryptoJS.enc.Utf8)));
     }

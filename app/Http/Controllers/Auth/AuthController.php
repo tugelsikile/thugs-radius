@@ -24,6 +24,77 @@ class AuthController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function finishWizard(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->finishWizard());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @return JsonResponse
+     */
+    public function me(): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->me());
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateLocale(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,__('labels.update.success',['Attribute' => __('users.labels.locale.label')]), $this->repository->updateLocale($this->validation->updateLocale($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updatePassword(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,__('labels.update.success',['Attribute' => __('users.labels.password.current')]), $this->repository->updatePassword($this->validation->updatePassword($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateAccount(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,__('labels.update.success',['Attribute' => __('users.labels.account.label')]), $this->repository->updateAccount($this->validation->updateAccount($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->updateAvatar($this->validation->updateAvatar($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function resetPassword(Request $request): JsonResponse
     {
         try {

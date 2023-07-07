@@ -80,6 +80,8 @@ return [
         'bill_period' => [
             'label' => 'Periode Penagihan',
             'select' => 'Pilih periode penagihan',
+            'current' => 'Tagihan :Attribute',
+            'last' => 'Tagihan Bulan Lalu',
         ],
         'code' => 'No. Invoice',
         'order_id' => 'Order ID',

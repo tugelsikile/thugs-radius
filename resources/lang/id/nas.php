@@ -43,20 +43,25 @@ return [
         ],
         'ip' => [
             'label' => 'IP Router Koneksi',
-            'short' => 'IP / Hostname'
+            'short' => 'IP / Hostname',
+            'api' => 'IP Router API',
+            'interface' => 'Alamat IP Interface',
         ],
         'port' => [
             'label' => 'Port Router Koneksi',
             'short' => 'Port',
+            'api' => 'Port API',
         ],
         'user' => [
             'label' => 'User Router Koneksi',
-            'short' => 'User'
+            'short' => 'User',
+            'api' => 'User API',
         ],
         'pass' => [
             'label' => 'Password Router Koneksi',
             'short' => 'Password',
             'confirm' => 'Konfirmasi Password Router',
+            'api' => 'Password API',
         ],
         'status' => [
             'label' => 'Status Koneksi',
@@ -110,6 +115,7 @@ return [
             'description' => 'keterangan_ip_pool',
             'upload' => 'upload_ke_router',
             'code' => 'nama_pool_mikrotik',
+            'module' => 'modul_ip_pool',
             'address' => [
                 'first' => 'ip_pertama',
                 'last' => 'ip_terakhir',
@@ -125,6 +131,7 @@ return [
                 'label' => 'Nama Pool Mikrotik',
                 'info' => 'Nama ini akan disimpan di mikrotik sebagai nama pool'
             ],
+            'module' => 'Modul IP Pool',
             'select' => 'Pilih Profile IP Pool',
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',

@@ -16,6 +16,7 @@ import {crudCustomers} from "../../../Services/CustomerService";
 import FormPayment from "../Customer/Invoice/Tools/FormPayment";
 import {crudPaymentGatewayClient} from "../../../Services/ConfigService";
 import OnlinePayment from "./Tools/OnlinePayment";
+import {crudNas} from "../../../Services/NasService";
 
 class DashboardPage extends React.Component {
     constructor(props) {
@@ -56,7 +57,13 @@ class DashboardPage extends React.Component {
                                 {route : 'clients.customers.invoices.payment', can: false },
                             ])
                                 .then((response)=>{
-                                    loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
+                                    loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus},()=>{
+                                        if (typeof this.state.privilege.select !== 'undefined') {
+                                            if (this.state.privilege.select) {
+                                                this.loadNas();
+                                            }
+                                        }
+                                    });
                                 })
                                 .then(()=>{
                                     loadings.servers = false; this.setState({loadings},()=>this.loadServers());
@@ -83,6 +90,24 @@ class DashboardPage extends React.Component {
         modal.payment.open = ! this.state.modal.payment.open;
         modal.payment.data = data;
         this.setState({modal});
+    }
+    async loadNas() {
+        if (this.state.user !== null) {
+            if (typeof this.state.user.meta.locale.finish_wizard === 'undefined' || ! this.state.user.meta.locale.finish_wizard) {
+                window.location.href = getRootUrl() + '/wizard';
+            } else {
+                try {
+                    let response = await crudNas();
+                    if (response.data.params !== null) {
+                        if (response.data.params.length === 0) {
+                            window.location.href = getRootUrl() + '/wizard';
+                        }
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        }
     }
     async loadPaymentGateway() {
         if (! this.state.loadings.payment_gateways) {

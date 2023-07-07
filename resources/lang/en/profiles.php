@@ -20,7 +20,8 @@ return [
         ],
         'address' => [
             'local' => 'local_address',
-            'dns' => 'dns_servers'
+            'dns' => 'dns_servers',
+            'subnet' => 'subnet_mask',
         ]
     ],
     'labels' => [
@@ -66,6 +67,7 @@ return [
             'dns' => 'DNS Servers',
             'add_dns' => 'Add DNS Server',
             'remove_dns' => 'Delete DNS Server',
+            'interface' => 'Interface',
         ],
         'customers' => [
             'length' => 'Customers Count',

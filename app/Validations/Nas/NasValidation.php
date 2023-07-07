@@ -5,6 +5,7 @@
 
 namespace App\Validations\Nas;
 
+use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
 use App\Models\Nas\Nas;
 use Exception;
@@ -107,9 +108,10 @@ class NasValidation
                 __('nas.form_input.name') => 'required|string|min:1|max:50',
                 __('nas.form_input.description') => 'nullable',
                 __('nas.form_input.method') => 'required|string|in:api,ssl',
-                __('nas.form_input.ip') => 'required|ip|ipv4|not_in:0.0.0.0|unique:nas,nasname,' . $request[__('nas.form_input.id')] . ',id',
+                __('nas.form_input.ip') => 'required|ip|ipv4|unique:nas,nasname,' . $request[__('nas.form_input.id')] . ',id|not_in:0.0.0.0,' . (new RadiusDB())->allExistingNas($request[__('nas.form_input.id')],null,'nasname')->join(','),
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            new SwitchDB();
             if ($request[__('nas.form_input.method')] == 'ssl') {
                 $valid = Validator::make($request->all(),[
                     __('nas.form_input.domain') => 'required|url',
@@ -156,7 +158,7 @@ class NasValidation
                 }
             }
             $valid = Validator::make($request->all(),[
-                __('nas.form_input.ip') => 'required|ip|ipv4|not_in:0.0.0.0|unique:nas,nasname',
+                __('nas.form_input.ip') => 'required|ip|ipv4|unique:nas,nasname|not_in:0.0.0.0,' . (new RadiusDB())->allExistingNas(null,null,'nasname')->join(','),
                 __('labels.form_input.current',['Attribute' => __('nas.form_input.id')]) => 'max:' . $request[__('labels.form_input.max',['Attribute' => __('nas.form_input.id')])]
             ]);
             if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);

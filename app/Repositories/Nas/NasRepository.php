@@ -11,8 +11,12 @@ namespace App\Repositories\Nas;
 use App\Helpers\MikrotikAPI;
 use App\Helpers\MiktorikSSL;
 use App\Helpers\Radius\Radius;
+use App\Helpers\Server\Server;
 use App\Helpers\SwitchDB;
+use App\Models\Company\ClientCompany;
 use App\Models\Nas\Nas;
+use App\Models\Nas\NasUserGroup;
+use App\Models\User\User;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -50,6 +54,49 @@ class NasRepository
         }
     }
 
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function tableNasGroup(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $user = User::where('id', $request->user)->first();
+            if ($user != null) {
+                $company = ClientCompany::where('id', $user->company)->first();
+                if ($company != null) {
+                    new SwitchDB("database.connections.radius",[
+                        'charset' => 'utf8mb4',
+                        'collation' => 'utf8mb4_unicode_ci',
+                        'driver' => 'mysql',
+                        'host' => $company->radius_db_host,
+                        'port' => env('DB_RADIUS_PORT'),
+                        'database' => $company->radius_db_name,
+                        'username' => $company->radius_db_user,
+                        'password' => $company->radius_db_pass
+                    ]);
+                    $nasGroups = NasUserGroup::where('user', $user->id)->orderBy('created_at','asc')->get();
+                    if ($nasGroups->count() > 0) {
+                        foreach ($nasGroups as $nasGroup) {
+                            $response->push((object) [
+                                'value' => $nasGroup->id,
+                                'label' => $nasGroup->nasObj->shortname,
+                                'meta' => (object) [
+                                    'nas' => $nasGroup->nasObj,
+                                    'user' => $nasGroup->userObj
+                                ]
+                            ]);
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     public function reloadStatus(Request $request) {
         try {
             $response = null;
@@ -83,6 +130,7 @@ class NasRepository
             new SwitchDB();
             $nas = Nas::where('id', $request[__('nas.form_input.name')])->first();
             if ($nas != null) {
+                $queues = null;
                 switch (strtolower($nas->method)) {
                     case 'api' :
                         $api = new MikrotikAPI($nas);
@@ -142,7 +190,7 @@ class NasRepository
             $nas->password = $request[__('nas.form_input.pass')];
             $nas->created_by = $me->id;
             $nas->saveOrFail();
-            (new Radius())->restartRadiusService($this->me->companyObj);
+            (new Server())->statusServer(env('MIX_RADIUS_SSH_DAEMON'),'restart');
             return $this->table(new Request(['id' => $nas->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -198,21 +246,32 @@ class NasRepository
             $nas->saveOrFail();
 
             if ($updating) {
-                (new Radius())->restartRadiusService($this->me->companyObj);
+                (new Server())->statusServer(env('MIX_RADIUS_SSH_DAEMON'),'restart');
             }
             return $this->table(new Request(['id' => $nas->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
     }
-    public function testConnection(Request $request) {
+
+    /* @
+     * @param Request $request
+     * @return string|null
+     * @throws GuzzleException
+     */
+    public function testConnection(Request $request): ?string
+    {
         try {
             switch ($request[__('nas.form_input.method')]) {
                 case 'api' :
                     $api = new MikrotikAPI();
                     $r = $api->testConnection($request);
                     if ($r != null) {
-                        return __('nas.labels.connection.success') . $r->message;
+                        if ($r->success) {
+                            return __('nas.labels.connection.success') . $r->message;
+                        } else {
+                            throw new Exception($r->message,500);
+                        }
                     }
                     break;
                 case 'ssl' :
@@ -223,6 +282,7 @@ class NasRepository
                     }
                     break;
             }
+            return null;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -236,14 +296,35 @@ class NasRepository
     {
         try {
             $response = collect();
-            new SwitchDB();
-            $nass = Nas::orderBy('shortname', 'asc');
-            if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
-            if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();
-            /*if ($me != null) {
-                if ($me->company != null) $nass = $nass->where('company', $me->company);
-            }*/
-            $nass = $nass->get();
+            if ($this->me->company == null) {
+                $clientCompanies = ClientCompany::all();
+                $nass = collect();
+                foreach ($clientCompanies as $company) {
+                    new SwitchDB("database.connections.radius",[
+                        'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci', 'driver' => 'mysql',
+                        'host' => $company->radius_db_host, 'port' => env('DB_RADIUS_PORT'),
+                        'database' => $company->radius_db_name, 'username' => $company->radius_db_user,
+                        'password' => $company->radius_db_pass,
+                    ]);
+                    $nassX = Nas::orderBy('shortname', 'asc');
+                    if (strlen($request->id) > 0) $nassX = $nassX->where('id', $request->id);
+                    if (strlen($request->trash) > 0) $nassX = $nassX->onlyTrashed();
+                    $nassX = $nassX->get();
+                    $nass = $nass->merge($nassX);
+                }
+                $nass = $nass->values();
+            } else {
+                new SwitchDB();
+                $nass = Nas::orderBy('shortname', 'asc');
+                if (strlen($request->id) > 0) $nass = $nass->where('id', $request->id);
+                if (strlen($request->trash) > 0) $nass = $nass->onlyTrashed();
+                if ($this->me != null) {
+                    if ($this->me->nasGroups()->get()->count() > 0) {
+                        $nass = $nass->whereIn('id', $this->me->nasGroups()->map(function ($q){ return $q->nas; }));
+                    }
+                }
+                $nass = $nass->get();
+            }
             if ($nass->count() > 0) {
                 foreach ($nass as $nas) {
                     $status = (object) ['message' => null, 'success' => false ];
@@ -257,11 +338,13 @@ class NasRepository
                             $status = $this->mikrotikSSL->testConnection();
                             break;
                     }
+                    $description = $nas->description;
+                    if ($description == null) $description = '';
                     $response->push((object) [
                         'value' => $nas->id,
                         'label' => $nas->shortname,
                         'meta' => (object) [
-                            'description' => $nas->description == null ? '' : $nas->description,
+                            'description' => $description,
                             'type' => $nas->type,
                             'community' => $nas->community,
                             'ports' => (object) [
@@ -276,21 +359,22 @@ class NasRepository
                                 'user' => Crypt::encryptString($nas->user),
                                 'pass' => Crypt::encryptString($nas->password),
                                 'secret' => $nas->secret,
+                                'subnet' => $nas->netmask,
                             ],
                             'url' => $nas->expire_url,
                             'status' => $status,
                             'timestamps' => (object) [
                                 'create' => (object) [
                                     'at' => $nas->created_at,
-                                    'by' => $nas->createdBy == null ? null : (object) [ 'value' => $nas->createdBy->id, 'label' => $nas->createdBy->name ],
+                                    'by' => $nas->createdBy,
                                 ],
                                 'update' => (object) [
                                     'at' => $nas->updated_at,
-                                    'by' => $nas->updatedBy == null ? null : (object) [ 'value' => $nas->updatedBy->id, 'label' => $nas->updatedBy->name ],
+                                    'by' => $nas->updatedBy,
                                 ],
                                 'delete' => (object) [
                                     'at' => $nas->deleted_at,
-                                    'by' => $nas->deletedBy == null ? null : (object) [ 'value' => $nas->deletedBy->id, 'label' => $nas->deletedBy->name ]
+                                    'by' => $nas->deletedBy,
                                 ]
                             ]
                         ]
@@ -312,7 +396,8 @@ class NasRepository
     {
         try {
             Nas::whereIn('id' , $request->id)->delete();
-            (new Radius())->restartRadiusService($this->me->companyObj);
+            Nas::whereIn('id', $request->id)->onlyTrashed()->forceDelete();
+            (new Server())->statusServer(env('MIX_RADIUS_SSH_DAEMON'),'restart');
             return true;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -331,6 +416,20 @@ class NasRepository
             } else {
                 return  Crypt::decryptString($request->value);
             }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+
+    /* @
+     * @param Request $request
+     * @return Collection|null
+     * @throws Exception
+     */
+    public function interfaceIpAddress(Request $request): ?Collection
+    {
+        try {
+            return (new MikrotikAPI())->interfaceIpAddressRequest($request);
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

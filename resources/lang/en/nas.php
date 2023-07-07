@@ -43,20 +43,25 @@ return [
         ],
         'ip' => [
             'label' => 'Connection Router IP',
-            'short' => 'IP'
+            'short' => 'IP',
+            'api' => 'API IP Router',
+            'interface' => 'Interface IP Address',
         ],
         'port' => [
             'label' => 'Connection Router Port',
             'short' => 'Port',
+            'api' => 'API Port',
         ],
         'user' => [
             'label' => 'Connection Router User',
-            'short' => 'User'
+            'short' => 'User',
+            'api' => 'API User'
         ],
         'pass' => [
             'label' => 'Connection Router Password',
             'short' => 'Password',
             'confirm' => 'Router Password Confirmation',
+            'api' => 'API Password',
         ],
         'status' => [
             'label' => 'Connection Status',
@@ -110,6 +115,7 @@ return [
             'description' => 'ip_pool_description',
             'upload' => 'upload_to_router',
             'code' => 'mikrotik_pool_name',
+            'module' => 'ip_pool_module',
             'address' => [
                 'first' => 'first_ip',
                 'last' => 'last_ip',
@@ -125,6 +131,7 @@ return [
                 'label' => 'Mikrotik Pool Name',
                 'info' => 'This will saved to mikrotik as pool name'
             ],
+            'module' => 'IP Pool Module',
             'select' => 'Select IP Pool',
             'menu' => 'Profile IP Pool',
             'menu_info' => 'Manage profile IP pool',

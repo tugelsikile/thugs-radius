@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\User\User;
 use Illuminate\Support\Facades\Route;
+use Rap2hpoutre\LaravelLogViewer\LogViewerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +73,15 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });
+    Route::get('/wizard', function () { return view('clients.wizard'); });
 });
-
-Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);
+Route::group(['prefix' => 'customer'], function () {
+    Route::get('/', function () { return view('customers.dashboard'); });
+    Route::get('/service', function () { return view('customers.dashboard'); });
+    Route::get('/invoice', function () { return view('customers.dashboard'); });
+});
+Route::get('/profile/{id}', function () {
+    $user = User::where('id', request()->id)->first();
+    return view('auth.users.profile',['id' => request()->id, 'user' => $user]);
+});
+Route::get('logs', [LogViewerController::class, 'index']);

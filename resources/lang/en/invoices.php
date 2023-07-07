@@ -80,6 +80,8 @@ return [
         'bill_period' => [
             'label' => 'Bill Period',
             'select' => 'Select Bill Period',
+            'current' => ':Attribute Bill',
+            'last' => 'Last Month Bill',
         ],
         'code' => 'Bill No.',
         'order_id' => 'Order ID',

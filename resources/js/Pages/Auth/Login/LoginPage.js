@@ -103,6 +103,13 @@ class LoginPage extends React.Component {
                 showSuccess(response.data.message);
                 localStorage.setItem('token', response.data.params.token);
                 localStorage.setItem('user', JSON.stringify(response.data.params.user));
+                localStorage.setItem('locale_lang', response.data.params.user.meta.locale.lang);
+                if (typeof response.data.params.user.meta.locale.date_format !== 'undefined') {
+                    localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
+                }
+                if (typeof response.data.params.user.meta.locale.time_zone !== 'undefined') {
+                    localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
+                }
                 window.location.href = getRootUrl();
             }
         } catch (e) {
@@ -158,11 +165,7 @@ class LoginPage extends React.Component {
                     Lang.setLocale(response.data.params.user.meta.locale.lang);
                     localStorage.setItem('locale_date_format', response.data.params.user.meta.locale.date_format);
                     localStorage.setItem('locale_time_zone', response.data.params.user.meta.locale.time_zone);
-                    if (response.data.params.user.meta.level.for_client) {
-                        window.location.href = window.origin + '/clients';
-                    } else {
-                        window.location.href = window.origin + '/auth';
-                    }
+                    window.location.href = getRootUrl();
                 }
             } catch (e) {
                 this.setState({loading:false});

@@ -4,8 +4,6 @@ import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import {crudCompany, crudCompanyPackage} from "../../../Services/CompanyService";
 import PageLoader from "../../../Components/PageLoader";
-import MainHeader from "../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../Components/Layout/MainSidebar";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import BtnSort from "../User/Tools/BtnSort";
@@ -17,6 +15,10 @@ import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
 import {TableAction} from "../../../Components/TableComponent";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
+import {CompanyPackagePopover, CompanyPopover, CompanyStatusPopover, TableHeader, TdStatusCompany} from "./Tools/Mixed";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {Popover} from "@mui/material";
 
 // noinspection DuplicatedCode
 class CompanyPage extends React.Component {
@@ -33,6 +35,7 @@ class CompanyPage extends React.Component {
                 page : { value : 1, label : 1}, data_length : 20, paging : [],
             },
             modal : { open : false, data : null },
+            popover : { open : false, anchorEl : null, data : null },
         };
         this.loadCompanies = this.loadCompanies.bind(this);
         this.handleFilter = this.handleFilter.bind(this);
@@ -43,6 +46,7 @@ class CompanyPage extends React.Component {
         this.confirmDelete = this.confirmDelete.bind(this);
         this.confirmActive = this.confirmActive.bind(this);
         this.loadPackages = this.loadPackages.bind(this);
+        this.handlePopOver = this.handlePopOver.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -65,8 +69,34 @@ class CompanyPage extends React.Component {
             }
         }
     }
-    confirmActive(data) {
-        confirmDialog(this, data.value,'patch',`${window.origin}/api/auth/companies/active`,'Warning', Lang.get('companies.active.confirm'),'app.loadCompanies(response.data.params)');
+    handlePopOver(e) {
+        let popover = this.state.popover;
+        popover.open = !this.state.popover.open;
+        popover.anchorEl = e.currentTarget;
+        popover.data = null;
+        let index = this.state.companies.unfiltered.findIndex((f) => f.value === e.currentTarget.getAttribute('data-value'));
+        if (index >= 0) {
+            let type = e.currentTarget.getAttribute('data-type');
+            switch(type) {
+                case 'company':
+                    popover.data = <CompanyPopover data={this.state.companies.unfiltered[index]}/>;
+                    break;
+                case 'package':
+                    popover.data = <CompanyPackagePopover data={this.state.companies.unfiltered[index]}/>;
+                    break;
+                case 'status':
+                    popover.data = <CompanyStatusPopover data={this.state.companies.unfiltered[index]}/>;
+                    break;
+            }
+        }
+        this.setState({popover});
+    }
+    confirmActive(event) {
+        let value = event.currentTarget.getAttribute('data-value');
+        let message = event.currentTarget.getAttribute('data-message');
+        let title = event.currentTarget.getAttribute('data-title');
+        let icon = event.currentTarget.getAttribute('data-icon');
+        confirmDialog(this, value,'patch',`${window.origin}/api/auth/companies/active`,title, message,'app.loadCompanies(response.data.params)',icon,'id',null,event.currentTarget.getAttribute('data-button'));
     }
     confirmDelete(data = null) {
         let ids = [];
@@ -137,7 +167,6 @@ class CompanyPage extends React.Component {
         } else {
             companies.filtered = companies.unfiltered;
         }
-        console.log(this.state.filter.sort.by);
         switch (this.state.filter.sort.by) {
             case 'code' :
                 if (this.state.filter.sort.dir === 'asc') {
@@ -328,11 +357,14 @@ class CompanyPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
-
+                <Popover
+                    sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }}
+                    onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
                 <FormCompany privilege={this.state.privilege} taxes={this.state.taxes} discounts={this.state.discounts} open={this.state.modal.open} data={this.state.modal.data} loadings={this.state.loadings} provinces={this.state.provinces} packages={this.state.packages} handleClose={this.toggleForm} handleUpdate={this.loadCompanies} onUpdatePackages={this.loadPackages}/>
 
                 <PageLoader/>
-                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus}/>
+                <HeaderAndSideBar site={this.state.site} root={this.state.root} user={this.state.user} route={this.props.route} menus={this.state.menus} loadings={this.state.loadings}/>
 
                 <div className="content-wrapper">
 
@@ -358,50 +390,7 @@ class CompanyPage extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-striped">
                                         <thead>
-                                        <tr>
-                                            {this.state.companies.filtered.length > 0 &&
-                                                <th className="align-middle text-center pl-2" width={30}>
-                                                    <div className="custom-control custom-checkbox">
-                                                        <input data-id="" disabled={this.state.loadings.companies} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className={this.state.companies.filtered.length === 0 ? "align-middle pl-2" : "align-middle"} width={80}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('companies.labels.table_columns.code')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('companies.labels.table_columns.name')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="email"
-                                                         name={Lang.get('companies.labels.table_columns.email')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-xs">
-                                                {Lang.get('companies.packages.labels.table_columns.name')}
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="active"
-                                                         name={Lang.get('companies.labels.table_columns.active')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="expired"
-                                                         name={Lang.get('companies.labels.table_columns.expired.at')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center text-xs pr-2" width={50}>{Lang.get('messages.users.labels.table_action')}</th>
-                                        </tr>
+                                        <TableHeader type="header" loadings={this.state.loadings} companies={this.state.companies} filter={this.state.filter} onCheck={this.handleCheck} onSort={this.handleSort}/>
                                         </thead>
                                         <tbody>
                                         {this.state.companies.filtered.length === 0 ?
@@ -417,28 +406,18 @@ class CompanyPage extends React.Component {
                                                     </td>
                                                     <td className="align-middle text-center text-xs">{item.meta.code}</td>
                                                     <td className="align-middle ">
-                                                        <strong className="text-primary"><i className="fas fa-info-circle mr-1"/>{item.label}</strong><br/>
-                                                        <span className="small text-muted">
-                                                            <i className="fas fa-building mr-1"/>{item.meta.address.street}, {ucFirst(item.meta.address.village.name)} {ucFirst(item.meta.address.district.name)} {ucFirst(item.meta.address.city.name)} {ucFirst(item.meta.address.province.name)} {item.meta.address.postal}
-                                                        </span>
+                                                        <FontAwesomeIcon data-value={item.value} data-type="company" onMouseOver={this.handlePopOver} onMouseOut={this.handlePopOver} icon={faInfoCircle} size="sm" className="mr-2 text-info"/> {item.label}
                                                     </td>
-                                                    <td className="align-middle text-xs">{item.meta.address.email}</td>
                                                     <td className="align-middle">
-                                                        <ul className="list-unstyled">
-                                                            {item.meta.packages.map((pack)=>
-                                                                <li className="text-xs" key={pack.value}><i className="fas fa-minus mr-1"/> {pack.meta.package.label}</li>
-                                                            )}
-                                                        </ul>
+                                                        {item.meta.packages.length === 0 ? '-' :
+                                                            <React.Fragment>
+                                                                <FontAwesomeIcon data-value={item.value} data-type="package" onMouseOver={this.handlePopOver} onMouseOut={this.handlePopOver} icon={faInfoCircle} size="xs" className="mr-2 text-info"/>
+                                                                {item.meta.packages[0].meta.package.label}
+                                                            </React.Fragment>
+                                                        }
                                                     </td>
                                                     <td className="align-middle text-center text-xs">
-                                                        {item.meta.timestamps.active.at === null ?
-                                                            <button onClick={()=>this.confirmActive(item)} type="button" className="btn btn-xs btn-block btn-outline-warning text-sm">{Lang.get('companies.labels.status.inactive')}</button>
-                                                            :
-                                                            <>
-                                                                <button onClick={()=>this.confirmActive(item)} type="button" className="btn btn-xs btn-block btn-outline-success text-sm">{Lang.get('companies.labels.status.active')}</button>
-                                                                <span className="small">{formatLocaleDate(item.meta.timestamps.active.at)}</span>
-                                                            </>
-                                                        }
+                                                        <TdStatusCompany data={item} onPopOver={this.handlePopOver} onClick={this.confirmActive}/>
                                                     </td>
                                                     <td className="align-middle text-xs">
                                                         {item.meta.expiry === null ?
@@ -458,6 +437,9 @@ class CompanyPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                        <TableHeader type="footer" loadings={this.state.loadings} companies={this.state.companies} filter={this.state.filter} onCheck={this.handleCheck} onSort={this.handleSort}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

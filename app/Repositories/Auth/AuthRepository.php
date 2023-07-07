@@ -1,10 +1,4 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
-/** @noinspection DuplicatedCode */
-/** @noinspection SpellCheckingInspection */
-/** @noinspection PhpUndefinedMethodInspection */
-/** @noinspection PhpPossiblePolymorphicInvocationInspection */
-
-/** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 namespace App\Repositories\Auth;
 
@@ -17,6 +11,8 @@ use App\Models\User\UserLevel;
 use App\Models\User\UserLog;
 use App\Models\User\UserPrivilege;
 use App\Repositories\Client\CompanyRepository;
+use App\Repositories\Nas\NasRepository;
+use App\Repositories\User\UserRepository;
 use Carbon\Carbon;
 use hisorange\BrowserDetect\Parser as Browser;
 use Exception;
@@ -34,10 +30,124 @@ use Throwable;
 
 class AuthRepository
 {
+    public function finishWizard() {
+        try {
+            $user = User::where('id', auth()->guard('api')->user()->id)->first();
+            $company = $user->companyObj()->first();
+            if ($company != null) {
+                $companyUsers = User::where('company', $company->id)->get();
+                foreach ($companyUsers as $companyUser) {
+                    $locale = $companyUser->locale;
+                    if (! property_exists($locale,'finish_wizard')) {
+                        $locale->finish_wizard = true;
+                    }
+                    $companyUser->locale = $locale;
+                    $companyUser->saveOrFail();
+                }
+                return $this->table(new Request(['id' => $user->id]))->first();
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function updateLocale(Request $request) {
+        try {
+            $user = User::where('id', auth()->guard('api')->user()->id)->first();
+            $locale = $user->locale;
+            if ($request->has(__('users.form_input.lang'))) {
+                $locale->lang = $request[__('users.form_input.lang')];
+            } else {
+                if (property_exists($locale,'lang')) {
+                    unset($locale->lang);
+                }
+            }
+            if ($request->has(__('users.form_input.date_format'))) {
+                $locale->date_format = $request[__('users.form_input.date_format')];
+            } else {
+                if (property_exists($locale,'date_format')) {
+                    unset($locale->date_format);
+                }
+            }
+            if ($request->has(__('users.form_input.time_zone'))) {
+                $locale->time_zone = $request[__('users.form_input.time_zone')];
+            } else {
+                if (property_exists($locale, 'time_zone')) {
+                    unset($locale->time_zone);
+                }
+            }
+            $user->locale = $locale;
+            $user->saveOrFail();
+            return $this->table(new Request(['id' => $user->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return mixed
      * @throws Exception
+     */
+    public function updatePassword(Request $request) {
+        try {
+            $user = User::where('id', auth()->guard('api')->user()->id)->first();
+            $user->password = Hash::make($request[__('users.form_input.password.current')]);
+            $user->saveOrFail();
+            return $this->table(new Request(['id' => $user->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Exception
+     */
+    public function updateAccount(Request $request) {
+        try {
+            $user = User::where('id', auth()->guard('api')->user()->id)->first();
+            $user->name = $request[__('users.form_input.name')];
+            $user->email = $request[__('users.form_input.email')];
+            $user->saveOrFail();
+
+            return $this->table(new Request(['id' => $user->id]))->first();
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object
+     * @throws Exception
+     */
+    public function updateAvatar(Request $request) {
+        try {
+            $user = User::where('id', $request[__('users.form_input.id')])->first();
+            $file = $request->file(__('users.form_input.avatar'));
+            $targetDir = storage_path() . '/app/public/avatars/';
+            $targetName = Uuid::uuid4()->toString() . '.' . $file->getClientOriginalExtension();
+
+            if (! File::exists($targetDir)) File::makeDirectory($targetDir,0777,true);
+            if (! File::isWritable($targetDir)) File::chmod($targetDir,0777);
+            if ($user->avatar != null) {//delete existing
+                $oldFile = $targetDir . $user->avatar;
+                if (File::exists($oldFile)) {
+                    if (! File::isWritable($oldFile)) File::chmod($oldFile,0777);
+                    File::delete($oldFile);
+                }
+            }
+            $file->move($targetDir, $targetName);
+            $user->avatar = $targetName;
+            $user->saveOrFail();
+            resetStorageLink();
+            return (object) ['profile' => (new UserRepository())->table(new Request(['id' => $user->id]))->first(), 'user' => $this->table(new Request(['id' => $user->id]))->first()];
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Exception|Throwable
      */
     public function resetPassword(Request $request) {
         try {
@@ -130,7 +240,7 @@ class AuthRepository
                     $company->radius_db_host = config('database.connections.radius.host');
                     $company->radius_db_name = 'radius_' . Str::slug($company->name,'_');
                     $company->radius_db_user = Str::slug($company->name,'_');
-                    $company->radius_db_pass = 'Ac'. randomString() . randomNumeric() . '!-_';
+                    $company->radius_db_pass = strtoupper(randomString()) . strtolower(randomString()) . randomNumeric() . '-_';
                     $company->saveOrFail();
 
                     $user = new User();
@@ -200,7 +310,13 @@ class AuthRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
-    public function getStorageLang() {
+
+    /* @
+     * @return string
+     * @throws Exception
+     */
+    public function getStorageLang(): string
+    {
         try {
             $me = auth()->guard('api')->user();
             $tgtDir = storage_path() . '/framework/cookies/langs/';
@@ -216,14 +332,19 @@ class AuthRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @param Request $request
+     * @return mixed
+     * @throws Exception
+     */
     public function setLanguage(Request $request) {
         try {
-            //dd($this->getStorageLang());
             $user = User::where('id', auth()->guard('api')->user()->id)->first();
-            $user->locale = (object) [
-                'lang' => $request->lang,
-                'date_format' => $user->locale->date_format
-            ];
+            $locale = $user->locale;
+            if ($locale == null) $locale = (object) [];
+            $locale->lang = $request->lang;
+            $user->locale = $locale;
             $user->saveOrFail();
             $this->setStorageLang($request->lang);
             return $request->lang;
@@ -443,10 +564,23 @@ class AuthRepository
                         'level' => $user->levelObj,
                         'locale' => $user->locale,
                         'company' => $company,
+                        'nas' => (new NasRepository())->tableNasGroup(new Request(['user' => $user->id]))
                     ]
                 ]);
             }
             return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+
+    /* @
+     * @return mixed
+     * @throws Exception
+     */
+    public function me() {
+        try {
+            return $this->table(new Request(['id' => auth()->guard('api')->user()->id]))->first();
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

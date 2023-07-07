@@ -1,10 +1,11 @@
 import React from "react";
 import {
+    createNetmaskAddr,
     durationType, durationTypeByte,
-    formatBytes, FormControlSMReactSelect, hasWhiteSpace,
-    limitType,
+    formatBytes, FormControlSMReactSelect, getIpRangeFromAddressAndNetmask, hasWhiteSpace,
+    limitType, mask2Subnet,
     parseInputFloat, pipeIp,
-    responseMessage, serviceType
+    responseMessage, serviceType, subnet2Mask
 } from "../../../../../Components/mixedConsts";
 import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
 import {Dialog, DialogContent, Tooltip} from "@mui/material";
@@ -12,7 +13,7 @@ import Select from "react-select";
 import {InputText} from "../../../../../Components/CustomInput";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPencilAlt, faPlus, faRefresh, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
-import {crudProfile, getParentQueue} from "../../../../../Services/NasService";
+import {crudProfile, getParentQueue, loadNasIPAddress} from "../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {NumericFormat} from "react-number-format";
 import MaskedInput from "react-text-mask";
@@ -32,13 +33,14 @@ class FormProfile extends React.Component {
                 additional : false, price : 0, invalid_code : false,
                 address : { local : '', dns : [] },
                 limit : { type : null, rate : 0, unit : null },
-                queue : null, code : '',
+                queue : null, code : '', subnet : '', interface : null,
             },
             modals : {
                 nas : { open : false, data : null },
                 pool : { open : false, data : null },
                 bandwidth : { open : false, data : null },
-            }
+            },
+            interfaces : [],
         };
         this.handleSave = this.handleSave.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
@@ -50,6 +52,7 @@ class FormProfile extends React.Component {
         this.toggleNas = this.toggleNas.bind(this);
         this.toggleBandwidth = this.toggleBandwidth.bind(this);
         this.togglePool = this.togglePool.bind(this);
+        this.loadInterfaces = this.loadInterfaces.bind(this);
     }
     componentWillReceiveProps(props) {
         this.setState({loading:true});
@@ -68,7 +71,7 @@ class FormProfile extends React.Component {
                 form.additional = false, form.price = 0,
                 form.description = '', form.invalid_code = false,
                 form.address.local = '', form.address.dns = [],
-                form.queue = null;
+                form.queue = null, form.subnet = '';
         } else {
             if (typeof props.type !== 'undefined') {
                 if (props.type !== null) {
@@ -128,6 +131,7 @@ class FormProfile extends React.Component {
                     form.invalid_code = hasWhiteSpace(props.data.meta.code),
                     form.address.local = props.data.meta.local,
                     form.price = props.data.meta.price;
+                    form.subnet = props.data.meta.subnet;
                 index = serviceType.findIndex((f)=> f.value === props.data.meta.type);
                 //console.log(index);
                 if (index >= 0) {
@@ -252,9 +256,43 @@ class FormProfile extends React.Component {
             form.queue = null;
             if (form.nas !== null) {
                 this.loadParentQueue();
+                this.loadInterfaces();
+            }
+        }
+        if (name === 'interface') {
+            if (form.interface !== null) {
+                let ip = form.interface.meta.address.split('/');
+                if (ip.length === 2) {
+                    form.subnet = form.interface.meta.address;
+                    form.address.local = ip[0];
+                }
             }
         }
         this.setState({form});
+    }
+    async loadInterfaces() {
+        if (this.state.form.nas !== null) {
+            this.setState({loading:true,interfaces:[]});
+            try {
+                const formData = new FormData();
+                formData.append(Lang.get('nas.form_input.user'), this.state.form.nas.meta.auth.user);
+                formData.append(Lang.get('nas.form_input.pass'), this.state.form.nas.meta.auth.pass);
+                formData.append(Lang.get('nas.form_input.pass_confirm'), this.state.form.nas.meta.auth.pass);
+                formData.append(Lang.get('nas.form_input.ip'), this.state.form.nas.meta.auth.ip);
+                formData.append(Lang.get('nas.form_input.port'), this.state.form.nas.meta.auth.port);
+                formData.append(Lang.get('nas.form_input.method'), this.state.form.nas.meta.auth.method);
+                let response = await loadNasIPAddress(formData);
+                if (response.data.params === null) {
+                    this.setState({loading:false});
+                    showError(response.data.message);
+                } else {
+                    this.setState({loading:false,interfaces:response.data.params});
+                }
+            } catch (e) {
+                this.setState({loading:false});
+                responseMessage(e);
+            }
+        }
     }
     async loadParentQueue(data = null) {
         this.setState({loading:true,queues:[]});
@@ -299,6 +337,7 @@ class FormProfile extends React.Component {
                 formData.append(Lang.get('profiles.form_input.code'), this.state.form.code);
                 formData.append(Lang.get('profiles.form_input.is_additional'), this.state.form.additional ? 1 : 0);
                 formData.append(Lang.get('profiles.form_input.address.local'), this.state.form.address.local);
+                formData.append(Lang.get('profiles.form_input.address.subnet'), this.state.form.subnet);
                 if (this.state.form.company !== null) formData.append(Lang.get('companies.form_input.name'), this.state.form.company.value);
                 if (this.state.form.nas !== null) formData.append(Lang.get('nas.form_input.name'), this.state.form.nas.value);
                 if (this.state.form.pool !== null) formData.append(Lang.get('nas.pools.form_input.name'), this.state.form.pool.value);
@@ -586,19 +625,32 @@ class FormProfile extends React.Component {
                                     </div>
                                     {this.state.form.type === null ? null :
                                         this.state.form.type.value === 'pppoe' ?
-                                            <div className="form-group row">
-                                                <label htmlFor="input-local-address" className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.local')}</label>
-                                                <div className="col-md-3">
-                                                    <MaskedInput name="local"
-                                                                 id="input-local-address"
-                                                                 guide={false} placeholderChar={'\u2000'}
-                                                                 onChange={this.handleChange}
-                                                                 pipe={pipeIp}
-                                                                 disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
-                                                                 placeholder={Lang.get('profiles.labels.address.local')}
-                                                                 value={this.state.form.address.local} className="form-control text-xs form-control-sm"/>
+                                            <React.Fragment>
+                                                <div className="form-group row">
+                                                    <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.interface')}</label>
+                                                    <div className="col-md-4">
+                                                        <Select options={this.state.interfaces}
+                                                                value={this.state.form.interface} maxMenuHeight={150}
+                                                                onChange={(e)=>this.handleSelect(e,'interface')}
+                                                                placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('profiles.labels.address.interface')})}
+                                                                noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:Lang.get('profiles.labels.address.interface')})}
+                                                                styles={FormControlSMReactSelect}/>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                                <div className="form-group row">
+                                                    <label htmlFor="input-local-address" className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.address.local')}</label>
+                                                    <div className="col-md-3">
+                                                        <MaskedInput name="local"
+                                                                     id="input-local-address"
+                                                                     guide={false} placeholderChar={'\u2000'}
+                                                                     onChange={this.handleChange}
+                                                                     pipe={pipeIp}
+                                                                     disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                                     placeholder={Lang.get('profiles.labels.address.local')}
+                                                                     value={this.state.form.address.local} className="form-control text-xs form-control-sm"/>
+                                                    </div>
+                                                </div>
+                                            </React.Fragment>
                                             : null
                                     }
                                 </React.Fragment>

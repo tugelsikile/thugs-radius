@@ -5,6 +5,7 @@
 
 namespace App\Repositories\User;
 
+use App\Helpers\SwitchDB;
 use App\Models\Menu\Menu;
 use App\Models\User\UserLevel;
 use App\Models\User\UserPrivilege;
@@ -179,6 +180,7 @@ class PrivilegeRepository
     {
         try {
             $response = collect();
+            new SwitchDB("mysql");
             $levels = UserLevel::orderBy('created_at', 'asc')->where('for_public',true);
             if (strlen($request->id) > 0) {
                 $levels = $levels->where('id', $request->id);
@@ -207,6 +209,9 @@ class PrivilegeRepository
                         'super' => $level->super,
                         'default' => $level->is_default,
                         'client' => $level->for_client,
+                        'require' => (object) [
+                            'nas' => $level->require_nas
+                        ],
                         'privileges' => $this->privilegeTables($level),
                     ]
                 ]);

@@ -51,6 +51,11 @@ class ProfileRepository
             $profile = NasProfile::where('id', $request[__('profiles.form_input.id')])->first();
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
+                if ($request->has(__('profiles.form_input.address.subnet'))) {
+                    $profile->netmask = $request[__('profiles.form_input.address.subnet')];
+                } else {
+                    $profile->netmask = null;
+                }
                 $profile->type = $request[__('profiles.form_input.type')];
                 $profile->code = $request[__('profiles.form_input.code')];
                 $profile->local_address = $request[__('profiles.form_input.address.local')];
@@ -137,6 +142,9 @@ class ProfileRepository
             $profile->id = Uuid::uuid4()->toString();
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional
+                if ($request->has(__('profiles.form_input.address.subnet'))) {
+                    $profile->netmask = $request[__('profiles.form_input.address.subnet')];
+                }
                 $profile->code = $request[__('profiles.form_input.code')];
                 $profile->local_address = $request[__('profiles.form_input.address.local')];
                 $profile->type = $request[__('profiles.form_input.type')];
@@ -225,6 +233,7 @@ class ProfileRepository
                         'value' => $profile->id,
                         'label' => $profile->name,
                         'meta' => (object) [
+                            'mikrotik_id' => $profile->profile_id,
                             'nas' => $profile->nasObj,
                             'pool' => $profile->poolObj,
                             'bandwidth' => $profile->bandwidthObj,
@@ -234,6 +243,7 @@ class ProfileRepository
                             'type' => $profile->type,
                             'additional' => $profile->is_additional,
                             'local' => $profile->local_address,
+                            'subnet' => $profile->netmask,
                             'queue' => $profile->parent_queue,
                             'dns' => $profile->dns_servers,
                             'limit' => (object) [

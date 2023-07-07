@@ -17,6 +17,7 @@ import BtnSort from "../../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Components/TableComponent";
 import FormPool from "./Tools/FormPool";
 import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
+import {TableHeader} from "./Tools/Mixed";
 
 class PoolPage extends React.Component {
     constructor(props) {
@@ -162,6 +163,13 @@ class PoolPage extends React.Component {
                     pools.filtered = pools.filtered.sort((a,b) => (a.meta.address[filter.sort.by] > b.meta.address[filter.sort.by]) ? -1 : ((b.meta.address[filter.sort.by] > a.meta.address[filter.sort.by]) ? 1 : 0));
                 }
                 break;
+            case 'module' :
+                if (filter.sort.dir === 'asc') {
+                    pools.filtered = pools.filtered.sort((a,b)=> (a.meta.address.module > b.meta.address.module) ? 1 : ((b.meta.address.module > a.meta.address.module) ? -1 : 0));
+                } else {
+                    pools.filtered = pools.filtered.sort((a,b)=> (a.meta.address.module > b.meta.address.module) ? -1 : ((b.meta.address.module > a.meta.address.module) ? 1 : 0));
+                }
+                break;
         }
         loadings.pools = false;
         this.setState({loadings,pools});
@@ -285,41 +293,11 @@ class PoolPage extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead>
-                                        <tr>
-                                            {this.state.pools.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
-                                                    <div className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.pools} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className={this.state.pools.filtered.length === 0 ? "align-middle pl-2" : "align-middle"}>
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('nas.pools.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="first"
-                                                         name={Lang.get('nas.pools.labels.address.first')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="last"
-                                                         name={Lang.get('nas.pools.labels.address.last')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center pr-2" width={30}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                        <TableHeader filter={this.state.filter} pools={this.state.pools} loadings={this.state.loadings} onCheck={this.handleCheck} type="header" onSort={this.handleSort}/>
                                         </thead>
                                         <tbody>
                                         {this.state.pools.filtered.length === 0 ?
-                                            <DataNotFound colSpan={5} message={Lang.get('nas.pools.labels.not_found')}/>
+                                            <DataNotFound colSpan={6} message={Lang.get('nas.pools.labels.not_found')}/>
                                             :
                                             this.state.pools.filtered.map((item)=>
                                                 <tr key={item.value}>
@@ -328,6 +306,7 @@ class PoolPage extends React.Component {
                                                                    loading={this.state.loadings.pools} handleCheck={this.handleCheck}/>
                                                     <td className="align-middle text-xs">{item.label}</td>
                                                     <td className="align-middle text-xs">{item.meta.nas === null ? '-' : item.meta.nas.shortname}</td>
+                                                    <td className="align-middle text-xs">{item.meta.address.module}</td>
                                                     <td className="align-middle text-xs">{item.meta.address.first}</td>
                                                     <td className="align-middle text-xs">{item.meta.address.last}</td>
                                                     <TableAction className="pr-2" privilege={this.state.privilege} item={item} langs={{update:Lang.get('nas.pools.update.button'),delete:Lang.get('nas.pools.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
@@ -335,6 +314,9 @@ class PoolPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                        <TableHeader filter={this.state.filter} pools={this.state.pools} loadings={this.state.loadings} onCheck={this.handleCheck} type="footer" onSort={this.handleSort}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

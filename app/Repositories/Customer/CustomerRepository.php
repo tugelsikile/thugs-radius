@@ -6,6 +6,7 @@
 
 namespace App\Repositories\Customer;
 
+use App\Helpers\MikrotikAPI;
 use App\Helpers\Radius\Radius;
 use App\Helpers\Radius\RadiusDB;
 use App\Helpers\SwitchDB;
@@ -34,7 +35,29 @@ class CustomerRepository
         }
         $this->radiusDB = new RadiusDB();
     }
+    public function testConnectionWizard(Request $request) {
+        try {
+            $response = collect();
+            $response->push((object)[
+                'label' => __('wizard.errors.mikrotik.label'), 'status' => false, 'message' => '', 'data' => null,
+            ]);
+            $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+            try {
+                $checkNas = (new MikrotikAPI($customer->nasObj()->first()))->statusUserPPPoE($customer);
+                if ($checkNas != null) {
+                    $response[0]->status = true;
+                    $response[0]->message = 'ok';
+                    $response[0]->data = (object) $checkNas;
+                }
+            } catch (Exception $exception) {
+                $response[0]->message = $exception->getMessage();
+            }
 
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return mixed
@@ -323,7 +346,11 @@ class CustomerRepository
             $customer->nas_username = $request[__('customers.form_input.username')];
             $customer->nas_password = $request[__('customers.form_input.password')];
             $customer->created_by = $this->me->id;
+            $customer->active_at = Carbon::now();
             $customer->saveOrFail();
+            $customer->due_at = generateCompanyExpired($customer->active_at,$customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate);
+            $customer->saveOrFail();
+
             if ($request->has(__('customers.form_input.service.input'))) {
                 foreach ($request[__('customers.form_input.service.input')] as $item) {
                     $additional = new CustomerAdditionalService();
@@ -408,7 +435,7 @@ class CustomerRepository
                 }
                 $response->push((object) [
                     'value' => $customer->id,
-                    'label' => $customer->userObj == null ? $customer->nas_username : $customer->userObj->name,
+                    'label' => $customer->name,
                     'meta' => (object) [
                         'company' => $this->me->company,
                         'invoice' => $invoice,

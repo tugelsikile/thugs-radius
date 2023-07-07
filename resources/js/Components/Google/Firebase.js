@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
+import { getMessaging, getToken } from "firebase/messaging";
 const CryptoJS = require('crypto-js');
 
 const firebaseConfig = {
@@ -25,10 +26,14 @@ if (localCrypt !== null) {
     firebaseConfig.appId = decrypt.appId;
     firebaseConfig.measurementId = decrypt.measurementId;
 }
-
+const localVapidKey = localStorage.getItem('fireVapidKey');
+let key = "";
+if (localVapidKey !== null) {
+    key = CryptoJS.AES.decrypt(localVapidKey, window.location.hostname).toString(CryptoJS.enc.Utf8);
+}
+export const vapidKey = key;
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
 export const auth = getAuth(app);
 auth.languageCode = localStorage.getItem('locale_lang');
 export default app;

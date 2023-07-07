@@ -76,3 +76,17 @@ export const reloadNasStatus = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const loadNasIPAddress = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/nas/ip-address", data : data
+    });
+    return Promise.resolve(request);
+}
+export const wizardTestCustomerConnection = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/customers/test-connection/wizard", data : data
+    });
+    return Promise.resolve(request);
+}

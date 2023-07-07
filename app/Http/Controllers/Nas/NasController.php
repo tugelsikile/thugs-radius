@@ -64,6 +64,26 @@ class NasController extends Controller
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function interfaceIpAddress(Request $request): JsonResponse
+    {
+        try {
+            $username = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.user')]]));
+            $password = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.pass')]]));
+            $request = $request->merge([
+                __('nas.form_input.user') => $username,
+                __('nas.form_input.pass') => $password,
+                __('nas.form_input.pass_confirm') => $password,
+            ]);
+            return formatResponse(200,'ok', $this->repository->interfaceIpAddress($this->validation->testConnection($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
     /* @
      * @param Request $request
      * @return JsonResponse

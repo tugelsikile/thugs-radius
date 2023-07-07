@@ -16,6 +16,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+function cidr2NetmaskAddr (string $cidr): string
+{
+    $ta = substr ($cidr, strpos ($cidr, '/') + 1) * 1;
+    $netmask = str_split (str_pad (str_pad ('', $ta, '1'), 32, '0'), 8);
+    foreach ($netmask as &$element)
+        $element = bindec ($element);
+    return join('.', $netmask);
+}
 function randomNumeric($length = 5): string
 {
     return collect(array_merge(range('0', '9'), range('0', '9')))

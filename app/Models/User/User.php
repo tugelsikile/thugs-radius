@@ -3,15 +3,25 @@
 namespace App\Models\User;
 
 use App\Models\Company\ClientCompany;
+use App\Models\Nas\Nas;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 
 /**
  * @method static where(string $string, mixed|string $value)
+ * @property mixed|string $id
+ * @property mixed $level
+ * @property mixed|string $company
+ * @property mixed $name
+ * @property mixed $email
+ * @property mixed|string $password
+ * @property mixed|object $locale
+ * @property mixed|string $avatar
  */
 class User extends Authenticatable
 {
@@ -58,6 +68,10 @@ class User extends Authenticatable
     }
     public function companyObj(): BelongsTo
     {
-        return $this->belongsTo(ClientCompany::class,'company','id')->with(['packageObj','villageObj','districtObj','cityObj','provinceObj']);
+        return $this->setConnection('mysql')->belongsTo(ClientCompany::class,'company','id')->with(['packageObj','villageObj','districtObj','cityObj','provinceObj']);
+    }
+    public function nasGroups(): HasMany
+    {
+        return $this->setConnection('radius')->hasMany(Nas::class,'user','id');
     }
 }

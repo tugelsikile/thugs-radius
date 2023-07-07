@@ -11,6 +11,7 @@ return [
         'current' => ':Attribute_sekarang',
         'name' => ':Attribute_lengkap',
     ],
+    'by' => ':Attribute Oleh',
     'qr_code' => 'Kode QR :Attribute',
     'qr_info' => 'Scan Kode QR :Attribute diatas menggunakan aplikasi mobile banking anda untuk memulai pembayaran',
     'fee' => 'Biaya Layanan',
@@ -33,6 +34,7 @@ return [
     'select' => [
         'option' => 'Pilih :Attribute',
         'not_found' => ':Attribute tidak ditemukan',
+        'loading' => 'Mencari :Attribute',
     ],
     'add' => [
         'label' => 'Tambah :Attribute',
@@ -62,6 +64,10 @@ return [
         'select' => 'Hapus :Attribute terpilih',
         'success' => ':Attribute berhasil dihapus'
     ],
+    'connection' => [
+        'submit' => 'Periksa Koneksi',
+        'pending' => 'Memeriksa Koneksi',
+    ],
     'generate' => [
         'label' => 'Generate :Attribute',
         'form' => 'Formulir Generate :Attribute',
@@ -71,6 +77,7 @@ return [
         'pending' => 'Proses Generate :Attribute',
     ],
     'active' => [
+        'label' => 'Aktif',
         'success' => 'Status aktif :Attribute berhasil dirubah',
         'button' => 'Aktifkan :Attribute',
         'confirm' => [
@@ -81,6 +88,7 @@ return [
         ]
     ],
     'inactive' => [
+        'label' => 'Non Aktif',
         'success' => 'Status nonaktif :Attribute berhasil dirubah',
         'button' => 'Nonaktifkan :Attribute',
         'confirm' => [

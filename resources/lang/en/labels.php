@@ -11,6 +11,11 @@ return [
         'current' => 'current_:Attribute',
         'name' => 'full_:Attribute',
     ],
+    'bytes' => [
+        'in' => 'Bytes In',
+        'out' => 'Bytes Out',
+        'all' => 'Bytes In / Out',
+    ],
     'by' => ':Attribute By',
     'qr_code' => ':Attribute QR Code',
     'qr_info' => 'Scan QR Code :Attribute above with your favourite mobile banking apps to start payment',

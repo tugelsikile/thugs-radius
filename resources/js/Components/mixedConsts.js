@@ -475,11 +475,13 @@ export const priorityList = [
     { value : 2, label : 2 },
     { value : 1, label : 1 },
 ]
-export const formatBytes = (bytes, decimals = 0, real = false) => {
+export const formatBytes = (bytes, decimals = 0, real = false, upper = true) => {
     if (!+bytes) return '0 Bytes'
     let k = 1000
     if (real) k = 1024;
-    bytes = bytes * k;
+    if (upper) {
+        bytes = bytes * k;
+    }
     const dm = decimals < 0 ? 0 : decimals
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 

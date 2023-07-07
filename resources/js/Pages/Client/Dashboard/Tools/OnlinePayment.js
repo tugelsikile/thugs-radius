@@ -111,24 +111,25 @@ class OnlinePayment extends React.Component {
         if (! this.state.loadings.transaction) {
             if (this.state.form.payment_gateway !== null) {
                 if (this.state.form.payment_gateway.meta.module === 'duitku') {
-                    let loadings = this.state.loadings;
-                    loadings.transaction = true; this.setState({loadings,channels:[]});
-                    try {
-                        const formData = new FormData();
-                        formData.append('order_amount', 0);
-                        formData.append('company', this.props.user.meta.company.id);
-                        formData.append('gateway', this.state.form.payment_gateway.value);
-                        let response = await paymentChannelDUITKU(formData);
-                        if (response.data.params === null) {
+                    if (this.state.channels.length === 0) {
+                        let loadings = this.state.loadings;
+                        loadings.transaction = true; this.setState({loadings,channels:[]});
+                        try {
+                            const formData = new FormData();
+                            formData.append('order_amount', 0);
+                            formData.append('company', this.props.user.meta.company.id);
+                            formData.append('gateway', this.state.form.payment_gateway.value);
+                            let response = await paymentChannelDUITKU(formData);
+                            if (response.data.params === null) {
+                                loadings.transaction = false; this.setState({loadings});
+                            } else {
+                                loadings.transaction = false;
+                                this.setState({loadings,channels:response.data.params});
+                            }
+                        } catch (e) {
                             loadings.transaction = false; this.setState({loadings});
-                        } else {
-                            loadings.transaction = false;
-                            this.setState({loadings,channels:response.data.params});
+                            responseMessage(e);
                         }
-                    } catch (e) {
-                        console.log('channel', e);
-                        loadings.transaction = false; this.setState({loadings});
-                        responseMessage(e);
                     }
                 }
             }

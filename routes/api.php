@@ -98,6 +98,7 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
     });
     Route::group(['prefix' => 'nas'], function () {
         Route::any('/', [NasController::class, 'crud']);
+        Route::post('/check-requirement', [NasController::class, 'checkRequirement']);
         Route::post('/ip-address', [NasController::class, 'interfaceIpAddress']);
         Route::post('/reload-status', [NasController::class, 'reloadStatus']);
         Route::post('/test-connection', [NasController::class, 'testConnection']);
@@ -113,6 +114,7 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::any('/', [CustomerController::class, 'crud']);
         Route::patch('/active', [CustomerController::class, 'statusActive']);
         Route::put('/generate', [CustomerController::class, 'generate']);
+        Route::post('/kick-online', [CustomerController::class, 'kickOnlineUser']);
         Route::group(['prefix' => 'invoices'],function () {
             Route::any('/', [InvoiceController::class,'crud']);
             Route::any('/payments', [InvoiceController::class, 'payment']);

@@ -15,6 +15,24 @@ class CustomerValidation
      * @return Request
      * @throws Exception
      */
+    public function kickOnlineUser(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                'username' => 'required|exists:customers,nas_username'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function testConnectionWizard(Request $request): Request
     {
         try {

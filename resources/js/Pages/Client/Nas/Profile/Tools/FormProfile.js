@@ -13,13 +13,15 @@ import Select from "react-select";
 import {InputText} from "../../../../../Components/CustomInput";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPencilAlt, faPlus, faRefresh, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
-import {crudProfile, getParentQueue, loadNasIPAddress} from "../../../../../Services/NasService";
+import {checkNasRequirements, crudProfile, getParentQueue, loadNasIPAddress} from "../../../../../Services/NasService";
 import {showError, showSuccess} from "../../../../../Components/Toaster";
 import {NumericFormat} from "react-number-format";
 import MaskedInput from "react-text-mask";
 import FormNas from "../../Tools/FormNas";
 import FormPool from "../Pool/Tools/FormPool";
 import FormBandwidth from "../Bandwidth/Tools/FormBandwidth";
+import {faCircleCheck, faTimesCircle} from "@fortawesome/free-regular-svg-icons";
+import {statusRequirements} from "./Mixed";
 
 // noinspection JSCheckFunctionSignatures,CommaExpressionJS,DuplicatedCode
 class FormProfile extends React.Component {
@@ -41,6 +43,7 @@ class FormProfile extends React.Component {
                 bandwidth : { open : false, data : null },
             },
             interfaces : [],
+            nas_requirements : { passed : false, checks : [], loading : false },
         };
         this.handleSave = this.handleSave.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
@@ -53,9 +56,11 @@ class FormProfile extends React.Component {
         this.toggleBandwidth = this.toggleBandwidth.bind(this);
         this.togglePool = this.togglePool.bind(this);
         this.loadInterfaces = this.loadInterfaces.bind(this);
+        this.loadNasRequirements = this.loadNasRequirements.bind(this);
     }
     componentWillReceiveProps(props) {
         this.setState({loading:true});
+        let nas_requirements = this.state.nas_requirements;
         let dataParentQueue = null;
         let form = this.state.form;
         let index;
@@ -72,6 +77,7 @@ class FormProfile extends React.Component {
                 form.description = '', form.invalid_code = false,
                 form.address.local = '', form.address.dns = [],
                 form.queue = null, form.subnet = '';
+            nas_requirements.passed = false; nas_requirements.checks = [];
         } else {
             if (typeof props.type !== 'undefined') {
                 if (props.type !== null) {
@@ -163,12 +169,12 @@ class FormProfile extends React.Component {
                 if (props.data.meta.queue !== null) {
                     dataParentQueue = props.data.meta.queue;
                 }
-                //console.log(form, props);
             }
         }
-        this.setState({form,loading:false}, ()=>{
+        this.setState({nas_requirements,form,loading:false}, ()=>{
             if (form.nas !== null) {
-                this.loadParentQueue(dataParentQueue);
+                this.loadParentQueue(dataParentQueue)
+                    .then(()=>this.loadNasRequirements());
             }
         });
     }
@@ -218,11 +224,7 @@ class FormProfile extends React.Component {
             if (event.target.name === 'local') {
                 form.address.local = event.target.value;
             } else {
-                if (hasWhiteSpace(form.code)) {
-                    form.invalid_code = true;
-                } else {
-                    form.invalid_code = false;
-                }
+                form.invalid_code = hasWhiteSpace(form.code);
                 form[event.target.name] = event.target.value;
             }
         } else if (event.target.name === 'dns') {
@@ -255,8 +257,9 @@ class FormProfile extends React.Component {
             form.pool = null,
             form.queue = null;
             if (form.nas !== null) {
-                this.loadParentQueue();
-                this.loadInterfaces();
+                this.loadParentQueue()
+                    .then(()=>this.loadInterfaces())
+                    .then(()=>this.loadNasRequirements());
             }
         }
         if (name === 'interface') {
@@ -268,7 +271,40 @@ class FormProfile extends React.Component {
                 }
             }
         }
+        if (name === 'type') {
+            if (form.nas !== null) {
+                this.loadNasRequirements();
+            }
+        }
         this.setState({form});
+    }
+    async loadNasRequirements() {
+        if (!this.state.nas_requirements.loading) {
+            if (! this.state.form.additional) {
+                if (this.state.form.nas !== null) {
+                    let nas_requirements = this.state.nas_requirements;
+                    nas_requirements.loading = true, nas_requirements.passed = false, nas_requirements.checks = [];
+                    this.setState({nas_requirements});
+                    try {
+                        const formData = new FormData();
+                        formData.append(Lang.get('nas.form_input.id'), this.state.form.nas.value);
+                        formData.append(Lang.get('profiles.form_input.type'), this.state.form.type.value);
+                        let response = await checkNasRequirements(formData);
+                        if (response.data.params === null) {
+                            nas_requirements.loading = false; this.setState({nas_requirements});
+                            showError(response.data.message);
+                        } else {
+                            nas_requirements.loading = false;
+                            nas_requirements.checks = response.data.params;
+                            this.setState({nas_requirements});
+                        }
+                    } catch (e) {
+                        nas_requirements.loading = false; this.setState({nas_requirements});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
     }
     async loadInterfaces() {
         if (this.state.form.nas !== null) {
@@ -435,7 +471,7 @@ class FormProfile extends React.Component {
                                         {this.state.form.nas === null ? null :
                                             <React.Fragment>
                                                 <label className="col-md-2 col-form-label text-xs">{this.state.form.nas.meta.auth.method === 'api' ? Lang.get('nas.labels.ip.label') : Lang.get('nas.labels.domain.label')}</label>
-                                                <div className="col-md-2">
+                                                <div className="col-md-3">
                                                     <div className="form-control form-control-sm text-xs">{this.state.form.nas.meta.auth.method === 'api' ? this.state.form.nas.meta.auth.ip : this.state.form.nas.meta.auth.host}</div>
                                                 </div>
                                             </React.Fragment>
@@ -446,17 +482,65 @@ class FormProfile extends React.Component {
                                         this.state.form.id === null ?
                                             <div className="form-group row">
                                                 <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
-                                                <div className="col-md-2">
-                                                    <Select styles={FormControlSMReactSelect} options={serviceType} value={this.state.form.type} isDisabled={this.state.loading} onChange={(e)=>this.handleSelect(e,'type')}/>
+                                                <div className="col-md-3">
+                                                    <Select styles={FormControlSMReactSelect}
+                                                            options={serviceType}
+                                                            value={this.state.form.type}
+                                                            isDisabled={this.state.loading}
+                                                            onChange={(e)=>this.handleSelect(e,'type')}/>
                                                 </div>
                                             </div>
                                             :
                                             <div className="form-group row">
                                                 <label className="col-md-2 col-form-label text-xs">{Lang.get('profiles.labels.service_type')}</label>
-                                                <div className="col-md-2">
+                                                <div className="col-md-4">
                                                     <div className="form-control form-control-sm text-xs">{this.state.form.type.value}</div>
                                                 </div>
                                             </div>
+                                    }
+
+                                    {this.state.form.nas !== null && this.state.form.type !== null &&
+                                        <React.Fragment>
+                                            <div className="row">
+                                                <div className="col-md-6">
+                                                    <div className="card card-outline card-secondary">
+                                                        <div className="card-header">
+                                                            <h4 className="card-title text-sm">{Lang.get('nas.requirements.title')}</h4>
+                                                            <div className="card-tools">
+                                                                <button type="button" className="btn btn-tool" data-card-widget="collapse"><i className="fas fa-minus"/></button>
+                                                                <button type="button" className="btn-tool btn" onClick={this.loadNasRequirements} disabled={this.state.loading}><FontAwesomeIcon icon={faRefresh}/></button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="card-body p-0">
+                                                            <table className="table table-sm table-striped">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th className="align-middle text-xs pl-2">Check</th>
+                                                                    <th width={50} className="align-middle text-xs">Status</th>
+                                                                    <th width={50} className="align-middle text-xs pr-2">Action</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                {this.state.nas_requirements.checks.map((item,index)=>
+                                                                    <tr key={`nr_${index}`}>
+                                                                        <td className="align-middle pl-2">{item.label}</td>
+                                                                        <td className="align-middle text-center">
+                                                                            {statusRequirements(item) ?
+                                                                                <FontAwesomeIcon icon={faCircleCheck} className="text-success"/>
+                                                                                :
+                                                                                <FontAwesomeIcon icon={faTimesCircle} className="text-danger"/>
+                                                                            }
+                                                                        </td>
+                                                                        <td className="align-middle text-center pr-2"></td>
+                                                                    </tr>
+                                                                )}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </React.Fragment>
                                     }
 
                                     <div className="form-group row">

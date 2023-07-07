@@ -37,6 +37,172 @@ class MikrotikAPI
         $this->query = '';
         $this->me = auth()->guard('api')->user();
     }
+    public function statusActivePPPoEServer() {
+        try {
+            $this->query = (new Query("/interface/pppoe-server/server/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    foreach ($res as $item) {
+                        if ($item['disabled'] == 'false') {
+                            return $item;
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    public function statusAAARadius() {
+        try {
+            $this->query = (new Query("/ppp/aaa/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    return $res->first();
+
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    public function statusRadius() {
+        try {
+            $this->query = (new Query("/radius/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    foreach ($res as $item) {
+                        if ($item['disabled'] == 'false') {
+                            return $item;
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    public function statusRadiusIncoming() {
+        try {
+            $this->query = (new Query("/radius/incoming/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    return $res->first();
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    /* @
+     * @return Collection
+     * @throws Exception
+     */
+    public function checkRequirementPPPoE(): Collection
+    {
+        try {
+            $response = collect();
+            $response->push((object)[ 'value' => 'pppoe-server', 'label' => __('nas.requirements.pppoe.server.status'), 'status' => $this->statusActivePPPoEServer() ]);
+            $response->push((object)[ 'value' => 'radius', 'label' => __('nas.requirements.radius.server.status'), 'status' => $this->statusRadius() ]);
+            $response->push((object)[ 'value' => 'radius-aaa', 'label' => __('nas.requirements.radius.aaa.status'), 'status' => $this->statusAAARadius() ]);
+            $response->push((object)[ 'value' => 'radius-incoming', 'label' => __('nas.requirements.radius.incoming.status'), 'status' => $this->statusRadiusIncoming() ]);
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function statusHotspotServer() {
+        try {
+            $this->query = (new Query("/ip/hotspot/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    foreach ($res as $item) {
+                        if ($item['disabled'] == 'false') {
+                            return $item;
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    public function statusHotspotServerProfile() {
+        try {
+            $this->query = (new Query("/ip/hotspot/profile/print"));
+            if ($this->client->connect()) {
+                $res = collect($this->client->query($this->query)->read());
+                if ($res->count() > 0) {
+                    foreach ($res as $item) {
+                        if (array_key_exists('use-radius', $item)) {
+                            if ($item['use-radius'] != 'false') {
+                                return $item;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+    /* @
+     * @return Collection
+     * @throws Exception
+     */
+    public function checkRequirementHotspot(): Collection
+    {
+        try {
+            $response = collect();
+            $response->push((object)[ 'value' => 'hotspot-server', 'label' => __('nas.requirements.hotspot.server.status'),'status' => $this->statusHotspotServer() ]);
+            $response->push((object)[ 'value' => 'hotspot-server-profile', 'label' => __('nas.requirements.hotspot.profile.status'), 'status' => $this->statusHotspotServerProfile() ]);
+            $response->push((object)[ 'value' => 'radius', 'label' => __('nas.requirements.radius.server.status'), 'status' => $this->statusRadius() ]);
+            $response->push((object)[ 'value' => 'radius-aaa', 'label' => __('nas.requirements.radius.aaa.status'), 'status' => $this->statusAAARadius() ]);
+            $response->push((object)[ 'value' => 'radius-incoming', 'label' => __('nas.requirements.radius.incoming.status'), 'status' => $this->statusRadiusIncoming() ]);
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @return Collection
+     */
+    public function allOnlineUsers(): Collection
+    {
+        try {
+            $response = collect();
+            $this->query = (new Query("/ppp/active/print"));
+            if ($this->client->connect()) {
+                $pppoe = collect($this->client->query($this->query)->read());
+                if ($pppoe->count() > 0) {
+                    foreach ($pppoe as $item) {
+                        $response->push($item);
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return collect();
+        }
+    }
     public function statusUserPPPoE(Customer $customer) {
         try {
             $this->query = (new Query("/ppp/active/print"))
@@ -92,17 +258,19 @@ class MikrotikAPI
                     "host" => $hostname, "user" => $request[__('nas.form_input.user')], "pass" => $request[__('nas.form_input.pass')], "timeout" => 1, "attempts" => 1
                 ]);
             }
-            if ($this->client->connect()) {
-                $this->query = (new Query('/system/identity/print'));
-                try {
-                    $res = collect($this->client->query($this->query)->read());
-                    if ($res->count() > 0) {
-                        $res = $res->first();
-                        $response->message = $res['name'];
-                        $response->success = true;
+            if ($this->client != null) {
+                if ($this->client->connect()) {
+                    $this->query = (new Query('/system/identity/print'));
+                    try {
+                        $res = collect($this->client->query($this->query)->read());
+                        if ($res->count() > 0) {
+                            $res = $res->first();
+                            $response->message = $res['name'];
+                            $response->success = true;
+                        }
+                    } catch (Exception $exception) {
+                        throw new Exception($exception->getMessage(),500);
                     }
-                } catch (Exception $exception) {
-                    throw new Exception($exception->getMessage(),500);
                 }
             }
             return $response;
@@ -278,7 +446,7 @@ class MikrotikAPI
                     }
                 }
                 if ($nasProfile->dns_servers != null) {
-                    $this->query = $this->query->equal('dns-server', collect($nasProfile->dns_servers)->join(','));
+                    $this->query = $this->query->equal('dns-server', collect($nasProfile->dns_servers)->chunk(2)->first()->join(','));
                 }
                 if ($nasProfile->parent_queue != null) {
                     $this->query = $this->query->equal('parent-queue', $nasProfile->parent_queue->name);
@@ -288,7 +456,7 @@ class MikrotikAPI
                     $this->query = $this->query->equal('rate-limit', $rl);
                 }
                 $res = $this->client->query($this->query)->read();
-                Log::info($res);
+                Log::alert($res == null);
 
                 if ($res != null) {
                     if (array_key_exists('after', $res)) {

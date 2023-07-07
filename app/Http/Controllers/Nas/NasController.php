@@ -67,18 +67,43 @@ class NasController extends Controller
 
     /* @
      * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
+    private function mergeNasRequest(Request $request): Request
+    {
+        try {
+            $username = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.user')]]));
+            $password = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.pass')]]));
+            return $request->merge([
+                __('nas.form_input.user') => $username,
+                __('nas.form_input.pass') => $password,
+                __('nas.form_input.pass_confirm') => $password,
+            ]);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function checkRequirement(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->checkRequirement($this->validation->checkRequirement($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
      * @return JsonResponse
      */
     public function interfaceIpAddress(Request $request): JsonResponse
     {
         try {
-            $username = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.user')]]));
-            $password = $this->repository->encryptDecrypt(new Request(['action' => 'decrypt', 'value' => $request[__('nas.form_input.pass')]]));
-            $request = $request->merge([
-                __('nas.form_input.user') => $username,
-                __('nas.form_input.pass') => $password,
-                __('nas.form_input.pass_confirm') => $password,
-            ]);
+            $request = $this->mergeNasRequest($request);
             return formatResponse(200,'ok', $this->repository->interfaceIpAddress($this->validation->testConnection($request)));
         } catch (Exception $exception) {
             return formatResponse($exception->getCode(), $exception->getMessage());

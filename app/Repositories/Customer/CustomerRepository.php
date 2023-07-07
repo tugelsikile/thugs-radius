@@ -35,7 +35,32 @@ class CustomerRepository
         }
         $this->radiusDB = new RadiusDB();
     }
-    public function testConnectionWizard(Request $request) {
+    public function kickOnlineUser(Request $request) {
+        try {
+            $customer = Customer::where('nas_username', $request->username)->first();
+            if ($customer->nasObj()->first() != null) {
+                switch ($customer->method_type){
+                    case 'pppoe':
+                        (new MikrotikAPI($customer->nasObj()->first()))->kickOnlinePPPoE($customer);
+                        break;
+                    case 'hotspot':
+                        (new MikrotikAPI($customer->nasObj()->first()))->kickOnlineHostpot($customer);
+                        break;
+                }
+                (new RadiusDB())->kickOnline($customer);
+            }
+            return $customer;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function testConnectionWizard(Request $request): Collection
+    {
         try {
             $response = collect();
             $response->push((object)[

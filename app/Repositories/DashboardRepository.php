@@ -8,6 +8,7 @@ use App\Helpers\Server\Server;
 use App\Helpers\SwitchDB;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerInvoicePayment;
+use App\Models\Customer\CustomerTraffic;
 use App\Models\Nas\Nas;
 use App\Models\Radius\Radacct;
 use App\Repositories\Customer\InvoiceRepository;
@@ -16,6 +17,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Ramsey\Uuid\Uuid;
 
 
 class DashboardRepository
@@ -61,7 +63,48 @@ class DashboardRepository
         try {
             $response = collect();
             new SwitchDB();
-            $customers = Radacct::orderBy('acctstarttime', 'desc')->whereDate('acctstarttime',Carbon::now()->format('Y-m-d'))->whereNull('acctstoptime')->distinct('username')->get();
+            $routers = Nas::all();
+            foreach ($routers as $router) {
+                $online = (new MikrotikAPI($router))->allOnlineUsers();
+                if ($online->count() > 0) {
+                    foreach ($online as $item) {
+                        $customer = Customer::where('nas_username', $item['name'])->first();
+                        if ($customer != null) {
+                            $bytes = explode('/', $item['bytes']);
+                            if (collect($bytes)->count() == 2) {
+                                $newTraffic = new CustomerTraffic();
+                                $newTraffic->id = Uuid::uuid4()->toString();
+                                $newTraffic->customer = $customer->id;
+                                $newTraffic->input = $bytes[0];
+                                $newTraffic->output = $bytes[1];
+                                $newTraffic->saveOrFail();
+                            }
+                            $traffics = collect();
+                            $lastTraffics = CustomerTraffic::where('customer', $customer->id)->limit(5)->offset(0)->orderBy('created_at','asc')->get();
+                            if ($lastTraffics->count() > 0) {
+                                foreach ($lastTraffics as $lastTraffic) {
+                                    $traffics->push($lastTraffic->input . '/' . $lastTraffic->output);
+                                }
+                            }
+                            $response->push((object)[
+                                'label' => $customer->name,
+                                'meta' => (object) [
+                                    'username' => $item['name'],
+                                    'type' => $customer->method_type,
+                                    'duration' => $item['uptime'],
+                                    'ip' => $item['address'],
+                                    'mac' => $item['caller-id'],
+                                    'bytes' => $item['bytes'],
+                                    'last_bytes' => $traffics,
+                                    'packets' => $item['packets']
+                                ]
+                            ]);
+                        }
+                    }
+                }
+                //$response = $response->merge($online)->values();
+            }
+            /*$customers = Radacct::orderBy('acctstarttime', 'desc')->whereDate('acctstarttime',Carbon::now()->format('Y-m-d'))->whereNull('acctstoptime')->distinct('username')->get();
             if ($customers->count() > 0) {
                 foreach ($customers as $customer) {
                     $cs = $customer->customerObj;
@@ -82,7 +125,7 @@ class DashboardRepository
                         ]
                     ]);
                 }
-            }
+            }*/
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -166,6 +209,7 @@ class DashboardRepository
                     }
                     if (property_exists($req,'success')) {
                         $response[$index + 2]->value = $req->success;
+                        $response[$index + 2]->onlines = (new MikrotikAPI($item))->allOnlineUsers();
                     }
                 }
             }

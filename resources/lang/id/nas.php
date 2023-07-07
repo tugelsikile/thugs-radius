@@ -41,6 +41,7 @@ return [
             'short' => 'Domain',
             'info' => 'Pastikan router anda sudah diinstall domain dan ssl yang valid, Info lebih lanjut <a href="" target="_blank">klik disini</a>',
         ],
+        'interface' => 'Interface :Attribute',
         'ip' => [
             'label' => 'IP Router Koneksi',
             'short' => 'IP / Hostname',
@@ -168,5 +169,32 @@ return [
     ],
     'tutorial' => [
         'title' => 'Cara Setting SSL Pada Mikrotik',
+    ],
+    'requirements' => [
+        'title' => 'Router Requirement Checks',
+        'pppoe' => [
+            'server' => [
+                'status' => 'Status PPPoE Server',
+            ]
+        ],
+        'radius' => [
+            'server' => [
+                'status' => 'Status Radius Server',
+            ],
+            'aaa' => [
+                'status' => 'Status AAA Radius',
+            ],
+            'incoming' => [
+                'status' => 'Status Incoming Radius',
+            ]
+        ],
+        'hotspot' => [
+            'server' => [
+                'status' => 'Status Hotspot Server'
+            ],
+            'profile' => [
+                'status' => 'Status Hostpot Profile'
+            ]
+        ]
     ]
 ];

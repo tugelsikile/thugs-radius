@@ -11,6 +11,11 @@ return [
         'current' => ':Attribute_sekarang',
         'name' => ':Attribute_lengkap',
     ],
+    'bytes' => [
+        'in' => 'Bytes In',
+        'out' => 'Bytes Out',
+        'all' => 'Bytes In / Out',
+    ],
     'by' => ':Attribute Oleh',
     'qr_code' => 'Kode QR :Attribute',
     'qr_info' => 'Scan Kode QR :Attribute diatas menggunakan aplikasi mobile banking anda untuk memulai pembayaran',

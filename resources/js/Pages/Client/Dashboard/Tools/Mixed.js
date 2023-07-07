@@ -1,16 +1,16 @@
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
-    faArrowCircleRight,
+    faArrowCircleRight, faBoltLightning,
     faCartShopping,
-    faCashRegister, faCircleNotch,
-    faMoneyBillTransfer, faRefresh, faSyncAlt,
+    faCashRegister, faCircleNotch, faExclamationTriangle,
+    faMoneyBillTransfer, faRefresh, faSyncAlt, faUserSlash,
     faUserTie
 } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import {
     CardPreloader,
-    customPreventDefault,
+    customPreventDefault, formatBytes,
     formatLocaleDate,
     formatLocaleString, ucFirst, ucWord, wordLimit
 } from "../../../../Components/mixedConsts";
@@ -103,6 +103,9 @@ export const DashboardStatusServer = (props) => {
             {props.loading && <CardPreloader/>}
             <div className="card-header px-3">
                 <label className="card-title text-xs h4">{Lang.get('labels.status',{Attribute:'Server'})}</label>
+                <div className="card-tools">
+                    <button type="button" onClick={()=>props.onRefresh()} className="btn btn-tool btn-xs"><FontAwesomeIcon size="xs" icon={faRefresh}/></button>
+                </div>
             </div>
             <div className="card-body p-0">
                 <ul className="nav nav-pills flex-column">
@@ -147,7 +150,48 @@ export const DashboardStatusServer = (props) => {
         </div>
     )
 }
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend,} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+ChartJS.register( CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
 export const TableOnlineCustomer = (props) => {
+    const options = {
+        //maintainAspectRatio : false,
+        responsive: true,
+        //maxBarThickness:5,
+        minBarLength:7,
+        scales: {
+            x: {
+                ticks:{
+                    stacked: false,
+                    display: false
+                },
+                grid: {
+                    stacked: false,
+                    display: false,
+                }
+            },
+            y: {
+                ticks:{
+                    display:false
+                },
+                grid: {
+                    display: false
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false,
+                position: 'top', // as const,
+            },
+            title: {
+                display: false,
+                text: 'Chart.js Bar Chart',
+            },
+        },
+    };
+    const labels = props.chart.labels;
+
     return (
         <table className="table table-head-fixed table-hover table-striped table-sm">
             <thead>
@@ -158,7 +202,7 @@ export const TableOnlineCustomer = (props) => {
                 <th className="align-middle text-xs">{Lang.get('labels.duration',{Attribute:''})}</th>
                 <th className="align-middle text-xs">{Lang.get('labels.ip',{Attribute:Lang.get('customers.labels.menu')})}</th>
                 <th className="align-middle text-xs">{Lang.get('labels.mac',{Attribute:Lang.get('customers.labels.menu')})}</th>
-                <th className="align-middle text-xs">{Lang.get('labels.date',{Attribute:Lang.get('labels.online',{Attribute:Lang.get('customers.labels.menu')})})}</th>
+                <th width={150} className="align-middle text-xs">{Lang.get('labels.bytes.all')}</th>
                 <th width={50} className="align-middle text-xs pr-2 text-center">
                     <button title="Reload" onClick={props.onClick} className="btn btn-tool" type="button" disabled={props.loading}><FontAwesomeIcon spin={props.loading} icon={props.loading ? faCircleNotch : faRefresh} size="xs"/></button>
                 </th>
@@ -169,14 +213,23 @@ export const TableOnlineCustomer = (props) => {
                 <DataNotFound colSpan={8} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
                 :
                 props.data.map((item,index)=>
-                    <tr key={item.value}>
+                    <tr key={item.meta.username}>
                         <td className="align-middle text-xs text-center pl-2">{index + 1}</td>
-                        <td className="align-middle text-xs">{item.meta.customer === null ? item.label : item.meta.customer.name}</td>
-                        <td className="align-middle text-xs">{item.meta.customer === null ? null : item.meta.customer.method_type}</td>
-                        <td className="align-middle text-xs">{sumDuration(item.meta.duration)}</td>
+                        <td className="align-middle text-xs">{item.label}</td>
+                        <td className="align-middle text-xs">{item.meta.type}</td>
+                        <td className="align-middle text-xs">{item.meta.duration}</td>
                         <td className="align-middle text-xs">{item.meta.ip}</td>
                         <td className="align-middle text-xs">{item.meta.mac}</td>
-                        <td colSpan={2} className="align-middle text-xs pr-2">{formatLocaleDate(item.meta.at)}</td>
+                        <td className="align-middle text-xs">
+                            <Bar width={70} height={20} options={options} className="mb-1"
+                                 data={{labels,datasets:props.chart.customers.findIndex((f)=>f.customer === item.label) < 0 ? [] : props.chart.customers[props.chart.customers.findIndex((f)=>f.customer === item.label)].datasets}} />
+                            {/*{formatBytes(item.meta.bytes.split('/')[0],0,true,false)} / {formatBytes(item.meta.bytes.split('/')[1],0,true,false)}*/}
+                        </td>
+                        <td className="align-middle text-center text-xs pr-2">
+                            <button data-value={item.meta.username} disabled={props.loading} onClick={props.onKick} title="Kick User" className="btn btn-outline-danger btn-block btn-xs text-xs">
+                                <FontAwesomeIcon icon={faUserSlash} size="xs"/>
+                            </button>
+                        </td>
                     </tr>
                 )
             }

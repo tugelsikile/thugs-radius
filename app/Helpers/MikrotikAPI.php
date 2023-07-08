@@ -189,11 +189,13 @@ class MikrotikAPI
         try {
             $response = collect();
             $this->query = (new Query("/ppp/active/print"));
-            if ($this->client->connect()) {
-                $pppoe = collect($this->client->query($this->query)->read());
-                if ($pppoe->count() > 0) {
-                    foreach ($pppoe as $item) {
-                        $response->push($item);
+            if ($this->client != null) {
+                if ($this->client->connect()) {
+                    $pppoe = collect($this->client->query($this->query)->read());
+                    if ($pppoe->count() > 0) {
+                        foreach ($pppoe as $item) {
+                            $response->push($item);
+                        }
                     }
                 }
             }

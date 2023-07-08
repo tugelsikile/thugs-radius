@@ -19,7 +19,9 @@ const mix = require('laravel-mix');
 /********* GUESTS ***********/
 /*
 mix.js('resources/js/src/guests/forgot-password.js','public/js/guests');
+*/
 mix.js('resources/js/src/guests/register.js','public/js/guests');
+/*
 mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 */
 
@@ -27,7 +29,9 @@ mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 
 /*
 mix.js('resources/js/src/auth/users/profile.js','public/js/auth/users');
+*/
 mix.js('resources/js/src/auth/login.js','public/js');
+/*
 mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
@@ -43,9 +47,8 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');*/
 
 /*---------- CLIENTS ----------*/
 
-
-mix.js('resources/js/src/clients/index.js','public/js/clients');
 /*
+mix.js('resources/js/src/clients/index.js','public/js/clients');
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');

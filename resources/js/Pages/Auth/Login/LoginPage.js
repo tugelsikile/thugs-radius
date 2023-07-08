@@ -69,11 +69,8 @@ class LoginPage extends React.Component {
     validateCaptcha(event) {
         event.preventDefault();
         let form = this.state.form;
-        if (validateCaptcha(form.kode_keamanan,true)) {
-            form.captcha_valid = true;
-        } else {
-            form.captcha_valid = false;
-        }
+        form.captcha_valid = validateCaptcha(form.kode_keamanan, true);
+        form.kode_keamanan = '';
         this.setState({form});
     }
     handleChange(event) {
@@ -221,13 +218,15 @@ class LoginPage extends React.Component {
                                 </div>
                             </FadeInOut>
 
-                            <div className="social-auth-links text-center">
-                                <p>- {Lang.get('labels.or').toUpperCase()} -</p>
-                                <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
-                                    <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
-                                    {Lang.get('auth.social.sign_in.button',{Social:Lang.get('auth.social.google.label')})}
-                                </a>
-                            </div>
+                            {auth !== null &&
+                                <div className="social-auth-links text-center">
+                                    <p>- {Lang.get('labels.or').toUpperCase()} -</p>
+                                    <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
+                                        <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
+                                        {Lang.get('auth.social.sign_in.button',{Social:Lang.get('auth.social.google.label')})}
+                                    </a>
+                                </div>
+                            }
 
                             <p className="mb-1 mt-5">
                                 <a href={`${window.origin}/forgot-password`}>{Lang.get('auth.forgot_password.label')}</a>

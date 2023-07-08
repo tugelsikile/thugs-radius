@@ -242,13 +242,15 @@ class RegisterPage extends React.Component{
                                     </div>
                                 </FadeInOut>
 
-                                <div className="social-auth-links text-center">
-                                    <p>- {Lang.get('labels.or').toUpperCase()} -</p>
-                                    <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
-                                        <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
-                                        {Lang.get('auth.social.sign_up.button',{Social:Lang.get('auth.social.google.label')})}
-                                    </a>
-                                </div>
+                                {auth !== null &&
+                                    <div className="social-auth-links text-center">
+                                        <p>- {Lang.get('labels.or').toUpperCase()} -</p>
+                                        <a onClick={this.handleGoogle} href="#" className="btn btn-block btn-danger">
+                                            <FontAwesomeIcon icon={faGooglePlus} className="mr-2"/>
+                                            {Lang.get('auth.social.sign_up.button',{Social:Lang.get('auth.social.google.label')})}
+                                        </a>
+                                    </div>
+                                }
 
                                 <p className="mb-1 mt-5">
                                     <a href={`${window.origin}/forgot-password`}>{Lang.get('auth.forgot_password.label')}</a>

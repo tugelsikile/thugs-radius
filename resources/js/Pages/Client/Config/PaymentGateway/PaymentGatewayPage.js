@@ -247,7 +247,7 @@ class PaymentGatewayPage extends React.Component {
                         <div className="container-fluid">
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.gateways && <CardPreloader/>}
-                                <div className="card-header pl-1" id="page-card-header">
+                                <div className="card-header pl-2" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.gateways}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('gateways.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('gateways.labels.menu')})}}
@@ -263,7 +263,7 @@ class PaymentGatewayPage extends React.Component {
                                         </thead>
                                         <tbody>
                                         {this.state.gateways.filtered.length === 0 ?
-                                            <DataNotFound colSpan={4} message={Lang.get('labels.not_found',{Attribute:Lang.get('gateways.labels.menu')})}/>
+                                            <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:Lang.get('gateways.labels.menu')})}/>
                                             :
                                             this.state.gateways.filtered.map((item)=>
                                                 <tr key={item.value}>
@@ -285,6 +285,9 @@ class PaymentGatewayPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                            <TableHeader gateways={this.state.gateways} loading={this.state.loadings.gateways} onCheck={this.handleCheck} onSort={this.handleSort} filter={this.state.filter}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

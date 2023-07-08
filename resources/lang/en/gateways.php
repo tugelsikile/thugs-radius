@@ -17,7 +17,20 @@ return [
         'briapi' => [
             'consumer_key' => 'consumer_key',
             'consumer_secret' => 'consumer_secret'
-        ]
+        ],
+        'midtrans' => [
+            'merchant_id' => 'merchant_id',
+            'server_key' => 'server_key',
+            'client_key' => 'client_key',
+            'urls' => [
+                'notification' => 'notification_url',
+                'recurring' => 'recurring_url',
+                'account' => 'account_url',
+                'finish' => 'finish_url',
+                'unfinished' => 'unfinished_url',
+                'error' => 'error_url',
+            ]
+        ],
     ],
     'labels' => [
         'menu' => 'Payment Gateway',
@@ -45,7 +58,6 @@ return [
                 'label' => 'Callback URL',
                 'copy' => 'Copy Callback URL',
                 'copied' => 'Callback URL successfully copied to your clipboard',
-                'info' => 'Copy this callback URL into your duitku.com project on <strong class="text-primary">"Callback Url Project"</strong> column<br/>This Callback URL is important for your customer validation if they paid using their prefered channel payment',
             ],
             'return' => 'Return URL',
         ]
@@ -58,18 +70,69 @@ return [
     'module' => [
         'name' => 'Module Name',
         'duitku' => [
-            'label' => 'Duitku.com',
+            'label' => 'Duitku',
             'merchant_code' => 'Merchant Code',
             'api_key' => 'API Key',
             'status' => [
                 'process' => 'Waiting Payment',
-                'success' => 'Successfully Paid'
-            ]
+                'success' => 'Successfully Paid',
+                'expired' => 'Expired Payment Code'
+            ],
+            'info_callback_url' => 'Copy this callback URL into your duitku.com project on <strong class="text-primary">"Callback Url Project"</strong> column<br/>This Callback URL is important for your customer validation if they paid using their preferred channel payment',
         ],
         'briapi' => [
             'label' => 'BRI API',
             'consumer_key' => 'Consumer Key',
             'consumer_secret' => 'Consumer Secret',
+        ],
+        'midtrans' => [
+            'label' => 'Midtrans',
+            'merchant_id' => 'Merchant ID',
+            'server_key' => 'Server Key',
+            'client_key' => 'Client Key',
+            'status' => [
+                'pending' => 'Waiting Payment',
+                'capture' => 'Payment Captured',
+                'settlement' => 'Successfully Paid',
+                'deny' => 'Denied Payment',
+                'cancel' => 'Canceled Payment',
+                'expire' => 'Expired Payment Code',
+                'failure' => 'Failure Payment',
+                'refund' => 'Refund Payment',
+                'chargeback' => 'Charge Back Payment',
+                'partial_refund' => 'Partially Refund Payment',
+                'partial_chargeback' => 'Partially Charge Back Payment',
+                'authorize' => 'Authorized Payment',
+            ],
+            'urls' => [
+                'copy' => 'Copy :Attribute',
+                'copied' => ':Attribute successfully copied',
+                'notification' => [
+                    'label' => 'Notification Url',
+                    'info' => 'Notification Url from customer when payment occurs',
+                ],
+                'recurring' => [
+                    'label' => 'Recurring Url',
+                    'info' => 'Recurring Url when customer recurring payment occurs',
+                ],
+                'account' => [
+                    'label' => 'Pay Account Url',
+                    'info' => 'Pay Account Url when pay account status exists from customer payment',
+                ],
+                'finish' => [
+                    'label' => 'Finish Redirect Url',
+                    'info' => 'Redirect Url when payment is finished',
+                ],
+                'unfinished' => [
+                    'label' => 'Unfinished Redirect Url',
+                    'info' => 'Url redirect when payment is unfinished',
+                ],
+                'error' => [
+                    'label' => 'Error Redirect Url',
+                    'info' => 'Url redirect when payment is error',
+                ]
+            ],
+            'info_callback_url' => 'Copy these URLs into your Midtrans Dashboad on <strong class="text-primary">"Settings -> Configuration"</strong><br/>This URLs is important for your customer validation if they paid using their preferred channel payment',
         ],
     ],
     'activate' => [

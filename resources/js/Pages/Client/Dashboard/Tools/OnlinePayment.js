@@ -22,7 +22,7 @@ import {sumGrandTotalInvoice} from "../../Customer/Invoice/Tools/Mixed";
 import {
     generateQRTransactionDUITKU, paymentChannelDUITKU,
     statusTransactionBRIAPI,
-    statusTransactionDUITKU
+    statusTransactionDUITKU, statusTransactionMidtrans
 } from "../../../../Services/PaymentGatewayService";
 import {faCopy} from "@fortawesome/free-regular-svg-icons";
 import QRCode from "react-qr-code";
@@ -198,6 +198,9 @@ class OnlinePayment extends React.Component {
                             case 'duitku':
                                 response = await statusTransactionDUITKU(formData);
                                 break;
+                            case 'midtrans':
+                                response = await statusTransactionMidtrans(formData);
+                                break;
                         }
                         if (response !== null) {
                             if (response.data.params === null) {
@@ -209,6 +212,9 @@ class OnlinePayment extends React.Component {
                                 loadings.transaction = false;
                                 this.setState({loadings,form});
                             }
+                        } else {
+                            loadings.transaction = false;
+                            this.setState({loadings});
                         }
                     } catch (e) {
                         loadings.transaction = false; this.setState({loadings});
@@ -246,8 +252,10 @@ class OnlinePayment extends React.Component {
                     }
                     this.setState({loadings,form},()=>{
                         if (form.invoice !== null) {
-                            if (form.payment_gateway.module === 'duitku') {
-                                this.loadPaymentChannel();
+                            switch (form.payment_gateway.module) {
+                                case 'duitku':
+                                    this.loadPaymentChannel();
+                                    break;
                             }
                             this.loadTransactionStatus();
                         }
@@ -337,24 +345,26 @@ class OnlinePayment extends React.Component {
                                             </div>
                                         </div>
                                         <div className="card-body">
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.bill_period.label')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control form-control-sm text-xs">{formatLocalePeriode(this.state.form.invoice.meta.period,'MMMM yyyy')}</div>
+                                            <React.Fragment>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.bill_period.label')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control form-control-sm text-xs">{formatLocalePeriode(this.state.form.invoice.meta.period,'MMMM yyyy')}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.code')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control-sm form-control text-xs">{this.state.form.invoice.label}</div>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.code')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control-sm form-control text-xs">{this.state.form.invoice.label}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.order_id')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control-sm form-control text-xs">{this.state.form.invoice.meta.order_id}</div>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.order_id')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control-sm form-control text-xs">{this.state.form.invoice.meta.order_id}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </React.Fragment>
                                             <div className="form-group row">
                                                 <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.status.label')}</label>
                                                 <div className="col-md-7">

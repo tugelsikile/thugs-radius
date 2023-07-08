@@ -49,7 +49,6 @@
         "iput": "^2.0.1",
         "moment": "^2.29.4",
         "moment-timezone": "^0.5.43",
-        "node-routeros": "^1.6.9",
         "path": "^0.12.7",
         "react": "^18.2.0",
         "react-chartjs-2": "^5.2.0",
@@ -65,8 +64,6 @@
         "react-simple-captcha": "^9.0.2",
         "react-text-mask": "^5.5.0",
         "react-toastify": "^9.1.3",
-        "ros-rest": "^2.0.0",
-        "routeros-client": "^1.1.2",
         "source-map-support": "^0.5.21",
         "sweetalert2": "^11.7.5"
     }

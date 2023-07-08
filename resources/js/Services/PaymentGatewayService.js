@@ -15,6 +15,13 @@ export const statusTransactionDUITKU = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const statusTransactionMidtrans = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(), data : data,
+        method : "post", url : window.origin + "/api/payment-gateways/midtrans/status"
+    });
+    return Promise.resolve(request);
+}
 export const generateQRTransactionDUITKU = async (data) => {
     let request = Axios({
         headers : axiosHeader(), data : data,

@@ -113,8 +113,10 @@ class PaymentGatewayRepository
                 if (property_exists($keys,'url') && $keys->url != $request[__('gateways.form_input.url')]) $updating = true;
                 $keys->url = $request[__('gateways.form_input.url')];
             } else {
-                if (property_exists($keys,'url')) $updating = true;
-                unset($keys->url);
+                if (property_exists($keys,'url')) {
+                    $updating = true;
+                    unset($keys->url);
+                }
             }
 
             if ($request->has(__('gateways.form_input.duitku.merchant_code')) && $request->has(__('gateways.form_input.duitku.api_key'))) {
@@ -125,10 +127,14 @@ class PaymentGatewayRepository
                 if (property_exists($keys,'api_key') && $keys->api_key != $request[__('gateways.form_input.duitku.api_key')]) $updating = true;
                 $keys->api_key = $request[__('gateways.form_input.duitku.api_key')];
             } else {
-                if (property_exists($keys,'api_key')) $updating = true;
-                unset($keys->api_key);
-                if (property_exists($keys,'merchant_code')) $updating = true;
-                unset($keys->merchant_code);
+                if (property_exists($keys,'api_key')) {
+                    $updating = true;
+                    unset($keys->api_key);
+                }
+                if (property_exists($keys,'merchant_code')) {
+                    $updating = true;
+                    unset($keys->merchant_code);
+                }
             }
             if ($request->has(__('gateways.form_input.briapi.consumer_key')) && $request->has(__('gateways.form_input.briapi.consumer_secret'))) {
                 if (!property_exists($keys,'consumer_key')) $updating = true;
@@ -138,24 +144,114 @@ class PaymentGatewayRepository
                 if (property_exists($keys,'consumer_secret') && $keys->consumer_secret != $request[__('gateways.form_input.briapi.consumer_secret')]) $updating = true;
                 $keys->consumer_secret = $request[__('gateways.form_input.briapi.consumer_secret')];
             } else {
-                if (property_exists($keys,'consumer_key')) $updating = true;
-                unset($keys->consumer_key);
-                if (property_exists($keys,'consumer_secret')) $updating = true;
-                unset($keys->consumer_secret);
+                if (property_exists($keys,'consumer_key')) {
+                    $updating = true;
+                    unset($keys->consumer_key);
+                }
+                if (property_exists($keys,'consumer_secret')) {
+                    $updating = true;
+                    unset($keys->consumer_secret);
+                }
             }
             if ($request->has(__('gateways.form_input.callback'))) {
                 if (property_exists($keys,'callback_url') && $keys->callback_url != $request[__('gateways.form_input.callback')]) $updating = true;
                 $keys->callback_url = $request[__('gateways.form_input.callback')];
             } else {
-                if (property_exists($keys, 'callback_url')) $updating = true;
-                unset($keys->callback_url);
+                if (property_exists($keys, 'callback_url')) {
+                    $updating = true;
+                    unset($keys->callback_url);
+                }
             }
             if ($request->has(__('gateways.form_input.return'))) {
                 if (property_exists($keys,'return_url') && $keys->return_url != $request[__('gateways.form_input.return')]) $updating = true;
                 $keys->return_url = $request[__('gateways.form_input.return')];
             } else {
-                if (property_exists($keys, 'return_url')) $updating = true;
-                unset($keys->return_url);
+                if (property_exists($keys, 'return_url')) {
+                    $updating = true;
+                    unset($keys->return_url);
+                }
+            }
+            /*** MIDTRANS ***/
+            if ($request->has(__('gateways.form_input.midtrans.merchant_id'))) {
+                if (property_exists($keys,'merchant_id') && $keys->merchant_id != $request[__('gateways.form_input.midtrans.merchant_id')]) $updating = true;
+                $keys->merchant_id = $request[__('gateways.form_input.midtrans.merchant_id')];
+            } else {
+                if (property_exists($keys,'merchant_id')) {
+                    $updating = true;
+                    unset($keys->merchant_id);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.server_key'))) {
+                if (property_exists($keys,'server_key') && $keys->server_key != $request[__('gateways.form_input.midtrans.server_key')]) $updating = true;
+                $keys->server_key = $request[__('gateways.form_input.midtrans.server_key')];
+            } else {
+                if (property_exists($keys,'server_key')) {
+                    $updating = true;
+                    unset($keys->server_key);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.client_key'))) {
+                if (property_exists($keys,'client_key') && $keys->client_key != $request[__('gateways.form_input.midtrans.client_key')]) $updating = true;
+                $keys->client_key = $request[__('gateways.form_input.midtrans.client_key')];
+            } else {
+                if (property_exists($keys,'client_key')) {
+                    $updating = true;
+                    unset($keys->client_key);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.notification'))) {
+                if (property_exists($keys,'notification_url') && $keys->notification_url != $request[__('gateways.form_input.midtrans.urls.notification')]) $updating = true;
+                $keys->notification_url = $request[__('gateways.form_input.midtrans.urls.notification')];
+            } else {
+                if (property_exists($keys,'notification_url')) {
+                    $updating = true;
+                    unset($keys->notification_url);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.recurring'))) {
+                if (property_exists($keys,'recurring_url') && $keys->recurring_url != $request[__('gateways.form_input.midtrans.urls.recurring')]) $updating = true;
+                $keys->recurring_url = $request[__('gateways.form_input.midtrans.urls.recurring')];
+            } else {
+                if (property_exists($keys,'recurring_url')) {
+                    $updating = true;
+                    unset($keys->recurring_url);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.account'))) {
+                if (property_exists($keys,'pay_account_url') && $keys->pay_account_url != $request[__('gateways.form_input.midtrans.urls.account')]) $updating = true;
+                $keys->pay_account_url = $request[__('gateways.form_input.midtrans.urls.account')];
+            } else {
+                if (property_exists($keys,'pay_account_url')) {
+                    $updating = true;
+                    unset($keys->pay_account_url);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.finish'))) {
+                if (property_exists($keys,'finish_url') && $keys->finish_url != $request[__('gateways.form_input.midtrans.urls.finish')]) $updating = true;
+                $keys->finish_url = $request[__('gateways.form_input.midtrans.urls.finish')];
+            } else {
+                if (property_exists($keys,'finish_url')) {
+                    $updating = true;
+                    unset($keys->finish_url);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.unfinished'))) {
+                if (property_exists($keys,'unfinished_url') && $keys->unfinished_url != $request[__('gateways.form_input.midtrans.urls.unfinished')]) $updating = true;
+                $keys->unfinished_url = $request[__('gateways.form_input.midtrans.urls.unfinished')];
+            } else {
+                if (property_exists($keys,'unfinished_url')) {
+                    $updating = true;
+                    unset($keys->unfinished_url);
+                }
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.error'))) {
+                if (property_exists($keys,'error_url') && $keys->error_url != $request[__('gateways.form_input.midtrans.urls.error')]) $updating = true;
+                $keys->error_url = $request[__('gateways.form_input.midtrans.urls.error')];
+            } else {
+                if (property_exists($keys,'error_url')) {
+                    $updating = true;
+                    unset($keys->error_url);
+                }
             }
 
             $gateway->keys = $keys;
@@ -205,6 +301,35 @@ class PaymentGatewayRepository
             if ($request->has(__('gateways.form_input.return'))) {
                 $keys->return_url = $request[__('gateways.form_input.return')];
             }
+            /*** MIDTRANS ***/
+            if ($request->has(__('gateways.form_input.midtrans.merchant_id'))) {
+                $keys->merchant_id = $request[__('gateways.form_input.midtrans.merchant_id')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.server_key'))) {
+                $keys->server_key = $request[__('gateways.form_input.midtrans.server_key')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.client_key'))) {
+                $keys->client_key = $request[__('gateways.form_input.midtrans.client_key')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.notification'))) {
+                $keys->notification_url = $request[__('gateways.form_input.midtrans.urls.notification')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.recurring'))) {
+                $keys->recurring_url = $request[__('gateways.form_input.midtrans.urls.recurring')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.account'))) {
+                $keys->pay_account_url = $request[__('gateways.form_input.midtrans.urls.account')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.finish'))) {
+                $keys->finish_url = $request[__('gateways.form_input.midtrans.urls.finish')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.unfinished'))) {
+                $keys->unfinished_url = $request[__('gateways.form_input.midtrans.urls.unfinished')];
+            }
+            if ($request->has(__('gateways.form_input.midtrans.urls.error'))) {
+                $keys->error_url = $request[__('gateways.form_input.midtrans.urls.error')];
+            }
+
             $gateway->keys = $keys;
             $gateway->saveOrFail();
 

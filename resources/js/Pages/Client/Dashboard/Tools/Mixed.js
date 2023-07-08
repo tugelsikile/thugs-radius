@@ -1,18 +1,18 @@
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
-    faArrowCircleRight, faBoltLightning,
+    faArrowCircleRight,
     faCartShopping,
-    faCashRegister, faCircleNotch, faExclamationTriangle,
+    faCashRegister, faCircleNotch,
     faMoneyBillTransfer, faRefresh, faSyncAlt, faUserSlash,
     faUserTie
 } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import {
     CardPreloader,
-    customPreventDefault, formatBytes,
+    customPreventDefault,
     formatLocaleDate,
-    formatLocaleString, ucFirst, ucWord, wordLimit
+    formatLocaleString, ucWord, wordLimit
 } from "../../../../Components/mixedConsts";
 import {MenuIcon} from "../../User/Privilege/Tools/IconTool";
 import {DataNotFound} from "../../../../Components/TableComponent";

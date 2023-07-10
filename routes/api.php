@@ -157,6 +157,12 @@ Route::group(['prefix' => 'payment-gateways'],function () {
         Route::post('/callback', [DuitkuController::class, 'callback']);
     });
     Route::group(['prefix' => 'midtrans'], function () {
-        Route::post('/status', [MidtransController::class, 'transactionStatus']);
+        Route::post('/status', [MidtransController::class, 'transactionStatus'])->middleware('auth:api');
+        Route::post('/token', [MidtransController::class, 'tokenMidtrans'])->middleware('auth:api');
+        Route::group(['prefix' => 'payment'],function () {
+            Route::any('/notification', [MidtransController::class, 'paymentNotification']);
+            Route::any('/recurring', [MidtransController::class, 'paymentNotification']);
+            Route::any('/account', [MidtransController::class, 'paymentNotification']);
+        });
     });
 });

@@ -44,6 +44,7 @@ return [
         'va_copied' => 'Virtual Account Number successfully copied to your clipboard',
         'grand_total' => 'Grand Total',
         'reference_code' => 'Reference Code',
+        'paid_before' => 'Expire Code',
         'mode' => [
             'label' => 'Mode',
             'production' => 'Production Mode',
@@ -138,5 +139,8 @@ return [
     'activate' => [
         'menu' => 'Activate Payment Gateway',
         'menu_info' => 'Activating payment gateway for online payment',
+    ],
+    'cstore' => [
+        'code' => 'Payment Code',
     ]
 ];

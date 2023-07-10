@@ -44,6 +44,7 @@ return [
         'va_copied' => 'Nomor virtual account berhasil disalin ke clipboard',
         'grand_total' => 'Grand Total',
         'reference_code' => 'Nomor Referensi',
+        'paid_before' => 'Bayar Sebelum Tgl.',
         'mode' => [
             'label' => 'Mode',
             'production' => 'Mode Production',
@@ -138,5 +139,8 @@ return [
     'activate' => [
         'menu' => 'Aktivasi Payment Gateway',
         'menu_info' => 'Bisa mengaktifkan payment gateway untuk pembayaran online',
+    ],
+    'cstore' => [
+        'code' => 'Kode Pembayaran',
     ]
 ];

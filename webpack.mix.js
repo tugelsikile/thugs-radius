@@ -10,7 +10,17 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
-
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+mix.webpackConfig({
+    plugins: [
+        new NodePolyfillPlugin(),
+    ],
+    resolve : {
+        fallback : {
+            "querystring" : require.resolve("querystring-es3")
+        }
+    }
+});
 
 //mix.copy('node_modules/crypto-js','public/js/plugins/crypto-js');
 //mix.js('resources/js/src/guests/welcome.js','public/js/guests');

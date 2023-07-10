@@ -4,19 +4,19 @@ import {
     faArrowCircleRight,
     faCartShopping,
     faCashRegister, faCircleNotch,
-    faMoneyBillTransfer, faRefresh, faSyncAlt, faUserSlash,
+    faMoneyBillTransfer, faQrcode, faRefresh, faSyncAlt, faUserSlash,
     faUserTie
 } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment";
 import {
     CardPreloader,
     customPreventDefault,
-    formatLocaleDate,
-    formatLocaleString, ucWord, wordLimit
+    formatLocaleDate, formatLocalePeriode,
+    formatLocaleString, sumTaxInvoiceSingle, ucWord, wordLimit
 } from "../../../../Components/mixedConsts";
 import {MenuIcon} from "../../User/Privilege/Tools/IconTool";
 import {DataNotFound} from "../../../../Components/TableComponent";
-import {FormatPrice, sumGrandtotalCustomer} from "../../Customer/Tools/Mixed";
+import {FormatPrice, sumCustomerTaxLineForm, sumGrandtotalCustomer} from "../../Customer/Tools/Mixed";
 import {sumGrandTotalInvoice, sumSubtotalInvoice, sumTotalPaymentInvoice} from "../../Customer/Invoice/Tools/Mixed";
 import {Tooltip} from "@mui/material";
 import {getIndex, onMouseOut, onMouseOver} from "../../../Auth/Company/Tools/Mixed";
@@ -152,6 +152,9 @@ export const DashboardStatusServer = (props) => {
 }
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip as ChartTooltip, Legend,} from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import {showSuccess} from "../../../../Components/Toaster";
+import {faCopy} from "@fortawesome/free-regular-svg-icons";
+import QRCode from "react-qr-code";
 ChartJS.register( CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
 export const TableOnlineCustomer = (props) => {
     const options = {
@@ -344,4 +347,339 @@ export const formatVA = (string) => {
         response = explodes.join('-');
     }
     return response;
+}
+export const TransactionQrCard = (props) => {
+    let response = null;
+    if (props.form.payment_gateway !== null) {
+        switch (props.form.payment_gateway.meta.module){
+            case 'duitku':
+                response = <TransactionQrDuitku form={props.form} channels={props.channels}/>;
+                break;
+            case 'midtrans':
+                response = <TransactionQrMidtrans form={props.form}/>;
+                break;
+        }
+    }
+    return response;
+}
+export const TransactionMidtrans = (props) => {
+    //console.log(props.form.transaction)
+    return (
+        props.form.transaction === null || ['expire'].indexOf(props.form.transaction.transaction_status) !== -1 ?
+            <React.Fragment>
+                <div className="form-group row">
+                    <div className="col-md-7 offset-5 offset-md-5">
+                        <button onClick={props.handleQr} type="button" className="btn btn-outline-primary text-xs">
+                            <FontAwesomeIcon icon={faQrcode} className="mr-2"/>
+                            GENERATE QR
+                        </button>
+                    </div>
+                </div>
+            </React.Fragment>
+            :
+            null
+    )
+    /*return (
+        props.form.transaction !== null &&
+            typeof props.form.transaction.transaction_id !== 'undefined' &&
+                <React.Fragment>
+                    <div className="form-group row">
+                        <label className="col-md-5 col-form-label text-xs">{Lang.get('gateways.labels.reference_code')}</label>
+                        <div className="col-md-7">
+                            <div className="form-control form-control-sm text-xs">{props.form.transaction.transaction_id}</div>
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label className="col-md-5 col-form-label text-xs text-danger">{Lang.get('gateways.labels.paid_before')}</label>
+                        <div className="col-md-7">
+                            <div className="form-control form-control-sm text-xs text-danger">{formatLocaleDate(props.form.transaction.expiry_time)}</div>
+                        </div>
+                    </div>
+                </React.Fragment>
+    )*/
+}
+import AlfamartLogo from "../../../../../../public/images/ALFAMART_LOGO_BARU.png";
+import IndomaretLogo from "../../../../../../public/images/Logo_Indomaret.png";
+export const StoreLogo = (store)=> {
+    if (store === 'alfamart') {
+        return <img alt="alfamart" src={AlfamartLogo} height={50}/>;
+    } else {
+        return <img alt="indomaret" src={IndomaretLogo} height={50}/>;
+    }
+}
+const MidtransCstore = (props) => {
+    return (
+        <React.Fragment>
+            <StoreLogo store={props.form.transaction.store}/>
+            <div className="form-group">
+                <label className="col-form-label">{Lang.get('gateways.cstore.code')}</label>
+                <div className="form-control-sm form-control text-bold">
+                    {props.form.transaction.payment_code}
+                </div>
+            </div>
+        </React.Fragment>
+    )
+}
+import logoBri from "../../../../../../public/images/Logo-Bank-BRI-1024x538.png";
+import logoMain from "../../../../../../public/images/logo-1.png";
+const bankLogo = (bankName)=> {
+    let response = logoMain;
+    switch (bankName) {
+        case 'bri':
+            response = logoBri;
+            break;
+    }
+    return response;
+}
+const MidtransBankTransfer = (props) => {
+    return (
+        <React.Fragment>
+            {props.transaction.va_numbers.map((item)=>
+                <div key={item.bank} className="form-group">
+                    <label className="col-form-label">
+                        <img height={40} src={bankLogo(item.bank)} alt={`${item.bank.toUpperCase()} VA`}/>
+                    </label>
+                    <div className="form-control-sm form-control text-bold">{formatVA(item.va_number)}</div>
+                </div>
+            )}
+        </React.Fragment>
+    )
+}
+export const TransactionTypeMidtrans = (props) => {
+    let response = null;
+    if (props.form.transaction !== null) {
+        switch (props.form.transaction.payment_type){
+            case 'cstore':
+                response = <MidtransCstore form={props.form}/>;
+                break;
+            case 'bank_transfer':
+                response = <MidtransBankTransfer transaction={props.form.transaction}/>;
+                break;
+        }
+    }
+    return response;
+}
+export const TransactionQrMidtrans = (props) => {
+    return (
+        <React.Fragment>
+            <div className="col-md-4">
+                <div className="card card-outline card-secondary">
+                    <div className="card-header px-2 text-center">
+                        <h4 className="text-sm card-title">{Lang.get('labels.qr_code',{Attribute:Lang.get('customers.invoices.labels.menu')})}</h4>
+                    </div>
+                    <div style={{background:'#fff'}} className="card-body text-center">
+                        <TransactionTypeMidtrans form={props.form}/>
+
+                        {props.form.transaction !== null &&
+                            <React.Fragment>
+                                {typeof props.form.transaction.qr_image !== 'undefined' &&
+                                        <div style={{background:'#fff'}} className="card-body text-center">
+                                            <div id="qr-code-wrapper" className="text-center position-relative mb-5">
+                                                {/*<QRCode size={150} level="H" value={props.form.transaction.qr_image}/>*/}
+                                                <img src={props.form.transaction.qr_image} style={{width:150,height:150}}/>
+                                                {/*<img className="img-thumbnail img-circle" style={{width:50,position:'absolute',left:0,right:0,top:0,bottom:0,marginLeft:'auto',marginRight:'auto',marginTop:'auto',marginBottom:'auto'}} alt="logo" src={window.origin+'/images/logo-2.png'}/>*/}
+                                            </div>
+                                            <div className="text-muted text-xs">{Lang.get('labels.qr_info',{Attribute:Lang.get('invoices.payments.name')})}</div>
+                                        </div>
+                                }
+                                <div className="form-group">
+                                    <label className="col-form-label">{Lang.get('gateways.labels.paid_before')}</label>
+                                    <div style={{height:50}} className="form-control form-control-sm text-bold text-danger">{formatLocalePeriode(props.form.transaction.expiry_time,'dddd, DD MMMM yyyy, HH:mm:ss')}</div>
+                                </div>
+                            </React.Fragment>
+                        }
+                    </div>
+                </div>
+            </div>
+        </React.Fragment>
+    )
+}
+export const TransactionQrDuitku = (props) => {
+    return (
+        <React.Fragment>
+            {props.form.transaction === null ? null :
+                typeof props.form.transaction.invoice.pg_transaction.qrString === 'undefined' ? null :
+                    <div className="col-md-4">
+                        <div className="card card-outline card-secondary">
+                            <div className="card-header px-2 text-center">
+                                <h4 className="text-sm card-title">{Lang.get('labels.qr_code',{Attribute:Lang.get('customers.invoices.labels.menu')})}</h4>
+                            </div>
+                            <div style={{background:'#fff'}} className="card-body text-center">
+                                <div id="qr-code-wrapper" className="text-center position-relative mb-5">
+                                    <QRCode size={150} level="H" value={props.form.transaction.invoice.pg_transaction.qrString}/>
+                                    <img className="img-thumbnail img-circle" style={{width:50,position:'absolute',left:0,right:0,top:0,bottom:0,marginLeft:'auto',marginRight:'auto',marginTop:'auto',marginBottom:'auto'}} alt="logo" src={window.origin+'/images/logo-2.png'}/>
+                                </div>
+                                <div className="text-muted text-xs">{Lang.get('labels.qr_info',{Attribute:Lang.get('invoices.payments.name')})}</div>
+                            </div>
+                        </div>
+                    </div>
+            }
+        </React.Fragment>
+    )
+}
+export const midtransTransactionItemDetails = (form) => {
+    const itemDetails = [];
+    form.invoice.meta.services.map((item)=>{
+        if (item.meta.service !== null) {
+            itemDetails.push({id : item.meta.service.code, price : item.meta.price, quantity : 1, name : item.note});
+        }
+    });
+    form.invoice.meta.taxes.map((item)=>{
+        if (item.meta.tax !== null) {
+            itemDetails.push({id : item.meta.tax.code, price : parseInt((sumSubtotalInvoice(form.invoice) * item.meta.tax.percent) / 100), quantity : 1, name : item.meta.tax.name });
+        }
+    });
+    form.invoice.meta.discounts.map((item)=>{
+        if (item.meta.discount !== null) {
+            itemDetails.push({id : item.meta.discount.code, price : 0 - item.meta.discount.amount, quantity : 1, name : item.meta.discount.name})
+        }
+    });
+    return itemDetails;
+}
+export const midtransTransactionCustomerDetails = (form) => {
+    const customerDetails = {
+        first_name : form.customer.label,
+        billing_address: {},
+        shipping_address: {}
+    };
+    if (form.customer.meta.address.street !== null && form.customer.meta.address.street.length > 0) {
+        customerDetails.billing_address.address = form.customer.meta.address.street;
+        if (form.customer.meta.address.village !== null) {
+            customerDetails.billing_address.address += `, ${ucWord(form.customer.meta.address.village.name)}`;
+            if (form.customer.meta.address.district !== null) {
+                customerDetails.billing_address.address += `, ${ucWord(form.customer.meta.address.district.name)}`;
+            }
+        }
+    }
+    if (form.customer.meta.user !== null) {
+        customerDetails.email = form.customer.meta.user.email;
+        customerDetails.billing_address.email = customerDetails.email;
+    }
+    if (form.customer.meta.address.phone !== null && form.customer.meta.address.phone.length > 0) {
+        customerDetails.phone = form.customer.meta.address.phone;
+        customerDetails.billing_address.phone = customerDetails.phone;
+    }
+    if (form.customer.meta.address.city !== null) {
+        customerDetails.billing_address.city = ucWord(form.customer.meta.address.city.name);
+    }
+    if (form.customer.meta.address.postal !== null && form.customer.meta.address.postal.length > 0) {
+        customerDetails.billing_address.postal_code = form.customer.meta.address.postal;
+    }
+    customerDetails.billing_address.country_code = 'IDN';
+    const user = JSON.parse(localStorage.getItem('user'));
+    customerDetails.shipping_address.first_name = user.label;
+    customerDetails.shipping_address.email = user.meta.email;
+    if (user.meta.company.address !== null && user.meta.company.address.length > 0) {
+        customerDetails.shipping_address.address = user.meta.company.address;
+        if (user.meta.company.village_obj !== null) {
+            customerDetails.shipping_address.address += `, ${ucWord(user.meta.company.village_obj.name)}`;
+            if (user.meta.company.district_obj !== null) {
+                customerDetails.shipping_address.address += `, ${ucWord(user.meta.company.district_obj.name)}`;
+            }
+        }
+    }
+    if (user.meta.company.city_obj !== null) {
+        customerDetails.shipping_address.city = ucWord(user.meta.company.city_obj.name);
+    }
+    if (user.meta.company.postal !== null && user.meta.company.postal.length > 0) {
+        customerDetails.shipping_address.postal_code = user.meta.company.postal;
+    }
+    customerDetails.shipping_address.country_code = 'IDN';
+    return customerDetails;
+}
+export const midtransTransactionDetails = (form = null) => {
+    if (form !== null) {
+        const parameters = {
+            transaction_details : {
+                order_id : form.invoice.meta.order_id,
+                gross_amount : sumGrandTotalInvoice(form.invoice),
+            },
+            customer_details : midtransTransactionCustomerDetails(form),
+            custom_field1 : form.payment_gateway.meta.company.id,
+            custom_field2 : form.payment_gateway.value,
+        };
+
+        parameters.transaction_details.item_details = midtransTransactionItemDetails(form);
+        return parameters;
+    } else {
+        return null;
+    }
+}
+export const TransactionCards = (props) => {
+    let response = null;
+    if (props.form.payment_gateway !== null) {
+        switch (props.form.payment_gateway.meta.module){
+            case 'duitku':
+                response = <TransactionDuitku form={props.form} channels={props.channels}/>;
+                break;
+            case 'midtrans':
+                response = <TransactionMidtrans handleQr={props.handleMidtransQR} form={props.form}/>;
+                break;
+        }
+    }
+    return response;
+}
+export const TransactionDuitku = (props) => {
+    return (
+        <React.Fragment>
+            {typeof props.form.transaction.invoice.pg_transaction.fee !== 'undefinded' &&
+                parseInt(props.form.transaction.invoice.pg_transaction.fee) > 0 &&
+                <React.Fragment>
+                    <div className="form-group row">
+                        <label className="col-md-5 col-form-label text-xs">{Lang.get('labels.fee')}</label>
+                        <div className="col-md-5">
+                            <div className="input-group input-group-sm">
+                                <div className="input-group-prepend"><span className="input-group-text">IDR</span></div>
+                                <div className="form-control-sm form-control text-right text-sm text-bold">
+                                    {formatLocaleString(parseInt(props.form.transaction.invoice.pg_transaction.fee))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="form-group row">
+                        <label className="col-md-5 col-form-label text-xs">{Lang.get('gateways.labels.grand_total')}</label>
+                        <div className="col-md-5">
+                            <div className="input-group input-group-sm">
+                                <div className="input-group-prepend"><span className="input-group-text">IDR</span></div>
+                                <div className="form-control-sm form-control text-right text-sm text-bold text-success">
+                                    {formatLocaleString( sumGrandTotalInvoice(props.form.invoice) +parseInt(props.form.transaction.invoice.pg_transaction.fee))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </React.Fragment>
+            }
+            <div className="form-group row">
+                <label className="col-md-5 col-form-label text-xs">{Lang.get('gateways.labels.reference_code')}</label>
+                <div className="col-md-7">
+                    <div className="form-control form-control-sm text-xs">{props.form.transaction.reference}</div>
+                </div>
+            </div>
+            {typeof props.form.transaction.invoice.pg_transaction.vaNumber !== 'undefined' &&
+                <div className="form-group row">
+                    <label className="col-md-5 col-form-label text-xs">
+                        {Lang.get('gateways.labels.va')}
+                        {props.channels.length === 0 ? null :
+                            props.channels.findIndex((f)=> f.value === props.form.transaction.invoice.pg_transaction.channel) < 0 ? null :
+                                <span className="text-primary">{` ${props.channels[props.channels.findIndex((f)=> f.value === props.form.transaction.invoice.pg_transaction.channel)].label}`}</span>
+                        }
+                    </label>
+                    <div className="col-md-7">
+                        <div className="input-group input-group-sm">
+                            <div className="form-control-sm form-control text-bold text-primary text-sm">
+                                {formatVA(props.form.transaction.invoice.pg_transaction.vaNumber)}
+                            </div>
+                            <div className="input-group-append">
+                                <span onClick={(e)=>{
+                                    e.preventDefault();
+                                    navigator.clipboard.writeText(props.form.transaction.invoice.pg_transaction.vaNumber);
+                                    showSuccess(Lang.get('gateways.labels.va_copied'));
+                                }} title={Lang.get('gateways.labels.copy_va')} style={{cursor:'pointer'}} className="input-group-text"><FontAwesomeIcon icon={faCopy} size="xs"/></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </React.Fragment>
+    )
 }

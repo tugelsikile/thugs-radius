@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property mixed $services
  * @property mixed $taxes
  * @property mixed $discounts
+ * @property mixed $pg_response
+ * @property false|mixed|string $pg_transaction
+ * @property mixed $order_id
  */
 class CustomerInvoice extends Model
 {
@@ -29,7 +32,7 @@ class CustomerInvoice extends Model
 
     public function customerObj(): BelongsTo
     {
-        return $this->belongsTo(Customer::class,'customer','id')->with(['userObj','villageObj','districtObj','cityObj','provinceObj']);
+        return $this->setConnection("radius")->belongsTo(Customer::class,'customer','id')->with(['userObj','villageObj','districtObj','cityObj','provinceObj']);
     }
     public function createdBy(): BelongsTo
     {

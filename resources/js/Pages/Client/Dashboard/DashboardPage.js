@@ -32,7 +32,7 @@ class DashboardPage extends React.Component {
                 payment : { open : false, data : null }
             },
             popover : { open : false, anchorEl : null, data : null },
-            online_customer_nas : [], intervalId : null,
+            online_customer_nas : [], intervalId : null, online_errors : 0,
             chart_online_customer : {
                 labels : [],
                 customers : [],
@@ -271,20 +271,23 @@ class DashboardPage extends React.Component {
     }
     async loadOnline() {
         if (! this.state.loadings.online ) {
-            let loadings = this.state.loadings;
-            loadings.online = true; this.setState({loadings});
-            try {
-                let response = await onlineCustomers();
-                if (response.data.params === null) {
+            if (this.state.online_errors < 5) {
+                let loadings = this.state.loadings;
+                loadings.online = true; this.setState({loadings});
+                try {
+                    let response = await onlineCustomers();
+                    if (response.data.params === null) {
+                        loadings.online = false; this.setState({loadings,online_errors:this.state.online_errors + 1});
+                        showError(response.data.message);
+                    } else {
+                        loadings.online = false;
+                        this.setState({loadings,online:response.data.params,online_errors:0},()=>this.handleChartOnline());
+                    }
+                } catch (e) {
                     loadings.online = false; this.setState({loadings});
-                    showError(response.data.message);
-                } else {
-                    loadings.online = false;
-                    this.setState({loadings,online:response.data.params},()=>this.handleChartOnline());
+                    this.setState({online_errors:this.state.online_errors + 1});
+                    responseMessage(e);
                 }
-            } catch (e) {
-                loadings.online = false; this.setState({loadings});
-                responseMessage(e);
             }
         }
     }

@@ -28,6 +28,9 @@ class UserSeeder extends Seeder
             'name' => 'BRI API Payment Gateway', 'email' => 'gateway@bri.co.id', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id, 'is_ghost' => true,
         ]);
         $dumps->push((object) [
+            'name' => 'Midtrans Payment Gateway', 'email' => 'gateway@midtrans.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name','Super Admin')->first()->id, 'is_ghost' => true,
+        ]);
+        $dumps->push((object) [
             'name' => 'Billing', 'email' => 'billing@admin.com', 'password' => 'P4ssw0rd', 'level' => UserLevel::where('name', 'Billing')->first()->id, 'is_ghost' => false,
         ]);
         $this->command->getOutput()->progressStart($dumps->count());

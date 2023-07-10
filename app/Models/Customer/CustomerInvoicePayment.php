@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|mixed $pg_response
  * @property Carbon|mixed $paid_at
  * @property mixed $created_by
+ * @property mixed $paid_amount
+ * @property mixed $paid_by
  */
 class CustomerInvoicePayment extends Model
 {

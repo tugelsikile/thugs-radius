@@ -10,7 +10,17 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
-
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+mix.webpackConfig({
+    plugins: [
+        new NodePolyfillPlugin(),
+    ],
+    resolve : {
+        fallback : {
+            "querystring" : require.resolve("querystring-es3")
+        }
+    }
+});
 
 //mix.copy('node_modules/crypto-js','public/js/plugins/crypto-js');
 //mix.js('resources/js/src/guests/welcome.js','public/js/guests');
@@ -44,11 +54,13 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');
 
 /*---------- CLIENTS ----------*/
 
-/*
 mix.js('resources/js/src/clients/index.js','public/js/clients');
+/*
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
+*/
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');
+/*
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');

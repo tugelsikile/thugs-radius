@@ -18,6 +18,7 @@ use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\Nas\ProfileController;
 use App\Http\Controllers\PaymentGateway\BRIController;
 use App\Http\Controllers\PaymentGateway\DuitkuController;
+use App\Http\Controllers\PaymentGateway\MidtransController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
@@ -154,5 +155,14 @@ Route::group(['prefix' => 'payment-gateways'],function () {
         Route::post('/qr', [DuitkuController::class, 'generateQR']);
         Route::post('/channels', [DuitkuController::class, 'paymentChannel']);
         Route::post('/callback', [DuitkuController::class, 'callback']);
+    });
+    Route::group(['prefix' => 'midtrans'], function () {
+        Route::post('/status', [MidtransController::class, 'transactionStatus'])->middleware('auth:api');
+        Route::post('/token', [MidtransController::class, 'tokenMidtrans'])->middleware('auth:api');
+        Route::group(['prefix' => 'payment'],function () {
+            Route::any('/notification', [MidtransController::class, 'paymentNotification']);
+            Route::any('/recurring', [MidtransController::class, 'paymentNotification']);
+            Route::any('/account', [MidtransController::class, 'paymentNotification']);
+        });
     });
 });

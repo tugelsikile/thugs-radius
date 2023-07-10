@@ -1,4 +1,4 @@
 {
-    "/js/guests/register.js": "/js/guests/register.js",
-    "/js/login.js": "/js/login.js"
+    "/js/clients/index.js": "/js/clients/index.js",
+    "/js/clients/configs/payment-gateways.js": "/js/clients/configs/payment-gateways.js"
 }

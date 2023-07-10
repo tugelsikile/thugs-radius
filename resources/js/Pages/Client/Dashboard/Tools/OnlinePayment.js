@@ -6,7 +6,13 @@ import {
     responseMessage,
     ucWord
 } from "../../../../Components/mixedConsts";
-import {CustomerReactSelectComponent, formatVA, PaymentChannelReactSelectComponent} from "./Mixed";
+import {
+    CustomerReactSelectComponent,
+    formatVA, midtransTransactionDetails,
+    PaymentChannelReactSelectComponent,
+    TransactionCards, TransactionQrCard,
+    TransactionQrDuitku
+} from "./Mixed";
 import {crudCustomerInvoices, crudCustomers} from "../../../../Services/CustomerService";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
@@ -20,14 +26,15 @@ import {showError, showSuccess} from "../../../../Components/Toaster";
 import moment from "moment";
 import {sumGrandTotalInvoice} from "../../Customer/Invoice/Tools/Mixed";
 import {
-    generateQRTransactionDUITKU, paymentChannelDUITKU,
+    generateQRTransactionDUITKU, getTokenMidtrans, paymentChannelDUITKU,
     statusTransactionBRIAPI,
-    statusTransactionDUITKU
+    statusTransactionDUITKU, statusTransactionMidtrans
 } from "../../../../Services/PaymentGatewayService";
 import {faCopy} from "@fortawesome/free-regular-svg-icons";
 import QRCode from "react-qr-code";
 import html2canvas from "html2canvas";
 
+const midtransClient = require('midtrans-client');
 // noinspection CommaExpressionJS
 class OnlinePayment extends React.Component {
     constructor(props) {
@@ -47,6 +54,8 @@ class OnlinePayment extends React.Component {
         this.loadTransactionStatus = this.loadTransactionStatus.bind(this);
         this.generateQR = this.generateQR.bind(this);
         this.loadPaymentChannel = this.loadPaymentChannel.bind(this);
+        this.generateQRMidtrans = this.generateQRMidtrans.bind(this);
+        this.generateTokenMidtrans = this.generateTokenMidtrans.bind(this);
     }
     componentWillReceiveProps(nextProps, nextContext) {
         if (nextProps.payment_gateways !== null) {
@@ -59,8 +68,13 @@ class OnlinePayment extends React.Component {
                             form.payment_gateway = nextProps.payment_gateways[index];
                             this.setState({form},()=>{
                                 if (form.payment_gateway !== null) {
-                                    if (form.payment_gateway.meta.module === 'duitku') {
-                                        this.loadPaymentChannel();
+                                    switch (form.payment_gateway.meta.module) {
+                                        case 'duitku':
+                                            this.loadPaymentChannel();
+                                            break;
+                                        case 'midtrans':
+                                            this.midtransScript();
+                                            break;
                                     }
                                 }
                             });
@@ -78,8 +92,13 @@ class OnlinePayment extends React.Component {
         } else if (name === 'payment_gateway') {
             this.setState({form},()=>{
                 if (form.payment_gateway !== null) {
-                    if (form.payment_gateway.meta.module === 'duitku') {
-                        this.loadPaymentChannel();
+                    switch (form.payment_gateway.meta.module) {
+                        case 'duitku':
+                            this.loadPaymentChannel();
+                            break;
+                        case 'midtrans':
+                            this.midtransScript();
+                            break;
                     }
                 }
             });
@@ -106,6 +125,81 @@ class OnlinePayment extends React.Component {
                 }
             }
         }, 1000);
+    }
+    async generateQRMidtrans() {
+        if (this.state.form.payment_gateway !== null) {
+            if (this.state.form.payment_gateway.meta.module === 'midtrans') {
+                const snap = new midtransClient.Snap({
+                    isProduction : this.state.form.payment_gateway.meta.production,
+                    serverKey : this.state.form.payment_gateway.meta.keys.server_key,
+                });
+                const parameters = midtransTransactionDetails(this.state.form);
+            }
+        }
+    }
+    async midtransScript() {
+        if (this.state.form.payment_gateway !== null) {
+            if (this.state.form.payment_gateway.meta.module === 'midtrans') {
+                if (document.getElementById('midtrans-script') === null) {
+                    const midtransScript = document.createElement('script');
+                    midtransScript.id = 'midtrans-script';
+                    midtransScript.setAttribute('data-client-key', this.state.form.payment_gateway.meta.keys.client_key);
+                    if (this.state.form.payment_gateway.meta.production) {
+                        midtransScript.src = 'https://app.midtrans.com/snap/snap.js';
+                    } else {
+                        midtransScript.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+                    }
+                    document.body.appendChild(midtransScript);
+                }
+            }
+        }
+    }
+    async generateTokenMidtrans() {
+        if (! this.state.loadings.transaction) {
+            if (this.state.form.payment_gateway !== null) {
+                if (this.state.form.payment_gateway.meta.module === 'midtrans') {
+                    let loadings = this.state.loadings;
+                    loadings.transaction = true;
+                    this.setState({loadings});
+                    try {
+                        const formData = new FormData();
+                        formData.append('gateway', this.state.form.payment_gateway.value);
+                        formData.append('parameter', JSON.stringify(midtransTransactionDetails(this.state.form)));
+                        let response = await getTokenMidtrans(formData);
+                        if (response.data.params === null) {
+                            loadings.transaction = false;
+                            this.setState({loadings});
+                            showError(response.data.message);
+                        } else {
+                            loadings.transaction = false;
+                            const snapToken = response.data.params;
+                            window.snap.pay(snapToken, {
+                                onSuccess : (result) => {
+                                    console.log(result);
+                                    showSuccess(result.status_message);
+                                },
+                                onPending: (result) => {
+                                    console.log(result);
+                                    showSuccess(result.status_message);
+                                },
+                                onError: (result) => {
+                                    console.log(result);
+                                    showError(result.status_message);
+                                },
+                                onClose: (result) => {
+                                    console.log(result);
+                                }
+                            })
+                            this.setState({loadings});
+                        }
+                    } catch (e) {
+                        console.log(e);
+                        loadings.transaction = false; this.setState({loadings});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
     }
     async loadPaymentChannel() {
         if (! this.state.loadings.transaction) {
@@ -198,17 +292,27 @@ class OnlinePayment extends React.Component {
                             case 'duitku':
                                 response = await statusTransactionDUITKU(formData);
                                 break;
+                            case 'midtrans':
+                                response = await statusTransactionMidtrans(formData);
+                                break;
                         }
                         if (response !== null) {
                             if (response.data.params === null) {
                                 loadings.transaction = false; this.setState({loadings});
-                                showError(response.data.message);
+                                //showError(response.data.message);
                             } else {
                                 let form = this.state.form;
                                 form.transaction = response.data.params;
                                 loadings.transaction = false;
-                                this.setState({loadings,form});
+                                this.setState({loadings,form},()=>{
+                                    if (typeof response.data.params.regenerate != 'undefined') {
+                                        this.loadInvoice();
+                                    }
+                                });
                             }
+                        } else {
+                            loadings.transaction = false;
+                            this.setState({loadings});
                         }
                     } catch (e) {
                         loadings.transaction = false; this.setState({loadings});
@@ -246,10 +350,15 @@ class OnlinePayment extends React.Component {
                     }
                     this.setState({loadings,form},()=>{
                         if (form.invoice !== null) {
-                            if (form.payment_gateway.module === 'duitku') {
-                                this.loadPaymentChannel();
+                            switch (form.payment_gateway.meta.module) {
+                                case 'duitku':
+                                    this.loadPaymentChannel()
+                                        .then(()=>this.loadTransactionStatus());
+                                    break;
+                                case 'midtrans' :
+                                    this.loadTransactionStatus();
+                                    break;
                             }
-                            this.loadTransactionStatus();
                         }
                     });
                 }
@@ -328,7 +437,7 @@ class OnlinePayment extends React.Component {
                             <div className="alert alert-warning"><FontAwesomeIcon icon={faExclamationTriangle} size="sm" className="mr-2"/>{Lang.get('labels.not_found',{Attribute:Lang.get('customers.invoices.labels.menu')})}</div>
                             :
                             <div className="row">
-                                <div className={this.state.form.transaction === null ? "col-md-12" : typeof this.state.form.transaction.invoice.pg_transaction.qrString === 'undefined' ? "col-md-12" : "col-md-8"}>
+                                <div className="col-md-8">
                                     <div className="card card-outline card-primary">
                                         <div className="card-header px-2">
                                             <h3 className="card-title text-sm">{Lang.get('customers.invoices.labels.menu')}</h3>
@@ -337,24 +446,26 @@ class OnlinePayment extends React.Component {
                                             </div>
                                         </div>
                                         <div className="card-body">
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.bill_period.label')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control form-control-sm text-xs">{formatLocalePeriode(this.state.form.invoice.meta.period,'MMMM yyyy')}</div>
+                                            <React.Fragment>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.bill_period.label')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control form-control-sm text-xs">{formatLocalePeriode(this.state.form.invoice.meta.period,'MMMM yyyy')}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.code')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control-sm form-control text-xs">{this.state.form.invoice.label}</div>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.code')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control-sm form-control text-xs">{this.state.form.invoice.label}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="form-group row">
-                                                <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.order_id')}</label>
-                                                <div className="col-md-7">
-                                                    <div className="form-control-sm form-control text-xs">{this.state.form.invoice.meta.order_id}</div>
+                                                <div className="form-group row">
+                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.order_id')}</label>
+                                                    <div className="col-md-7">
+                                                        <div className="form-control-sm form-control text-xs">{this.state.form.invoice.meta.order_id}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </React.Fragment>
                                             <div className="form-group row">
                                                 <label className="col-md-5 col-form-label text-xs">{Lang.get('invoices.labels.status.label')}</label>
                                                 <div className="col-md-7">
@@ -389,7 +500,9 @@ class OnlinePayment extends React.Component {
                                             {this.state.form.transaction === null ?
                                                 <React.Fragment>
                                                     {this.state.form.payment_gateway === null ? null :
-                                                        this.state.form.payment_gateway.meta.module !== 'duitku' ? null :
+                                                        this.state.form.payment_gateway.meta.module !== 'duitku' ?
+                                                            <TransactionCards handleMidtransQR={this.generateTokenMidtrans} form={this.state.form} channels={this.state.channels}/>
+                                                            :
                                                             <React.Fragment>
                                                                 <div className="form-group row">
                                                                     <label className="col-md-5 col-form-label text-xs">
@@ -438,84 +551,12 @@ class OnlinePayment extends React.Component {
                                                     }
                                                 </React.Fragment>
                                                 :
-                                                <React.Fragment>
-                                                    {typeof this.state.form.transaction.invoice.pg_transaction.fee !== 'undefinded' &&
-                                                        parseInt(this.state.form.transaction.invoice.pg_transaction.fee) > 0 &&
-                                                            <React.Fragment>
-                                                                <div className="form-group row">
-                                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('labels.fee')}</label>
-                                                                    <div className="col-md-5">
-                                                                        <div className="input-group input-group-sm">
-                                                                            <div className="input-group-prepend"><span className="input-group-text">IDR</span></div>
-                                                                            <div className="form-control-sm form-control text-right text-sm text-bold">{formatLocaleString(parseInt(this.state.form.transaction.invoice.pg_transaction.fee))}</div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="form-group row">
-                                                                    <label className="col-md-5 col-form-label text-xs">{Lang.get('gateways.labels.grand_total')}</label>
-                                                                    <div className="col-md-5">
-                                                                        <div className="input-group input-group-sm">
-                                                                            <div className="input-group-prepend"><span className="input-group-text">IDR</span></div>
-                                                                            <div className="form-control-sm form-control text-right text-sm text-bold text-success">{formatLocaleString( sumGrandTotalInvoice(this.state.form.invoice) +parseInt(this.state.form.transaction.invoice.pg_transaction.fee))}</div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </React.Fragment>
-                                                    }
-                                                    <div className="form-group row">
-                                                        <label className="col-md-5 col-form-label text-xs">{Lang.get('gateways.labels.reference_code')}</label>
-                                                        <div className="col-md-7">
-                                                            <div className="form-control form-control-sm text-xs">{this.state.form.transaction.reference}</div>
-                                                        </div>
-                                                    </div>
-                                                    {typeof this.state.form.transaction.invoice.pg_transaction.vaNumber !== 'undefined' &&
-                                                        <div className="form-group row">
-                                                            {/*{console.log(this.state.form.transaction.invoice.pg_transaction.vaNumber.match(/.{1,4}/g) ?? [])}*/}
-                                                            <label className="col-md-5 col-form-label text-xs">
-                                                                {Lang.get('gateways.labels.va')}
-                                                                {this.state.channels.length === 0 ? null :
-                                                                    this.state.channels.findIndex((f)=> f.value === this.state.form.transaction.invoice.pg_transaction.channel) < 0 ? null :
-                                                                        <span className="text-primary">{` ${this.state.channels[this.state.channels.findIndex((f)=> f.value === this.state.form.transaction.invoice.pg_transaction.channel)].label}`}</span>
-                                                                }
-                                                            </label>
-                                                            <div className="col-md-7">
-                                                                <div className="input-group input-group-sm">
-                                                                    <div className="form-control-sm form-control text-bold text-primary text-sm">
-                                                                        {formatVA(this.state.form.transaction.invoice.pg_transaction.vaNumber)}
-                                                                    </div>
-                                                                    <div className="input-group-append">
-                                                                        <span onClick={(e)=>{
-                                                                            e.preventDefault();
-                                                                            navigator.clipboard.writeText(this.state.form.transaction.invoice.pg_transaction.vaNumber);
-                                                                            showSuccess(Lang.get('gateways.labels.va_copied'));
-                                                                        }} title={Lang.get('gateways.labels.copy_va')} style={{cursor:'pointer'}} className="input-group-text"><FontAwesomeIcon icon={faCopy} size="xs"/></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                </React.Fragment>
+                                                <TransactionCards handleMidtransQR={this.generateTokenMidtrans} form={this.state.form} channels={this.state.channels}/>
                                             }
                                         </div>
                                     </div>
                                 </div>
-                                {this.state.form.transaction === null ? null :
-                                    typeof this.state.form.transaction.invoice.pg_transaction.qrString === 'undefined' ? null :
-                                        <div className="col-md-4">
-                                            <div className="card card-outline card-secondary">
-                                                <div className="card-header px-2 text-center">
-                                                    <h4 className="text-sm card-title">{Lang.get('labels.qr_code',{Attribute:Lang.get('customers.invoices.labels.menu')})}</h4>
-                                                </div>
-                                                <div style={{background:'#fff'}} className="card-body text-center">
-                                                    <div id="qr-code-wrapper" className="text-center position-relative mb-5">
-                                                        <QRCode size={150} level="H" value={this.state.form.transaction.invoice.pg_transaction.qrString}/>
-                                                        <img className="img-thumbnail img-circle" style={{width:50,position:'absolute',left:0,right:0,top:0,bottom:0,marginLeft:'auto',marginRight:'auto',marginTop:'auto',marginBottom:'auto'}} alt="logo" src={window.origin+'/images/logo-2.png'}/>
-                                                    </div>
-                                                    <div className="text-muted text-xs">{Lang.get('labels.qr_info',{Attribute:Lang.get('invoices.payments.name')})}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                }
+                                <TransactionQrCard form={this.state.form}/>
                             </div>
                         }
                     </React.Fragment>

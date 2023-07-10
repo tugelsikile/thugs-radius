@@ -84,4 +84,11 @@ Route::get('/profile/{id}', function () {
     $user = User::where('id', request()->id)->first();
     return view('auth.users.profile',['id' => request()->id, 'user' => $user]);
 });
+Route::group(['prefix' => 'payment-gateway'],function () {
+    Route::group(['prefix' => 'midtrans'],function () {
+        Route::get('/finish', function (){ return view('guest.payment-gateways.finish'); });
+        Route::get('/unfinish', function (){ return view('guest.payment-gateways.unfinished'); });
+        Route::get('/error', function (){ return view('guest.payment-gateways.error'); });
+    });
+});
 Route::get('logs', [LogViewerController::class, 'index']);

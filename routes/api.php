@@ -16,6 +16,7 @@ use App\Http\Controllers\Nas\BandwidthController;
 use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\Nas\ProfileController;
+use App\Http\Controllers\Olt\OltController;
 use App\Http\Controllers\PaymentGateway\BRIController;
 use App\Http\Controllers\PaymentGateway\DuitkuController;
 use App\Http\Controllers\PaymentGateway\MidtransController;
@@ -131,6 +132,13 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/', [PaymentGatewayController::class, 'crud']);
             Route::patch('/activate', [PaymentGatewayController::class, 'activate'])->name('clients.configs.payment-gateways.activate');
             Route::patch('/inactivate', [PaymentGatewayController::class, 'activate']);
+        });
+    });
+    Route::group(['prefix' => 'olt'], function () {
+        Route::any('/', [OltController::class, 'crud']);
+        Route::any('/test-connection', [OltController::class, 'testConnection']);
+        Route::group(['prefix' => 'gpon'], function () {
+            Route::any('/state', [OltController::class, 'gponStates']);
         });
     });
 });

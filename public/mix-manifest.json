@@ -1,4 +1,3 @@
 {
-    "/js/clients/index.js": "/js/clients/index.js",
-    "/js/clients/configs/payment-gateways.js": "/js/clients/configs/payment-gateways.js"
+    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
 }

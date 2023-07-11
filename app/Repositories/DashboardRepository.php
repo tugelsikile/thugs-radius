@@ -17,6 +17,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 
 
@@ -70,14 +71,22 @@ class DashboardRepository
                     foreach ($online as $item) {
                         $customer = Customer::where('nas_username', $item['name'])->first();
                         if ($customer != null) {
-                            $bytes = explode('/', $item['bytes']);
-                            if (collect($bytes)->count() == 2) {
-                                $newTraffic = new CustomerTraffic();
-                                $newTraffic->id = Uuid::uuid4()->toString();
-                                $newTraffic->customer = $customer->id;
-                                $newTraffic->input = $bytes[0];
-                                $newTraffic->output = $bytes[1];
-                                $newTraffic->saveOrFail();
+                            $byteString = "0/0";
+                            $packets = "";
+
+                            if (array_key_exists('bytes',$item)) {
+                                $bytes = explode('/', $item['bytes']);
+                                if (collect($bytes)->count() == 2) {
+                                    $newTraffic = new CustomerTraffic();
+                                    $newTraffic->id = Uuid::uuid4()->toString();
+                                    $newTraffic->customer = $customer->id;
+                                    $newTraffic->input = $bytes[0];
+                                    $newTraffic->output = $bytes[1];
+                                    $newTraffic->saveOrFail();
+                                }
+                            }
+                            if (array_key_exists('packets', $item)) {
+                                $packets = $item['packets'];
                             }
                             $traffics = collect();
                             $lastTraffics = CustomerTraffic::where('customer', $customer->id)->limit(5)->offset(0)->orderBy('created_at','asc')->get();
@@ -94,9 +103,9 @@ class DashboardRepository
                                     'duration' => $item['uptime'],
                                     'ip' => $item['address'],
                                     'mac' => $item['caller-id'],
-                                    'bytes' => $item['bytes'],
+                                    'bytes' => $byteString,
                                     'last_bytes' => $traffics,
-                                    'packets' => $item['packets']
+                                    'packets' => $packets
                                 ]
                             ]);
                         }

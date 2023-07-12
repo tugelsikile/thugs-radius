@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import {CardPreloader, responseMessage, siteData} from "../../../Components/mixedConsts";
-import {crudOlt} from "../../../Services/OltService";
+import {cancelOltService, crudOlt} from "../../../Services/OltService";
 import PageLoader from "../../../Components/PageLoader";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import PageTitle from "../../../Components/Layout/PageTitle";
@@ -68,7 +68,7 @@ class OltPage extends React.Component {
     toggleOlt(data = null) {
         let filter = this.state.filter;
         filter.olt = data;
-        this.setState({filter});
+        this.setState({filter},()=>cancelOltService());
     }
     confirmDelete(data = null) {
         let ids = [];
@@ -264,7 +264,7 @@ class OltPage extends React.Component {
                                             </thead>
                                             <tbody>
                                             {this.state.olt.unfiltered.length === 0 ?
-                                                <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
+                                                <DataNotFound colSpan={6} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
                                                 :
                                                 this.state.olt.unfiltered.map((item)=>
                                                     <tr key={item.value}>

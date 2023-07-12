@@ -2,7 +2,7 @@ import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRefresh, faTimes, faUserCheck, faUserSlash, faUserTimes} from "@fortawesome/free-solid-svg-icons";
 import {CardPreloader, responseMessage} from "../../../Components/mixedConsts";
-import {crudGponStates, getGponCustomer} from "../../../Services/OltService";
+import {cancelOltService, crudGponStates, getGponCustomer} from "../../../Services/OltService";
 import {showError} from "../../../Components/Toaster";
 import {faUserCircle} from "@fortawesome/free-regular-svg-icons";
 import {CustomerTableHeader, LeftSideBar, TableContentGponState} from "./Mixed";
@@ -50,12 +50,20 @@ class DetailOLT extends React.Component {
                     this.setState({gpon_states},()=>{
                         this.loadGponCustomer(item)
                             .then((response)=>{
-                                gpon_states.current[index].details = response;
-                                this.setState({gpon_states});
+                                if (typeof gpon_states.current[index] !== 'undefined') {
+                                    if (typeof gpon_states.current[index].details !== 'undefined') {
+                                        gpon_states.current[index].details = response;
+                                        this.setState({gpon_states});
+                                    }
+                                }
                             })
                             .then(()=>{
-                                gpon_states.current[index].loading = false;
-                                this.setState({gpon_states});
+                                if (typeof gpon_states.current[index] !== 'undefined') {
+                                    if (typeof gpon_states.current[index].details !== 'undefined') {
+                                        gpon_states.current[index].loading = false;
+                                        this.setState({gpon_states});
+                                    }
+                                }
                             })
                     });
                 });
@@ -63,24 +71,27 @@ class DetailOLT extends React.Component {
         }
     }
     async loadGponCustomer(item) {
-        try {
-            const formData = new FormData();
-            if (this.state.olt !== null) formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
-            formData.append(Lang.get('olt.form_input.onu'), item.onu);
-            formData.append(Lang.get('olt.form_input.phase_state'), item.phase_state);
-            let response = await getGponCustomer(formData);
-            if (response.data.params === null) {
+        if (this.state.gpon_states.current.length > 0) {
+            try {
+                const formData = new FormData();
+                if (this.state.olt !== null) formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+                formData.append(Lang.get('olt.form_input.onu'), item.onu);
+                formData.append(Lang.get('olt.form_input.phase_state'), item.phase_state);
+                let response = await getGponCustomer(formData);
+                if (response.data.params === null) {
+                    return null;
+                } else {
+                    return response.data.params;
+                }
+            } catch (e) {
                 return null;
-            } else {
-                return response.data.params;
             }
-        } catch (e) {
-            return null;
         }
     }
     async loadGponState() {
         if (! this.state.gpon_states.loading ) {
             if (this.state.olt !== null) {
+                cancelOltService();
                 let gpon_states = this.state.gpon_states;
                 gpon_states.current = [];
                 gpon_states.status = null;

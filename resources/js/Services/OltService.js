@@ -1,6 +1,9 @@
 import Axios from "axios";
 import {axiosHeader} from "./Configs";
 
+const CancelToken = Axios.CancelToken;
+const cancelTokenSource = CancelToken.source();
+
 export const crudOlt = async (data) => {
     let request = Axios({
         headers : axiosHeader(),
@@ -28,4 +31,8 @@ export const getGponCustomer = async (data) => {
         method : "post", url : window.origin + "/api/clients/olt/gpon/customer", data : data
     });
     return Promise.resolve(request);
+}
+export const cancelOltService = () => {
+    cancelTokenSource.cancel('operation canceled');
+    console.log('operation cancel');
 }

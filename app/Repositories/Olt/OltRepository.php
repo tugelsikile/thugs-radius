@@ -391,6 +391,44 @@ class OltRepository
                 }
             }
             $telnet->login($olt->user, $olt->pass);
+            $unconfigs = $telnet->exec("show gpon onu uncfg");
+            $unconfigs = explode("\n", $unconfigs);
+            if (count($unconfigs) > 0) {
+                //dd($unconfigs);
+                /*** TODO UNCONFIG PARAMS NOT KNOWN ***/
+                foreach ($unconfigs as $unconfig) {
+                    if (strlen($unconfig) > 10) {
+                        if (!Str::contains($unconfig,"No related information to show")) {
+                            if (!Str::contains($unconfig,"------------------")) {
+                                if (Str::contains($unconfig,"gpon-o")) {
+                                    $line = explode(' ', $unconfig);
+                                    $strings = [];
+                                    if (count($line) > 1) {
+                                        foreach ($line as $item) {
+                                            if (strlen($item) > 4) {
+                                                $strings[] = $item;
+                                            }
+                                        }
+                                    }
+                                    if (count($strings) == 3) {
+                                        $response->push((object)[
+                                            'onu' => str_replace('gpon-onu_','',$strings[0]),
+                                            'serial_number' => $strings[1],
+                                            'admin_state' => null,
+                                            'omcc_state' => null,
+                                            'phase_state' => 'unconfig',
+                                            'channel' => '',
+                                            'loading' => false,
+                                            'details' => null,
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             $onuResponses = $telnet->exec("show gpon onu state");
             $onuResponses = collect(explode("\n", $onuResponses));
             $curCommands = "  \r\n";
@@ -406,18 +444,7 @@ class OltRepository
                     }
                 }
             }
-            $unconfigs = $telnet->exec("gpon onu uncfg");
-            $unconfigs = explode("\n", $unconfigs);
-            if (count($unconfigs) > 0) {
-                /*** TODO UNCONFIG PARAMS NOT KNOWN ***/
-                foreach ($unconfigs as $unconfig) {
-                    if (strlen($unconfig) > 10) {
-                        if (!Str::contains($unconfig,"No related information to show")) {
-                            //parse here
-                        }
-                    }
-                }
-            }
+
             $telnet->disconnect();
             return $response;
         } catch (Exception $exception) {
@@ -455,7 +482,7 @@ class OltRepository
 
                 if (strlen($runInterfaceLines) > 0) {
                     $runInterfaceLines = explode("\n", $runInterfaceLines);
-                    if (count($runInterfaceLines) > 0) {
+                    if (count($runInterfaceLines) > 2) {
                         $response = (object) [
                             'username' => null,
                             'customer' => null,
@@ -474,55 +501,79 @@ class OltRepository
                                 'name' => null,
                             ]
                         ];
-                        foreach ($runInterfaceLines as $runInterfaceLine) {
-                            if (strlen($runInterfaceLine) > 10) {
-                                /* EXAMPLE RESPONSE
-                                 * Building configuration...
-                                 * interface gpon-onu_1/2/8:5
-                                 *      name sitijuleha@judyusnet
-                                 *      tcont 1 profile HOME-5Mb
-                                 *      gemport 1 tcont 1
-                                 *      gemport 1 traffic-limit upstream HOME-5Mb downstream HOME-5Mb
-                                 *      service-port 1 vport 1 user-vlan 111 vlan 111
-                                 */
-                                if (! Str::contains($runInterfaceLine,"Building configuration...")) {
-                                    if (Str::contains($runInterfaceLine,"description ")) {
-                                        if (!Str::contains($runInterfaceLine,"service-port")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 1) {
-                                                $response->username = $line[count($line) - 1];
-                                            }  else {
-                                                $response->username = str_replace(" ","",str_replace("service-port","",str_replace("description ","", $runInterfaceLine)));
+                        foreach ($runInterfaceLines as $index => $runInterfaceLine) {
+                            if ($index >= 2) {
+                                if (strlen($runInterfaceLine) > 10) {
+                                    /* EXAMPLE RESPONSE
+                                     * Building configuration...
+                                     * interface gpon-onu_1/2/8:5
+                                     *      name sitijuleha@judyusnet
+                                     *      tcont 1 profile HOME-5Mb
+                                     *      gemport 1 tcont 1
+                                     *      gemport 1 traffic-limit upstream HOME-5Mb downstream HOME-5Mb
+                                     *      service-port 1 vport 1 user-vlan 111 vlan 111
+                                     *
+                                     * Building configuration...
+                                     * interface gpon-onu_1/1/1:8
+                                     *      name jgr.sugriyanto@rst.net.id
+                                     *      description jgr.sugriyanto@rst.net.id
+                                     *      tcont 1 name jgr.sugriyanto@rst.net.id profile Home-5Mbps
+                                     *      gemport 1 name jgr.sugriyanto@rst.net.id tcont 1
+                                     *      gemport 1 traffic-limit upstream Home-5Mbps downstream Home-5Mbps
+                                     *      service-port 1 vport 1 user-vlan 142 vlan 142
+                                     *      service-port 1 description jgr.sugriyanto@rst.net.id
+                                     */
+                                    if (Str::contains($runInterfaceLine,"description") && ( $index == 2 || $index == 3) ) {
+                                        if ($response->username == null) {
+                                            if (!Str::contains($runInterfaceLine,"service-port")) {
+                                                $line = explode(" ", $runInterfaceLine);
+                                                if (count($line) > 1) {
+                                                    foreach ($line as $key => $item) {
+                                                        if (strlen($item) == 0) {
+                                                            array_splice($line,$key,1);
+                                                        }
+                                                        if ($item == 'description') {
+                                                            array_splice($line,$key,1);
+                                                        }
+                                                    }
+                                                    $response->username = join(' ', $line);
+                                                }
                                             }
                                         }
-                                    } elseif (Str::contains($runInterfaceLine,"name")) {
-                                        if (!Str::contains($runInterfaceLine,"tcont")) {
+                                    } elseif (Str::contains($runInterfaceLine,"name") && ($index == 2 || $index == 3) ) {
+                                        if (! Str::contains($runInterfaceLine,"tcont") && ! Str::contains($runInterfaceLine,"profile")) {
                                             $line = explode(" ", $runInterfaceLine);
                                             if (count($line) > 1) {
-                                                $response->username = $line[count($line) - 1];
-                                            } else {
-                                                $response->username = str_replace(" ","",str_replace("name", "",$runInterfaceLine));
+                                                foreach ($line as $key => $item) {
+                                                    if (strlen($item) == 0) {
+                                                        array_splice($line,$key,1);
+                                                    }
+                                                    if ($item == 'name') {
+                                                        array_splice($line,$key,1);
+                                                    }
+                                                }
+                                                $response->username = join(' ', $line);
                                             }
                                         }
-                                    } elseif (Str::contains($runInterfaceLine,"tcont")) {
+                                    } elseif (Str::contains($runInterfaceLine,"tcont") && $index > 3) {
                                         if (Str::contains($runInterfaceLine,"profile")) {
                                             $line = explode(" ", $runInterfaceLine);
                                             if (count($line) > 3) {
                                                 $response->profile->tcont = $line[count($line) - 1];
                                             }
-                                        } elseif (Str::contains($runInterfaceLine,"gemport")) {
+                                        } elseif (Str::contains($runInterfaceLine,"gemport") && $index > 3) {
                                             $line = explode(" ", $runInterfaceLine);
                                             if (count($line) > 3) {
                                                 $response->gemport->tcont = $line[count($line) - 1];
                                             }
                                         }
-                                    } elseif (Str::contains($runInterfaceLine,"traffic-limit")) {
+                                    } elseif (Str::contains($runInterfaceLine,"traffic-limit") && $index > 3) {
                                         $line = explode(" ", $runInterfaceLine);
                                         if (count($line) >= 6) {
                                             $response->gemport->traffic_limit->upstream = $line[4];
                                             $response->gemport->traffic_limit->downstream = $line[count($line) - 1];
                                         }
-                                    } elseif (Str::contains($runInterfaceLine,"service-port")) {
+                                    } elseif (Str::contains($runInterfaceLine,"service-port") && $index > 3) {
                                         if (Str::contains($runInterfaceLine,"vport")) {
                                             $line = explode(" ", $runInterfaceLine);
                                             if (count($line) >= 7) {

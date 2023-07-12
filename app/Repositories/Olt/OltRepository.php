@@ -414,11 +414,13 @@ class OltRepository
                                             $response->username = str_replace(" ","",str_replace("service-port","",str_replace("description ","", $runInterfaceLine)));
                                         }
                                     } elseif (Str::contains($runInterfaceLine,"name")) {
-                                        $line = explode(" ", $runInterfaceLine);
-                                        if (count($line) > 1) {
-                                            $response->username = $line[count($line) - 1];
-                                        } else {
-                                            $response->username = str_replace(" ","",str_replace("name", "",$runInterfaceLine));
+                                        if (Str::contains($runInterfaceLine,"tcont")) {
+                                            $line = explode(" ", $runInterfaceLine);
+                                            if (count($line) > 1) {
+                                                $response->username = $line[count($line) - 1];
+                                            } else {
+                                                $response->username = str_replace(" ","",str_replace("name", "",$runInterfaceLine));
+                                            }
                                         }
                                     } elseif (Str::contains($runInterfaceLine,"tcont")) {
                                         if (Str::contains($runInterfaceLine,"profile")) {

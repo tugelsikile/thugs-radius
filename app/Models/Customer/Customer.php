@@ -43,6 +43,15 @@ class Customer extends Model
         'is_voucher' => 'boolean',
         'due_at' => 'datetime',
     ];
+    protected $with = [
+        'userObj',
+        'profileObj',
+        'nasObj',
+        'villageObj',
+        'districtObj',
+        'cityObj',
+        'provinceObj',
+    ];
     public function userObj(): BelongsTo
     {
         return $this->setConnection("mysql")->belongsTo(User::class,'user','id');

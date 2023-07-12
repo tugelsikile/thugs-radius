@@ -16,6 +16,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+function formatMacFromOlt(string $string, string $separator = ' ', string $jointer = ':'): string
+{
+    $string = str_replace('Hex-STRING: ','', $string);
+    $string = collect(explode($separator, $string));
+    return $string->join($jointer);
+}
 function cidr2NetmaskAddr (string $cidr): string
 {
     $ta = substr ($cidr, strpos ($cidr, '/') + 1) * 1;

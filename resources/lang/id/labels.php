@@ -72,6 +72,8 @@ return [
     'connection' => [
         'submit' => 'Periksa Koneksi',
         'pending' => 'Memeriksa Koneksi',
+        'success' => 'Berhasil terhubung ke :Attribute',
+        'error' => 'Gagal terhubung ke :Attribute',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',

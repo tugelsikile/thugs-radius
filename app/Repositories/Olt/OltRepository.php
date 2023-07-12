@@ -407,14 +407,16 @@ class OltRepository
                                  */
                                 if (! Str::contains($runInterfaceLine,"Building configuration...")) {
                                     if (Str::contains($runInterfaceLine,"description ")) {
-                                        $line = explode(" ", $runInterfaceLine);
-                                        if (count($line) > 1) {
-                                            $response->username = $line[count($line) - 1];
-                                        }  else {
-                                            $response->username = str_replace(" ","",str_replace("service-port","",str_replace("description ","", $runInterfaceLine)));
+                                        if (!Str::contains($runInterfaceLine,"service-port")) {
+                                            $line = explode(" ", $runInterfaceLine);
+                                            if (count($line) > 1) {
+                                                $response->username = $line[count($line) - 1];
+                                            }  else {
+                                                $response->username = str_replace(" ","",str_replace("service-port","",str_replace("description ","", $runInterfaceLine)));
+                                            }
                                         }
                                     } elseif (Str::contains($runInterfaceLine,"name")) {
-                                        if (Str::contains($runInterfaceLine,"tcont")) {
+                                        if (!Str::contains($runInterfaceLine,"tcont")) {
                                             $line = explode(" ", $runInterfaceLine);
                                             if (count($line) > 1) {
                                                 $response->username = $line[count($line) - 1];

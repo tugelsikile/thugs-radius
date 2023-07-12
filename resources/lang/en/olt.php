@@ -11,6 +11,10 @@ return [
         'pass' => 'password',
         'onu' => 'onu_data',
         'phase_state' => 'phase_state',
+        'prompts' => [
+            'user' => 'username_prompt',
+            'pass' => 'password_prompt',
+        ]
     ],
     'labels' => [
         'menu' => 'OLT (experimental)',
@@ -31,6 +35,11 @@ return [
             'label' => 'Community',
             'read' => 'Read Community',
             'write' => 'Write Community',
-        ]
+        ],
+        'prompts' => [
+            'info' => 'Used when try to login to olt, Zte usually use <strong><em>U</em>sername</strong> with Uppercase <strong>U</strong>',
+            'user' => 'Username Prompt',
+            'pass' => 'Password Prompt'
+        ],
     ]
 ];

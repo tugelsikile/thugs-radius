@@ -21,6 +21,7 @@ class FormOlt extends React.Component {
                 hostname : '', port : 23,
                 comRead : '', comWrite : '',
                 user : '', pass : '',
+                user_prompt : 'Username:', pass_prompt : 'Password:',
             }
         };
         this.handleSave = this.handleSave.bind(this);
@@ -31,7 +32,9 @@ class FormOlt extends React.Component {
         let form = this.state.form;
         if (! nextProps.open) {
             form.id = null, form.name = '', form.hostname = '',
-                form.port = 23, form.comRead = '', form.comWrite = '';
+                form.port = 23, form.comRead = '', form.comWrite = '',
+                form.user = '', form.pass = '',
+                form.user_prompt = 'Username:', form.pass_prompt = 'Password:';
         } else {
             if (nextProps.data !== null) {
                 form.id = nextProps.data.value,
@@ -42,6 +45,14 @@ class FormOlt extends React.Component {
                     form.comWrite = nextProps.data.meta.communities.write,
                     form.user = nextProps.data.meta.auth.user,
                     form.pass = nextProps.data.meta.auth.pass;
+                if (nextProps.data.meta.auth.prompts !== null) {
+                    if (typeof nextProps.data.meta.auth.prompts.user_prompt !== 'undefined') {
+                        form.user_prompt = nextProps.data.meta.auth.prompts.user_prompt;
+                    }
+                    if (typeof nextProps.data.meta.auth.prompts.pass_prompt !== 'undefined') {
+                        form.pass_prompt = nextProps.data.meta.auth.prompts.pass_prompt;
+                    }
+                }
             }
         }
         this.setState({form});
@@ -65,6 +76,8 @@ class FormOlt extends React.Component {
                 formData.append(Lang.get('olt.form_input.read'), this.state.form.comRead);
                 formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
                 formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
+                formData.append(Lang.get('olt.form_input.prompts.user'), this.state.form.user_prompt);
+                formData.append(Lang.get('olt.form_input.prompts.pass'), this.state.form.pass_prompt);
                 let response = await testConnection(formData);
                 if (response.data.params === null) {
                     this.setState({loading:false});
@@ -98,6 +111,8 @@ class FormOlt extends React.Component {
                 formData.append(Lang.get('olt.form_input.write'), this.state.form.comWrite);
                 formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
                 formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
+                formData.append(Lang.get('olt.form_input.prompts.user'), this.state.form.user_prompt);
+                formData.append(Lang.get('olt.form_input.prompts.pass'), this.state.form.pass_prompt);
                 let response = await crudOlt(formData);
                 if (response.data.params === null) {
                     this.setState({loading:false});
@@ -157,9 +172,23 @@ class FormOlt extends React.Component {
                                         </div>
                                     </div>
                                     <div className="form-group row">
+                                        <label htmlFor="inputUserPrompt" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.prompts.user')}</label>
+                                        <div className="col-md-7">
+                                            <input id="inputUserPrompt" value={this.state.form.user_prompt} name="user_prompt" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.prompts.user')} className="form-control form-control-sm text-xs"/>
+                                            <small>{HtmlParser(Lang.get('olt.labels.prompts.info'))}</small>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
                                         <label htmlFor="inputPassword" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.password')}</label>
                                         <div className="col-md-7">
                                             <input id="inputPassword" value={this.state.form.pass} name="pass" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.password')} className="form-control form-control-sm text-xs"/>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label htmlFor="inputPassPrompt" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.prompts.pass')}</label>
+                                        <div className="col-md-7">
+                                            <input id="inputPassPrompt" value={this.state.form.pass_prompt} name="pass_prompt" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.prompts.pass')} className="form-control form-control-sm text-xs"/>
+                                            <small>{HtmlParser(Lang.get('olt.labels.prompts.info'))}</small>
                                         </div>
                                     </div>
                                 </div>

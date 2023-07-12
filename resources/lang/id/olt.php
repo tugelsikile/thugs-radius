@@ -11,6 +11,10 @@ return [
         'pass' => 'password',
         'onu' => 'data_onu',
         'phase_state' => 'phase_state',
+        'prompts' => [
+            'user' => 'prompt_username',
+            'pass' => 'prompt_password',
+        ]
     ],
     'labels' => [
         'menu' => 'OLT (experimental)',
@@ -31,6 +35,11 @@ return [
             'label' => 'Community',
             'read' => 'Community Baca',
             'write' => 'Community Tulis',
-        ]
+        ],
+        'prompts' => [
+            'info' => 'Digunakan untuk mencoba pada saat login ke olt, Zte biasa pakai <strong><em>U</em>sername</strong> dengan <strong>U</strong> kapital',
+            'user' => 'Prompt Username',
+            'pass' => 'Prompt Kata Sandi'
+        ],
     ]
 ];

@@ -70,6 +70,18 @@ class OltRepository
             if ($this->me != null) {
                 $olt->created_by = $this->me->id;
             }
+            $configs = (object) [];
+            if ($request->has(__('olt.form_input.prompts.user'))) {
+                if (! property_exists($configs,'prompts')) $configs->prompts = (object) [];
+                if (! property_exists($configs->prompts,'user_prompt'))  $configs->prompts->user_prompt = '';
+                $configs->prompts->user_prompt = $request[__('olt.form_input.prompts.user')];
+            }
+            if ($request->has(__('olt.form_input.prompts.pass'))) {
+                if (! property_exists($configs,'prompts')) $configs->prompts = (object) [];
+                if (! property_exists($configs->prompts,'pass_prompt'))  $configs->prompts->pass_prompt = '';
+                $configs->prompts->pass_prompt = $request[__('olt.form_input.prompts.pass')];
+            }
+            $olt->configs = $configs;
             $olt->saveOrFail();
             return $this->table(new Request(['id' => $olt->id]))->first();
         } catch (Exception $exception) {
@@ -122,6 +134,57 @@ class OltRepository
                 $updating = true;
                 $olt->pass = null;
             }
+            $configs = $olt->configs;
+
+            if ($request->has(__('olt.form_input.prompts.user'))) {
+                if ($configs != null) {
+                    if (! property_exists($configs,'prompts')) {
+                        $configs->prompts = (object) [];
+                        $updating = true;
+                    }
+                    if (! property_exists($configs->prompts,'user_prompt')) {
+                        $configs->prompts->user_prompt = '';
+                        $updating = true;
+                    }
+                }
+                if ($configs != null) {
+                    if ($configs->prompts->user_prompt != $request[__('olt.form_input.prompts.user')]) $updating = true;
+                    $configs->prompts->user_prompt = $request[__('olt.form_input.prompts.user')];
+                } else {
+                    $configs = (object) [];
+                    $updating = true;
+                    $configs->prompts = (object)['user_prompt' => $request[__('olt.form_input.prompts.user')] ];
+
+                }
+            } else {
+                if (property_exists($configs,'prompts')) {
+                    if (property_exists($configs->prompts,'user_prompt')) {
+                        $updating = true;
+                        unset($configs->prompts->user_prompt);
+                    }
+                }
+            }
+            if ($request->has(__('olt.form_input.prompts.pass'))) {
+                if (! property_exists($configs,'prompts')) {
+                    $updating = true;
+                    $configs->prompts = (object) [];
+                }
+                if (! property_exists($configs->prompts,'pass_prompt'))  {
+                    $updating = true;
+                    $configs->prompts->pass_prompt = '';
+                }
+                if ($configs->prompts->pass_prompt != $request[__('olt.form_input.prompts.pass')]) $updating = true;
+                $configs->prompts->pass_prompt = $request[__('olt.form_input.prompts.pass')];
+            } else {
+                if (property_exists($configs,'prompts')) {
+                    if (property_exists($configs->prompts,'pass_prompt')) {
+                        $updating = true;
+                        unset($configs->prompts->pass_prompt);
+                    }
+                }
+            }
+            $olt->configs = $configs;
+
             if ($this->me != null && $updating) {
                 $olt->updated_by = $this->me->id;
             }
@@ -154,14 +217,25 @@ class OltRepository
                 if ($username == null) $username = '';
                 if ($password == null) $password = '';
                 try {
-                    $responseRemote = $this->testConnection(new Request([
+                    $newReq = new Request([
                         __('olt.form_input.host') => $olt->hostname,
                         __('olt.form_input.port') => $olt->port,
                         __('olt.form_input.user') => $olt->user,
                         __('olt.form_input.pass') => $olt->pass,
                         'response_type' => 'object',
                         'expect_uptime' => true
-                    ]));
+                    ]);
+                    if ($olt->configs != null) {
+                        if (property_exists($olt->configs,'prompts')) {
+                            if (property_exists($olt->configs->prompts,'user_prompt')) {
+                                $newReq = $newReq->merge([__('olt.form_input.prompts.user') => $olt->configs->prompts->user_prompt]);
+                            }
+                            if (property_exists($olt->configs->prompts,'user_prompt')) {
+                                $newReq = $newReq->merge([__('olt.form_input.prompts.pass') => $olt->configs->prompts->pass_prompt]);
+                            }
+                        }
+                    }
+                    $responseRemote = $this->testConnection($newReq);
                     if ($responseRemote != null) {
                         if (gettype($responseRemote) == 'object') {
                             if (property_exists($responseRemote,'name')) {
@@ -173,7 +247,13 @@ class OltRepository
                         }
                     }
                 } catch (Exception $exception) {}
-
+                $configs = $olt->configs;
+                $prompts = null;
+                if ($configs != null) {
+                    if (property_exists($configs,'prompts')) {
+                        $prompts = $configs->prompts;
+                    }
+                }
                 $response->push((object) [
                     'value' => $olt->id,
                     'label' => $olt->name,
@@ -184,6 +264,7 @@ class OltRepository
                             'port' => $olt->port,
                             'user' => $username,
                             'pass' => $password,
+                            'prompts' => $prompts
                         ],
                         'communities' => (object) [
                             'read' => $olt->community_read,
@@ -210,6 +291,12 @@ class OltRepository
                 $port = $request[__('olt.form_input.port')];
                 $telnet = new Telnet($hostname, $port, 5,"");
                 $telnet->setLoginPrompt("Username:");
+                if ($request->has(__('olt.form_input.prompts.user'))) {
+                    $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')]);
+                    if ($request->has(__('olt.form_input.prompts.pass'))) {
+                        $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')], $request[__('olt.form_input.prompts.pass')]);
+                    }
+                }
                 try {
                     $telnet->login($request[__('olt.form_input.user')], $request[__('olt.form_input.pass')]);
                     $responseStrings = $telnet->exec("show system-group");
@@ -239,29 +326,6 @@ class OltRepository
                 }
             }
             throw new Exception(__("labels.connection.error",['Attribute' => $request[__('olt.form_input.host')]]),400);
-
-
-            /*$prompt = "Username";
-            $promptError = 'ERR';
-            $lineEnding = "\r\n";
-            $client = TelnetClient::factory();
-            $client->connect($dsn, $prompt, $promptError, $lineEnding);
-            $client->getSocket()->setOption();
-            dd($client);
-            $resp = $client->execute($request[__('olt.form_input.pass')], "Password")->getResponseText();
-            dd($resp);*/
-            /*$olt = new Olt();
-            $olt->setCommunity($request[__('olt.form_input.read')]);
-            $res = $olt->getOltName($request[__('olt.form_input.host')]);
-            if ($res != null) {
-                $res = collect($res);
-                if ($res->count() > 0) {
-                    $res = $res->first();
-                    $res = str_replace("STRING: ","", $res);
-                    return  $res;
-                }
-            }
-            return null;*/
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -320,6 +384,12 @@ class OltRepository
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             $telnet = new Telnet($olt->hostname, $olt->port,3,'');
             $telnet->setLoginPrompt("Username:");
+            if ($request->has(__('olt.form_input.prompts.user'))) {
+                $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')]);
+                if ($request->has(__('olt.form_input.prompts.pass'))) {
+                    $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')], $request[__('olt.form_input.prompts.pass')]);
+                }
+            }
             $telnet->login($olt->user, $olt->pass);
             $onuResponses = $telnet->exec("show gpon onu state");
             $onuResponses = collect(explode("\n", $onuResponses));
@@ -368,6 +438,16 @@ class OltRepository
             if ($olt != null) {
                 $telnet = new Telnet($olt->hostname, $olt->port,3,'');
                 $telnet->setLoginPrompt("Username:");
+                if ($olt->configs != null) {
+                    if (property_exists($olt->configs,'prompts')) {
+                        if (property_exists($olt->configs->prompts,'user_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                        }
+                        if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
+                        }
+                    }
+                }
                 $telnet->login($olt->user, $olt->pass);
 
                 $runInterfaceLines = $telnet->exec("show running-config interface gpon-onu_" . $request[__('olt.form_input.onu')]);

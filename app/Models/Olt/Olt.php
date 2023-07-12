@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $created_by
  * @property mixed $user
  * @property mixed $pass
+ * @property mixed|object $configs
  */
 class Olt extends Model
 {
@@ -25,4 +26,8 @@ class Olt extends Model
     protected $keyType = 'string';
     public $incrementing = false;
     protected $connection = "radius";
+
+    protected $casts = [
+        'configs' => 'object',
+    ];
 }

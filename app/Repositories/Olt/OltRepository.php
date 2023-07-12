@@ -325,7 +325,7 @@ class OltRepository
             $onuResponses = collect(explode("\n", $onuResponses));
             $curCommands = "  \r\n";
             $response = $response->merge($this->parseOnuStateLine($onuResponses));
-            for ($index = 0; $index <= 10; $index ++) {
+            for ($index = 0; $index <= 50; $index ++) {
                 $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
                 $onuResponses = $telnet->exec($curCommands);
                 if (strlen($onuResponses) > 30) {

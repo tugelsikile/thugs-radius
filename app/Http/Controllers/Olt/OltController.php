@@ -8,11 +8,12 @@ use App\Validations\Olt\OltValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class OltController extends Controller
 {
-    protected $repository;
-    protected $validation;
+    protected OltRepository $repository;
+    protected OltValidation $validation;
     public function __construct()
     {
         $this->repository = new OltRepository();
@@ -22,6 +23,7 @@ class OltController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function gponCustomer(Request $request): JsonResponse
     {

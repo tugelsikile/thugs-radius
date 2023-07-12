@@ -8,6 +8,7 @@ import MaskedInput from "react-text-mask";
 import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faLink} from "@fortawesome/free-solid-svg-icons";
+import HtmlParser from "react-html-parser";
 
 // noinspection CommaExpressionJS
 class FormOlt extends React.Component {
@@ -19,6 +20,7 @@ class FormOlt extends React.Component {
                 id : null, name : '',
                 hostname : '', port : 23,
                 comRead : '', comWrite : '',
+                user : '', pass : '',
             }
         };
         this.handleSave = this.handleSave.bind(this);
@@ -37,7 +39,9 @@ class FormOlt extends React.Component {
                     form.hostname = nextProps.data.meta.auth.host,
                     form.port = nextProps.data.meta.auth.port,
                     form.comRead = nextProps.data.meta.communities.read,
-                    form.comWrite = nextProps.data.meta.communities.write;
+                    form.comWrite = nextProps.data.meta.communities.write,
+                    form.user = nextProps.data.meta.auth.user,
+                    form.pass = nextProps.data.meta.auth.pass;
             }
         }
         this.setState({form});
@@ -53,29 +57,29 @@ class FormOlt extends React.Component {
     }
     async testConnection() {
         if (! this.state.loading) {
-            if (this.state.form.hostname.length > 0 && this.state.form.comRead.length > 0) {
-                this.setState({loading:true});
-                try {
-                    const formData = new FormData();
-                    formData.append(Lang.get('olt.form_input.port'), this.state.form.port);
-                    formData.append(Lang.get('olt.form_input.host'), this.state.form.hostname);
-                    formData.append(Lang.get('olt.form_input.read'), this.state.form.comRead);
-                    let response = await testConnection(formData);
-                    if (response.data.params === null) {
-                        this.setState({loading:false});
-                        showError(response.data.message);
-                    } else {
-                        let form = this.state.form;
-                        if (form.name !== response.data.params) {
-                            form.name = response.data.params;
-                        }
-                        this.setState({loading:false,form});
-                        showSuccess(response.data.message);
-                    }
-                } catch (e) {
+            this.setState({loading:true});
+            try {
+                const formData = new FormData();
+                formData.append(Lang.get('olt.form_input.port'), this.state.form.port);
+                formData.append(Lang.get('olt.form_input.host'), this.state.form.hostname);
+                formData.append(Lang.get('olt.form_input.read'), this.state.form.comRead);
+                formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
+                formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
+                let response = await testConnection(formData);
+                if (response.data.params === null) {
                     this.setState({loading:false});
-                    responseMessage(e);
+                    showError(response.data.message);
+                } else {
+                    let form = this.state.form;
+                    if (form.name !== response.data.params) {
+                        form.name = response.data.params;
+                    }
+                    this.setState({loading:false,form});
+                    showSuccess(response.data.message);
                 }
+            } catch (e) {
+                this.setState({loading:false});
+                responseMessage(e);
             }
         }
     }
@@ -92,6 +96,8 @@ class FormOlt extends React.Component {
                 formData.append(Lang.get('olt.form_input.host'), this.state.form.hostname);
                 formData.append(Lang.get('olt.form_input.read'), this.state.form.comRead);
                 formData.append(Lang.get('olt.form_input.write'), this.state.form.comWrite);
+                formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
+                formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
                 let response = await crudOlt(formData);
                 if (response.data.params === null) {
                     this.setState({loading:false});
@@ -115,49 +121,60 @@ class FormOlt extends React.Component {
                     <form onSubmit={this.handleSave}>
                         <ModalHeader handleClose={()=>this.props.onClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('olt.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('olt.labels.menu')})}}/>
                         <DialogContent dividers>
-                            <div className="form-group row">
-                                <label htmlFor="inputName" className="col-md-3 col-form-label text-xs">{Lang.get('olt.labels.name')}</label>
-                                <div className="col-md-9">
-                                    <input value={this.state.form.name} name="name" onChange={this.handleChange} disabled={this.state.loading} id="inputName" placeholder={Lang.get('olt.labels.name')} className="form-control-sm form-control text-xs" />
+                            <div className="row">
+                                <div className="col-md-7">
+                                    <div className="form-group row">
+                                        <label htmlFor="inputName" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.name')}</label>
+                                        <div className="col-md-7">
+                                            <input value={this.state.form.name} name="name" onChange={this.handleChange} disabled={this.state.loading} id="inputName" placeholder={Lang.get('olt.labels.name')} className="form-control-sm form-control text-xs" />
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label htmlFor="inputHostname" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.host')}</label>
+                                        <div className="col-md-7">
+                                            <MaskedInput name="hostname" guide={false} placeholderChar={'\u2000'}
+                                                         onChange={this.handleChange} id="inputHostname" value={this.state.form.hostname}
+                                                         pipe={pipeIp}
+                                                         disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
+                                                         placeholder={Lang.get('olt.labels.host')}
+                                                         className="form-control form-control-sm text-xs"/>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.port')}</label>
+                                        <div className="col-md-4">
+                                            <NumericFormat disabled={this.state.loading}
+                                                           name="port" onChange={this.handleChange} value={this.state.form.port}
+                                                           className="form-control form-control-sm text-xs"
+                                                           allowLeadingZeros={false} placeholder={Lang.get('olt.labels.port')}
+                                                           decimalScale={0} decimalSeparator="," thousandSeparator=""/>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label htmlFor="inputUser" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.username')}</label>
+                                        <div className="col-md-7">
+                                            <input id="inputUser" value={this.state.form.user} name="user" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.username')} className="form-control form-control-sm text-xs"/>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label htmlFor="inputPassword" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.password')}</label>
+                                        <div className="col-md-7">
+                                            <input id="inputPassword" value={this.state.form.pass} name="pass" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.password')} className="form-control form-control-sm text-xs"/>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="form-group row">
-                                <label htmlFor="inputHostname" className="col-md-3 col-form-label text-xs">{Lang.get('olt.labels.host')}</label>
-                                <div className="col-md-4">
-                                    <MaskedInput name="hostname" guide={false} placeholderChar={'\u2000'}
-                                                 onChange={this.handleChange} id="inputHostname" value={this.state.form.hostname}
-                                                 pipe={pipeIp}
-                                                 disabled={this.state.loading} mask={value => Array(value.length).fill(/[\d.]/)}
-                                                 placeholder={Lang.get('olt.labels.host')}
-                                                 className="form-control form-control-sm text-xs"/>
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label className="col-md-3 col-form-label text-xs">{Lang.get('olt.labels.port')}</label>
-                                <div className="col-md-2">
-                                    <NumericFormat disabled={this.state.loading}
-                                                   name="port" onChange={this.handleChange} value={this.state.form.port}
-                                                   className="form-control form-control-sm text-xs"
-                                                   allowLeadingZeros={false} placeholder={Lang.get('olt.labels.port')}
-                                                   decimalScale={0} decimalSeparator="," thousandSeparator=""/>
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label htmlFor="inputRead" className="col-md-3 col-form-label text-xs">{Lang.get('olt.labels.community.read')}</label>
-                                <div className="col-md-4">
-                                    <input id="inputRead" value={this.state.form.comRead} name="comRead" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.community.read')} className="form-control form-control-sm text-xs"/>
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label htmlFor="inputWrite" className="col-md-3 col-form-label text-xs">{Lang.get('olt.labels.community.write')}</label>
-                                <div className="col-md-4">
-                                    <input id="inputWrite" value={this.state.form.comWrite} name="comWrite" onChange={this.handleChange} disabled={this.state.loading} placeholder={Lang.get('olt.labels.community.write')} className="form-control form-control-sm text-xs"/>
+                                <div className="col-md-5">
+                                    <div className="card card-outline card-info">
+                                        <div className="card-body">
+                                            {HtmlParser(Lang.get('olt.labels.form_info'))}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </DialogContent>
                         <ModalFooter
                             buttons={[
-                                <button disabled={this.state.loading || this.state.form.hostname.length !== 8 || this.state.form.comRead.length === 0 || this.state.form.comWrite.length === 0 || this.state.form.port.length === 0 } type="button" className="btn btn-outline-primary" onClick={this.testConnection}><FontAwesomeIcon icon={faLink}/> {Lang.get('labels.connection.submit')}</button>
+                                <button disabled={this.state.loading || this.state.form.hostname.length < 8 || this.state.form.user.length === 0 || this.state.form.pass.length === 0 || this.state.form.port.length === 0 } type="button" className="btn btn-outline-primary" onClick={this.testConnection}><FontAwesomeIcon icon={faLink}/> {Lang.get('labels.connection.submit')}</button>
                             ]}
                             form={this.state.form} handleClose={()=>this.props.onClose()}
                             loading={this.state.loading}

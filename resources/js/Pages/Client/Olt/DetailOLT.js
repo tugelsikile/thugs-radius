@@ -2,10 +2,10 @@ import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faRefresh, faTimes, faUserCheck, faUserSlash, faUserTimes} from "@fortawesome/free-solid-svg-icons";
 import {CardPreloader, responseMessage} from "../../../Components/mixedConsts";
-import {crudGponStates} from "../../../Services/OltService";
+import {crudGponStates, getGponCustomer} from "../../../Services/OltService";
 import {showError} from "../../../Components/Toaster";
 import {faUserCircle} from "@fortawesome/free-regular-svg-icons";
-import {TableContentGponState} from "./Mixed";
+import {CustomerTableHeader, LeftSideBar, TableContentGponState} from "./Mixed";
 import {DataNotFound} from "../../../Components/TableComponent";
 
 class DetailOLT extends React.Component {
@@ -17,6 +17,8 @@ class DetailOLT extends React.Component {
         };
         this.loadGponState = this.loadGponState.bind(this);
         this.handleClickState = this.handleClickState.bind(this);
+        this.loadGponCustomer = this.loadGponCustomer.bind(this);
+        this.handleGponCustomer = this.handleGponCustomer.bind(this);
     }
     componentDidMount() {
         if (this.props.olt !== null) {
@@ -30,15 +32,50 @@ class DetailOLT extends React.Component {
     }
     handleClickState(event) {
         event.preventDefault();
-        if (event.currentTarget.getAttribute('data-target') !== null) {
-            let gpon_states = this.state.gpon_states;
-            const newValue = event.currentTarget.getAttribute('data-target');
-            if (newValue === gpon_states.status) {
-                gpon_states.status = null;
-            } else {
-                gpon_states.status = newValue;
+        let gpon_states = this.state.gpon_states;
+        const newValue = event.currentTarget.getAttribute('data-target');
+        if (newValue === gpon_states.status) {
+            gpon_states.status = null;
+        } else {
+            gpon_states.status = newValue;
+        }
+        this.setState({gpon_states});
+    }
+    handleGponCustomer() {
+        if (this.state.gpon_states.current.length > 0) {
+            if (this.state.olt !== null) {
+                let gpon_states = this.state.gpon_states;
+                gpon_states.current.map((item,index)=>{
+                    gpon_states.current[index].loading = true;
+                    this.setState({gpon_states},()=>{
+                        this.loadGponCustomer(item)
+                            .then((response)=>{
+                                gpon_states.current[index].details = response;
+                                this.setState({gpon_states});
+                            })
+                            .then(()=>{
+                                gpon_states.current[index].loading = false;
+                                this.setState({gpon_states});
+                            })
+                    });
+                });
             }
-            this.setState({gpon_states});
+        }
+    }
+    async loadGponCustomer(item) {
+        try {
+            const formData = new FormData();
+            if (this.state.olt !== null) formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+            formData.append(Lang.get('olt.form_input.onu'), item.onu);
+            formData.append(Lang.get('olt.form_input.phase_state'), item.phase_state);
+            let response = await getGponCustomer(formData);
+            if (response.data.params === null) {
+                return null;
+            } else {
+                return response.data.params;
+            }
+        } catch (e) {
+            return null;
         }
     }
     async loadGponState() {
@@ -47,21 +84,21 @@ class DetailOLT extends React.Component {
                 let gpon_states = this.state.gpon_states;
                 gpon_states.current = [];
                 gpon_states.status = null;
-                gpon_states.loading = true; this.setState({gpon_states});
+                gpon_states.loading = true; this.setState({gpon_states},()=>this.handleGponCustomer());
                 try {
                     const formData = new FormData();
                     formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
                     let response = await crudGponStates(formData);
                     if (response.data.params === null) {
-                        gpon_states.loading = false; this.setState({gpon_states});
+                        gpon_states.loading = false; this.setState({gpon_states},()=>this.handleGponCustomer());
                         showError(response.data.message);
                     } else {
                         gpon_states.loading = false;
                         gpon_states.current = response.data.params;
-                        this.setState({gpon_states});
+                        this.setState({gpon_states},()=>this.handleGponCustomer());
                     }
                 } catch (e) {
-                    gpon_states.loading = false; this.setState({gpon_states});
+                    gpon_states.loading = false; this.setState({gpon_states},()=>this.handleGponCustomer());
                     responseMessage(e);
                 }
             }
@@ -73,59 +110,7 @@ class DetailOLT extends React.Component {
                 {this.state.olt !== null &&
                     <div className="row">
                         <div className="col-md-3">
-                            <div className="card card-info card-outline">
-                                {this.state.gpon_states.loading && <CardPreloader/>}
-                                <div className="card-header">
-                                    <h4 className="card-title">GPON STATE</h4>
-                                    <div className="card-tools">
-                                        <button className="btn btn-tool" onClick={this.loadGponState}><FontAwesomeIcon icon={faRefresh}/></button>
-                                    </div>
-                                </div>
-                                <div className="card-body p-0">
-                                    <ul className="nav nav-pills flex-column">
-                                        <li className="nav-item">
-                                            <a onClick={this.handleClickState} data-target="lost" href="#" className="nav-link px-2">
-                                                <FontAwesomeIcon style={{width:30}} icon={faUserCircle} className="text-danger mr-2"/>
-                                                LOST GPON
-                                                {this.state.gpon_states.current.length > 0 &&
-                                                    this.state.gpon_states.current.filter((f)=> f.status === 'lost').length > 0 &&
-                                                        <span className="badge bg-primary float-right">{this.state.gpon_states.current.filter((f)=> f.status === 'lost').length}</span>
-                                                }
-                                            </a>
-                                        </li>
-                                        <li className="nav-item">
-                                            <a onClick={this.handleClickState} data-target="dying gasp" href="#" className="nav-link px-2">
-                                                <FontAwesomeIcon style={{width:30}} icon={faUserCircle} className="text-warning mr-2"/>
-                                                DYING GASP
-                                                {this.state.gpon_states.current.length > 0 &&
-                                                    this.state.gpon_states.current.filter((f)=> f.status === 'dying gasp').length > 0 &&
-                                                    <span className="badge bg-primary float-right">{this.state.gpon_states.current.filter((f)=> f.status === 'dying gasp').length}</span>
-                                                }
-                                            </a>
-                                        </li>
-                                        <li className="nav-item">
-                                            <a onClick={this.handleClickState} data-target="offline" href="#" className="nav-link px-2">
-                                                <FontAwesomeIcon style={{width:30}} icon={faUserCircle} className="text-muted mr-2"/>
-                                                OFFLINE
-                                                {this.state.gpon_states.current.length > 0 &&
-                                                    this.state.gpon_states.current.filter((f)=> f.status === 'offline').length > 0 &&
-                                                    <span className="badge bg-primary float-right">{this.state.gpon_states.current.filter((f)=> f.status === 'offline').length}</span>
-                                                }
-                                            </a>
-                                        </li>
-                                        <li className="nav-item">
-                                            <a onClick={this.handleClickState} data-target="online" href="#" className="nav-link px-2">
-                                                <FontAwesomeIcon style={{width:30}} icon={faUserCircle} className="text-success mr-2"/>
-                                                ONLINE
-                                                {this.state.gpon_states.current.length > 0 &&
-                                                    this.state.gpon_states.current.filter((f)=> f.status === 'online').length > 0 &&
-                                                    <span className="badge bg-primary float-right">{this.state.gpon_states.current.filter((f)=> f.status === 'online').length}</span>
-                                                }
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <LeftSideBar onClickState={this.handleClickState} handleReload={this.loadGponState} gpon_states={this.state.gpon_states}/>
                         </div>
                         <div className="col-md-9">
                             <div className="card card-outline card-secondary">
@@ -142,31 +127,28 @@ class DetailOLT extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-sm table-hover table-striped">
                                         <thead>
-                                        <tr>
-                                            <th className="align-middle text-center text-xs pl-2" width={30}>#</th>
-                                            <th className="align-middle text-xs">Name</th>
-                                            <th className="align-middle text-xs">Mac Address</th>
-                                            <th className="align-middle text-xs">Status</th>
-                                            <th className="align-middle text-xs pr-2">Aksi</th>
-                                        </tr>
+                                            <CustomerTableHeader/>
                                         </thead>
                                         <tbody>
                                         {this.state.gpon_states.status === null ?
                                             this.state.gpon_states.current.length === 0 ?
-                                                <DataNotFound colSpan={5} message="Not Found"/>
+                                                <DataNotFound colSpan={6} message="Not Found"/>
                                                 :
                                                 this.state.gpon_states.current.map((item,index)=>
                                                     <TableContentGponState item={item} index={index} key={index}/>
                                                 )
                                             :
-                                            this.state.gpon_states.current.filter((f)=> f.status === this.state.gpon_states.status).length === 0 ?
-                                                <DataNotFound colSpan={5} message="Not Found"/>
+                                            this.state.gpon_states.current.filter((f)=> f.phase_state === this.state.gpon_states.status).length === 0 ?
+                                                <DataNotFound colSpan={6} message="Not Found"/>
                                                 :
-                                                this.state.gpon_states.current.filter((f)=> f.status === this.state.gpon_states.status).map((item,index)=>
+                                                this.state.gpon_states.current.filter((f)=> f.phase_state === this.state.gpon_states.status).map((item,index)=>
                                                     <TableContentGponState item={item} index={index} key={index}/>
                                                 )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                            <CustomerTableHeader/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $community_read
  * @property mixed $community_write
  * @property mixed $created_by
+ * @property mixed $user
+ * @property mixed $pass
  */
 class Olt extends Model
 {

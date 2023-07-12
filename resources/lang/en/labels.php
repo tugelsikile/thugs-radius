@@ -73,6 +73,7 @@ return [
         'submit' => 'Check Connection',
         'pending' => 'Checking Connection',
         'success' => 'Successfully connected to :Attribute',
+        'error' => 'Failed to connect :Attribute',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',

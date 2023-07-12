@@ -58,6 +58,14 @@ vendor_dir="$SCRIPT_DIR/vendor"
 echo "checking if vendor exists"
 if [ -d "$vendor_dir" ]; then
     echo "composer already installed"
+    echo "run main migration"
+    php artisan migrate
+    echo "run clients migration"
+    php artisan migrate:client
+    echo "run seeder"
+    php artisan db:seed
+    echo "clear and optimize"
+    php artisan optimize:clear
 else
     echo "running composer install"
     composer install

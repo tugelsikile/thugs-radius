@@ -14,6 +14,27 @@ class OltValidation
      * @return Request
      * @throws Exception
      */
+    public function createCustomer(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                __('olt.form_input.onu') => 'required|unique:customers,onu_index',
+                __('olt.form_input.id') => 'required|exists:olts,id',
+                __('customers.form_input.id') => 'required|exists:customers,id',
+                __('olt.form_input.customer') => 'nullable',
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function gponCustomer(Request $request): Request
     {
         try {

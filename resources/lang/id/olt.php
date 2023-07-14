@@ -11,6 +11,7 @@ return [
         'pass' => 'password',
         'onu' => 'data_onu',
         'phase_state' => 'phase_state',
+        'customer' => 'data_pelanggan',
         'prompts' => [
             'user' => 'prompt_username',
             'pass' => 'prompt_password',
@@ -23,13 +24,19 @@ return [
         'name' => 'Nama OLT',
         'host' => 'Hostname',
         'port' => 'Port',
-        'detail' => 'Buka OLT',
+        'detail' => 'Manage OLT',
         'uptime' => 'Uptime',
         'username' => 'Nama Pengguna',
         'password' => 'Kata Sandi',
         'onu' => [
             'index' => 'Index Onu',
+            'name' => 'Onu Name',
             'description' => 'Deskripsi Onu',
+            'sn' => 'Serial Number',
+            'distance' => 'ONU Dist.',
+        ],
+        'customers' => [
+            'link' => 'Hubungkan ke Pelanggan',
         ],
         'community' => [
             'label' => 'Community',

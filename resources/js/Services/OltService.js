@@ -36,3 +36,10 @@ export const cancelOltService = () => {
     cancelTokenSource.cancel('operation canceled');
     console.log('operation cancel');
 }
+export const crudOltCustomer = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/customer", data : data
+    });
+    return Promise.resolve(request);
+}

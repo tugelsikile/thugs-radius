@@ -489,6 +489,11 @@ class CustomerRepository
                             'is' => $customer->is_voucher,
                             'batch' => $customer->batch_voucher,
                         ],
+                        'olt' => (object) [
+                            'olt' => $customer->olt,
+                            'onu' => $customer->onu_index,
+                            'configs' => $customer->gpon_configs,
+                        ],
                         'timestamps' => (object) [
                             'create' => (object) [
                                 'at' => $customer->created_at,

@@ -15,6 +15,10 @@ import {DataNotFound, TableAction, TableCheckBox} from "../../../Components/Tabl
 import FormOlt from "./FormOlt";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import DetailOLT from "./DetailOLT";
+import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../Services/NasService";
+import {crudCustomers} from "../../../Services/CustomerService";
+import {crudCompany} from "../../../Services/CompanyService";
+import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
 
 
 class OltPage extends React.Component {
@@ -22,8 +26,9 @@ class OltPage extends React.Component {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, site : false, olt : true },
-            privilege : null, menus : [], site : null,
+            loadings : { privilege : false, site : false, olt : true, customers : true, nas : true, profiles : true, pools : true, bandwidths : true, companies : true, taxes : true, discounts : true },
+            privilege : null, menus : [], site : null, companies : [], taxes : [], discounts : [],
+            customers : [], nas : [], profiles : [], pools : [], bandwidths : [],
             olt : { filtered : [], unfiltered : [], selected : [] },
             filter : { olt : null, keywords : '', sort : { by : 'name', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : { open : false, data : null },
@@ -38,6 +43,13 @@ class OltPage extends React.Component {
         this.handleChangePage = this.handleChangePage.bind(this);
         this.loadOlt = this.loadOlt.bind(this);
         this.toggleOlt = this.toggleOlt.bind(this);
+        this.loadProfiles = this.loadProfiles.bind(this);
+        this.loadBandwidths = this.loadBandwidths.bind(this);
+        this.loadPools = this.loadPools.bind(this);
+        this.loadCustomers = this.loadCustomers.bind(this);
+        this.loadNas = this.loadNas.bind(this);
+        this.loadTaxes = this.loadTaxes.bind(this);
+        this.loadDiscounts = this.loadDiscounts.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -52,12 +64,41 @@ class OltPage extends React.Component {
                         this.setState({loadings,site:response},()=>{
                             getPrivileges([
                                 {route : this.props.route, can : false },
+                                {route : 'clients.customers', can : false },
+                                {route : 'clients.nas', can : false },
+                                {route : 'clients.nas.profiles', can : false },
+                                {route : 'clients.nas.pools', can : false },
+                                {route : 'clients.nas.bandwidths', can : false },
                             ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
                                 })
                                 .then(()=>{
                                     loadings.olt = false; this.setState({loadings}, ()=>this.loadOlt());
+                                })
+                                .then(()=>{
+                                    loadings.nas = false; this.setState({loadings},()=>this.loadNas());
+                                })
+                                .then(()=>{
+                                    loadings.customers = false; this.setState({loadings},()=>this.loadCustomers());
+                                })
+                                .then(()=>{
+                                    loadings.pools = false; this.setState({loadings},()=>this.loadPools());
+                                })
+                                .then(()=>{
+                                    loadings.profiles = false; this.setState({loadings},()=>this.loadProfiles());
+                                })
+                                .then(()=>{
+                                    loadings.bandwidths = false; this.setState({loadings},()=>this.loadBandwidths());
+                                })
+                                .then(()=>{
+                                    loadings.companies = false; this.setState({loadings},()=>this.loadCompanies());
+                                })
+                                .then(()=>{
+                                    loadings.discounts = false; this.setState({loadings},()=>this.loadDiscounts());
+                                })
+                                .then(()=>{
+                                    loadings.taxes = false; this.setState({loadings},()=>this.loadTaxes());
                                 });
                         });
                     });
@@ -193,6 +234,249 @@ class OltPage extends React.Component {
         loadings.olt = false;
         this.setState({loadings,olt});
     }
+    async loadTaxes(data = null) {
+        if (! this.state.loadings.taxes ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let taxes = this.state.taxes;
+                    let index = taxes.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        taxes[index] = data;
+                    } else {
+                        taxes.push(data);
+                    }
+                    this.setState({taxes});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.taxes = true; this.setState({loadings});
+                try {
+                    let response = await crudTaxes();
+                    if (response.data.params === null) {
+                        loadings.taxes = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.taxes = false;
+                        this.setState({loadings,taxes:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.taxes = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadDiscounts(data = null) {
+        if (! this.state.loadings.discounts ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let discounts = this.state.discounts;
+                    let index = discounts.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        discounts[index] = data;
+                    } else {
+                        discounts.push(data);
+                    }
+                    this.setState({discounts});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.discounts = true; this.setState({loadings});
+                try {
+                    let response = await crudDiscounts();
+                    if (response.data.params === null) {
+                        loadings.discounts = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.discounts = false;
+                        this.setState({loadings,discounts:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.discounts = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadCompanies() {
+        if (! this.state.loadings.companies) {
+            let loadings = this.state.loadings;
+            loadings.companies = true; this.setState({loadings});
+            try {
+                let response = await crudCompany();
+                if (response.data.params === null) {
+                    loadings.companies = false; this.setState({loadings});
+                    showError(response.data.params);
+                } else {
+                    loadings.companies = false;
+                    this.setState({loadings,companies:response.data.params});
+                }
+            } catch (e) {
+                loadings.companies = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadProfiles(data = null) {
+        if (! this.state.loadings.profiles ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let profiles = this.state.profiles;
+                    let index = profiles.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        profiles[index] = data;
+                    } else {
+                        profiles.push(data);
+                    }
+                    this.setState({profiles});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.profiles = true; this.setState({loadings});
+                try {
+                    let response = await crudProfile();
+                    if (response.data.params === null) {
+                        loadings.profiles = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.profiles = false;
+                        this.setState({loadings,profiles:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.profiles = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadBandwidths(data = null) {
+        if (! this.state.loadings.bandwidths ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let bandwidths = this.state.bandwidths;
+                    let index = bandwidths.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        bandwidths[index] = data;
+                    } else {
+                        bandwidths.push(data);
+                    }
+                    this.setState({bandwidths});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.bandwidths = true; this.setState({loadings});
+                try {
+                    let response = await crudProfileBandwidth();
+                    if (response.data.params === null) {
+                        loadings.bandwidths = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.bandwidths = false;
+                        this.setState({loadings,bandwidths:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.bandwidths = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadPools(data = null) {
+        if (! this.state.loadings.pools ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let pools = this.state.pools;
+                    let index = pools.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        pools[index] = data;
+                    } else {
+                        pools.push(data);
+                    }
+                    this.setState({pools});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.pools = true; this.setState({loadings});
+                try {
+                    let response = await crudProfilePools();
+                    if (response.data.params === null) {
+                        loadings.pools = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.pools = false;
+                        this.setState({loadings,pools:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.pools = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadCustomers(data = null) {
+        if (! this.state.loadings.customers ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let customers = this.state.customers;
+                    let index = customers.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        customers[index] = data;
+                    } else {
+                        customers.push(data);
+                    }
+                    this.setState({customers});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.customers = true; this.setState({loadings});
+                try {
+                    let response = await crudCustomers({type:'pppoe'});
+                    if (response.data.params === null) {
+                        loadings.customers = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.customers = false;
+                        this.setState({loadings,customers:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.customers = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
+    async loadNas(data = null) {
+        if (! this.state.loadings.nas ) {
+            if (data !== null) {
+                if (typeof data === 'object') {
+                    let nas = this.state.nas;
+                    let index = nas.findIndex((f)=> f.value === data.value);
+                    if (index >= 0) {
+                        nas[index] = data;
+                    } else {
+                        nas.push(data);
+                    }
+                    this.setState({nas});
+                }
+            } else {
+                let loadings = this.state.loadings;
+                loadings.nas = true; this.setState({loadings});
+                try {
+                    let response = await crudNas();
+                    if (response.data.params === null) {
+                        loadings.nas = false; this.setState({loadings});
+                        showError(response.data.params);
+                    } else {
+                        loadings.nas = false;
+                        this.setState({loadings,nas:response.data.params});
+                    }
+                } catch (e) {
+                    loadings.nas = false; this.setState({loadings});
+                    responseMessage(e);
+                }
+            }
+        }
+    }
     async loadOlt(data = null) {
         if (! this.state.loadings.olt) {
             let loadings = this.state.loadings;
@@ -243,7 +527,7 @@ class OltPage extends React.Component {
 
                         <div className="container-fluid">
                             {this.state.filter.olt !== null ?
-                                <DetailOLT onToggle={this.toggleOlt} olt={this.state.filter.olt}/>
+                                <DetailOLT discounts={this.state.discounts} onDiscount={this.loadDiscounts} taxes={this.state.taxes} onTax={this.loadTaxes} loadings={this.state.loadings} olts={this.state.olt} onToggle={this.toggleOlt} olt={this.state.filter.olt} privilege={this.state.privilege} profiles={this.state.profiles} onProfile={this.loadProfiles} customers={this.state.customers} onCustomer={this.loadCustomers} nas={this.state.nas} onNas={this.loadNas} pools={this.state.pools} onPool={this.loadPools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} companies={this.state.companies}/>
                                 :
                                 <div id="main-page-card" className="card card-outline card-primary">
                                     {this.state.loadings.olt && <CardPreloader/>}
@@ -257,7 +541,7 @@ class OltPage extends React.Component {
                                                        confirmDelete={this.confirmDelete}/>
                                         <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('olt.labels.menu')})}/>
                                     </div>
-                                    <div className="card-body p-0">
+                                    <div className="card-body p-0 table-responsive table-responsive-sm">
                                         <table className="table table-striped table-sm">
                                             <thead id="main-table-header">
                                             <TableHeader type="header" onCheck={this.handleCheck} filter={this.state.filter} onSort={this.handleSort} loading={this.state.loadings.olt} olt={this.state.olt}/>

@@ -28,7 +28,18 @@ class OltController extends Controller
     public function gponCustomer(Request $request): JsonResponse
     {
         try {
-            return formatResponse(200,"ok", $this->repository->gponCustomer($this->validation->gponCustomer($request)));
+            $code = 400; $message = __('messages.method'); $params = null;
+            switch (strtolower($request->method())) {
+                case 'post' :
+                    $params = $this->repository->gponCustomer($this->validation->gponCustomer($request));
+                    $code = 200; $message = 'ok';
+                    break;
+                case 'put':
+                    $params = $this->repository->createCustomer($this->validation->createCustomer($request));
+                    $code = 200; $message = __('labels.create.success',['Attribute' => __('olt.labels.customers.link')]);
+                    break;
+            }
+            return formatResponse($code,$message, $params);
         } catch (Exception $exception) {
             return formatResponse($exception->getCode(), $exception->getMessage());
         }

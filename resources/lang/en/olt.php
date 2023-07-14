@@ -11,6 +11,7 @@ return [
         'pass' => 'password',
         'onu' => 'onu_data',
         'phase_state' => 'phase_state',
+        'customer' => 'customer_data',
         'prompts' => [
             'user' => 'username_prompt',
             'pass' => 'password_prompt',
@@ -29,7 +30,13 @@ return [
         'password' => 'Password',
         'onu' => [
             'index' => 'Onu Index',
+            'name' => 'Onu Name',
             'description' => 'Onu Description',
+            'sn' => 'Serial Number',
+            'distance' => 'ONU Dist.',
+        ],
+        'customers' => [
+            'link' => 'Link to Customer',
         ],
         'community' => [
             'label' => 'Community',

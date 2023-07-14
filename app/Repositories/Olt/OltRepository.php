@@ -15,6 +15,7 @@ use Exception;
 use Graze\TelnetClient\TelnetClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Throwable;
@@ -359,7 +360,7 @@ class OltRepository
                                     'omcc_state' => $lines[2],
                                     'phase_state' => strtolower($lines[3]),
                                     'channel' => $lines[4],
-                                    'loading' => false,
+                                    'loading' => true,
                                     'details' => null,
                                 ]);
                             }
@@ -430,21 +431,29 @@ class OltRepository
             }
 
             $onuResponses = $telnet->exec("show gpon onu state");
-            $onuResponses = collect(explode("\n", $onuResponses));
+            $onuResponses = collect(explode("\n", str_replace("\x08","",$onuResponses)));
             $curCommands = "  \r\n";
             $response = $response->merge($this->parseOnuStateLine($onuResponses));
+            $breaks = 0;
             for ($index = 0; $index <= 50; $index ++) {
                 $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
-                $onuResponses = $telnet->exec($curCommands);
+                $onuResponses = str_replace("\x08","",$telnet->exec($curCommands));
                 if (strlen($onuResponses) > 30) {
                     ini_set('max_execution_time',100000);
                     $onuResponses = collect(explode("\n", $onuResponses));
                     if ($onuResponses->count() > 0) {
                         $response = $response->merge($this->parseOnuStateLine($onuResponses));
+                    } else {
+                        $breaks++;
+                    }
+                } else {
+                    $breaks++;
+                    if ($breaks >= 3) {
+                        break;
                     }
                 }
             }
-
+            Log::alert("break counts " . $breaks);
             $telnet->disconnect();
             return $response;
         } catch (Exception $exception) {
@@ -455,9 +464,127 @@ class OltRepository
     /* @
      * @param Request $request
      * @return object|null
-     * @throws Throwable
+     * @throws Exception
+     */
+    public function createCustomer(Request $request): ?object
+    {
+        try {
+            $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+            $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
+            $customer->olt = $olt->id;
+            $customer->onu_index = $request[__('olt.form_input.onu')];
+            $customer->saveOrFail();
+            return $this->gponCustomer(new Request([
+                __('olt.form_input.id') => $olt->id,
+                __('olt.form_input.onu') => $request[__('olt.form_input.onu')],
+            ]));
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Exception
      */
     public function gponCustomer(Request $request): ?object
+    {
+        try {
+            $response = null;
+            $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
+            if ($olt != null) {
+                $telnet = new Telnet($olt->hostname, $olt->port, 3, '');
+                $telnet->setLoginPrompt("Username:");
+                if ($olt->configs != null) {
+                    if (property_exists($olt->configs,'prompts')) {
+                        if (property_exists($olt->configs->prompts,'user_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                            if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
+                            }
+                        }
+                    }
+                }
+                $telnet->login($olt->user, $olt->pass);
+
+                $responseCommands = $telnet->exec("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
+                for ($index = 0; $index <= 3; $index++) {
+                    $responseCommands .= "\n";
+                    $responseCommands .= $telnet->exec("   \n");
+                }
+                $telnet->disconnect();
+                $responseCommands = collect(explode("\n",str_replace("\x08", "", $responseCommands)));
+                if ($responseCommands->count() > 20) {
+                    $response = (object) [
+                        'name' => null,
+                        'description' => null,
+                        'username' => null,
+                        'customer' => Customer::where('onu_index', $request[__('olt.form_input.onu')])->first(),
+                        'serial_number' => null,
+                        'onu_distance' => null,
+                        'online_duration' => null,
+                        'state_causes' => collect(),
+                        'full_response' => $responseCommands,
+                    ];
+                    $stateAndCauses = collect();
+                    foreach ($responseCommands as $index => $responseCommand) {
+                        if ($index > 0) {
+                            if ($index == 1) { // name
+                                $response->name = parseLineGponResponse($responseCommand);
+                            } elseif ($index == 11) { //Serial number:
+                                $response->serial_number = parseLineGponResponse($responseCommand, "Serial number:");
+                            } elseif ($index == 13) { //description
+                                $response->description = parseLineGponResponse($responseCommand,"Description:");
+                            } elseif ($index == 20) { //ONU Distance
+                                $response->onu_distance = parseLineGponResponse($responseCommand,"ONU Distance:");
+                            } elseif ($index == 21) { //Online Duration:
+                                $response->online_duration = parseLineGponResponse($responseCommand,"Online Duration:");
+                            } elseif ($index >= 30 && $index <= 39) {
+                                $stateAndCauses->push($responseCommand);
+                            }
+                        }
+                    }
+                    if ($stateAndCauses->count() > 0) {
+                        foreach ($stateAndCauses as $stateAndCause) {
+                            $lines = explode(" ", $stateAndCause);
+                            if (count($lines) > 0) {
+                                foreach ($lines as $key => $line) {
+                                    if (strlen($line) < 3) {
+                                        unset($lines[$key]);
+                                    }
+                                }
+                                if (count($lines) == 5) {
+                                    $lines = collect($lines)->values()->toArray();
+                                    if ($lines[0] != "0000-00-00" && $lines[1] != "00:00:00" && $lines[2] != "0000-00-00" && $lines[3] != "00:00:00") {
+                                        if (strtolower($lines[4]) == 'losi') $lines[4] = 'los';
+                                        $response->state_causes->push((object) [
+                                            'online_time' => $lines[0] . ' ' . $lines[1],
+                                            'offline_time' => $lines[2] . ' ' . $lines[3],
+                                            'phase_state' => strtolower($lines[4]),
+                                        ]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ($response->state_causes->count() > 0) {
+                        $response->new_phase_state = $response->state_causes->last()->phase_state;
+                    }
+
+                }
+                //dd($responseCommands);
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Throwable
+     */
+    public function gponCustomerBak(Request $request): ?object
     {
         try {
             $response = null;
@@ -476,7 +603,6 @@ class OltRepository
                     }
                 }
                 $telnet->login($olt->user, $olt->pass);
-
                 $runInterfaceLines = $telnet->exec("show running-config interface gpon-onu_" . $request[__('olt.form_input.onu')]);
                 $telnet->disconnect();
 

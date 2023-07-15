@@ -438,6 +438,9 @@ class CustomerRepository
             if ($request->has('expired')) {
                 $customers = $customers->whereNotNull('due_at')->whereDate('due_at','<', Carbon::now()->format('Y-m-d H:i:s'));
             }
+            if ($request->has(__('olt.form_input.onu'))) {
+                $customers = $customers->where('onu_index', $request[__('olt.form_input.onu')]);
+            }
             if ($request->has('type')) {
                 if (is_array($request->type)) {
                     $customers = $customers->whereIn('method_type', $request->type);

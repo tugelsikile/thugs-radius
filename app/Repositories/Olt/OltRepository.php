@@ -10,6 +10,7 @@ use App\Helpers\Zte\Kernel\Snmp\Onu;
 use App\Models\Customer\Customer;
 use App\Models\Olt\CustomerPhaseState;
 use \App\Models\Olt\Olt as OltModel;
+use App\Repositories\Customer\CustomerRepository;
 use Carbon\Carbon;
 use Exception;
 use Graze\TelnetClient\TelnetClient;
@@ -356,6 +357,7 @@ class OltRepository
                             if (count($lines) == 5) {
                                 $response->push((object) [
                                     'onu' => $lines[0],
+                                    'serial_number' => null,
                                     'admin_state' => $lines[1],
                                     'omcc_state' => $lines[2],
                                     'phase_state' => strtolower($lines[3]),
@@ -466,6 +468,26 @@ class OltRepository
      * @return object|null
      * @throws Exception
      */
+    public function unlinkCustomer(Request $request): ?object
+    {
+        try {
+            $customer = Customer::where('onu_index', $request[__('olt.form_input.onu')])->first();
+            $request = $request->merge([__('olt.form_input.id') => $customer->olt]);
+
+            $customer->onu_index = null;
+            $customer->gpon_configs = null;
+            $customer->olt = null;
+            $customer->saveOrFail();
+            return $this->gponCustomer($request);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Exception
+     */
     public function createCustomer(Request $request): ?object
     {
         try {
@@ -515,11 +537,15 @@ class OltRepository
                 $telnet->disconnect();
                 $responseCommands = collect(explode("\n",str_replace("\x08", "", $responseCommands)));
                 if ($responseCommands->count() > 20) {
+                    $customer = null;
+                    if (Customer::where('onu_index', $request[__('olt.form_input.onu')])->first() != null) {
+                        $customer = (new CustomerRepository())->table(new Request([__('olt.form_input.onu') => $request[__('olt.form_input.onu')]]))->first();
+                    }
                     $response = (object) [
                         'name' => null,
                         'description' => null,
                         'username' => null,
-                        'customer' => Customer::where('onu_index', $request[__('olt.form_input.onu')])->first(),
+                        'customer' => $customer,
                         'serial_number' => null,
                         'onu_distance' => null,
                         'online_duration' => null,

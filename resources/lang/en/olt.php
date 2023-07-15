@@ -34,9 +34,11 @@ return [
             'description' => 'Onu Description',
             'sn' => 'Serial Number',
             'distance' => 'ONU Dist.',
+            'duration' => 'Online Duration',
         ],
         'customers' => [
             'link' => 'Link to Customer',
+            'unlink' => 'Delete Customer Link',
         ],
         'community' => [
             'label' => 'Community',
@@ -48,5 +50,14 @@ return [
             'user' => 'Username Prompt',
             'pass' => 'Password Prompt'
         ],
-    ]
+    ],
+    'un_configure' => [
+        'button' => 'Unlink Customer and Unconfigure',
+        'confirm' => [
+            'title' => 'Warning',
+            'message' => "Unlink customer and delete olt configuration\nCustomer data will not deleted, only olt configuration will deleted.\nContinue Unlink Customer and Unconfigure ?",
+            'yes' => 'Confirm and Proceed',
+            'cancel' => 'Cancel',
+        ],
+    ],
 ];

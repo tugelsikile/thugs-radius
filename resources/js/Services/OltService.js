@@ -34,12 +34,33 @@ export const getGponCustomer = async (data) => {
 }
 export const cancelOltService = () => {
     cancelTokenSource.cancel('operation canceled');
-    console.log('operation cancel');
+    //console.log('operation cancel');
 }
 export const crudOltCustomer = async (data) => {
     let request = Axios({
         headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/olt/gpon/customer", data : data
+    });
+    return Promise.resolve(request);
+}
+export const crudOltProfileTraffic = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/traffics", data : data
+    });
+    return Promise.resolve(request);
+}
+export const crudOltProfileTcont = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/tconts", data : data
+    });
+    return Promise.resolve(request);
+}
+export const crudOltProfileVlan = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/vlans", data : data
     });
     return Promise.resolve(request);
 }

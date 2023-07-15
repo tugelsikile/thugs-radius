@@ -30,13 +30,15 @@ return [
         'password' => 'Kata Sandi',
         'onu' => [
             'index' => 'Index Onu',
-            'name' => 'Onu Name',
+            'name' => 'Nama Onu',
             'description' => 'Deskripsi Onu',
             'sn' => 'Serial Number',
             'distance' => 'ONU Dist.',
+            'duration' => 'Durasi Online',
         ],
         'customers' => [
             'link' => 'Hubungkan ke Pelanggan',
+            'unlink' => 'Putuskan Hubungan Pelanggan',
         ],
         'community' => [
             'label' => 'Community',
@@ -48,5 +50,14 @@ return [
             'user' => 'Prompt Username',
             'pass' => 'Prompt Kata Sandi'
         ],
-    ]
+    ],
+    'un_configure' => [
+        'button' => 'Unconfig dan Hapus Hubungan Pelanggan',
+        'confirm' => [
+            'title' => 'Perhatian',
+            'message' => "Unconfig dan hapus hubungan pelanggan\nData pelanggan tidak akan dihapus, hanya konfigurasi olt saja yang dihapus.\nLanjutkan unconfig dan putuskan hubungan pelanggan ?",
+            'yes' => 'Konfirmasi dan Lanjutkan',
+            'cancel' => 'Batal',
+        ],
+    ],
 ];

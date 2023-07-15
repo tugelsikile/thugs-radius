@@ -105,6 +105,13 @@ return [
             'cancel' => 'BATAL NONAKTIFASI'
         ]
     ],
+    'unlink' => [
+        'title' => 'Perhatian',
+        'message' => 'Anda yakin ingin memutuskan hubungan :Attribute ?',
+        'yes' => 'Putuskan Hubungan',
+        'cancel' => 'Batal Putuskan Hubungan',
+        'success' => 'Berhasil memutuskan hubungan :Attribute',
+    ],
     'confirm' => [
         'message' => "Anda yakin akan melakukan aksi ini ?",
         'title' => 'Perhatian',

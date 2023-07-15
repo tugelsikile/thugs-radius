@@ -2,7 +2,7 @@ import React from "react";
 import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {Dialog, DialogContent, DialogTitle, Skeleton} from "@mui/material";
 import {
-    CardPreloader,
+    CardPreloader, customPreventDefault, formatLocaleDate,
     formatLocaleString, FormControlSMReactSelect, listDataPerPage,
     parseInputFloat,
     pipeIp,
@@ -14,10 +14,19 @@ import {ModalFooter, ModalHeader} from "../../../Components/ModalComponent";
 import MaskedInput from "react-text-mask";
 import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCircleNotch, faCog, faLink, faPersonBooth, faRefresh} from "@fortawesome/free-solid-svg-icons";
-import {faUserCircle} from "@fortawesome/free-regular-svg-icons";
+import {
+    faCircleNotch,
+    faCog,
+    faCogs, faExclamationTriangle, faInfoCircle,
+    faLink,
+    faLinkSlash, faListUl,
+    faPersonBooth,
+    faRefresh
+} from "@fortawesome/free-solid-svg-icons";
+import {faCircle, faUserCircle} from "@fortawesome/free-regular-svg-icons";
 import Select from "react-select";
 import Pagination from "@atlaskit/pagination";
+import {DataNotFound, TableRowPreloader} from "../../../Components/TableComponent";
 
 export const TableHeader = (props) => {
     return (
@@ -59,26 +68,36 @@ export const TableHeader = (props) => {
         </tr>
     )
 }
-const statusGpon = (status) => {
+const GponStatus = (props) => {
     let response = "";
-    switch (status) {
+    switch (props.item.phase_state) {
+        default:
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-secondary d-block py-2">{props.item.phase_state.toUpperCase()}</span>;
+            break;
         case 'working':
-            response = <span className="badge badge-success">ONLINE</span>;
+            response = (
+                <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-success d-block py-2">
+                    {props.item.details === null ? null
+                        : props.item.details.state_causes.length > 3 && <FontAwesomeIcon icon={faExclamationTriangle} size="xs" className="mr-1"/>
+                    }
+                    ONLINE
+                </span>
+            );
         break;
         case 'offline':
-            response = <span className="badge badge-secondary">OFFLINE</span>;
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-secondary d-block py-2">OFFLINE</span>;
         break;
         case 'los':
-            response = <span className="badge badge-danger">LOS</span>;
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-danger d-block py-2">LOS</span>;
         break;
         case 'dyinggasp':
-            response = <span className="badge badge-warning">DYING GASP</span>;
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-warning d-block py-2">DYING GASP</span>;
         break;
         case 'reboot':
-            response = <span className="badge badge-primary">REBOOT</span>;
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-primary d-block py-2">REBOOT</span>;
             break;
         case 'unconfig':
-            response = <span className="badge badge-warning">UNCONFIG</span>;
+            response = <span data-label="phase_state" data-onu={props.item.onu} onMouseOver={props.onPopover} onMouseOut={props.onPopover} className="badge badge-warning d-block py-2">UNCONFIG</span>;
             break;
     }
     return response;
@@ -88,16 +107,16 @@ export const TableContentGponState = (props)=> {
         <tr key={`x_${props.index}`}>
             <td className="align-middle text-xs pl-2">{props.item.onu}</td>
             <td className="align-middle text-xs">
-                {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
+                {props.item.loading ?
+                    props.item.details === null && <Skeleton variant="text" animation="wave"/>
+                :
+                    <FontAwesomeIcon onMouseOver={props.onPopover} onMouseOut={props.onPopover} data-label="detail" data-onu={props.item.onu} icon={faInfoCircle} className="mr-1 text-primary"/>
+                }
                 {props.item.details !== null && props.item.details.name}
             </td>
             <td className="align-middle text-xs">
                 {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
-                {props.item.details !== null && props.item.details.description}
-            </td>
-            <td className="align-middle text-xs">
-                {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
-                {props.item.details === null ? null : props.item.details.customer === null ? null : props.item.details.customer.name}
+                {props.item.details === null ? null : props.item.details.customer === null ? null : props.item.details.customer.label}
             </td>
             <td className="align-middle text-xs">
                 {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
@@ -108,30 +127,56 @@ export const TableContentGponState = (props)=> {
                 {props.item.details !== null && onuDistance(props.item.details.onu_distance)}
             </td>
             <td className="align-middle text-xs text-center">
-                {statusGpon(props.item.phase_state)}
+                <GponStatus {...props}/>
             </td>
             <td className="align-middle text-xs text-center pr-2">
                 <button type="button" className="btn btn-xs btn-default" data-toggle="dropdown">
                     <FontAwesomeIcon icon={props.item.loading ? faCircleNotch : faCog} spin={props.item.loading} size="xs"/>
                 </button>
-                {props.privilege !== null &&
-                    <div className="dropdown-menu" role="menu">
-                        {props.item.details !== null &&
-                            props.item.details.customer === null &&
-                            typeof props.privilege.customers !== 'undefined' &&
-                            typeof props.privilege.customers.create !== 'undefined' &&
-                            props.privilege.customers.create &&
-                            <a onClick={props.onCustomer} data-onu={props.item.onu} className="dropdown-item" href="#">
-                                <FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/>
-                                {Lang.get('olt.labels.customers.link')}
-                            </a>
-                        }
-                        <a className="dropdown-item" href="#">Another action</a>
-                        <a className="dropdown-item" href="#">Something else here</a>
-                        <div className="dropdown-divider"></div>
-                        <a className="dropdown-item" href="#">Separated link</a>
-                    </div>
-                }
+                <div className="dropdown-menu" role="menu">
+                    {props.privilege !== null &&
+                        <React.Fragment>
+                            {props.item.loading ?
+                                <a onClick={customPreventDefault} className="dropdown-item text-xs text-muted" href="#">
+                                    <FontAwesomeIcon icon={faCircleNotch} spin={true} size="xs" className="mr-1"/>
+                                    Loading ...
+                                </a>
+                                :
+                                <React.Fragment>
+                                    <a onClick={props.onReload} data-onu={props.item.onu} className="dropdown-item text-xs" href="#">
+                                        <FontAwesomeIcon icon={faRefresh} size="xs" className="mr-1"/>
+                                        {Lang.get('labels.refresh',{Attribute:''})}
+                                    </a>
+                                    {props.item.details !== null &&
+                                        props.item.phase_state !== 'unconfig' &&
+                                        props.item.details.customer === null &&
+                                        typeof props.privilege.customers !== 'undefined' &&
+                                        typeof props.privilege.customers.create !== 'undefined' &&
+                                        props.privilege.customers.create &&
+                                        <a onClick={props.onCustomer} data-onu={props.item.onu} className="dropdown-item text-xs text-primary" href="#">
+                                            <FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/>
+                                            {Lang.get('olt.labels.customers.link')}
+                                        </a>
+                                    }
+                                    {props.item.details !== null &&
+                                        props.item.phase_state !== 'unconfig' &&
+                                        props.item.details.customer !== null &&
+                                        <a onClick={props.onUnlink} data-onu={props.item.onu} className="dropdown-item text-xs text-warning" href="#">
+                                            <FontAwesomeIcon icon={faLinkSlash} size="xs" className="mr-1"/>
+                                            {Lang.get('olt.labels.customers.unlink')}
+                                        </a>
+                                    }
+                                    {props.item.phase_state !== 'unconfig' &&
+                                        <a onClick={props.onUnconfigure} data-onu={props.item.onu} className="dropdown-item text-danger text-xs" href="#">
+                                            <FontAwesomeIcon icon={faCogs} size="xs" className="mr-1"/>
+                                            {Lang.get('olt.un_configure.button')}
+                                        </a>
+                                    }
+                                </React.Fragment>
+                            }
+                        </React.Fragment>
+                    }
+                </div>
             </td>
         </tr>
     )
@@ -181,7 +226,7 @@ export const LeftSideBar = (props) => {
                                     props.gpon_states.unfiltered.filter((f)=> f.phase_state === item.value).length > 0 &&
                                     <span className={`${item.badge} float-right`}>{props.gpon_states.unfiltered.filter((f)=> f.phase_state === item.value).length}</span>
                                 }
-                                {item.value === null &&
+                                {item.value === null && props.gpon_states.unfiltered.length > 0 &&
                                     <span className={`${item.badge} float-right`}>{props.gpon_states.unfiltered.length}</span>
                                 }
                             </a>
@@ -192,12 +237,11 @@ export const LeftSideBar = (props) => {
         </div>
     )
 }
-export const CustomerTableHeader = (props) => {
+export const CustomerTableHeader = () => {
     return (
         <tr>
-            <th className="align-middle  pl-2" width={100}>{Lang.get('olt.labels.onu.index')}</th>
+            <th className="align-middle text-xs pl-2" width={70}>{Lang.get('olt.labels.onu.index')}</th>
             <th className="align-middle text-xs">{Lang.get('olt.labels.onu.name')}</th>
-            <th className="align-middle text-xs">{Lang.get('olt.labels.onu.description')}</th>
             <th className="align-middle text-xs">{Lang.get('customers.labels.name')}</th>
             <th className="align-middle text-xs" width={100}>{Lang.get('olt.labels.onu.sn')}</th>
             <th className="align-middle text-xs" width={70}>{Lang.get('olt.labels.onu.distance')}</th>
@@ -244,6 +288,222 @@ export const TablePaging = (props) => {
                                     pages={props.data.paging}/>
                     }
                 </div>
+            </div>
+        </div>
+    )
+}
+export const PhaseStatePopover = (props) => {
+    return (
+        <div className="card card-outline card-primary mb-0" style={{minWidth:300}}>
+            <div className="card-header p-2">
+                <strong className="card-title text-xs text-bold">History</strong>
+            </div>
+            <div className="card-body p-0 mb-0">
+                <table className="table table-sm table-striped">
+                    <thead>
+                    <tr className="thead-primary">
+                        <th className="align-middle text-xs pl-2">Online Time</th>
+                        <th className="align-middle text-xs">Offline Time</th>
+                        <th className="align-middle text-xs pr-2">State</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.data.loading ?
+                        <TableRowPreloader colSpan={3}/>
+                        :
+                        props.data.details === null ?
+                            <DataNotFound colSpan={3} message="Not Found"/>
+                            :
+                            typeof props.data.details.state_causes === 'undefined' ?
+                                <DataNotFound colSpan={3} message="Not Found"/>
+                                :
+                                props.data.details.state_causes.length === 0 ?
+                                    <DataNotFound colSpan={3} message="Not Found"/>
+                                    :
+                                    props.data.details.state_causes.map((item,index)=>
+                                        <tr key={`sconu_${index}`}>
+                                            <td className="align-middle text-xs pl-2">{formatLocaleDate(item.online_time)}</td>
+                                            <td className="align-middle text-xs">{formatLocaleDate(item.offline_time)}</td>
+                                            <td className="align-middle text-xs pr-2">{item.phase_state}</td>
+                                        </tr>
+                                    )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+export const DetailOnuPopover = (props) => {
+    return (
+        <div className="card card-outline card-info mb-0" style={{minWidth:300,maxWidth:700}}>
+            <div className="card-header p-2">
+                <strong className="card-title text-xs text-bold">Detail</strong>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-striped table-sm">
+                    <tbody>
+                    <tr>
+                        <td width={100} className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.index')}</td>
+                        <td className="align-middle text-xs" width={5}>:</td>
+                        <td className="align-middle text-xs pr-2">{props.data.onu}</td>
+                    </tr>
+                    <tr>
+                        <td className="align-middle text-xs pl-2">Admin State</td>
+                        <td className="align-middle text-xs">:</td>
+                        <td className="align-middle text-xs pr-2">{props.data.admin_state}</td>
+                    </tr>
+                    <tr>
+                        <td className="align-middle text-xs pl-2">Omcc State</td>
+                        <td className="align-middle text-xs">:</td>
+                        <td className="align-middle text-xs pr-2">{props.data.omcc_state}</td>
+                    </tr>
+                    {props.data.details !== null &&
+                        <React.Fragment>
+                            <tr>
+                                <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.name')}</td>
+                                <td className="align-middle text-xs">:</td>
+                                <td className="align-middle text-xs pr-2">{props.data.details.name}</td>
+                            </tr>
+                            <tr>
+                                <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.description')}</td>
+                                <td className="align-middle text-xs">:</td>
+                                <td className="align-middle text-xs pr-2">{props.data.details.description}</td>
+                            </tr>
+                            <tr>
+                                <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.sn')}</td>
+                                <td className="align-middle text-xs">:</td>
+                                <td className="align-middle text-xs pr-2">{props.data.details.serial_number}</td>
+                            </tr>
+                            <tr>
+                                <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.duration')}</td>
+                                <td className="align-middle text-xs">:</td>
+                                <td className="align-middle text-xs pr-2">{props.data.details.online_duration}</td>
+                            </tr>
+                            <tr>
+                                <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.distance')}</td>
+                                <td className="align-middle text-xs">:</td>
+                                <td className="align-middle text-xs pr-2">{props.data.details.onu_distance}</td>
+                            </tr>
+                        </React.Fragment>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+export const TrafficProfileTable = (props) => {
+    return (
+        <div className="card card-info card-outline">
+            {props.profiles.traffics.loading && <CardPreloader/>}
+            <div className="card-header pt-3 pl-2 pb-3">
+                <h4 className="card-title text-xs text-bold">Profile Traffics</h4>
+                <div className="card-tools">
+                    <button type="button" className="btn btn-tool btn-xs" data-card-widget="collapse">
+                        <i className="fas fa-minus fa-xs"/>
+                    </button>
+                    <button disabled={props.profiles.traffics.loading} className="btn btn-tool btn-xs" onClick={()=>props.onReload()}>
+                        <FontAwesomeIcon size="xs" icon={faRefresh} spin={props.profiles.traffics.loading}/>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <ul className="nav nav-pills flex-column">
+                    {props.profiles.traffics.lists.length === 0 &&
+                        <li className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" className="nav-link px-2">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-1 text-warning"/>
+                                {Lang.get('labels.not_found',{Attribute:''})}
+                            </a>
+                        </li>
+                    }
+                    {props.profiles.traffics.lists.map((item,index)=>
+                        <li key={`${item.value}_${index}`} className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" style={{borderRadius:0}} className="nav-link px-2">
+                                <FontAwesomeIcon style={{width:30}} icon={faCircle} size="xs" className={`mr-1`}/>
+                                {item.label}
+                            </a>
+                        </li>
+                    )}
+                </ul>
+            </div>
+        </div>
+    )
+}
+export const VlanProfileTable = (props) => {
+    return (
+        <div className="card card-info card-outline">
+            {props.profiles.vlans.loading && <CardPreloader/>}
+            <div className="card-header pt-3 pl-2 pb-3">
+                <h4 className="card-title text-xs text-bold">Profile Vlan</h4>
+                <div className="card-tools">
+                    <button type="button" className="btn btn-tool btn-xs" data-card-widget="collapse">
+                        <i className="fas fa-minus fa-xs"/>
+                    </button>
+                    <button disabled={props.profiles.vlans.loading} className="btn btn-tool btn-xs" onClick={()=>props.onReload()}>
+                        <FontAwesomeIcon size="xs" icon={faRefresh} spin={props.profiles.vlans.loading}/>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <ul className="nav nav-pills flex-column">
+                    {props.profiles.vlans.lists.length === 0 &&
+                        <li className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" className="nav-link px-2">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-1 text-warning"/>
+                                {Lang.get('labels.not_found',{Attribute:''})}
+                            </a>
+                        </li>
+                    }
+                    {props.profiles.vlans.lists.map((item,index)=>
+                        <li key={`${item.value}_${index}`} className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" style={{borderRadius:0}} className="nav-link px-2">
+                                <FontAwesomeIcon style={{width:30}} icon={faCircle} size="xs" className={`mr-1`}/>
+                                {item.label}
+                            </a>
+                        </li>
+                    )}
+                </ul>
+            </div>
+        </div>
+    )
+}
+export const TcontProfileTable = (props) => {
+    return (
+        <div className="card card-info card-outline">
+            {props.profiles.tconts.loading && <CardPreloader/>}
+            <div className="card-header pt-3 pl-2 pb-3">
+                <h4 className="card-title text-xs text-bold">Profile Tcont</h4>
+                <div className="card-tools">
+                    <button type="button" className="btn btn-tool btn-xs" data-card-widget="collapse">
+                        <i className="fas fa-minus fa-xs"/>
+                    </button>
+                    <button disabled={props.profiles.tconts.loading} className="btn btn-tool btn-xs" onClick={()=>props.onReload()}>
+                        <FontAwesomeIcon size="xs" icon={faRefresh} spin={props.profiles.tconts.loading}/>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <ul className="nav nav-pills flex-column">
+                    {props.profiles.tconts.lists.length === 0 &&
+                        <li className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" className="nav-link px-2">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-1 text-warning"/>
+                                {Lang.get('labels.not_found',{Attribute:''})}
+                            </a>
+                        </li>
+                    }
+                    {props.profiles.tconts.lists.map((item,index)=>
+                        <li key={`${item.value}_${index}`} className="nav-item text-xs">
+                            <a onClick={customPreventDefault} href="#" style={{borderRadius:0}} className="nav-link px-2">
+                                <FontAwesomeIcon style={{width:30}} icon={faCircle} size="xs" className={`mr-1`}/>
+                                {item.label}
+                            </a>
+                        </li>
+                    )}
+                </ul>
             </div>
         </div>
     )

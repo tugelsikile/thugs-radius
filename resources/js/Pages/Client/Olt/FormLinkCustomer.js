@@ -10,6 +10,7 @@ import FormCustomer from "../Customer/Tools/FormCustomer";
 import {crudOltCustomer} from "../../../Services/OltService";
 import {showError, showSuccess} from "../../../Components/Toaster";
 
+// noinspection CommaExpressionJS
 class FormLinkCustomer extends React.Component {
     constructor(props) {
         super(props);
@@ -32,6 +33,25 @@ class FormLinkCustomer extends React.Component {
         this.togglePool = this.togglePool.bind(this);
         this.handleSelect = this.handleSelect.bind(this);
         this.toggleCustomer = this.toggleCustomer.bind(this);
+    }
+    componentWillReceiveProps(nextProps, nextContext) {
+        let form = this.state.form;
+        if (! nextProps.open) {
+            form.customer = null, form.id = null;
+        } else {
+            if (nextProps.data !== null) {
+                if (typeof nextProps.data === 'object') {
+                    if (typeof nextProps.data.details !== 'undefined') {
+                        if (typeof nextProps.data.details.customer !== 'undefined') {
+                            if (nextProps.data.details.customer !== null) {
+                                form.customer = nextProps.data.details.customer;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        this.setState({form});
     }
     toggleCustomer(data = null) {
         let modals = this.state.modals;
@@ -114,7 +134,12 @@ class FormLinkCustomer extends React.Component {
                                 <div className="col-md-5">
                                     <Select value={this.state.form.customer}
                                             isClearable={this.state.form.id !== null}
-                                            options={this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe')}
+                                            options={
+                                                this.props.data === null ?
+                                                    this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null)
+                                                    :
+                                                    this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null || f.meta.olt.onu === this.props.data.onu)
+                                            }
                                             onChange={(e)=>this.handleSelect(e,'customer')}
                                             styles={FormControlSMReactSelect}
                                             placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('customers.labels.menu')})}

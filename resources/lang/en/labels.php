@@ -105,6 +105,13 @@ return [
             'cancel' => 'Cancel'
         ]
     ],
+    'unlink' => [
+        'title' => 'Warning',
+        'message' => 'Are you sure want to unlink :Attribute ?',
+        'yes' => 'Unlink',
+        'cancel' => 'Cancel Unlink',
+        'success' => 'Unlink :Attribute successfully processed',
+    ],
     'confirm' => [
         'message' => "Are you sure want to do this action ?",
         'title' => 'Warning',

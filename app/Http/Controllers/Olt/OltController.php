@@ -38,6 +38,10 @@ class OltController extends Controller
                     $params = $this->repository->createCustomer($this->validation->createCustomer($request));
                     $code = 200; $message = __('labels.create.success',['Attribute' => __('olt.labels.customers.link')]);
                     break;
+                case 'delete':
+                    $params = $this->repository->unlinkCustomer($this->validation->unlinkCustomer($request));
+                    $code = 200; $message = __('labels.unlink.success', ['Attribute' => __('olt.labels.customers.link')]);
+                    break;
             }
             return formatResponse($code,$message, $params);
         } catch (Exception $exception) {

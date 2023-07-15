@@ -50,6 +50,7 @@ class OltPage extends React.Component {
         this.loadNas = this.loadNas.bind(this);
         this.loadTaxes = this.loadTaxes.bind(this);
         this.loadDiscounts = this.loadDiscounts.bind(this);
+        this.handleSearchParams = this.handleSearchParams.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -104,11 +105,32 @@ class OltPage extends React.Component {
                     });
             }
         }
-        window.addEventListener('scroll', this.handleScrollPage);
+    }
+    handleSearchParams() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString).get('manage');
+        if (urlParams !== null) {
+            if (urlParams.length > 0) {
+                let index = this.state.olt.unfiltered.findIndex((f)=> f.value === urlParams);
+                if (index >=0 ) {
+                    let filter = this.state.filter;
+                    filter.olt = this.state.olt.unfiltered[index];
+                    this.setState({filter});
+                }
+            }
+        }
     }
     toggleOlt(data = null) {
         let filter = this.state.filter;
         filter.olt = data;
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (filter.olt !== null) {
+            urlParams.set('manage', filter.olt.value);
+        } else {
+            urlParams.delete('manage');
+        }
+        window.history.pushState(null,null,getRootUrl() + '/olt?' + urlParams.toString());
         this.setState({filter},()=>cancelOltService());
     }
     confirmDelete(data = null) {
@@ -172,6 +194,7 @@ class OltPage extends React.Component {
         filter.page = {value:page,label:page}; this.setState({filter},()=>this.handleFilter());
     }
     handleFilter() {
+        this.handleSearchParams();
         let loadings = this.state.loadings;
         let olt = this.state.olt;
         let filter = this.state.filter;

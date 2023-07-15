@@ -17,6 +17,8 @@ use App\Http\Controllers\Nas\NasController;
 use App\Http\Controllers\Nas\PoolController;
 use App\Http\Controllers\Nas\ProfileController;
 use App\Http\Controllers\Olt\OltController;
+use App\Http\Controllers\Olt\TrafficProfileController;
+use App\Http\Controllers\Olt\VlanProfileController;
 use App\Http\Controllers\PaymentGateway\BRIController;
 use App\Http\Controllers\PaymentGateway\DuitkuController;
 use App\Http\Controllers\PaymentGateway\MidtransController;
@@ -140,6 +142,14 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::group(['prefix' => 'gpon'], function () {
             Route::any('/state', [OltController::class, 'gponStates']);
             Route::any('/customer', [OltController::class, 'gponCustomer']);
+            Route::any('/unconfigure', function () {
+                return formatResponse(200,"Coming soon");
+            });
+            Route::group(['prefix' => 'profiles'],function () {
+                Route::any('/traffics', [TrafficProfileController::class, 'crud']);
+                Route::any('/tconts', [TrafficProfileController::class, 'tconts']);
+                Route::any('/vlans', [VlanProfileController::class, 'crud']);
+            });
         });
     });
 });

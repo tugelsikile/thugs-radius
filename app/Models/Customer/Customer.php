@@ -4,6 +4,7 @@ namespace App\Models\Customer;
 
 use App\Models\Nas\Nas;
 use App\Models\Nas\NasProfile;
+use App\Models\Olt\Olt;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +34,9 @@ class Customer extends Model
     protected $connection = "radius";
 
     protected $fillable = [
-        'active_at'
+        'active_at',
+        'onu_index',
+        'gpon_configs',
     ];
     protected $hidden = [
         'nas_username',
@@ -42,6 +45,16 @@ class Customer extends Model
     protected $casts = [
         'is_voucher' => 'boolean',
         'due_at' => 'datetime',
+        'gpon_configs' => 'object',
+    ];
+    protected $with = [
+        'userObj',
+        'profileObj',
+        'nasObj',
+        'villageObj',
+        'districtObj',
+        'cityObj',
+        'provinceObj',
     ];
     public function userObj(): BelongsTo
     {
@@ -96,5 +109,9 @@ class Customer extends Model
     public function discounts(): HasMany
     {
         return $this->setConnection('radius')->hasMany(CustomerDiscount::class,'customer','id');
+    }
+    public function oltObj(): BelongsTo
+    {
+        return $this->setConnection('radius')->belongsTo(Olt::class,'olt','id');
     }
 }

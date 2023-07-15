@@ -82,6 +82,13 @@ class FormGateways extends React.Component {
                             consumer_secret : form.module.meta.consumer_secret
                         }
                         break;
+                    case 'midtrans':
+                        form.keys = {
+                            merchant_id : form.module.meta.merchant_id,
+                            server_key : form.module.meta.server_key,
+                            client_key : form.module.meta.client_key,
+                        }
+                        break;
                 }
             }
         }
@@ -112,16 +119,26 @@ class FormGateways extends React.Component {
                 formData.append(Lang.get('gateways.form_input.module'), this.state.form.module.value);
                 formData.append(Lang.get('gateways.form_input.url'), this.state.form.production ? this.state.form.module.meta.urls.production : this.state.form.module.meta.urls.sandbox);
                 formData.append(Lang.get('gateways.form_input.website'), this.state.form.module.meta.urls.website);
-                formData.append(Lang.get('gateways.form_input.callback'), this.state.form.module.meta.urls.callback);
-                formData.append(Lang.get('gateways.form_input.return'), this.state.form.module.meta.urls.return);
                 switch (this.state.form.module.value) {
                     case 'duitku':
                         formData.append(Lang.get('gateways.form_input.duitku.merchant_code'), this.state.form.keys.merchant_code);
                         formData.append(Lang.get('gateways.form_input.duitku.api_key'), this.state.form.keys.api_key);
+                        formData.append(Lang.get('gateways.form_input.callback'), this.state.form.module.meta.urls.callback);
+                        formData.append(Lang.get('gateways.form_input.return'), this.state.form.module.meta.urls.return);
                         break;
                     case 'briapi':
                         formData.append(Lang.get('gateways.form_input.briapi.consumer_key'), this.state.form.keys.consumer_key);
                         formData.append(Lang.get('gateways.form_input.briapi.consumer_secret'), this.state.form.keys.consumer_secret);
+                        formData.append(Lang.get('gateways.form_input.callback'), this.state.form.module.meta.urls.callback);
+                        formData.append(Lang.get('gateways.form_input.return'), this.state.form.module.meta.urls.return);
+                        break;
+                    case 'midtrans' :
+                        formData.append(Lang.get('gateways.form_input.midtrans.merchant_id'), this.state.form.keys.merchant_id);
+                        formData.append(Lang.get('gateways.form_input.midtrans.server_key'), this.state.form.keys.server_key);
+                        formData.append(Lang.get('gateways.form_input.midtrans.client_key'), this.state.form.keys.client_key);
+                        ['notification','recurring','account','finish','unfinished','error'].map((item)=>{
+                            formData.append(Lang.get(`gateways.form_input.midtrans.urls.${item}`), this.state.form.module.meta.urls[item]);
+                        });
                         break;
                 }
             }
@@ -136,6 +153,7 @@ class FormGateways extends React.Component {
                 this.props.handleUpdate(response.data.params);
             }
         } catch (e) {
+            console.log(e);
             this.setState({loading:false});
             responseMessage(e);
         }
@@ -161,6 +179,21 @@ class FormGateways extends React.Component {
                                 </div>
                         }
                         <div className="form-group row">
+                            <label className="col-md-4 col-form-label text-xs"><LabelRequired/>{Lang.get('gateways.module.name')}</label>
+                            <div className="col-md-4">
+                                <Select options={listModulePaymentGateway} value={this.state.form.module} onChange={(e)=>this.handleSelect(e,'module')}
+                                        styles={FormControlSMReactSelect} menuPlacement="bottom"
+                                        isDisabled={this.state.loading} isClearable
+                                        placeholder={<small>{Lang.get('labels.select.option',{Attribute:Lang.get('gateways.module.name')})}</small>}
+                                        noOptionsMessage={()=>Lang.get('labels.select.no_option',{Attribute:Lang.get('gateways.module.name')})} className="text-xs"/>
+                            </div>
+                            <div className="col-md-4">
+                                {this.state.form.module !== null &&
+                                    <button onClick={()=>window.open(this.state.form.module.meta.urls.website,'_blank')} className="btn btn-outline-info btn-sm" type="button"><FontAwesomeIcon icon={faExternalLink} size="sm"/></button>
+                                }
+                            </div>
+                        </div>
+                        <div className="form-group row">
                             <label htmlFor="input-name" className="col-form-label col-md-4 text-xs"><LabelRequired/> {Lang.get('gateways.labels.name')}</label>
                             <div className="col-md-4">
                                 <input id="input-name" className="form-control-sm form-control text-xs" disabled={this.state.loading} value={this.state.form.name} name="name" onChange={this.handleChange} placeholder={Lang.get('gateways.labels.name')}/>
@@ -172,31 +205,17 @@ class FormGateways extends React.Component {
                                 <textarea id="input-description" style={{resize:'none'}} className="form-control-sm form-control text-xs" disabled={this.state.loading} value={this.state.form.description} name="description" onChange={this.handleChange} placeholder={Lang.get('gateways.labels.description')}/>
                             </div>
                         </div>
-                        <div className="form-group row">
-                            <label className="col-md-4 col-form-label text-xs"><LabelRequired/>{Lang.get('gateways.module.name')}</label>
-                            <div className="col-md-4">
-                                <Select options={listModulePaymentGateway} value={this.state.form.module} onChange={(e)=>this.handleSelect(e,'module')}
-                                        styles={FormControlSMReactSelect} menuPlacement="top"
-                                        isDisabled={this.state.loading} isClearable
-                                        placeholder={<small>{Lang.get('labels.select.option',{Attribute:Lang.get('gateways.module.name')})}</small>}
-                                        noOptionsMessage={()=>Lang.get('labels.select.no_option',{Attribute:Lang.get('gateways.module.name')})} className="text-xs"/>
-                            </div>
-                            <div className="col-md-4">
-                                {this.state.form.module !== null &&
-                                    <button onClick={()=>window.open(this.state.form.module.meta.urls.website,'_blank')} className="btn btn-outline-info btn-sm" type="button"><FontAwesomeIcon icon={faExternalLink} size="sm"/></button>
-                                }
-                            </div>
-                        </div>
+
                         {this.state.form.module !== null &&
                             <React.Fragment>
                                 <div className="form-group row">
                                     <label className="col-md-4 col-form-label text-xs">{Lang.get('gateways.labels.mode.label')}</label>
                                     <div className="col-md-8">
-                                        <div className="custom-control custom-radio mr-5" style={{display:'inline-block'}}>
+                                        <div className="custom-control custom-radio mr-5" style={{display:'inline-block',zIndex:0}}>
                                             <input onChange={this.handleCheck} checked={this.state.form.production} className="custom-control-input-outline custom-control-input-success custom-control-input" type="radio" name="production-mode" id="production"/>
                                             <label htmlFor="production" className="custom-control-label text-xs">{Lang.get('gateways.labels.mode.production')}</label>
                                         </div>
-                                        <div className="custom-control custom-radio" style={{display:'inline-block'}}>
+                                        <div className="custom-control custom-radio" style={{display:'inline-block',zIndex:0}}>
                                             <input onChange={this.handleCheck} checked={! this.state.form.production} className="custom-control-input-outline custom-control-input custom-control-input-danger" type="radio" name="production-mode" id="sandbox"/>
                                             <label htmlFor="sandbox" className="custom-control-label text-xs">{Lang.get('gateways.labels.mode.sandbox')}</label>
                                         </div>

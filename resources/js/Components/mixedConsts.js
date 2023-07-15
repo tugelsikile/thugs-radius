@@ -475,11 +475,13 @@ export const priorityList = [
     { value : 2, label : 2 },
     { value : 1, label : 1 },
 ]
-export const formatBytes = (bytes, decimals = 0, real = false) => {
+export const formatBytes = (bytes, decimals = 0, real = false, upper = true) => {
     if (!+bytes) return '0 Bytes'
     let k = 1000
     if (real) k = 1024;
-    bytes = bytes * k;
+    if (upper) {
+        bytes = bytes * k;
+    }
     const dm = decimals < 0 ? 0 : decimals
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
 
@@ -493,12 +495,12 @@ export const LabelRequired = () => {
     );
 }
 export const listDataPerPage = [
-    { value : 10, label : 10 },
-    { value : 20, label : 20 },
-    { value : 30, label : 30 },
-    { value : 50, label : 50 },
-    { value : 100, label : 100 },
-    { value : 500, label : 500 },
+    { value : 10, label : '10' },
+    { value : 20, label : '20' },
+    { value : 30, label : '30' },
+    { value : 50, label : '50' },
+    { value : 100, label : '100' },
+    { value : 500, label : '500' },
 ];
 export const FormControlSMReactSelect = {
     container: (provided, state) => ({

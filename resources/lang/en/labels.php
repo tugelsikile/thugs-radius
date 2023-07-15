@@ -11,6 +11,11 @@ return [
         'current' => 'current_:Attribute',
         'name' => 'full_:Attribute',
     ],
+    'bytes' => [
+        'in' => 'Bytes In',
+        'out' => 'Bytes Out',
+        'all' => 'Bytes In / Out',
+    ],
     'by' => ':Attribute By',
     'qr_code' => ':Attribute QR Code',
     'qr_info' => 'Scan QR Code :Attribute above with your favourite mobile banking apps to start payment',
@@ -67,6 +72,8 @@ return [
     'connection' => [
         'submit' => 'Check Connection',
         'pending' => 'Checking Connection',
+        'success' => 'Successfully connected to :Attribute',
+        'error' => 'Failed to connect :Attribute',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',
@@ -97,6 +104,13 @@ return [
             'confirm' => 'Inactivate',
             'cancel' => 'Cancel'
         ]
+    ],
+    'unlink' => [
+        'title' => 'Warning',
+        'message' => 'Are you sure want to unlink :Attribute ?',
+        'yes' => 'Unlink',
+        'cancel' => 'Cancel Unlink',
+        'success' => 'Unlink :Attribute successfully processed',
     ],
     'confirm' => [
         'message' => "Are you sure want to do this action ?",

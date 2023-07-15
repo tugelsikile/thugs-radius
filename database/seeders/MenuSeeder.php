@@ -56,6 +56,10 @@ class MenuSeeder extends Seeder
             ])
         ]);
         $requests->push((object) [
+            'name' => 'OLT', 'route' => 'clients.olt', 'description' => 'olt.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'olt.labels.menu',
+            'childrens' => collect()
+        ]);
+        $requests->push((object) [
             'name' => 'Customer', 'route' => 'clients.customers', 'description' => 'customers.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-tie', 'lang' => 'customers.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'customers.pppoe.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],

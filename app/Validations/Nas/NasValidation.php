@@ -25,6 +25,25 @@ class NasValidation
      * @return Request
      * @throws Exception
      */
+    public function checkRequirement(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(),[
+                __('nas.form_input.id') => 'required|exists:nas,id',
+                __('profiles.form_input.type') => 'required|in:pppoe,hotspot'
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Request
+     * @throws Exception
+     */
     public function reloadStatus(Request $request): Request
     {
         new SwitchDB();
@@ -150,10 +169,12 @@ class NasValidation
             if ($this->me != null) {
                 if ($this->me->companyObj != null) {
                     if ($this->me->companyObj->packageObj != null) {
-                        $request = $request->merge([
-                            __('labels.form_input.max',['Attribute' => __('nas.form_input.id')]) => $this->me->companyObj->packageObj->max_routerboards,
-                            __('labels.form_input.current',['Attribute' => __('nas.form_input.id')]) => Nas::orderBy('created_at', 'asc')->get('id')->count() + 1,
-                        ]);
+                        if ($this->me->companyObj->packageObj->max_routerboards > 0) {
+                            $request = $request->merge([
+                                __('labels.form_input.max',['Attribute' => __('nas.form_input.id')]) => $this->me->companyObj->packageObj->max_routerboards,
+                                __('labels.form_input.current',['Attribute' => __('nas.form_input.id')]) => Nas::orderBy('created_at', 'asc')->get('id')->count() + 1,
+                            ]);
+                        }
                     }
                 }
             }

@@ -9,6 +9,7 @@ use App\Models\Customer\Customer;
 use App\Models\Nas\Nas;
 use App\Models\Nas\NasProfile;
 use App\Models\Nas\NasProfilePool;
+use App\Models\Radius\Radacct;
 use App\Models\Radius\Radcheck;
 use App\Models\Radius\Radgroupcheck;
 use App\Models\Radius\Radgroupreply;
@@ -35,6 +36,21 @@ class RadiusDB
 {
     public function __construct()
     {
+    }
+    public function kickOnline(Customer $customer) {
+        try {
+            $radActs = Radacct::where('username', $customer->nas_username)->whereNull('acctstoptime')->get();
+            foreach ($radActs as $radAct) {
+                $radAct->acctstoptime = Carbon::now()->format('Y-m-d H:i:s');
+                $radAct->acctinterval = Carbon::parse($radAct->acctstarttime)->diffInMilliseconds(Carbon::parse($radAct->acctstoptime));
+                $radAct->acctsessiontime = $radAct->acctinterval;
+                $radAct->saveOrFail();
+            }
+            return;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return;
+        }
     }
     public function generateRadIpPool(NasProfilePool $nasProfilePool) {
         try {

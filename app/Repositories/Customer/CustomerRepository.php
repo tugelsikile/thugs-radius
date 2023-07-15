@@ -35,7 +35,32 @@ class CustomerRepository
         }
         $this->radiusDB = new RadiusDB();
     }
-    public function testConnectionWizard(Request $request) {
+    public function kickOnlineUser(Request $request) {
+        try {
+            $customer = Customer::where('nas_username', $request->username)->first();
+            if ($customer->nasObj()->first() != null) {
+                switch ($customer->method_type){
+                    case 'pppoe':
+                        (new MikrotikAPI($customer->nasObj()->first()))->kickOnlinePPPoE($customer);
+                        break;
+                    case 'hotspot':
+                        (new MikrotikAPI($customer->nasObj()->first()))->kickOnlineHostpot($customer);
+                        break;
+                }
+                (new RadiusDB())->kickOnline($customer);
+            }
+            return $customer;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function testConnectionWizard(Request $request): Collection
+    {
         try {
             $response = collect();
             $response->push((object)[
@@ -413,6 +438,9 @@ class CustomerRepository
             if ($request->has('expired')) {
                 $customers = $customers->whereNotNull('due_at')->whereDate('due_at','<', Carbon::now()->format('Y-m-d H:i:s'));
             }
+            if ($request->has(__('olt.form_input.onu'))) {
+                $customers = $customers->where('onu_index', $request[__('olt.form_input.onu')]);
+            }
             if ($request->has('type')) {
                 if (is_array($request->type)) {
                     $customers = $customers->whereIn('method_type', $request->type);
@@ -463,6 +491,11 @@ class CustomerRepository
                         'voucher' => (object) [
                             'is' => $customer->is_voucher,
                             'batch' => $customer->batch_voucher,
+                        ],
+                        'olt' => (object) [
+                            'olt' => $customer->olt,
+                            'onu' => $customer->onu_index,
+                            'configs' => $customer->gpon_configs,
                         ],
                         'timestamps' => (object) [
                             'create' => (object) [

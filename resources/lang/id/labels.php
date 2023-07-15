@@ -11,6 +11,11 @@ return [
         'current' => ':Attribute_sekarang',
         'name' => ':Attribute_lengkap',
     ],
+    'bytes' => [
+        'in' => 'Bytes In',
+        'out' => 'Bytes Out',
+        'all' => 'Bytes In / Out',
+    ],
     'by' => ':Attribute Oleh',
     'qr_code' => 'Kode QR :Attribute',
     'qr_info' => 'Scan Kode QR :Attribute diatas menggunakan aplikasi mobile banking anda untuk memulai pembayaran',
@@ -67,6 +72,8 @@ return [
     'connection' => [
         'submit' => 'Periksa Koneksi',
         'pending' => 'Memeriksa Koneksi',
+        'success' => 'Berhasil terhubung ke :Attribute',
+        'error' => 'Gagal terhubung ke :Attribute',
     ],
     'generate' => [
         'label' => 'Generate :Attribute',
@@ -97,6 +104,13 @@ return [
             'confirm' => 'NONAKTIFKAN',
             'cancel' => 'BATAL NONAKTIFASI'
         ]
+    ],
+    'unlink' => [
+        'title' => 'Perhatian',
+        'message' => 'Anda yakin ingin memutuskan hubungan :Attribute ?',
+        'yes' => 'Putuskan Hubungan',
+        'cancel' => 'Batal Putuskan Hubungan',
+        'success' => 'Berhasil memutuskan hubungan :Attribute',
     ],
     'confirm' => [
         'message' => "Anda yakin akan melakukan aksi ini ?",

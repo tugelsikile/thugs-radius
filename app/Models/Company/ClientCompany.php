@@ -12,7 +12,7 @@ use Laravolt\Indonesia\Models\Province;
 use Laravolt\Indonesia\Models\Village;
 
 /**
- * @method static where(string $column, null|string $operator, mixed|string $value)
+ * @method static where(string $column, mixed|string $value)
  * @method static whereIn(string $column, mixed|array $value)
  * @method static orderBy(string $column, string $orderDirection)
  * @property mixed $radius_db_host

@@ -73,6 +73,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
     });
+    Route::get('/olt', function (){ return view('clients.olt.index'); })->name('clients.olt');
     Route::get('/wizard', function () { return view('clients.wizard'); });
 });
 Route::group(['prefix' => 'customer'], function () {
@@ -83,5 +84,12 @@ Route::group(['prefix' => 'customer'], function () {
 Route::get('/profile/{id}', function () {
     $user = User::where('id', request()->id)->first();
     return view('auth.users.profile',['id' => request()->id, 'user' => $user]);
+});
+Route::group(['prefix' => 'payment-gateway'],function () {
+    Route::group(['prefix' => 'midtrans'],function () {
+        Route::get('/finish', function (){ return view('guest.payment-gateways.finish'); });
+        Route::get('/unfinish', function (){ return view('guest.payment-gateways.unfinished'); });
+        Route::get('/error', function (){ return view('guest.payment-gateways.error'); });
+    });
 });
 Route::get('logs', [LogViewerController::class, 'index']);

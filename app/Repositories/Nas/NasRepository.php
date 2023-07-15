@@ -434,4 +434,34 @@ class NasRepository
             throw new Exception($exception->getMessage(),500);
         }
     }
+    public function checkRequirement(Request $request) {
+        try {
+            $nas = Nas::where('id', $request[__('nas.form_input.id')])->first();
+            $response = null;
+            $checks = null;
+            switch ($request[__('profiles.form_input.type')]) {
+                case 'pppoe':
+                    switch ($nas->method) {
+                        case 'api':
+                            $response = (new MikrotikAPI($nas))->checkRequirementPPPoE();
+                            break;
+                        case 'ssl':
+                            break;
+                    }
+                    break;
+                case 'hotspot':
+                    switch ($nas->method) {
+                        case 'api':
+                            $response = (new MikrotikAPI($nas))->checkRequirementHotspot();
+                            break;
+                        case 'ssl':
+                            break;
+                    }
+                    break;
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
 }

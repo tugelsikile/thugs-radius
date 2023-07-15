@@ -2,7 +2,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 ROOT_DIR="$SCRIPT_DIR"
 echo "checking root directory permissions at $ROOT_DIR"
-if [ "$(stat -c '%a' "$ROOT_DIR")" == "755" ]
+if [ "$(stat -c '%a' "$ROOT_DIR")" -eq "755" ]
 then
     echo "changing permissions of $ROOT_DIR"
     chmod -R 755 "$ROOT_DIR"
@@ -11,7 +11,7 @@ else
 fi
 PUBLIC_DIR="$SCRIPT_DIR/public"
 echo "checking public directory permissions at $PUBLIC_DIR"
-if [ "$(stat -c '%a' "$PUBLIC_DIR")" == "755" ]
+if [ "$(stat -c '%a' "$PUBLIC_DIR")" -eq "755" ]
 then
     echo "changing permissions of $PUBLIC_DIR"
     chmod -R 755 "$PUBLIC_DIR"
@@ -21,7 +21,7 @@ fi
 
 BOOTSTRAP_DIR="$SCRIPT_DIR/bootstrap"
 echo "checking bootstrap directory permissions at $BOOTSTRAP_DIR"
-if [ "$(stat -c '%a' "$BOOTSTRAP_DIR")" == "755" ]
+if [ "$(stat -c '%a' "$BOOTSTRAP_DIR")" -eq "755" ]
 then
     echo "changing permissions of $BOOTSTRAP_DIR"
     chmod -R 777 "$BOOTSTRAP_DIR"
@@ -31,7 +31,7 @@ fi
 
 STORAGE_DIR="$SCRIPT_DIR/storage"
 echo "checking storage directory permissions at $STORAGE_DIR"
-if [ "$(stat -c '%a' "$STORAGE_DIR")" == "755" ]
+if [ "$(stat -c '%a' "$STORAGE_DIR")" -eq "755" ]
 then
     echo "changing permissions of $STORAGE_DIR"
     chmod -R 777 "$STORAGE_DIR"
@@ -58,6 +58,14 @@ vendor_dir="$SCRIPT_DIR/vendor"
 echo "checking if vendor exists"
 if [ -d "$vendor_dir" ]; then
     echo "composer already installed"
+    echo "run main migration"
+    php artisan migrate
+    echo "run clients migration"
+    php artisan migrate:client
+    echo "run seeder"
+    php artisan db:seed
+    echo "clear and optimize"
+    php artisan optimize:clear
 else
     echo "running composer install"
     composer install

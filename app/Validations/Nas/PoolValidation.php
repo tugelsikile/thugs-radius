@@ -6,6 +6,7 @@ use App\Helpers\SwitchDB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class PoolValidation
 {
@@ -80,6 +81,12 @@ class PoolValidation
             $valid = Validator::make($request->all(),[
                 __('nas.form_input.name') => 'required|exists:nas,id',
                 __('nas.pools.form_input.name') => 'required|string|min:1|max:199',
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            if ($request[__('nas.pools.form_input.module')] == 'radius') {
+                $request = $request->merge([__('nas.pools.form_input.code') => strtoupper(Str::slug($request[__('nas.pools.form_input.name')],'_'))]);
+            }
+            $valid = Validator::make($request->all(),[
                 __('nas.pools.form_input.code') => 'required|string|min:3|max:30|unique:nas_profile_pools,name,null,null,nas,' . $request[__('nas.form_input.name')],
                 __('nas.pools.form_input.description') => 'nullable',
                 __('nas.pools.form_input.module') => 'nullable|string|in:mikrotik,radius',

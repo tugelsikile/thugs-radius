@@ -64,7 +64,7 @@ export const getPrivileges = async (routes = null) => {
             } else {
                 if (response.data.params.privileges !== null) {
                     if (Array.isArray(response.data.params.privileges)) {
-                        if (response.data.params.privileges.length > 1) {
+                        if (response.data.params.privileges.length > 0) {
                             let privilege = {
                                 read : response.data.params.privileges[0].read,
                                 create : response.data.params.privileges[0].create,
@@ -92,6 +92,8 @@ export const getPrivileges = async (routes = null) => {
                             });
                             response.data.params.privileges = privilege;
                         }
+                        //console.log(response.data.params);
+                        return response.data.params;
                     } else {
                         if (! response.data.params.privileges.read) {
                             window.location.href = getRootUrl();

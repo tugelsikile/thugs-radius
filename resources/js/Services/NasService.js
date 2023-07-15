@@ -90,3 +90,17 @@ export const wizardTestCustomerConnection = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const kickOnlineUser = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/customers/kick-online", data : data
+    });
+    return Promise.resolve(request);
+}
+export const checkNasRequirements = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/nas/check-requirement", data : data
+    });
+    return Promise.resolve(request);
+}

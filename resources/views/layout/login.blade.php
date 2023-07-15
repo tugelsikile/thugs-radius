@@ -44,12 +44,12 @@
         messagingSenderId = '{{env('MIX_FIREBASE_MESSAGING_SENDER_ID')}}',
         appId = '{{env('MIX_FIREBASE_APP_ID')}}',
         measurementId = '{{env('MIX_FIREBASE_MEASUREMENT_ID')}}';
-    if (apiKey.length > 10 &&
-        authDomain.length > 10 &&
-        projectId.length > 5 &&
-        storageBucket.length > 5 &&
-        appId.length > 20 &&
-        measurementId.length > 5
+    if (apiKey.length > 0 &&
+        authDomain.length > 0 &&
+        projectId.length > 0 &&
+        storageBucket.length > 0 &&
+        appId.length > 0 &&
+        measurementId.length > 0
     ) {
         localCrypt = {
             apiKey: apiKey,

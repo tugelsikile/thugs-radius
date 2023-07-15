@@ -436,7 +436,7 @@ class InvoiceRepository
                                 $invoice->id = Uuid::uuid4()->toString();
                                 $invoice->order_id = randomNumeric(10);
                                 $invoice->customer = $customer->id;
-                                $invoice->code = generateCustomerInvoiceCode(Carbon::now());
+                                $invoice->code = generateCustomerInvoiceCode(Carbon::parse($customer->due_at));
                                 $invoice->bill_period = $customer->due_at;
                                 $invoice->note = 'Regenerate';
                                 if ($this->me != null) $invoice->created_by = $this->me->id;

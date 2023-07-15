@@ -422,7 +422,7 @@ class ProfilePage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.profiles && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header pl-2">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.profiles}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('profiles.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('profiles.labels.menu')})}}

@@ -2,7 +2,7 @@
 
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faExclamationTriangle, faPencilAlt, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
+import {faCircleNotch, faExclamationTriangle, faPencilAlt, faTrashAlt} from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import {formatLocaleString, FormControlSMReactSelect, listDataPerPage} from "./mixedConsts";
 import Pagination from '@atlaskit/pagination';
@@ -35,6 +35,16 @@ export const TableAction = (props) => {
             }
         </td>
     );
+}
+export const TableRowPreloader = (props) => {
+    return (
+        <tr>
+            <td colSpan={props.colSpan} className="align-middle text-xs text-center">
+                <FontAwesomeIcon icon={faCircleNotch} spin={true} className="mr-2"/>
+                <strong>Loading ...</strong>
+            </td>
+        </tr>
+    )
 }
 export const DataNotFound = (props) => {
     return (

@@ -41,6 +41,7 @@ return [
             'short' => 'Domain',
             'info' => 'Make sure your router already installed domain and valid ssl, click <a href="" target="_blank">here</a> for more info ',
         ],
+        'interface' => ':Attribute Interfaces',
         'ip' => [
             'label' => 'Connection Router IP',
             'short' => 'IP',
@@ -168,5 +169,32 @@ return [
     ],
     'tutorials' => [
 
+    ],
+    'requirements' => [
+        'title' => 'Router Requirement Checks',
+        'pppoe' => [
+            'server' => [
+                'status' => 'Status PPPoE Server',
+            ]
+        ],
+        'radius' => [
+            'server' => [
+                'status' => 'Status Radius Server',
+            ],
+            'aaa' => [
+                'status' => 'Status AAA Radius',
+            ],
+            'incoming' => [
+                'status' => 'Status Incoming Radius',
+            ]
+        ],
+        'hotspot' => [
+            'server' => [
+                'status' => 'Status Hotspot Server'
+            ],
+            'profile' => [
+                'status' => 'Status Hostpot Profile'
+            ]
+        ]
     ]
 ];

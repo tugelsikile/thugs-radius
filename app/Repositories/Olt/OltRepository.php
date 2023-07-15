@@ -334,39 +334,52 @@ class OltRepository
     }
 
     /* @
-     * @param Collection $onuResponses
+     * @param array $onuResponses
      * @return Collection
      * @throws Exception
      */
-    private function parseOnuStateLine(Collection $onuResponses): Collection
+    private function parseOnuStateLine(array $onuResponses): Collection
     {
         try {
             $response = collect();
+            $breakPoints = 0;
+            //dd($onuResponses);
             foreach ($onuResponses as $onuResponse) {
-                $onuResponse = str_replace("\x08","", $onuResponse);
-                if (! Str::contains($onuResponse,"Admin State")) {
-                    if (! Str::contains($onuResponse,"---------------------")) {
-                        $onuResponse = explode(' ',$onuResponse);
-                        if (count($onuResponse) > 0) {
-                            $lines = [];
-                            foreach ($onuResponse as $item) {
-                                if (strlen($item) > 0) {
-                                    $lines[] = $item;
+                if ($breakPoints < 5) {
+                    $onuResponse = trim($onuResponse);
+                    //$onuResponse = str_replace("\x08","", trim($onuResponse));
+                    if (! Str::contains($onuResponse,"Admin State")) {
+                        if (! Str::contains($onuResponse,"---------------------")) {
+                            if (! Str::contains($onuResponse,"#")) {
+                                $onuResponse = explode(' ',$onuResponse);
+                                if (count($onuResponse) > 0) {
+                                    $lines = [];
+                                    foreach ($onuResponse as $item) {
+                                        if (strlen($item) > 0) {
+                                            $lines[] = $item;
+                                        }
+                                    }
+                                    if (count($lines) == 5) {
+                                        $response->push((object) [
+                                            'onu' => $lines[0],
+                                            'serial_number' => null,
+                                            'admin_state' => $lines[1],
+                                            'omcc_state' => $lines[2],
+                                            'phase_state' => strtolower($lines[3]),
+                                            'channel' => $lines[4],
+                                            'loading' => true,
+                                            'details' => null,
+                                        ]);
+                                    }
                                 }
+                            } else {
+                                $breakPoints++;
                             }
-                            if (count($lines) == 5) {
-                                $response->push((object) [
-                                    'onu' => $lines[0],
-                                    'serial_number' => null,
-                                    'admin_state' => $lines[1],
-                                    'omcc_state' => $lines[2],
-                                    'phase_state' => strtolower($lines[3]),
-                                    'channel' => $lines[4],
-                                    'loading' => true,
-                                    'details' => null,
-                                ]);
-                            }
+                        } else {
+                            $breakPoints++;
                         }
+                    } else {
+                        $breakPoints++;
                     }
                 }
             }
@@ -433,30 +446,43 @@ class OltRepository
             }
 
             $onuResponses = $telnet->exec("show gpon onu state");
-            $onuResponses = collect(explode("\n", str_replace("\x08","",$onuResponses)));
+            $onuResponses = str_replace("\x08","",trim($onuResponses));
             $curCommands = "  \r\n";
-            $response = $response->merge($this->parseOnuStateLine($onuResponses));
+            //$response = $response->merge($this->parseOnuStateLine($onuResponses));
             $breaks = 0;
             for ($index = 0; $index <= 50; $index ++) {
-                $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
-                $onuResponses = str_replace("\x08","",$telnet->exec($curCommands));
-                if (strlen($onuResponses) > 30) {
-                    ini_set('max_execution_time',100000);
-                    $onuResponses = collect(explode("\n", $onuResponses));
-                    if ($onuResponses->count() > 0) {
-                        $response = $response->merge($this->parseOnuStateLine($onuResponses));
-                    } else {
+                if ($breaks < 3) {
+                    $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
+                    $curResponse = str_replace("\x08","",trim($telnet->exec($curCommands)));
+                    if (strlen($curResponse) > 30) {
+                        $onuResponses .= "\n" .$curResponse;
+                    } elseif (Str::contains($curResponse,"#")) {
                         $breaks++;
                     }
-                } else {
-                    $breaks++;
-                    if ($breaks >= 3) {
-                        break;
-                    }
                 }
+                /*if (!Str::contains($onuResponses,"#")) {
+                    if (strlen($onuResponses) > 30) {
+                        ini_set('max_execution_time',100000);
+                        $onuResponses = collect(explode("\n", $onuResponses));
+                        if ($onuResponses->count() > 0) {
+                            $response = $response->merge($this->parseOnuStateLine($onuResponses));
+                        } else {
+                            $breaks++;
+                        }
+                    } else {
+                        $breaks++;
+                        if ($breaks >= 3) {
+                            break;
+                        }
+                    }
+                }*/
+            }
+            $onuResponses = explode("\n", $onuResponses);
+            $telnet->disconnect();
+            if (count($onuResponses) > 0) {
+                $response = $this->parseOnuStateLine($onuResponses);
             }
             Log::alert("break counts " . $breaks);
-            $telnet->disconnect();
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

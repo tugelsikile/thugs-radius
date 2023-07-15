@@ -92,7 +92,7 @@ export const getPrivileges = async (routes = null) => {
                             });
                             response.data.params.privileges = privilege;
                         }
-                        console.log(response.data.params);
+                        //console.log(response.data.params);
                         return response.data.params;
                     } else {
                         if (! response.data.params.privileges.read) {

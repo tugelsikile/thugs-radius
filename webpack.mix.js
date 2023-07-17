@@ -55,10 +55,10 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');
 
 /*---------- CLIENTS ----------*/
 
-mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
 /*
 mix.js('resources/js/src/clients/index.js','public/js/clients');
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
+mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');

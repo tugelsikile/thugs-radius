@@ -75,6 +75,7 @@ Route::group(['prefix' => 'clients'], function () {
     });
     Route::get('/olt', function (){ return view('clients.olt.index'); })->name('clients.olt');
     Route::get('/wizard', function () { return view('clients.wizard'); });
+    Route::get('/backup', function () { return view('clients.backup'); })->name('clients.backup');
 });
 Route::group(['prefix' => 'customer'], function () {
     Route::get('/', function () { return view('customers.dashboard'); });

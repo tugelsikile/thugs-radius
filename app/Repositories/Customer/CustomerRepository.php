@@ -470,6 +470,7 @@ class CustomerRepository
                         'code' => $customer->code,
                         'user' => $customer->userObj,
                         'nas' => $customer->nasObj,
+                        'brand' => $customer->brand,
                         'profile' => $customer->profileObj,
                         'additional' => $this->additionalServices($customer),
                         'taxes' => $this->taxes($customer),

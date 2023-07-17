@@ -12,6 +12,8 @@ return [
         'onu' => 'data_onu',
         'phase_state' => 'phase_state',
         'customer' => 'data_pelanggan',
+        'brand' => 'merek_olt',
+        'model' => 'model_olt',
         'prompts' => [
             'user' => 'prompt_username',
             'pass' => 'prompt_password',
@@ -28,6 +30,8 @@ return [
         'uptime' => 'Uptime',
         'username' => 'Nama Pengguna',
         'password' => 'Kata Sandi',
+        'brand' => 'Merek OLT',
+        'model' => 'Model OLT',
         'onu' => [
             'index' => 'Index Onu',
             'name' => 'Nama Onu',

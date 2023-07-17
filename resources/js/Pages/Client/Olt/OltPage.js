@@ -651,7 +651,7 @@ class OltPage extends React.Component {
                                             </thead>
                                             <tbody>
                                             {this.state.olt.unfiltered.length === 0 ?
-                                                <DataNotFound colSpan={6} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
+                                                <DataNotFound colSpan={7} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
                                                 :
                                                 this.state.olt.unfiltered.map((item)=>
                                                     <tr key={item.value}>

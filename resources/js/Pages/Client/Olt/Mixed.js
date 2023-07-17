@@ -546,3 +546,10 @@ export const TablePopoverLos = (props) => {
         </div>
     )
 }
+export const oltZteLists = [
+    { value : 'zte_320', label : 'ZTE C320' }
+];
+export const oltBrandLists = [
+    { value : 'zte', label : 'ZTE', models : oltZteLists },
+]
+

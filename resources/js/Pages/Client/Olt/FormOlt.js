@@ -1,5 +1,5 @@
 import React from "react";
-import {parseInputFloat, pipeIp, responseMessage} from "../../../Components/mixedConsts";
+import {FormControlSMReactSelect, parseInputFloat, pipeIp, responseMessage} from "../../../Components/mixedConsts";
 import {crudOlt, testConnection} from "../../../Services/OltService";
 import {showError, showSuccess} from "../../../Components/Toaster";
 import {Dialog, DialogContent} from "@mui/material";
@@ -9,6 +9,8 @@ import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faLink} from "@fortawesome/free-solid-svg-icons";
 import HtmlParser from "react-html-parser";
+import Select from "react-select";
+import {oltBrandLists, oltZteLists} from "./Mixed";
 
 // noinspection CommaExpressionJS
 class FormOlt extends React.Component {
@@ -19,7 +21,7 @@ class FormOlt extends React.Component {
             form : {
                 id : null, name : '',
                 hostname : '', port : 23,
-                comRead : '', comWrite : '',
+                comRead : '', comWrite : '', brand : oltBrandLists[0], model : oltZteLists[0],
                 user : '', pass : '',
                 user_prompt : 'Username:', pass_prompt : 'Password:',
             }
@@ -27,13 +29,15 @@ class FormOlt extends React.Component {
         this.handleSave = this.handleSave.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.testConnection = this.testConnection.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
     }
     componentWillReceiveProps(nextProps, nextContext) {
         let form = this.state.form;
         if (! nextProps.open) {
             form.id = null, form.name = '', form.hostname = '',
                 form.port = 23, form.comRead = '', form.comWrite = '',
-                form.user = '', form.pass = '',
+                form.user = '', form.pass = '', form.brand = oltBrandLists[0],
+                form.model = form.brand.models[0],
                 form.user_prompt = 'Username:', form.pass_prompt = 'Password:';
         } else {
             if (nextProps.data !== null) {
@@ -45,6 +49,22 @@ class FormOlt extends React.Component {
                     form.comWrite = nextProps.data.meta.communities.write,
                     form.user = nextProps.data.meta.auth.user,
                     form.pass = nextProps.data.meta.auth.pass;
+                if (nextProps.data.meta.brand !== null) {
+                    if (typeof nextProps.data.meta.brand.name !== 'undefined') {
+                        let index = oltBrandLists.findIndex((f)=> f.value === nextProps.data.meta.brand.name);
+                        if (index >= 0) {
+                            form.brand = oltBrandLists[index];
+                        }
+                    }
+                    if (form.brand !== null) {
+                        if (typeof nextProps.data.meta.brand.model !== 'undefined') {
+                            let index = form.brand.models.findIndex((f)=> f.value === nextProps.data.meta.brand.model);
+                            if (index >= 0) {
+                                form.model = form.brand.models[index];
+                            }
+                        }
+                    }
+                }
                 if (nextProps.data.meta.auth.prompts !== null) {
                     if (typeof nextProps.data.meta.auth.prompts.user_prompt !== 'undefined') {
                         form.user_prompt = nextProps.data.meta.auth.prompts.user_prompt;
@@ -55,6 +75,11 @@ class FormOlt extends React.Component {
                 }
             }
         }
+        this.setState({form});
+    }
+    handleSelect(value ,name) {
+        let form = this.state.form;
+        form[name] = value;
         this.setState({form});
     }
     handleChange(e) {
@@ -76,6 +101,7 @@ class FormOlt extends React.Component {
                 formData.append(Lang.get('olt.form_input.read'), this.state.form.comRead);
                 formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
                 formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
+                formData.append(Lang.get('olt.form_input.brand'), this.state.form.brand.value);
                 formData.append(Lang.get('olt.form_input.prompts.user'), this.state.form.user_prompt);
                 formData.append(Lang.get('olt.form_input.prompts.pass'), this.state.form.pass_prompt);
                 let response = await testConnection(formData);
@@ -111,6 +137,8 @@ class FormOlt extends React.Component {
                 formData.append(Lang.get('olt.form_input.write'), this.state.form.comWrite);
                 formData.append(Lang.get('olt.form_input.user'), this.state.form.user);
                 formData.append(Lang.get('olt.form_input.pass'), this.state.form.pass);
+                formData.append(Lang.get('olt.form_input.brand'), this.state.form.brand.value);
+                formData.append(Lang.get('olt.form_input.model'), this.state.form.model.value);
                 formData.append(Lang.get('olt.form_input.prompts.user'), this.state.form.user_prompt);
                 formData.append(Lang.get('olt.form_input.prompts.pass'), this.state.form.pass_prompt);
                 let response = await crudOlt(formData);
@@ -138,6 +166,22 @@ class FormOlt extends React.Component {
                         <DialogContent dividers>
                             <div className="row">
                                 <div className="col-md-7">
+                                    <div className="form-group row">
+                                        <label className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.brand')}</label>
+                                        <div className="col-md-7">
+                                            <Select styles={FormControlSMReactSelect}
+                                                    options={oltBrandLists} isDisabled={this.state.loading}
+                                                    value={this.state.form.brand} onChange={(e)=>this.handleSelect(e,'brand')}/>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.model')}</label>
+                                        <div className="col-md-7">
+                                            <Select styles={FormControlSMReactSelect} isDisabled={this.state.loading}
+                                                    options={this.state.form.brand === null ? [] : this.state.form.brand.models}
+                                                    value={this.state.form.model} onChange={(e)=>this.handleSelect(e,'model')}/>
+                                        </div>
+                                    </div>
                                     <div className="form-group row">
                                         <label htmlFor="inputName" className="col-md-5 col-form-label text-xs">{Lang.get('olt.labels.name')}</label>
                                         <div className="col-md-7">

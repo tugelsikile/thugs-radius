@@ -12,6 +12,8 @@ return [
         'onu' => 'onu_data',
         'phase_state' => 'phase_state',
         'customer' => 'customer_data',
+        'brand' => 'olt_brand',
+        'model' => 'olt_model',
         'prompts' => [
             'user' => 'username_prompt',
             'pass' => 'password_prompt',
@@ -28,6 +30,8 @@ return [
         'uptime' => 'Uptime',
         'username' => 'Username',
         'password' => 'Password',
+        'brand' => 'OLT Brand',
+        'model' => 'OLT Model',
         'onu' => [
             'index' => 'Onu Index',
             'name' => 'Onu Name',

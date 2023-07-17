@@ -167,6 +167,13 @@ class OltRepository
             if ($this->me != null) {
                 $olt->created_by = $this->me->id;
             }
+            if ($request->has(__('olt.form_input.brand'))) {
+                $olt->brand = (object) [ 'name' => null];
+                $olt->brand->name = $request[__('olt.form_input.brand')];
+            }
+            if ($request->has(__('olt.form_input.model'))) {
+                $olt->brand->model = $request[__('olt.form_input.model')];
+            }
             $configs = (object) [];
             if ($request->has(__('olt.form_input.prompts.user'))) {
                 if (! property_exists($configs,'prompts')) $configs->prompts = (object) [];
@@ -232,6 +239,24 @@ class OltRepository
                 $olt->pass = null;
             }
             $configs = $olt->configs;
+
+            $brand = $olt->brand;
+            if ($brand == null) $brand = (object) [];
+            if ($request->has(__('olt.form_input.brand'))) {
+                $brand->name = $request[__('olt.form_input.brand')];
+            } else {
+                if (property_exists($brand,'model')) {
+                    unset($brand->name);
+                }
+            }
+            if ($request->has(__('olt.form_input.model'))) {
+                $brand->model = $request[__('olt.form_input.model')];
+            } else {
+                if (property_exists($brand,'model')) {
+                    unset($brand->model);
+                }
+            }
+            $olt->brand = $brand;
 
             if ($request->has(__('olt.form_input.prompts.user'))) {
                 if ($configs != null) {
@@ -355,6 +380,7 @@ class OltRepository
                     'value' => $olt->id,
                     'label' => $olt->name,
                     'meta' => (object) [
+                        'brand' => $olt->brand,
                         'description' => $olt->description,
                         'loss' => [
                             'loading' => false,
@@ -450,7 +476,7 @@ class OltRepository
                     //$onuResponse = str_replace("\x08","", trim($onuResponse));
                     if (! Str::contains($onuResponse,"Admin State")) {
                         if (! Str::contains($onuResponse,"---------------------")) {
-                            if (! Str::contains($onuResponse,"#")) {
+                            if (! Str::contains($onuResponse,"#") || ! Str::contains($onuResponse,">")) {
                                 $onuResponse = explode(' ',$onuResponse);
                                 if (count($onuResponse) > 0) {
                                     $lines = [];

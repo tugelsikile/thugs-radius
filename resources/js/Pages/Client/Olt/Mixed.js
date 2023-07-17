@@ -110,7 +110,7 @@ export const TableContentGponState = (props)=> {
                 {props.item.loading ?
                     props.item.details === null && <Skeleton variant="text" animation="wave"/>
                 :
-                    <FontAwesomeIcon onMouseOver={props.onPopover} onMouseOut={props.onPopover} data-label="detail" data-onu={props.item.onu} icon={faInfoCircle} className="mr-1 text-primary"/>
+                    <FontAwesomeIcon size="lg" onMouseOver={props.onPopover} onMouseOut={props.onPopover} data-label="detail" data-onu={props.item.onu} icon={faInfoCircle} className="mr-1 text-muted"/>
                 }
                 {props.item.details !== null && props.item.details.name}
             </td>
@@ -346,44 +346,44 @@ export const DetailOnuPopover = (props) => {
                     <tr>
                         <td width={100} className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.index')}</td>
                         <td className="align-middle text-xs" width={5}>:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.onu}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.onu}</td>
                     </tr>
                     <tr>
                         <td className="align-middle text-xs pl-2">Admin State</td>
                         <td className="align-middle text-xs">:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.admin_state}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.admin_state}</td>
                     </tr>
                     <tr>
                         <td className="align-middle text-xs pl-2">Omcc State</td>
                         <td className="align-middle text-xs">:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.omcc_state}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.omcc_state}</td>
                     </tr>
                     {props.data.details !== null &&
                         <React.Fragment>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.name')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.name}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.name}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.description')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.description}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.description}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.sn')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.serial_number}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.serial_number}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.duration')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.online_duration}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.online_duration}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.distance')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.onu_distance}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.onu_distance}</td>
                             </tr>
                         </React.Fragment>
                     }

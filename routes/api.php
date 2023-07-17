@@ -25,6 +25,7 @@ use App\Http\Controllers\PaymentGateway\MidtransController;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\WhatsappController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -134,6 +135,9 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/', [PaymentGatewayController::class, 'crud']);
             Route::patch('/activate', [PaymentGatewayController::class, 'activate'])->name('clients.configs.payment-gateways.activate');
             Route::patch('/inactivate', [PaymentGatewayController::class, 'activate']);
+        });
+        Route::group(['prefix' => 'whatsapp'],function () {
+            Route::any('/', [WhatsappController::class, 'crud']);
         });
     });
     Route::group(['prefix' => 'olt'], function () {

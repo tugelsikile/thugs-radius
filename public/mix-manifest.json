@@ -1,3 +1,5 @@
 {
-    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
+    "/js/auth/index.js": "/js/auth/index.js",
+    "/js/clients/index.js": "/js/clients/index.js",
+    "/js/clients/configs/whatsapp.js": "/js/clients/configs/whatsapp.js"
 }

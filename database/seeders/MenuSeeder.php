@@ -82,6 +82,7 @@ class MenuSeeder extends Seeder
                 (object) [ 'name' => 'Aktifkan Payment Gateway', 'route' => 'clients.configs.payment-gateways.activate', 'description' => 'gateways.activate.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-check-circle', 'lang' => 'gateways.activate.menu' ],
                 (object) [ 'name' => 'Diskon', 'route' => 'clients.configs.discounts', 'description' => 'Manage Diskon', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-tags', 'lang' => 'discounts.labels.menu' ],
                 (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.taxes', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-archway', 'lang' => 'taxes.labels.menu' ],
+                (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.whatsapp', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-whatsapp', 'lang' => 'whatsapp.labels.menu' ],
             ])
         ]);
 

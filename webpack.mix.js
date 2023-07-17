@@ -36,9 +36,12 @@ mix.js('resources/js/src/guests/reset-password.js','public/js/guests');
 
 /******* AUTH ***********/
 /*
-
 mix.js('resources/js/src/auth/login.js','public/js');
+*/
+
 mix.js('resources/js/src/auth/index.js','public/js/auth');
+
+/*
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/profile.js','public/js/auth/users');
@@ -53,16 +56,19 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');
 */
 
 
-/*---------- CLIENTS ----------*/
 
-mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
-/*
+/*---------- CLIENTS ----------*/
 mix.js('resources/js/src/clients/index.js','public/js/clients');
+/*
+mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
+*/
+mix.js('resources/js/src/clients/configs/whatsapp.js','public/js/clients/configs');
+/*
 mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');
 mix.js('resources/js/src/clients/nas/profiles/pools.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/nas/profiles/bandwidths.js','public/js/clients/nas/profiles');

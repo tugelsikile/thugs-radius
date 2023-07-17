@@ -72,6 +72,7 @@ Route::group(['prefix' => 'clients'], function () {
         Route::get('/payment-gateways', function () { return view('clients.configs.payment-gateways'); })->name('clients.configs.payment-gateways');
         Route::get('/discounts', function () { return view('clients.configs.discounts'); })->name('clients.configs.discounts');
         Route::get('/taxes', function () { return view('clients.configs.taxes'); })->name('clients.configs.taxes');
+        Route::get('/whatsapp', function () { return view('clients.configs.whatsapp'); })->name('clients.configs.whatsapp');
     });
     Route::get('/olt', function (){ return view('clients.olt.index'); })->name('clients.olt');
     Route::get('/wizard', function () { return view('clients.wizard'); });

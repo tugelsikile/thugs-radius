@@ -74,6 +74,7 @@ mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/custo
 mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
 */
+mix.js('resources/js/src/clients/backup/backup.js','public/js/clients/backup');
 
 /********* CUSTOMERS ***********/
 /*

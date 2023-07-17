@@ -64,6 +64,11 @@ export const TableHeader = (props) => {
                          name={Lang.get('olt.labels.uptime')}
                          filter={props.filter} handleSort={props.onSort}/>
             </th>
+            <th width={50} className="align-middle">
+                <BtnSort sort="loss"
+                         name={Lang.get('olt.labels.loss')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
             <th width={50} className="align-middle text-center pr-2 text-xs">{Lang.get('messages.action')}</th>
         </tr>
     )
@@ -504,6 +509,39 @@ export const TcontProfileTable = (props) => {
                         </li>
                     )}
                 </ul>
+            </div>
+        </div>
+    )
+}
+export const TablePopoverLos = (props) => {
+    return (
+        <div className="mb-0 card card-outline card-primary" style={{minWidth:200,maxWidth:500}}>
+            <div className="card-header">
+                <strong className="card-title text-xs">LOSS</strong>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped">
+                    <thead>
+                    <tr>
+                        <th className="pl-2 align-middle text-xs">{Lang.get('olt.labels.onu.index')}</th>
+                        <th className="align-middle text-xs">{Lang.get('olt.labels.onu.name')}</th>
+                        <th className="pr-2 align-middle text-xs">{Lang.get('olt.labels.onu.description')}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.data.meta.loss.data.length === 0 ?
+                        <DataNotFound colSpan={3} message="Not Found"/>
+                        :
+                        props.data.meta.loss.data.map((item,index)=>
+                            <tr key={`ias_${index}`}>
+                                <td className="align-middle text-xs pl-2">{item.onu}</td>
+                                <td className="align-middle text-xs">{item.name}</td>
+                                <td className="align-middle text-xs pr-2">{item.description}</td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
             </div>
         </div>
     )

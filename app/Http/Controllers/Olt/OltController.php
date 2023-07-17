@@ -23,6 +23,18 @@ class OltController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     */
+    public function lossCustomer(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,"ok", $this->repository->lossCustomer($request));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
      * @throws Throwable
      */
     public function gponCustomer(Request $request): JsonResponse

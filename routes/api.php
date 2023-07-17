@@ -141,7 +141,10 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::any('/test-connection', [OltController::class, 'testConnection']);
         Route::group(['prefix' => 'gpon'], function () {
             Route::any('/state', [OltController::class, 'gponStates']);
-            Route::any('/customer', [OltController::class, 'gponCustomer']);
+            Route::group(['prefix' => 'customers'],function () {
+                Route::any('/', [OltController::class, 'gponCustomer']);
+                Route::post('/loss', [OltController::class, 'lossCustomer']);
+            });
             Route::any('/unconfigure', function () {
                 return formatResponse(200,"Coming soon");
             });

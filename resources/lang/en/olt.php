@@ -40,6 +40,7 @@ return [
             'link' => 'Link to Customer',
             'unlink' => 'Delete Customer Link',
         ],
+        'loss' => 'LOS',
         'community' => [
             'label' => 'Community',
             'read' => 'Read Community',

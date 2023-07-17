@@ -40,6 +40,7 @@ return [
             'link' => 'Hubungkan ke Pelanggan',
             'unlink' => 'Putuskan Hubungan Pelanggan',
         ],
+        'loss' => 'LOS',
         'community' => [
             'label' => 'Community',
             'read' => 'Community Baca',

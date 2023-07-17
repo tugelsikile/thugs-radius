@@ -161,6 +161,49 @@ class Telnet {
         $this->waitPrompt();
         return $this->getBuffer();
     }
+    public function execPaging(string $command, string $moreExpect = "--More--", string $returnCommand = " \n\r"): string
+    {
+        $this->setPrompt($moreExpect);
+        $this->write($command);
+        $x = 0;
+        try {
+            while ($this->waitPrompt()) {
+                $this->write($returnCommand);
+                $x++;
+            }
+            $buf = $this->parsePaging($command, $moreExpect);
+            return trim($buf);
+        } catch (Exception $exception) {
+            $buf = $this->parsePaging($command, $moreExpect);
+            return trim($buf);
+            //dd($this->global_buffer, $exception);
+        }
+    }
+    private function parsePaging(string $command, string $moreExpect = "--More--") {
+        $buf = str_replace("\x08","",$this->global_buffer);
+        $buf = str_replace($moreExpect,"", $buf);
+        $buf =  preg_replace('/\r\n|\r/', "\n", $buf);
+        if ($this->strip_prompt) {
+            $buf = explode("\n", $buf);
+            foreach ($buf as $index => $item) {
+                $buf[$index] = trim($item);
+                if (strlen(trim($item)) == 0) {
+                    unset($buf[$index]);
+                } elseif (strpos($item, $command)) {
+                    for ($l = $index; $l != 0; $l--) {
+                        unset($buf[$l]);
+                    }
+                    unset($buf[0]);
+                } elseif (strpos($item,"#")) {
+                    unset($buf[$index]);
+                }
+            }
+            $buf = array_values($buf);
+            unset($buf[count($buf) - 1]);
+            return implode("\n", $buf);
+        }
+        return "";
+    }
     public function setLoginPrompt(string $username, string $password = "Password:") {
         $this->username_prompt = $username;
         $this->password_prompt = $password;
@@ -313,6 +356,7 @@ class Telnet {
      * @param string $buffer Stuff to write to socket
      * @param boolean $add_newline Default TRUE, adds newline to the command
      * @return boolean
+     * @throws Exception
      */
     protected function write($buffer, $add_newline = TRUE) {
         if (!$this->socket) {
@@ -365,6 +409,7 @@ class Telnet {
      *
      * @param string $command Character to check
      * @return boolean
+     * @throws Exception
      */
     protected function negotiateTelnetOptions() {
         $c = $this->getc();

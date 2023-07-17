@@ -133,7 +133,7 @@ class DetailOLT extends React.Component {
             if (onu.length > 0) {
                 let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
                 if (index >= 0) {
-                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/customer`,Lang.get('labels.unlink.title'),Lang.get('labels.unlink.message',{Attribute:Lang.get('customers.labels.menu')}),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('labels.unlink.yes'),Lang.get('labels.unlink.cancel'));
+                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/customers`,Lang.get('labels.unlink.title'),Lang.get('labels.unlink.message',{Attribute:Lang.get('customers.labels.menu')}),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('labels.unlink.yes'),Lang.get('labels.unlink.cancel'));
                 }
             }
         }

@@ -343,7 +343,7 @@ class RST
         try {
             $response = collect();
             $customers = $customers->map(function ($q){ return $q->id; })->toArray();
-            $invoices = DB::connection("backup")->table("invoices")->whereIn("customer", $customers)->get();
+            $invoices = DB::connection("backup")->table("invoices")->whereIn("branch", $customers)->get();
             if ($invoices->count() > 0) {
                 foreach ($invoices as $invoice) {
                     ini_set('max_execution_time',100000);
@@ -382,8 +382,10 @@ class RST
     {
         try {
             $response = collect();
-            $invoices = $invoices->map(function ($q){ return $q->id; })->toArray();
-            $payments = DB::connection("backup")->table("invoice_partial_payments")->whereIn('invoice', $invoices)->get();
+            //$invoices = $invoices->map(function ($q){ return $q->id; })->toArray();
+            $payments = DB::connection("backup")->table("invoice_partial_payments")
+                //->whereIn('branch', $invoices)
+                ->get();
             if ($payments->count() > 0) {
                 foreach ($payments as $payment) {
                     $payment->value = null;

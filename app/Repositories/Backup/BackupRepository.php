@@ -26,8 +26,8 @@ class BackupRepository
             $customers = $rst->customers($nas);
             new SwitchDB();
             $pools = $rst->pools($nas);
-            $invoices = $rst->invoices($customers);
-            $payments = $rst->payments($invoices);
+            $invoices = $rst->invoices($branches);
+            $payments = $rst->payments($branches);
             $response = collect();
             //$response->push(['value' => 'branches', 'data' => $branches ]);
             $response->push(['value' => 'nas', 'data' => $nas ]);

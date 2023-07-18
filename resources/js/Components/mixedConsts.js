@@ -614,7 +614,7 @@ export const getIpRangeFromAddressAndNetmask = (str) => {
         // xxx.xxx.xxx.xxx
         netmaskblocks = part[1].split('.').map(function(el) { return parseInt(el, 10) });
     }
-    // invert for creating broadcast address (highest address)
+    // invert for creating broadcast address (the highest address)
     let invertedNetmaskblocks = netmaskblocks.map(function(el) { return el ^ 255; });
     let baseAddress = ipaddress.map(function(block, idx) { return block & netmaskblocks[idx]; });
     let broadcastaddress = baseAddress.map(function(block, idx) { return block | invertedNetmaskblocks[idx]; });

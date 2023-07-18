@@ -14,7 +14,7 @@ class AddRstidToNasProfilesTable extends Migration
     public function up()
     {
         Schema::table('nas_profiles', function (Blueprint $table) {
-            $table->uuid('system_id')->nullable()->after('profile_id')->comment("rstnet system");
+            $table->bigInteger('system_id')->nullable()->after('profile_id')->comment("rstnet system");
         });
     }
 

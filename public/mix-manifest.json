@@ -1,3 +1,10 @@
 {
+    "/js/clients/nas/profiles/pools.js": "/js/clients/nas/profiles/pools.js",
+    "/js/clients/nas/profiles/bandwidths.js": "/js/clients/nas/profiles/bandwidths.js",
+    "/js/clients/nas/profiles/index.js": "/js/clients/nas/profiles/index.js",
+    "/js/clients/customers/index.js": "/js/clients/customers/index.js",
+    "/js/clients/customers/pppoe.js": "/js/clients/customers/pppoe.js",
+    "/js/clients/customers/hotspot.js": "/js/clients/customers/hotspot.js",
+    "/js/clients/customers/invoices.js": "/js/clients/customers/invoices.js",
     "/js/clients/backup/backup.js": "/js/clients/backup/backup.js"
 }

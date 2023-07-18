@@ -546,7 +546,7 @@ class InvoicePage extends React.Component {
                 <PageLoader/>
                 <Popover open={this.state.popover.open} onClose={this.handlePopOver} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} sx={{ pointerEvents: 'none', }} disableRestoreFocus>{this.state.popover.data}</Popover>
 
-                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus}/>
+                <HeaderAndSideBar loadings={this.state.loadings} root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus}/>
 
                 <div className="content-wrapper">
                     <PageTitle title={`${Lang.get('customers.invoices.labels.menu')}, ${formatLocalePeriode(this.state.filter.bill_period,'MMMM yyyy')}`} childrens={[
@@ -570,7 +570,7 @@ class InvoicePage extends React.Component {
 
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.invoices && <CardPreloader/>}
-                                <div className="card-header" id="page-card-header">
+                                <div className="card-header pl-2" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
                                                    loading={this.state.loadings.invoices}
                                                    langs={{create:Lang.get('invoices.create.button'),delete:Lang.get('invoices.delete.button')}}

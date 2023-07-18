@@ -104,6 +104,9 @@ class BandwidthRepository
             new SwitchDB();
             $bandwidth = new NasProfileBandwidth();
             $bandwidth->id = Uuid::uuid4()->toString();
+            if ($request->has('system_id')) {
+                $bandwidth->system_id = $request->system_id;
+            }
             $bandwidth->name = $request[__('bandwidths.form_input.name')];
             $bandwidth->description = $request[__('bandwidths.form_input.description')];
             $bandwidth->max_limit_up = $request[__('bandwidths.form_input.max_limit.up')];

@@ -35,23 +35,24 @@ class RST
     protected $dbname;
     public function __construct(Request $request)
     {
+        //dd($request->all());
         $this->hostname = $request->hostname;
         $this->user = $request->user;
         $this->port = $request->port;
         $this->pass = $request->pass;
-        $this->dbname = $request->name;
+        $this->dbname = $request->db_name;
         $configParams = [
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'driver' => 'mysql',
-            'host' => $this->hostname,
-            'port' => $this->port,
-            'database' => $this->dbname,
-            'username' => $this->user,
-            'password' => $this->pass
+            'host' => $request->hostname,
+            'port' => $request->port,
+            'database' => $request->db_name,
+            'username' => $request->user,
+            'password' => $request->pass
         ];
-        Config::set("backup", $configParams);
-        DB::setDefaultConnection("backup");
+        Config::set("database.connections.backup", $configParams);
+        //DB::setDefaultConnection("backup");
     }
 
     /* @
@@ -62,6 +63,7 @@ class RST
     {
         try {
             $response = collect();
+            //dd(\config('database.connections.backup'));
             $branches = DB::connection("backup")->table("branches")->where('ho',0)->whereNotIn('name',['FTTH Pangkalan'])->get();
             if ($branches->count() > 0) {
                 $response = $branches;

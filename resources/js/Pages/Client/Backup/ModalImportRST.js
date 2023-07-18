@@ -19,8 +19,8 @@ class ModalImportRST extends React.Component {
         this.state = {
             loading : false,
             form : {
-                hostname : '172.16.16.10', port : 3306, id : null,
-                user : 'root', pass : '', name : 'rstnet_sistem'
+                hostname : '', port : 3306, id : null,
+                user : '', pass : '', name : ''
             },
             lists : {
                 labels : [

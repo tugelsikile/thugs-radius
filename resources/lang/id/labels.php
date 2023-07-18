@@ -44,6 +44,10 @@ return [
     'add' => [
         'label' => 'Tambah :Attribute',
     ],
+    'read' => [
+        'submit' => 'Baca :Attribute',
+        'pending' => 'Membaca :Attribute',
+    ],
     'create' => [
         'label' => 'Buat :Attribute',
         'form' => 'Formulir Buat :Attribute',

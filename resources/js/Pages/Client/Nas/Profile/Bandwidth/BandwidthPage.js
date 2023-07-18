@@ -17,6 +17,8 @@ import BtnSort from "../../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Components/TableComponent";
 import FormBandwidth from "./Tools/FormBandwidth";
 import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
 
 class BandwidthPage extends React.Component {
     constructor(props) {
@@ -262,8 +264,9 @@ class BandwidthPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.bandwidths && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header pl-2">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={<button onClick={()=>this.loadBandwidths()} disabled={this.state.loadings.bandwidths} className="btn btn-outline-secondary btn-sm text-xs mr-1"><FontAwesomeIcon icon={this.state.loadings.bandwidths ? faCircleNotch : faRefresh} spin={this.state.loadings.bandwidths} size="xs"/></button>}
                                                    loading={this.state.loadings.bandwidths}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('bandwidths.labels.menu')}),delete:Lang.get('labels.update.label',{Attribute:Lang.get('bandwidths.labels.menu')})}}
                                                    selected={this.state.bandwidths.selected}

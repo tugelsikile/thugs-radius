@@ -345,7 +345,14 @@ class CustomerRepository
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             $customer->user = $userid;
-            $customer->code = generateCustomerCode();
+            if ($request->has('system_id')) {
+                $customer->system_id = $request->system_id;
+            }
+            if ($request->has('code')) {
+                $customer->code = $request->code;
+            } else {
+                $customer->code = generateCustomerCode();
+            }
             if ($request->has(__('customers.form_input.address.phone'))) {
                 $customer->phone = $request[__('customers.form_input.address.phone')];
             }
@@ -373,7 +380,13 @@ class CustomerRepository
             $customer->created_by = $this->me->id;
             $customer->active_at = Carbon::now();
             $customer->saveOrFail();
-            $customer->due_at = generateCompanyExpired($customer->active_at,$customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate);
+            if ($request->has('due_at')) {
+                $customer->due_at = $request->due_at;
+            } else {
+                if ($customer->profileObj->limit_rate > 0 && $customer->profileObj->limit_rate_unit != null) {
+                    $customer->due_at = generateCompanyExpired($customer->active_at,$customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate);
+                }
+            }
             $customer->saveOrFail();
 
             if ($request->has(__('customers.form_input.service.input'))) {

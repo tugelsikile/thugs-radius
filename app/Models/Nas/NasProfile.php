@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed $type
  * @property mixed $id
  * @property mixed $dns_servers
+ * @method static where(string $string, $id)
  */
 class NasProfile extends Model
 {

@@ -19,7 +19,7 @@ object-assign
  */
 
 /*!
-* sweetalert2 v11.7.12
+* sweetalert2 v11.7.16
 * Released under the MIT License.
 */
 

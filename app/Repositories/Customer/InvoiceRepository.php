@@ -156,9 +156,16 @@ class InvoiceRepository
             $billPeriod = Carbon::parse($request[__('invoices.form_input.bill_period')]);
             $invoice = new CustomerInvoice();
             $invoice->id = Uuid::uuid4()->toString();
-            $orderId = mt_rand(1111111111,9999999999);
-            while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
+            if ($request->has('system_id')) {
+                $invoice->system_id = $request->system_id;
+            }
+            if ($request->has('order_id')) {
+                $orderId = $request->order_id;
+            } else {
                 $orderId = mt_rand(1111111111,9999999999);
+                while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
+                    $orderId = mt_rand(1111111111,9999999999);
+                }
             }
             $invoice->order_id = $orderId;
             $invoice->customer = $request[__('customers.form_input.name')];
@@ -236,6 +243,9 @@ class InvoiceRepository
                     } else {
                         $payment = new CustomerInvoicePayment();
                         $payment->id = Uuid::uuid4()->toString();
+                        if ($request->has('system_id')) {
+                            $payment->system_id = $request->system_id;
+                        }
                         $payment->invoice = $invoice->id;
                         $payment->code = generateCustomerPaymentCode(Carbon::parse($item[__('invoices.payments.form_input.payment.date')]));
                         $payment->created_by = $this->me->id;

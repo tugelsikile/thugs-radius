@@ -139,6 +139,12 @@ class ProfileRepository
         try {
             new SwitchDB();
             $profile = new NasProfile();
+            if ($request->has('system_id')) {
+                $profile->system_id = $request->system_id;
+            }
+            if ($request->has('package_id')) {
+                $profile->system_package = $request->package_id;
+            }
             $profile->id = Uuid::uuid4()->toString();
             $profile->is_additional = $request[__('profiles.form_input.is_additional')] == 1;
             if ($request[__('profiles.form_input.is_additional')] == 0) { //is not additional

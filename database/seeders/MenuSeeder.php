@@ -84,6 +84,10 @@ class MenuSeeder extends Seeder
                 (object) [ 'name' => 'Pajak', 'route' => 'clients.configs.taxes', 'description' => 'Manage Jenis Pajak', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-archway', 'lang' => 'taxes.labels.menu' ],
             ])
         ]);
+        $requests->push((object) [
+            'name' => 'Backup', 'route' => 'clients.backup', 'description' => 'backup.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-hdd', 'lang' => 'backup.labels.menu',
+            'childrens' => collect()
+        ]);
 
         $this->command->getOutput()->progressStart($requests->count());
         foreach ($requests as $order => $request) {

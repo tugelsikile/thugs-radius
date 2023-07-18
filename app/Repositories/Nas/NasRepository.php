@@ -174,7 +174,11 @@ class NasRepository
             new SwitchDB();
             $me = auth()->guard('api')->user();
             $nas = new Nas();
-            $nas->id = Uuid::uuid4()->toString();
+            if ($request->has('default_id')) {
+                $nas->id = $request->default_id;
+            } else {
+                $nas->id = Uuid::uuid4()->toString();
+            }
             $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->type = 'other';

@@ -22,11 +22,11 @@ export const sanitizeMessage = (message) => {
 export const showPromise = (message, promise) => {
     toast.promise(promise, message,{autoClose : 2000, bodyClassName : 'text-xs'});
 }
-export const showError = (message) => {
-    toast.error(sanitizeMessage(message), { bodyClassName : 'text-xs'});
+export const showError = (message,autoClose = 2000) => {
+    toast.error(sanitizeMessage(message), { bodyClassName : 'text-xs', autoClose : autoClose});
 }
-export const showSuccess = (message) => {
-    toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs'});
+export const showSuccess = (message, autoClose = 2000) => {
+    toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs', autoClose : autoClose});
 }
 export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null,confirmText = null,cancelText = null) => {
     if (message === null) message = Lang.get('labels.confirm.message');

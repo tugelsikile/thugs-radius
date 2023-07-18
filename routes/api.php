@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\Client\CompanyConfigController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
@@ -95,6 +96,15 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
 });
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
+    Route::group(['prefix' => 'backups'], function () {
+        Route::any('/', [BackupController::class, 'crud']);
+        Route::group(['prefix' => 'import'], function () {
+            Route::any('/', [BackupController::class, 'import']);
+            Route::group(['prefix' => 'rst'],function () {
+                Route::any('/read', [BackupController::class, 'readRSTData']);
+            });
+        });
+    });
     Route::group(['prefix' => 'dashboards'],function () {
         Route::any('/server-statuses', [DashboardController::class, 'serverStatus']);
         Route::post('/online-customers', [DashboardController::class, 'onlineCustomer']);

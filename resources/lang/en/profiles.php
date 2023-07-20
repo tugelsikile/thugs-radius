@@ -52,7 +52,7 @@ return [
             'info_false' => 'This is not an additional service',
         ],
         'validity' => [
-            'rate' => 'Service Duration',
+            'rate' => 'Duration',
             'unit' => 'Service Duration Unit',
         ],
         'service_type' => 'Service Type',
@@ -70,7 +70,7 @@ return [
             'interface' => 'Interface',
         ],
         'customers' => [
-            'length' => 'Customers Count',
+            'length' => 'Cust. Count',
         ]
     ],
     'create' => [

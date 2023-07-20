@@ -52,7 +52,7 @@ return [
             'info_false' => 'Ini bukan layanan tambahan',
         ],
         'validity' => [
-            'rate' => 'Durasi Layanan',
+            'rate' => 'Durasi',
             'unit' => 'Jenis Durasi Layanan',
         ],
         'service_type' => 'Jenis Profile',
@@ -70,7 +70,7 @@ return [
             'interface' => 'Interface',
         ],
         'customers' => [
-            'length' => 'Jml. Pelanggan',
+            'length' => 'Jml. Pel.',
         ]
     ],
     'create' => [

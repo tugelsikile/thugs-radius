@@ -359,7 +359,7 @@ class RST
      * @return Collection
      * @throws Exception
      */
-    public function invoices($customers, bool $existOnly = false, int $limitCustomer = 0, int $limitInvoice = 0): Collection
+    public function invoices($customers, bool $existOnly = false, int $limitCustomer = 0, int $limitInvoice = 3): Collection
     {
         try {
             $response = collect();
@@ -371,7 +371,7 @@ class RST
                             break;
                         }
                     }
-                    $invoices = DB::connection("backup")->table("invoices")->where('customer', $customer->id);
+                    $invoices = DB::connection("backup")->table("invoices")->where('customer', $customer->id)->orderBy('date_invoice','desc');
                     if ($limitInvoice > 0) {
                         $invoices = $invoices->limit($limitInvoice);
                     }

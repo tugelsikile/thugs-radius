@@ -894,7 +894,7 @@ class ModalImportRST extends React.Component {
     handleLoopPayment() {
         let indexList = this.state.lists.labels.findIndex((f)=> f.value === 'payments');
         if (indexList >= 0) {
-            if (this.state.lists.labels[indexList - 1].data.filter((f) => f.value === null && f.system_customer !== null).length > 0) {
+            if (this.state.lists.labels[indexList - 1].data.filter((f) => f.value === null).length > 0) {
                 showError("Please complete previous lists");
             } else {
                 if (this.state.lists.labels[indexList].data.filter((f) => f.value === null).length > 0) {

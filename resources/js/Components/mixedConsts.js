@@ -431,31 +431,31 @@ export const siteData = async () => {
 export const customPreventDefault = (event) => {
     event.preventDefault();
 }
-export const responseMessage = (error) => {
+export const responseMessage = (error, autoClose = 5000) => {
     let message = Lang.get('messages.method');
     try {
         if (typeof error.response !== 'undefined') {
             switch (error.response.status) {
                 case 401 :
-                    showError("Unauthenticated");
+                    showError("Unauthenticated", autoClose);
                     logout();
                 break;
                 case 404 :
-                    showError(Lang.get('messages.404'));
+                    showError(Lang.get('messages.404'), autoClose);
                     break;
             }
             if (typeof error.response.data === 'undefined') {
-                showError(Lang.get('messages.undefined'));
+                showError(Lang.get('messages.undefined'), autoClose);
             } else if (typeof error.response.data.message === 'undefined') {
-                showError(Lang.get('messages.undefined'));
+                showError(Lang.get('messages.undefined'), autoClose);
             } else if (error.response.data.message.length > 0){
-                showError(error.response.data.message);
+                showError(error.response.data.message, autoClose);
             }
         } else {
-            showError(message);
+            showError(message, autoClose);
         }
     } catch (e) {
-        showError(e.message);
+        showError(e.message, autoClose);
     }
 }
 export const routerConnectionType = [

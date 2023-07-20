@@ -11,6 +11,7 @@ return [
             'id' => 'id_queue',
             'target' => 'target'
         ],
+        'upload' => 'upload_ke_mikrotik',
         'description' => 'keterangan_profile',
         'price' => 'harga_layanan',
         'limitation' => [

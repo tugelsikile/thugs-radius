@@ -427,7 +427,7 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('nas.pools.form_input.name'), form.name);
             formData.append(Lang.get('nas.pools.form_input.address.first'), form.first);
             formData.append(Lang.get('nas.pools.form_input.address.last'), form.last);
-            formData.append(Lang.get('nas.pools.form_input.upload'), '1');
+            formData.append(Lang.get('nas.pools.form_input.upload'), '0');
             let response = await crudProfilePools(formData);
             if (response.data.params === null) {
                 showError(response.data.message,500);
@@ -552,6 +552,7 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('companies.form_input.name'), this.props.user.meta.company.id);
             formData.append(Lang.get('profiles.form_input.price'), form.price);
             formData.append(Lang.get('profiles.form_input.name'), form.name);
+            formData.append(Lang.get('profiles.form_input.upload'), '0');
             //formData.append(Lang.get('profiles.form_input.address.subnet'), form.subnet);
             if (!form.additional) {
                 formData.append(Lang.get('nas.form_input.name'), form.nas);

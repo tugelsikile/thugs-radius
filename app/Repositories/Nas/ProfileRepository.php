@@ -97,30 +97,34 @@ class ProfileRepository
             $profile->price = $request[__('profiles.form_input.price')];
 
 
-            if ($profile->nasObj != null) {
-                switch ($profile->nasObj->method) {
-                    case 'ssl' :
-                        $ssl = new MiktorikSSL($profile->nasObj,'put');
-                        switch ($profile->type) {
-                            case 'pppoe' :
-                                $ssl->saveProfilePPPoE($profile, $defaultName);
+            if ($request->has(__('profiles.form_input.upload'))) {
+                if ($request[__('profiles.form_input.upload')] == 1) {
+                    if ($profile->nasObj != null) {
+                        switch ($profile->nasObj->method) {
+                            case 'ssl' :
+                                $ssl = new MiktorikSSL($profile->nasObj,'put');
+                                switch ($profile->type) {
+                                    case 'pppoe' :
+                                        $ssl->saveProfilePPPoE($profile, $defaultName);
+                                        break;
+                                    case 'hotspot' :
+                                        $ssl->saveProfileHotspot($profile, $defaultName);
+                                        break;
+                                }
                                 break;
-                            case 'hotspot' :
-                                $ssl->saveProfileHotspot($profile, $defaultName);
+                            case 'api' :
+                                $api = new MikrotikAPI($profile->nasObj);
+                                switch ($profile->type) {
+                                    case 'pppoe' :
+                                        $api->saveProfilePPPoE($profile, $defaultName);
+                                        break;
+                                    case 'hotspot' :
+                                        $api->saveProfileHotspot($profile, $defaultName);
+                                        break;
+                                }
                                 break;
                         }
-                        break;
-                    case 'api' :
-                        $api = new MikrotikAPI($profile->nasObj);
-                        switch ($profile->type) {
-                            case 'pppoe' :
-                                $api->saveProfilePPPoE($profile, $defaultName);
-                                break;
-                            case 'hotspot' :
-                                $api->saveProfileHotspot($profile, $defaultName);
-                                break;
-                        }
-                        break;
+                    }
                 }
             }
             $profile->saveOrFail();
@@ -187,30 +191,34 @@ class ProfileRepository
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->created_by = $this->me->id;
-            if ($profile->nasObj != null) {
-                switch ($profile->nasObj->method) {
-                    case 'ssl' :
-                        $ssl = new MiktorikSSL($profile->nasObj,'put');
-                        switch ($profile->type) {
-                            case 'pppoe' :
-                                $ssl->saveProfilePPPoE($profile, $profile->name);
+            if ($request->has(__('profiles.form_input.upload'))) {
+                if ($request[__('profiles.form_input.upload')] == 1) {
+                    if ($profile->nasObj != null) {
+                        switch ($profile->nasObj->method) {
+                            case 'ssl' :
+                                $ssl = new MiktorikSSL($profile->nasObj,'put');
+                                switch ($profile->type) {
+                                    case 'pppoe' :
+                                        $ssl->saveProfilePPPoE($profile, $profile->name);
+                                        break;
+                                    case 'hotspot' :
+                                        $ssl->saveProfileHotspot($profile, $profile->name);
+                                        break;
+                                }
                                 break;
-                            case 'hotspot' :
-                                $ssl->saveProfileHotspot($profile, $profile->name);
+                            case 'api' :
+                                $api = new MikrotikAPI($profile->nasObj);
+                                switch ($profile->type) {
+                                    case 'pppoe' :
+                                        $api->saveProfilePPPoE($profile, $profile->code);
+                                        break;
+                                    case 'hotspot' :
+                                        $api->saveProfileHotspot($profile, $profile->code);
+                                        break;
+                                }
                                 break;
                         }
-                        break;
-                    case 'api' :
-                        $api = new MikrotikAPI($profile->nasObj);
-                        switch ($profile->type) {
-                            case 'pppoe' :
-                                $api->saveProfilePPPoE($profile, $profile->code);
-                                break;
-                            case 'hotspot' :
-                                $api->saveProfileHotspot($profile, $profile->code);
-                                break;
-                        }
-                        break;
+                    }
                 }
             }
             $profile->saveOrFail();

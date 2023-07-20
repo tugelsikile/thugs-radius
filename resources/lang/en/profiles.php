@@ -11,6 +11,7 @@ return [
             'id' => 'queue_id',
             'target' => 'target'
         ],
+        'upload' => 'upload_to_mikrotik',
         'description' => 'service_description',
         'price' => 'service_price',
         'limitation' => [

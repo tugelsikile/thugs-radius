@@ -102,6 +102,7 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::any('/', [BackupController::class, 'import']);
             Route::group(['prefix' => 'rst'],function () {
                 Route::any('/read', [BackupController::class, 'readRSTData']);
+                Route::any('/branch', [BackupController::class, 'readRSTBranch']);
             });
         });
     });

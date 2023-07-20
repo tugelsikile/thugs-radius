@@ -124,19 +124,23 @@ function generateCompanyInvoicePaymentCode($tanggal): string
     }
     return Carbon::parse($tanggal)->format('Ymd') . Str::padLeft($length,4,'0');
 }
-function generateCustomerInvoiceCode(Carbon $billPeriod): string
+function generateCustomerInvoiceCode(Carbon $billPeriod, $random = false): string
 {
-    $length = CustomerInvoice::orderBy('code', 'desc')->whereMonth('bill_period', $billPeriod->format('m'))
-        ->whereYear('bill_period', $billPeriod->format('Y'))
-        ->withTrashed()
-        ->limit(1)->offset(0)->get('code');
-    if ($length->count() > 0) {
-        $length = $length->first();
-        $length = Str::substr($length,-5);
-        $length = (int) $length;
-        $length = $length + 1;
+    if ($random) {
+        $length = randomNumeric();
     } else {
-        $length = 1;
+        $length = CustomerInvoice::orderBy('code', 'desc')->whereMonth('bill_period', $billPeriod->format('m'))
+            ->whereYear('bill_period', $billPeriod->format('Y'))
+            ->withTrashed()
+            ->limit(1)->offset(0)->get('code');
+        if ($length->count() > 0) {
+            $length = $length->first();
+            $length = Str::substr($length,-5);
+            $length = (int) $length;
+            $length = $length + 1;
+        } else {
+            $length = 1;
+        }
     }
     return $billPeriod->format('Ym') . Str::padLeft($length,5,'0');
 }

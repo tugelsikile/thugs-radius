@@ -22,3 +22,10 @@ export const readDataRST = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const readBranchRST = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/backups/import/rst/branch", data : data
+    });
+    return Promise.resolve(request);
+}

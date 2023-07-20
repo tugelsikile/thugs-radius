@@ -22,6 +22,7 @@ return [
             'name' => 'additional_service_name',
             'delete' => 'delete_additional_service',
         ],
+        'paid_type' => 'paid_type',
         'taxes' => [
             'input' => 'tax',
             'id' => 'tax_data',

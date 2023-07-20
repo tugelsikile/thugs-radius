@@ -161,6 +161,9 @@ class InvoiceRepository
             }
             if ($request->has('order_id')) {
                 $orderId = $request->order_id;
+                while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
+                    $orderId = mt_rand(1111111111,9999999999);
+                }
             } else {
                 $orderId = mt_rand(1111111111,9999999999);
                 while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
@@ -169,13 +172,17 @@ class InvoiceRepository
             }
             $invoice->order_id = $orderId;
             $invoice->customer = $request[__('customers.form_input.name')];
-            $invoice->code = generateCustomerInvoiceCode($billPeriod);
             $invoice->bill_period = $billPeriod->format('Y-m-d');
             if ($request->has(__('invoices.form_input.note'))) {
                 $invoice->note = $request[__('invoices.form_input.note')];
             }
             $invoice->due_at = $billPeriod->addDays(5)->format('Y-m-d H:i:s');
             $invoice->created_by = $this->me->id;
+            $billCode = generateCustomerInvoiceCode($billPeriod);
+            while (CustomerInvoice::where('code', $billCode)->get('id')->count() > 0) {
+                $billCode = generateCustomerInvoiceCode($billPeriod,true);
+            }
+            $invoice->code = $billCode;
             $invoice->saveOrFail();
 
             if ($request->has(__('invoices.form_input.service.input'))) {
@@ -216,6 +223,9 @@ class InvoiceRepository
             }
             return $this->table(new Request(['id' => $invoice->id]))->first();
         } catch (Exception $exception) {
+            if (isset($invoice)) {
+                $invoice->forceDelete();
+            }
             throw new Exception($exception->getMessage(),500);
         }
     }

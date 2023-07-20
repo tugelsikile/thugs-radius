@@ -209,6 +209,9 @@ class CustomerRepository
             $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
+            if ($request->has(__('customers.form_input.paid_type'))) {
+                $customer->paid_type = $request[__('customers.form_input.paid_type')];
+            }
             if ($request->has(__('customers.form_input.address.phone'))) {
                 $customer->phone = $request[__('customers.form_input.address.phone')];
             } else {
@@ -352,6 +355,9 @@ class CustomerRepository
                 $customer->code = $request->code;
             } else {
                 $customer->code = generateCustomerCode();
+            }
+            if ($request->has(__('customers.form_input.paid_type'))) {
+                $customer->paid_type = $request[__('customers.form_input.paid_type')];
             }
             if ($request->has(__('customers.form_input.address.phone'))) {
                 $customer->phone = $request[__('customers.form_input.address.phone')];

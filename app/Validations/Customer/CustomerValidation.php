@@ -116,6 +116,7 @@ class CustomerValidation
             $valid = Validator::make($request->all(),[
                 __('customers.form_input.id') => 'required|exists:customers,id',
                 __('nas.form_input.name') => 'required|exists:nas,id',
+                __('customers.form_input.paid_type') => 'nullable',
                 __('profiles.form_input.name') => 'required|exists:nas_profiles,id',
                 __('customers.form_input.type') => 'required|in:hotspot,pppoe',
                 __('customers.form_input.name') => 'required|string|min:1|max:199',
@@ -183,6 +184,7 @@ class CustomerValidation
             $valid = Validator::make($request->all(),[
                 __('nas.form_input.name') => 'required|exists:nas,id',
                 __('profiles.form_input.name') => 'required|exists:nas_profiles,id',
+                __('customers.form_input.paid_type') => 'nullable',
                 __('customers.form_input.type') => 'required|in:hotspot,pppoe',
                 __('customers.form_input.name') => 'required|string|min:1|max:199',
                 __('customers.form_input.address.street') => 'nullable',

@@ -67,10 +67,9 @@ mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');
 mix.js('resources/js/src/clients/nas/profiles/pools.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/nas/profiles/bandwidths.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/nas/profiles/index.js','public/js/clients/nas/profiles');
- */
-
 mix.js('resources/js/src/clients/customers/index.js','public/js/clients/customers');
-/*
+*/
+
 mix.js('resources/js/src/clients/customers/pppoe.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/customers/hotspot.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/customers');

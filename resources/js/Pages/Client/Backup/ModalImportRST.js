@@ -1,8 +1,14 @@
 import React from "react";
 import {Dialog, DialogContent} from "@mui/material";
 import {ModalFooter, ModalHeader} from "../../../Components/ModalComponent";
-import {formatLocaleString, randomString, responseMessage, subnet2Mask} from "../../../Components/mixedConsts";
-import {readDataRST} from "../../../Services/BackupService";
+import {
+    formatLocaleString,
+    FormControlSMReactSelect,
+    randomString,
+    responseMessage,
+    subnet2Mask
+} from "../../../Components/mixedConsts";
+import {readBranchRST, readDataRST} from "../../../Services/BackupService";
 import {showError, showSuccess} from "../../../Components/Toaster";
 import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../Services/NasService";
 import {ButtonPlay, GetLocalCounter} from "./Mixed";
@@ -11,6 +17,7 @@ import {faCircleNotch, faPlay} from "@fortawesome/free-solid-svg-icons";
 import {crudCustomerInvoicePayments, crudCustomerInvoices, crudCustomers} from "../../../Services/CustomerService";
 import moment from "moment/moment";
 import {sumGrandTotalInvoice, sumGrandTotalInvoiceForm, sumPaymentInvoiceForm} from "../Customer/Invoice/Tools/Mixed";
+import Select from "react-select";
 
 // noinspection DuplicatedCode,JSIgnoredPromiseFromCall
 class ModalImportRST extends React.Component {
@@ -19,10 +26,13 @@ class ModalImportRST extends React.Component {
         this.state = {
             loading : false,
             form : {
-                hostname : '', port : 3306, id : null,
-                user : '', pass : '', name : ''
+                hostname : '127.0.0.1', port : 3306, id : null,
+                user : 'root', pass : '', name : 'rstnet_sistem',
+                branch : null,
             },
+            branches : [],
             lists : {
+                process : 0, max : 0,
                 labels : [
                     //{ value : 'branches', label : 'Cabang', data : [], current : [], handle : null, loading : false, process : 0, max : 0 },
                     { value : 'nas', label : Lang.get('nas.labels.menu'), data : [], current : [], handle : ()=> this.handleLoopNas(), loading : false, process : 0, max : 0, errors : '', },
@@ -46,6 +56,13 @@ class ModalImportRST extends React.Component {
         this.handleLoopPackage = this.handleLoopPackage.bind(this);
         this.handleLoopInvoice = this.handleLoopInvoice.bind(this);
         this.handleLoopPayment = this.handleLoopPayment.bind(this);
+        this.handleSelect = this.handleSelect.bind(this);
+        this.handleReadBranch = this.handleReadBranch.bind(this);
+    }
+    handleSelect(event) {
+        let form = this.state.form;
+        form.branch = event;
+        this.setState({form});
     }
     handleChange(event) {
         let form = this.state.form;
@@ -83,7 +100,11 @@ class ModalImportRST extends React.Component {
                                     lists.labels[indexList].max = 0;
                                     this.setState({lists}, () => {
                                         if (!lists.labels[indexList].loading) {
-                                            this.handleSave();
+                                            let next = null;
+                                            if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                next = lists.labels[indexList + 1].value;
+                                            }
+                                            this.handleSave(null, next);
                                         }
                                     });
                                 }
@@ -96,7 +117,11 @@ class ModalImportRST extends React.Component {
                                     lists.labels[indexList].max = 0;
                                     this.setState({lists}, () => {
                                         if (!lists.labels[indexList].loading) {
-                                            this.handleSave();
+                                            let next = null;
+                                            if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                next = lists.labels[indexList + 1].value;
+                                            }
+                                            this.handleSave(null, next);
                                         }
                                     });
                                 }
@@ -117,18 +142,19 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('nas.form_input.secret'), form.secret);
             formData.append(Lang.get('nas.form_input.method'), "api");
             formData.append(Lang.get('nas.form_input.ip'), form.ip);
-            formData.append(Lang.get('nas.form_input.domain'), form.domain);
             formData.append(Lang.get('nas.form_input.user'), form.user);
             formData.append(Lang.get('nas.form_input.pass'), form.pass);
             formData.append(Lang.get('nas.form_input.pass_confirm'), form.pass);
             let response = await crudNas(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (e) {
-            //responseMessage(e);
+            responseMessage(e,500);
             return null;
         }
     }
@@ -252,7 +278,11 @@ class ModalImportRST extends React.Component {
                                             }
                                             this.setState({lists}, () => {
                                                 if (!lists.labels[indexList].loading) {
-                                                    this.handleSave();
+                                                    let next = null;
+                                                    if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                        next = lists.labels[indexList + 1].value;
+                                                    }
+                                                    this.handleSave(null, next);
                                                 }
                                             });
                                         })
@@ -265,7 +295,11 @@ class ModalImportRST extends React.Component {
                                             }
                                             this.setState({lists}, () => {
                                                 if (!lists.labels[indexList].loading) {
-                                                    this.handleSave();
+                                                    let next = null;
+                                                    if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                        next = lists.labels[indexList + 1].value;
+                                                    }
+                                                    this.handleSave(null, next);
                                                 }
                                             });
                                         })
@@ -297,12 +331,14 @@ class ModalImportRST extends React.Component {
 
             let response = await crudProfileBandwidth(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (e) {
-            responseMessage(e);
+            responseMessage(e,500);
             return null;
         }
     }
@@ -346,7 +382,11 @@ class ModalImportRST extends React.Component {
                                                 lists.labels[indexList].max = 0;
                                                 this.setState({lists}, () => {
                                                     if (!lists.labels[indexList].loading) {
-                                                        this.handleSave();
+                                                        let next = null;
+                                                        if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                            next = lists.labels[indexList + 1].value;
+                                                        }
+                                                        this.handleSave(null, next);
                                                     }
                                                 });
                                             }
@@ -359,7 +399,11 @@ class ModalImportRST extends React.Component {
                                                 lists.labels[indexList].max = 0;
                                                 this.setState({lists}, () => {
                                                     if (!lists.labels[indexList].loading) {
-                                                        this.handleSave();
+                                                        let next = null;
+                                                        if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                            next = lists.labels[indexList + 1].value;
+                                                        }
+                                                        this.handleSave(null, next);
                                                     }
                                                 });
                                             }
@@ -386,12 +430,14 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('nas.pools.form_input.upload'), '1');
             let response = await crudProfilePools(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (e) {
-            //responseMessage(e);
+            responseMessage(e,500);
             return null;
         }
     }
@@ -461,7 +507,11 @@ class ModalImportRST extends React.Component {
                                             lists.labels[indexList].max = 0;
                                             this.setState({lists}, () => {
                                                 if (!lists.labels[indexList].loading) {
-                                                    this.handleSave();
+                                                    let next = null;
+                                                    if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                        next = lists.labels[indexList + 1].value;
+                                                    }
+                                                    this.handleSave(null, next);
                                                 }
                                             });
                                         }
@@ -474,7 +524,11 @@ class ModalImportRST extends React.Component {
                                             lists.labels[indexList].max = 0;
                                             this.setState({lists}, () => {
                                                 if (!lists.labels[indexList].loading) {
-                                                    this.handleSave();
+                                                    let next = null;
+                                                    if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                        next = lists.labels[indexList + 1].value;
+                                                    }
+                                                    this.handleSave(null, next);
                                                 }
                                             });
                                         }
@@ -517,12 +571,14 @@ class ModalImportRST extends React.Component {
 
             let response = await crudProfile(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (e) {
-            //responseMessage(e);
+            responseMessage(e,500);
             return null;
         }
     }
@@ -575,7 +631,11 @@ class ModalImportRST extends React.Component {
                                     lists.labels[indexList].max = 0;
                                     this.setState({lists}, () => {
                                         if (!lists.labels[indexList].loading) {
-                                            this.handleSave();
+                                            let next = null;
+                                            if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                next = lists.labels[indexList + 1].value;
+                                            }
+                                            this.handleSave(null, next);
                                         }
                                     });
                                 }
@@ -588,7 +648,11 @@ class ModalImportRST extends React.Component {
                                     lists.labels[indexList].max = 0;
                                     this.setState({lists}, () => {
                                         if (!lists.labels[indexList].loading) {
-                                            this.handleSave();
+                                            let next = null;
+                                            if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                next = lists.labels[indexList + 1].value;
+                                            }
+                                            this.handleSave(null, next);
                                         }
                                     });
                                 }
@@ -621,6 +685,7 @@ class ModalImportRST extends React.Component {
                                 type : item.nas_customer.type === 'PPOE' ? 'pppoe' : 'hotspot',
                                 name : item.name,
                                 address : item.address,
+                                paid_type : item.nas_customer.paid_type.toLowerCase(),
                                 email : null,
                                 village : item.village_obj === null ? null : item.village_obj.code,
                                 district : item.district_obj === null ? null : item.district_obj.code,
@@ -657,7 +722,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -670,7 +739,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -692,6 +765,7 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('customers.form_input.type'), form.type);
             formData.append(Lang.get('customers.form_input.name'), form.name);
             formData.append(Lang.get('customers.form_input.address.street'), form.address);
+            formData.append(Lang.get('customers.form_input.paid_type'), form.paid_type);
             if (form.due_at !== null) formData.append('due_at', form.due_at);
             if (form.email !== null) formData.append(Lang.get('customers.form_input.email'), form.email);
             if (form.village !== null) formData.append(Lang.get('customers.form_input.address.village'), form.village);
@@ -708,29 +782,31 @@ class ModalImportRST extends React.Component {
 
             let response = await crudCustomers(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (e) {
-            console.log(e);
+            responseMessage(e,500);
             return null;
         }
     }
     handleLoopInvoice() {
         let indexList = this.state.lists.labels.findIndex((f)=> f.value === 'invoices');
         if (indexList >= 0) {
-            if (this.state.lists.labels[indexList - 1].data.filter((f) => f.value === null && f.main_service !== null).length > 0) {
+            if (this.state.lists.labels[indexList - 1].data.filter((f) => f.value === null).length > 0) {
                 showError("Please complete previous lists");
             } else {
-                if (this.state.lists.labels[indexList].data.filter((f) => f.value === null && f.system_customer !== null && f.system_package !== null).length > 0) {
+                if (this.state.lists.labels[indexList].data.filter((f) => f.value === null).length > 0) {
                     let lists = this.state.lists;
                     lists.labels[indexList].process = 0;
-                    lists.labels[indexList].max = lists.labels[indexList].data.filter((f) => f.value === null && f.system_customer !== null && f.system_package !== null).length;
+                    lists.labels[indexList].max = lists.labels[indexList].data.filter((f) => f.value === null).length;
                     lists.labels[indexList].loading = true;
                     this.setState({lists});
-                    this.state.lists.labels[indexList].data.filter((f) => f.value === null && f.system_customer !== null  && f.system_package !== null).map(async (item, index) => {
-                        if (item.value === null && item.system_customer !== null  && item.system_package !== null) {
+                    this.state.lists.labels[indexList].data.filter((f) => f.value === null).map(async (item, index) => {
+                        if (item.value === null) {
                             let formInvoice = {
                                 id: item.id,
                                 bill_period: item.date_invoice,
@@ -757,7 +833,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -770,7 +850,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -796,13 +880,14 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('invoices.form_input.total'), form.total);
             let response = await crudCustomerInvoices(formData);
             if (response.data.params === null) {
+                showError(response.data.message,500);
                 return null;
             } else {
-                showSuccess(response.data.message,1000);
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (err) {
-            responseMessage(err);
+            responseMessage(err,500);
             return null;
         }
     }
@@ -847,7 +932,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -860,7 +949,11 @@ class ModalImportRST extends React.Component {
                                         lists.labels[indexList].max = 0;
                                         this.setState({lists}, () => {
                                             if (!lists.labels[indexList].loading) {
-                                                this.handleSave();
+                                                let next = null;
+                                                if (typeof lists.labels[indexList + 1] !== 'undefined') {
+                                                    next = lists.labels[indexList + 1].value;
+                                                }
+                                                this.handleSave(null, next);
                                             }
                                         });
                                     }
@@ -885,29 +978,63 @@ class ModalImportRST extends React.Component {
             formData.append(Lang.get('invoices.payments.form_input.total.payment'), form.total);
             let response = await crudCustomerInvoicePayments(formData);
             if (response.data.params === null) {
-                showError(response.data.message);
+                showError(response.data.message,500);
                 return null;
             } else {
-                showSuccess(response.data.message);
+                //showSuccess(response.data.message,500);
                 return response.data.params;
             }
         } catch (err) {
-            responseMessage(err);
+            responseMessage(err,500);
             return null;
         }
     }
-    async handleSave(e = null) {
-        let lists = this.state.lists;
+    async loadLists(labels) {
+        if (this.state.form.branch !== null) {
+            try {
+                const formData = new FormData();
+                formData.append('hostname', this.state.form.hostname);
+                formData.append('port', this.state.form.port);
+                formData.append('user', this.state.form.user);
+                formData.append('db_name', this.state.form.name);
+                formData.append('pass', this.state.form.pass);
+                formData.append('type', labels);
+                formData.append('branch', this.state.form.branch.value);
+                let response = await readDataRST(formData);
+                if (response.data.params === null) {
+                    return null;
+                    //this.setState({loading:false});
+                    //showError(response.data.message);
+                } else {
+                    //console.log(response.data.params);
+                    return response.data.params;
+                    /*let index;
+                    response.data.params.map((item)=>{
+                        index = lists.labels.findIndex((f)=> f.value === item.value);
+                        if (index >= 0) {
+                            lists.labels[index].data = item.data;
+                            lists.labels[index].process = 0;
+                            lists.labels[index].max = 0;
+                        }
+                    });
+                    this.setState({loading:false,lists},()=>{
+                        /!*this.handleLoopNas();
+                        this.handleLoopProfile();*!/
+                    });*/
+                    //console.log(response.data.params);
+                }
+            } catch (e) {
+                responseMessage(e);
+                return null;
+                //this.setState({loading:false});
+            }
+        }
+    }
+    async handleReadBranch(e = null) {
         if (e !== null) {
             e.preventDefault();
-            lists.labels.map((item,index)=>{
-                lists.labels[index].data = [];
-                lists.labels[index].current = [];
-                lists.labels[index].process = 0;
-                lists.labels[index].max = 0;
-            })
         }
-        this.setState({loading:true,lists});
+        this.setState({loading:true});
         try {
             const formData = new FormData();
             formData.append('hostname', this.state.form.hostname);
@@ -915,29 +1042,110 @@ class ModalImportRST extends React.Component {
             formData.append('user', this.state.form.user);
             formData.append('db_name', this.state.form.name);
             formData.append('pass', this.state.form.pass);
-            let response = await readDataRST(formData);
+            let response = await readBranchRST(formData);
             if (response.data.params === null) {
                 this.setState({loading:false});
                 showError(response.data.message);
             } else {
-                let index;
-                response.data.params.map((item)=>{
-                    index = lists.labels.findIndex((f)=> f.value === item.value);
-                    if (index >= 0) {
-                        lists.labels[index].data = item.data;
-                        lists.labels[index].process = 0;
-                        lists.labels[index].max = 0;
-                    }
-                });
-                this.setState({loading:false,lists},()=>{
-                    /*this.handleLoopNas();
-                    this.handleLoopProfile();*/
-                });
-                console.log(response.data.params);
+                this.setState({loading:false,branches:response.data.params});
             }
         } catch (e) {
             this.setState({loading:false});
             responseMessage(e);
+        }
+    }
+    async handleSave(e = null, listValue = null) {
+        if (e !== null) {
+            e.preventDefault();
+        }
+        if (this.state.form.branch === null) {
+            showError("Please select branch");
+        } else {
+            let lists = this.state.lists;
+            if (listValue !== null) {
+                let index = lists.labels.findIndex((f)=> f.value === listValue);
+                if (index >= 0) {
+                    lists.process = 0;
+                    lists.max = 1;
+                    this.setState({loading:true,lists});
+                    lists.labels[index].loading = true;
+                    this.setState({lists});
+                    this.loadLists(listValue)
+                        .then((response)=>{
+                            if (response !== null) {
+                                lists.labels[index].loading = false;
+                                lists.labels[index].data = response.data;
+                                this.setState({lists});
+                            }
+                        })
+                        .catch(()=>{
+                            lists.process++;
+                            lists.labels[index].loading = false;
+                            if (lists.process >= lists.max) {
+                                lists.process = 0;
+                                lists.max = 0;
+                                this.setState({loading:false});
+                            }
+                            this.setState({lists});
+                        })
+                        .finally(()=>{
+                            lists.process++;
+                            lists.labels[index].loading = false;
+                            if (lists.process >= lists.max) {
+                                lists.process = 0;
+                                lists.max = 0;
+                                this.setState({loading:false});
+                            }
+                            this.setState({lists});
+                        });
+                }
+            } else {
+                lists.max = lists.labels.length;
+                this.setState({loading:true,lists});
+                lists.labels.map((item,index)=>{
+                    if (lists.labels[index].data.filter((f)=> f.value !== null).length < lists.labels[index].data.length || lists.labels[index].data.length === 0 || ! lists.labels[index].loading) {
+                        lists.labels[index].loading = true;
+                        this.setState({lists});
+                        this.loadLists(item.value)
+                            .then((response)=>{
+                                if (response !== null) {
+                                    lists.labels[index].loading = false;
+                                    lists.labels[index].data = response.data;
+                                    this.setState({lists});
+                                }
+                            })
+                            .catch(()=>{
+                                lists.process++;
+                                lists.labels[index].loading = false;
+                                if (lists.process >= lists.max) {
+                                    lists.process = 0;
+                                    lists.max = 0;
+                                    this.setState({loading:false});
+                                }
+                                this.setState({lists});
+                            })
+                            .finally(()=>{
+                                lists.process++;
+                                lists.labels[index].loading = false;
+                                if (lists.process >= lists.max) {
+                                    lists.process = 0;
+                                    lists.max = 0;
+                                    this.setState({loading:false});
+                                }
+                                this.setState({lists});
+                            })
+                    } else {
+                        lists.process++;
+                        lists.labels[index].loading = false;
+                        if (lists.process >= lists.max) {
+                            lists.process = 0;
+                            lists.max = 0;
+                            this.setState({loading:false});
+                        }
+                        this.setState({lists});
+                    }
+                });
+            }
         }
     }
 
@@ -945,7 +1153,7 @@ class ModalImportRST extends React.Component {
         return (
             <React.Fragment>
                 <Dialog fullWidth maxWidth="xl" scroll="body" open={this.props.open} onClose={()=>this.state.loading || this.state.lists.labels.filter((f)=> f.loading).length > 0 ? null : this.props.handleClose()}>
-                    <form onSubmit={this.handleSave}>
+                    <form onSubmit={this.state.branches.length === 0 ? this.handleReadBranch : this.handleSave}>
                         <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('backup.labels.menu')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('backup.labels.menu')})}}/>
                         <DialogContent dividers>
                             <div className="row">
@@ -980,6 +1188,17 @@ class ModalImportRST extends React.Component {
                                             <input className="form-control form-control-sm text-xs" value={this.state.form.name} name="name" onChange={this.handleChange} disabled={this.state.loading}/>
                                         </div>
                                     </div>
+                                    <div className="form-group row">
+                                        <label className="col-md-4 col-form-label text-xs">CABANG RST</label>
+                                        <div className="col-md-8">
+                                            <Select options={this.state.branches}
+                                                    value={this.state.form.branch}
+                                                    onChange={this.handleSelect}
+                                                    isLoading={this.state.loading} isDisabled={this.state.loading}
+                                                    menuPlacement="top" maxMenuHeight={150}
+                                                    styles={FormControlSMReactSelect}/>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="col-md-8">
                                     <table className="table table-sm table-striped">
@@ -1004,7 +1223,7 @@ class ModalImportRST extends React.Component {
                                                     {item.max === 0 ? '-' :
                                                         <div className="progress">
                                                             <div className="progress-bar bg-primary progress-bar-striped" role="progressbar" aria-valuenow={(item.process / item.max) * 100} aria-valuemin="0" aria-valuemax="100" style={{width:( (item.process / item.max) * 100 )+'%'}}>
-                                                                <span style={{fontSize:'8px'}}>{formatLocaleString((item.process / item.max) * 100,2)}%</span>
+                                                                <span style={{fontSize:'8px'}}>{formatLocaleString((item.process / item.max) * 100,2)} %</span>
                                                             </div>
                                                         </div>
                                                     }
@@ -1021,11 +1240,20 @@ class ModalImportRST extends React.Component {
                                 </div>
                             </div>
                         </DialogContent>
-                        <ModalFooter
-                            form={this.state.form} handleClose={()=>this.props.handleClose()}
-                            loading={this.state.loading || this.state.lists.labels.filter((f)=> f.loading).length > 0}
-                            pendings={{create:Lang.get('labels.read.pending',{Attribute:'Database'}),update:Lang.get('labels.read.pending',{Attribute:'Database'})}}
-                            langs={{create:Lang.get('labels.read.submit',{Attribute:'Database'}),update:Lang.get('labels.read.submit',{Attribute:'Database'})}}/>
+                        {
+                            this.state.branches.length === 0 ?
+                                <ModalFooter
+                                    form={this.state.form} handleClose={()=>this.props.handleClose()}
+                                    loading={this.state.loading || this.state.lists.labels.filter((f)=> f.loading).length > 0}
+                                    pendings={{create:Lang.get('labels.read.pending',{Attribute:'Database'}),update:Lang.get('labels.read.pending',{Attribute:'Database'})}}
+                                    langs={{create:Lang.get('labels.read.submit',{Attribute:'Database'}),update:Lang.get('labels.read.submit',{Attribute:'Database'})}}/>
+                                :
+                                <ModalFooter
+                                    form={this.state.form} handleClose={()=>this.props.handleClose()}
+                                    loading={this.state.loading || this.state.lists.labels.filter((f)=> f.loading).length > 0}
+                                    pendings={{create:Lang.get('labels.read.pending',{Attribute:'Cabang'}),update:Lang.get('labels.read.pending',{Attribute:'Cabang'})}}
+                                    langs={{create:Lang.get('labels.read.submit',{Attribute:'Cabang'}),update:Lang.get('labels.read.submit',{Attribute:'Cabang'})}}/>
+                        }
                     </form>
                 </Dialog>
             </React.Fragment>

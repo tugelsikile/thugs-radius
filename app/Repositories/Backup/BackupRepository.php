@@ -5,45 +5,78 @@ namespace App\Repositories\Backup;
 use App\Helpers\RST\RST;
 use App\Helpers\SwitchDB;
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 
 class BackupRepository
 {
+    public function branch(Request $request) {
+        try {
+            $response = collect();
+            $branches = (new RST($request))->branches();
+            if ($branches->count() > 0) {
+                foreach ($branches as $branch) {
+                    $response->push((object) [
+                        'value' => $branch->id,
+                        'label' => $branch->name,
+                    ]);
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return object
-     * @throws Exception
+     * @throws GuzzleException
      */
     public function readRSTData(Request $request): object
     {
         try {
-            $rst = (new RST($request));
-            $branches = $rst->branches();
-            $nas = $rst->nas($branches);
-            $bandwidths = $rst->bandwidths($nas);
-            $profiles = $rst->profiles($nas);
-            $packages = $rst->packages($nas);
-            $customers = $rst->customers($nas);
-            new SwitchDB();
-            $pools = $rst->pools($nas);
-            $invoices = $rst->invoices($branches);
-            $payments = $rst->payments($branches);
-            $response = collect();
-            //$response->push(['value' => 'branches', 'data' => $branches ]);
-            $response->push(['value' => 'nas', 'data' => $nas ]);
-            $response->push(['value' => 'bandwidths', 'data' => $bandwidths ]);
-            $response->push(['value' => 'pools', 'data' => $pools ]);
-            $response->push(['value' => 'profiles', 'data' => $profiles ]);
-            $response->push(['value' => 'packages', 'data' => $packages ]);
-            $response->push(['value' => 'customers', 'data' => $customers ]);
-            $response->push(['value' => 'invoices', 'data' => $invoices ]);
-            $response->push(['value' => 'payments', 'data' => $payments ]);
+            $response = (object) ['data' => collect()];
+            if ($request->has('type')) {
+                if (in_array($request->type,['nas','bandwidths','pools','profiles','packages','customers','invoices','payments'])) {
+                    $rst = (new RST($request));
+                    //$branches = $rst->branches();
+                    $nas = $rst->nas($request);
+                    switch ($request->type) {
+                        default:
+                        case 'nas':
+                            $response->data = $nas;
+                        break;
+                        case 'bandwidths':
+                            $response->data = $rst->bandwidths($nas);
+                            break;
+                        case 'pools':
+                            new SwitchDB();
+                            $response->data = $rst->pools($nas);
+                            break;
+                        case 'profiles':
+                            $response->data = $rst->profiles($nas);
+                            break;
+                        case 'packages':
+                            $response->data = $rst->packages($nas);
+                            break;
+                        case 'customers':
+                            $response->data = $rst->customers($nas);
+                            break;
+                        case 'invoices':
+                            new SwitchDB();
+                            $response->data = $rst->invoices($rst->customers($nas,true));
+                            break;
+                        case 'payments':
+                            new SwitchDB();
+                            $response->data = $rst->payments($rst->invoices($rst->customers($nas,true),true));
+                            break;
+                        case 'vouchers':
+                            $response->data = $rst->vouchers($nas);
+                            break;
+                    }
+                }
+            }
             return $response;
-            /*return (object) [
-                'branches' => $branches,
-                'nas' => $nas,
-                'profiles' => $profiles,
-            ];*/
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

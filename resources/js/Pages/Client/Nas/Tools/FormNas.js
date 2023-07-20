@@ -25,7 +25,7 @@ class FormNas extends React.Component {
             loading : false,
             form : {
                 id : null, company : null, name : '', description : '', domain : '',
-                ip : 'https://', port : 443, type : routerConnectionType[0],
+                ip : '127.0.0.1', port : 8728, type : routerConnectionType[0],
                 url : '',
                 pass : {
                     secret : { value : '', type : 'password' },
@@ -50,7 +50,7 @@ class FormNas extends React.Component {
         let form = this.state.form;
         if (!props.open) {
             form.id = null, form.company = null, form.name = '', form.description = '',
-                form.ip = '0.0.0.0', form.domain = 'https://', form.port = 443, form.type = routerConnectionType[0],
+                form.ip = '127.0.0.1', form.domain = 'https://', form.port = 8728, form.type = routerConnectionType[0],
                 form.pass.user.value = '', form.pass.user.type = 'password',
                 form.url = '', form.next = true,
                 form.pass.secret.value = '', form.pass.secret.type = 'password',

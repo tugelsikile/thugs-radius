@@ -50,7 +50,15 @@ class MainHeader extends React.Component {
     render() {
         return (
             <React.Fragment>
-                <ToastContainer theme="light" pauseOnFocusLoss autoClose={10000} position="top-right" closeOnClick/>
+                <ToastContainer
+                    draggable
+                    //pauseOnFocusLoss
+                    theme="light"
+                    autoClose={3000}
+                    //limit={5}
+                    position="bottom-right"
+                    newestOnTop={true}
+                    closeOnClick/>
 
                 <nav className="main-header navbar layout-navbar-fixed navbar-expand navbar-white navbar-light">
                     <ul className="navbar-nav">

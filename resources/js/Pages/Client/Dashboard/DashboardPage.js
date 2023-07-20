@@ -100,7 +100,7 @@ class DashboardPage extends React.Component {
         this.loadOnline().then(()=>{
             const intervalId = setInterval(()=>{
                 this.setState({intervalId},()=>this.loadOnline());
-            },10000);
+            },1800000000);
         });
     }
     handleChartOnline() {

@@ -277,7 +277,7 @@ class RST
                     }
                     if ($existOnly && $exists != null) {
                         $response->push($customer);
-                    } else {
+                    } elseif (!$existOnly) {
                         $nasCustomer = DB::connection("backup")->table("nas_customer")->where('customer', $customer->id)->first();
                         if ($nasCustomer != null) {
                             $customer->additional_service = null;
@@ -383,7 +383,7 @@ class RST
                             }
                             if ($existOnly && $exists != null) {
                                 $response->push($invoice);
-                            } else {
+                            } elseif (!$existOnly) {
                                 $customer = Customer::where('system_id', $invoice->customer)->select('id')->first();
                                 if ($customer != null) {
                                     $invoice->system_package = null;

@@ -7,6 +7,7 @@ use App\Helpers\SwitchDB;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BackupRepository
 {
@@ -78,6 +79,7 @@ class BackupRepository
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }

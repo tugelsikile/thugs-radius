@@ -18,7 +18,7 @@ export const GetLocalCounter = (props) => {
 }
 export const ButtonPlay = (props) => {
     return (
-        <button disabled={props.item.loading || props.loading} onClick={props.item.handle} type="button" className="btn btn-block btn-outline-primary btn-xs">
+        <button disabled={props.item.loading || props.loading || props.lists.labels.filter((f)=> f.loading).length > 0} onClick={props.item.handle} type="button" className="btn btn-block btn-outline-primary btn-xs">
             <FontAwesomeIcon icon={props.item.loading ? faCircleNotch : faPlay} spin={props.item.loading} size="xs"/>
         </button>
     )

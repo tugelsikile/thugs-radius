@@ -12,20 +12,21 @@ import {
     faUserTie,
     faWifi
 } from "@fortawesome/free-solid-svg-icons";
+import BtnSort from "../../../Auth/User/Tools/BtnSort";
 
 export const StatusCustomer = (props) => {
     let response = <span className="badge badge-secondary">{Lang.get('customers.labels.status.register')}</span>
     if (props.customer.meta.auth.type === 'voucher') {
         if (props.customer.meta.timestamps.active.at === null) {
-            response = <span className="badge badge-secondary">{Lang.get('customers.hotspot.labels.status.generated')}</span>
+            response = <span className="badge badge-secondary d-block py-2">{Lang.get('customers.hotspot.labels.status.generated')}</span>
         } else {
-            response = <span className="badge badge-secondary">{Lang.get('customers.hotspot.labels.status.used')}</span>
+            response = <span className="badge badge-secondary d-block py-2">{Lang.get('customers.hotspot.labels.status.used')}</span>
         }
     } else {
         if (props.customer.meta.timestamps.inactive.at !== null) {
-            response = <span className="badge badge-warning">{Lang.get('customers.labels.status.inactive')}</span>
+            response = <span className="badge badge-warning d-block py-2">{Lang.get('customers.labels.status.inactive')}</span>
         } else if (props.customer.meta.timestamps.active.at !== null) {
-            response = <span className="badge badge-success">{Lang.get('customers.labels.status.active')}</span>
+            response = <span className="badge badge-success d-block py-2">{Lang.get('customers.labels.status.active')}</span>
         }
     }
     return response;
@@ -43,11 +44,11 @@ export const DueAtCustomer = (props) => {
     let response = null;
     if (props.customer.meta.timestamps.active.at !== null) {
         if (props.customer.meta.timestamps.due.at === null) {
-            response = <span className="badge badge-primary">UNLIMITED</span>
+            response = <span className="badge badge-primary d-block py-2">UNLIMITED</span>
         } else if (moment().isAfter(moment(props.customer.meta.timestamps.due.at))){
-            response = <span className="badge badge-danger">{formatLocaleDate(props.customer.meta.timestamps.due.at)}</span>
+            response = <span className="badge badge-danger d-block py-2">{formatLocaleDate(props.customer.meta.timestamps.due.at)}</span>
         } else {
-            response = <span className="badge badge-success">{formatLocaleDate(props.customer.meta.timestamps.due.at)}</span>
+            response = <span className="badge badge-success d-block py-2">{formatLocaleDate(props.customer.meta.timestamps.due.at)}</span>
         }
     }
     return response;
@@ -78,9 +79,9 @@ export const PriceCustomerPage = (props) => {
 export const CustomerTypeIcon = (props) => {
     let response = null;
     switch (props.customer.meta.auth.type) {
-        case 'pppoe' : response = <FontAwesomeIcon className="text-muted" icon={faSign} title="PPPoE"/>; break;
-        case 'hotspot' : response = <FontAwesomeIcon className="text-muted" icon={faSignal} title="Hotspot"/>; break;
-        case 'voucher' : response = <FontAwesomeIcon className="text-muted" icon={faWifi} title="Voucher Hotspot"/>; break;
+        case 'pppoe' : response = <FontAwesomeIcon className="text-muted" size="xs" icon={faSign} title="PPPoE"/>; break;
+        case 'hotspot' : response = <FontAwesomeIcon className="text-muted" size="xs" icon={faSignal} title="Hotspot"/>; break;
+        case 'voucher' : response = <FontAwesomeIcon className="text-muted" size="xs" icon={faWifi} title="Voucher Hotspot"/>; break;
     }
     return response;
 }
@@ -408,3 +409,58 @@ export const listSeparator = [
     { value : '*', label : '*' },
     { value : '=', label : '=' },
 ];
+export const TableHeader = (props) => {
+    return (
+        <tr>
+            {props.customers.filtered.length > 0 &&
+                <th className="align-middle text-center pl-2" width={30}>
+                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
+                        <input id={props.type} data-id="" disabled={props.loadings.customers} onChange={props.onCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
+                        <label htmlFor={props.type} className="custom-control-label"/>
+                    </div>
+                </th>
+            }
+            <th className={props.customers.filtered.length > 0 ? "align-middle" : "align-middle pl-2"} width={80}>
+                <BtnSort sort="code"
+                         name={Lang.get('customers.labels.code')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={50}>
+                <BtnSort sort="type"
+                         name={Lang.get('customers.labels.type_short')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle">
+                <BtnSort sort="name"
+                         name={Lang.get('customers.labels.name')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={100}>
+                <BtnSort sort="nas"
+                         name={Lang.get('nas.labels.short_name')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={100}>
+                <BtnSort sort="profile"
+                         name={Lang.get('profiles.labels.short_name')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={110}>
+                <BtnSort sort="price"
+                         name={Lang.get('profiles.labels.price')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={100}>
+                <BtnSort sort="status" center={true}
+                         name={Lang.get('customers.labels.status.label')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle" width={150}>
+                <BtnSort sort="due"
+                         name={Lang.get('customers.labels.due.at')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
+            <th className="align-middle text-center pr-2 text-xs" width={50}>{Lang.get('messages.action')}</th>
+        </tr>
+    )
+}

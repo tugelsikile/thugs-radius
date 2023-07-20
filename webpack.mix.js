@@ -64,11 +64,11 @@ mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/taxes.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/nas/index.js','public/js/clients/nas');
-*/
-
 mix.js('resources/js/src/clients/nas/profiles/pools.js','public/js/clients/nas/profiles');
-/*
+ */
+
 mix.js('resources/js/src/clients/nas/profiles/bandwidths.js','public/js/clients/nas/profiles');
+/*
 mix.js('resources/js/src/clients/nas/profiles/index.js','public/js/clients/nas/profiles');
 mix.js('resources/js/src/clients/customers/index.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/customers/pppoe.js','public/js/clients/customers');

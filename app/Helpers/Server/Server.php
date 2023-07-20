@@ -17,14 +17,20 @@ class Server
     {
         try {
             $response = null;
-            $connection = (new SSHConnection())
-                ->to(env('MIX_DB_SSH_HOST'))
-                ->onPort(env('MIX_DB_SSH_PORT'))
-                ->as(env('MIX_DB_SSH_USER'))
-                ->withPassword(env('MIX_DB_SSH_PASS'))
-                ->connect();
-            if ($connection->isConnected()) {
-                $response = $connection->run($command)->getOutput();
+            if (env('MIX_DB_SSH_HOST') != null &&
+                env('MIX_DB_SSH_PORT') != null &&
+                env('MIX_DB_SSH_USER') != null &&
+                env('MIX_DB_SSH_PASS') != null
+            ) {
+                $connection = (new SSHConnection())
+                    ->to(env('MIX_DB_SSH_HOST'))
+                    ->onPort(env('MIX_DB_SSH_PORT'))
+                    ->as(env('MIX_DB_SSH_USER'))
+                    ->withPassword(env('MIX_DB_SSH_PASS'))
+                    ->connect();
+                if ($connection->isConnected()) {
+                    $response = $connection->run($command)->getOutput();
+                }
             }
             return $response;
         } catch (Exception $exception) {

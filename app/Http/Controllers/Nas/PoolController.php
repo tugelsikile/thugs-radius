@@ -37,17 +37,17 @@ class PoolController extends Controller
                 case 'put' :
                     $valid = $this->validation->create($request);
                     $params = $this->repository->create($valid);
-                    $code = 200; $message = __('nas.create.success');
+                    $code = 200; $message = __('labels.create.success',['Attribute' => __('nas.pools.labels.menu')]);
                     break;
                 case 'patch' :
                     $valid = $this->validation->update($request);
                     $params = $this->repository->update($valid);
-                    $code = 200; $message = __('nas.update.success');
+                    $code = 200; $message = __('labels.update.success',['Attribute' => __('nas.pools.labels.menu')]);
                     break;
                 case 'delete' :
                     $valid = $this->validation->delete($request);
                     $params = $this->repository->delete($valid);
-                    $code = 200; $message = __('nas.delete.success');
+                    $code = 200; $message = __('labels.delete.success',['Attribute' => __('nas.pools.labels.menu')]);
                     break;
             }
             return formatResponse($code, $message, $params);

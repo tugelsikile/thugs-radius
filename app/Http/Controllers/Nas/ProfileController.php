@@ -37,17 +37,17 @@ class ProfileController extends Controller
                 case 'put' :
                     $valid = $this->validation->create($request);
                     $params = $this->repository->create($valid);
-                    $code = 200; $message = __('profiles.create.success');
+                    $code = 200; $message = __('labels.create.success', ['Attribute' => __('profiles.labels.menu')]);
                     break;
                 case 'patch' :
                     $valid = $this->validation->update($request);
                     $params = $this->repository->update($valid);
-                    $code = 200; $message = __('profiles.update.success');
+                    $code = 200; $message = __('labels.update.success', ['Attribute' => __('profiles.labels.menu')]);
                     break;
                 case 'delete' :
                     $valid = $this->validation->delete($request);
                     $params = $this->repository->delete($valid);
-                    $code = 200; $message = __('profiles.delete.success');
+                    $code = 200; $message = __('labels.delete.success', ['Attribute' => __('profiles.labels.menu')]);
                     break;
             }
             return formatResponse($code, $message, $params);

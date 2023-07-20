@@ -577,7 +577,7 @@ class InvoicePage extends React.Component {
                                                    selected={this.state.invoices.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}
-                                                   filter={<FilterButton onClick={this.toggleFilter} loading={this.state.loadings.invoices}/>}
+                                                   filter={<FilterButton onReload={this.loadInvoices} onClick={this.toggleFilter} loading={this.state.loadings.invoices}/>}
                                                    others={[
                                                        {lang : Lang.get('invoices.generate.button'), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
                                                    ]}/>

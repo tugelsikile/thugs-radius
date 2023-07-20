@@ -764,7 +764,7 @@ class HotspotPage extends React.Component {
                                                    selected={this.state.customers.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}
-                                                   filter={<FilterButton onClick={this.toggleFilter} loading={this.state.loadings.customers}/>}
+                                                   filter={<FilterButton onReload={this.loadCustomers} onClick={this.toggleFilter} loading={this.state.loadings.customers}/>}
                                                    others={[
                                                        {lang : Lang.get('labels.generate.label',{Attribute:Lang.get('customers.hotspot.vouchers.menu')}), icon : faTicketAlt, handle : ()=>this.toggleGenerate() }
                                                    ]}/>

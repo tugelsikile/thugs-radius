@@ -212,10 +212,10 @@ export const TableOnlineCustomer = (props) => {
             </tr>
             </thead>
             <tbody>
-            {props.data.length === 0 ?
+            {props.data.filtered.length === 0 ?
                 <DataNotFound colSpan={8} message={Lang.get('labels.not_found',{Attribute:Lang.get('customers.labels.menu')})}/>
                 :
-                props.data.map((item,index)=>
+                props.data.filtered.map((item,index)=>
                     <tr key={item.meta.username}>
                         <td className="align-middle text-xs text-center pl-2">{index + 1}</td>
                         <td className="align-middle text-xs">{item.label}</td>

@@ -25,7 +25,9 @@ class DashboardPage extends React.Component {
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
             loadings : { privilege : false, site : false, nas : true, servers : true, online : true, expired : true, cards : true, payment_gateways : true },
-            privilege : null, menus : [], site : null, nas : [], servers : [], online : [], expired : [], payment_gateways : [],
+            privilege : null, menus : [], site : null, nas : [], servers : [],
+            online : { filtered : [], unfiltered : [], page : {value:1,label:1}, perpage : 20, },
+            expired : [], payment_gateways : [],
             cards : {customers:[],payments:[],vouchers:[],pendings:[]},
             filter : { keywords : '', sort : { by : 'type', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
             modal : {
@@ -97,15 +99,15 @@ class DashboardPage extends React.Component {
         clearInterval(this.state.intervalId);
     }
     refreshOnlineTimer() {
-        /*this.loadOnline().then(()=>{
+        this.loadOnline().then(()=>{
             const intervalId = setInterval(()=>{
                 this.setState({intervalId},()=>this.loadOnline());
             },1800000000);
-        });*/
+        });
         this.loadOnline();
     }
     handleChartOnline() {
-        if (this.state.online.length > 0) {
+        if (this.state.online.unfiltered.length > 0) {
             let index;
             let online = this.state.online;
             let chart_online_customer = this.state.chart_online_customer;
@@ -114,7 +116,11 @@ class DashboardPage extends React.Component {
             }
             chart_online_customer.labels.push(moment().format('mm:ss'));
             if (chart_online_customer.labels.length > 5) chart_online_customer.labels.splice(0,1);
-            online.map((item)=>{
+
+            let indexFirst = ( online.page.value - 1 ) * online.perpage;
+            let indexLast = online.page.value * online.perpage;
+            online.filtered = online.unfiltered.slice(indexFirst,indexLast);
+            online.filtered.map((item)=>{
                 index = chart_online_customer.customers.findIndex((f)=> f.customer === item.label);
                 if (index >= 0) {
                     chart_online_customer.customers[index].datasets[0].data.push(item.meta.bytes.split('/').length === 2 ? parseInt(item.meta.bytes.split('/')[0]) : 0 );
@@ -161,7 +167,7 @@ class DashboardPage extends React.Component {
                     });
                 }
             });
-            this.setState({chart_online_customer});
+            this.setState({chart_online_customer,online});
         }
     }
     togglePayment(data = null){
@@ -282,7 +288,10 @@ class DashboardPage extends React.Component {
                         showError(response.data.message);
                     } else {
                         loadings.online = false;
-                        this.setState({loadings,online:response.data.params,online_errors:0},()=>this.handleChartOnline());
+                        let online = this.state.online;
+                        online.unfiltered = response.data.params;
+                        online.filtered = [];
+                        this.setState({loadings,online,online_errors:0},()=>this.handleChartOnline());
                     }
                 } catch (e) {
                     loadings.online = false; this.setState({loadings});

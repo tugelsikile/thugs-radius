@@ -140,6 +140,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -170,6 +171,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -217,6 +219,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -247,6 +250,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -344,6 +348,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -401,6 +406,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -439,6 +445,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }
@@ -474,6 +481,7 @@ class RST
             }
             return $response;
         } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
             throw new Exception($exception->getMessage(),500);
         }
     }

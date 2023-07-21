@@ -477,11 +477,11 @@ class CustomerRepository
             foreach ($customers as $customer) {
                 $invoice = null;
                 if ($request->has('invoice')) {
-                    $invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
+                    /*$invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
                     if ($invoice == null) {
                         (new InvoiceRepository())->generate(new Request([ __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d') ]));
                         $invoice = (new InvoiceRepository())->table(new Request([__('customers.form_input.id') => $customer->id, __('invoices.form_input.bill_period') => Carbon::now()->format('Y-m-d')]))->first();
-                    }
+                    }*/
                 }
                 $response->push((object) [
                     'value' => $customer->id,

@@ -371,9 +371,13 @@ class InvoiceRepository
                 if ((($subtotal + $subtotalTax) - $subtotalDiscount) > 0) {
                     $invoice = new CustomerInvoice();
                     $invoice->id = Uuid::uuid4()->toString();
-                    $invoice->order_id = mt_rand(1111111111,9999999999);
+                    $invoice->order_id = randomNumeric(15);
                     $invoice->customer = $customer->id;
-                    $invoice->code = generateCustomerInvoiceCode(Carbon::parse($request[__('invoices.form_input.bill_period')]));
+                    $code = generateCustomerInvoiceCode(Carbon::parse($request[__('invoices.form_input.bill_period')]));
+                    while (CustomerInvoice::where('code', $code)->get('id')->count() > 0) {
+                        $code = generateCustomerInvoiceCode(Carbon::parse($request[__('invoices.form_input.bill_period')]));
+                    }
+                    $invoice->code = $code;
                     $invoice->bill_period = Carbon::parse($request[__('invoices.form_input.bill_period')])->format('Y-m-d');
                     $invoice->note = "Manually generated";
                     $invoice->created_by = $this->me->id;

@@ -257,18 +257,20 @@ class BackupRepository
         try {
             $response = collect();
             if ($this->targetDir != null) {
-                $files = collect(File::allFiles($this->targetDir));
-                foreach ($files as $file) {
-                    if ($file->getExtension() == 'zip') {
-                        $response->push((object) [
-                            'value' => $file->getFilename(),
-                            'label' => $file->getFilename(),
-                            'meta' => (object) [
-                                'size' => $file->getSize(),
-                                'path' => asset('storage/companies/' . $this->me->company . '/backups/' . $file->getFilename()),
-                                'created' => Carbon::createFromTimestamp($file->getCTime())->format('Y-m-d H:i:s'),
-                            ]
-                        ]);
+                if (File::exists($this->targetDir)) {
+                    $files = collect(File::allFiles($this->targetDir));
+                    foreach ($files as $file) {
+                        if ($file->getExtension() == 'zip') {
+                            $response->push((object) [
+                                'value' => $file->getFilename(),
+                                'label' => $file->getFilename(),
+                                'meta' => (object) [
+                                    'size' => $file->getSize(),
+                                    'path' => asset('storage/companies/' . $this->me->company . '/backups/' . $file->getFilename()),
+                                    'created' => Carbon::createFromTimestamp($file->getCTime())->format('Y-m-d H:i:s'),
+                                ]
+                            ]);
+                        }
                     }
                 }
             }

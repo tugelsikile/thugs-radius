@@ -269,7 +269,7 @@ export const TablePaging = (props) => {
                                                 styles={FormControlSMReactSelect}
                                                 isDisabled={props.data.loading || props.data.filtered.filter((f)=> f.loading).length > 0}
                                                 isLoading={props.data.loading}
-                                                onChange={props.handelSelectDataPerPage} options={listDataPerPage}/>
+                                                onChange={props.handelSelectDataPerPage} options={listDataPerpageOlt}/>
                                     </div>
                     }
                     <label className="col-md-9 col-form-label text-muted text-xs">
@@ -553,3 +553,9 @@ export const oltBrandLists = [
     { value : 'zte', label : 'ZTE', models : oltZteLists },
 ]
 
+export const listDataPerpageOlt = [
+    { value : 20, label : '20' },
+    { value : 50, label : '50' },
+    { value : 125, label : '125' },
+    { value : 300, label : '300' },
+];

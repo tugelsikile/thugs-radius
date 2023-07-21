@@ -2,7 +2,7 @@ import React from "react";
 import {ModalFooter, ModalHeader} from "../../../Components/ModalComponent";
 import {Dialog, DialogContent} from "@mui/material";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faLink, faPencilAlt, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {faLink, faPencilAlt, faPlus, faRefresh} from "@fortawesome/free-solid-svg-icons";
 import FormNas from "../Nas/Tools/FormNas";
 import Select from "react-select";
 import {FormControlSMReactSelect, responseMessage, ucWord} from "../../../Components/mixedConsts";
@@ -177,7 +177,8 @@ class FormLinkCustomer extends React.Component {
                                                     placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('customers.labels.menu')})}
                                                     isDisabled={this.state.loading} isLoading={this.props.loadings.customers}/>
                                         </div>
-                                        <div className="col-md-1">
+                                        <div className="col-md-4">
+                                            <button className="btn btn-outline-primary btn-sm mr-1" type="button" disabled={this.state.loading} onClick={()=>this.props.onReloadCustomer()}><FontAwesomeIcon icon={faRefresh} size="xs"/></button>
                                             {this.props.privilege !== null &&
                                                 typeof this.props.privilege.customers !== 'undefined' &&
                                                 this.props.privilege.customers.create &&

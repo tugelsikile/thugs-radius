@@ -630,7 +630,7 @@ class OltPage extends React.Component {
 
                         <div className="container-fluid">
                             {this.state.filter.olt !== null ?
-                                <DetailOLT discounts={this.state.discounts} onDiscount={this.loadDiscounts} taxes={this.state.taxes} onTax={this.loadTaxes} loadings={this.state.loadings} olts={this.state.olt} onToggle={this.toggleOlt} olt={this.state.filter.olt} privilege={this.state.privilege} profiles={this.state.profiles} onProfile={this.loadProfiles} customers={this.state.customers} onCustomer={this.loadCustomers} nas={this.state.nas} onNas={this.loadNas} pools={this.state.pools} onPool={this.loadPools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} companies={this.state.companies}/>
+                                <DetailOLT onReloadCustomer={this.loadCustomers} discounts={this.state.discounts} onDiscount={this.loadDiscounts} taxes={this.state.taxes} onTax={this.loadTaxes} loadings={this.state.loadings} olts={this.state.olt} onToggle={this.toggleOlt} olt={this.state.filter.olt} privilege={this.state.privilege} profiles={this.state.profiles} onProfile={this.loadProfiles} customers={this.state.customers} onCustomer={this.loadCustomers} nas={this.state.nas} onNas={this.loadNas} pools={this.state.pools} onPool={this.loadPools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} companies={this.state.companies}/>
                                 :
                                 <div id="main-page-card" className="card card-outline card-primary">
                                     {this.state.loadings.olt && <CardPreloader/>}

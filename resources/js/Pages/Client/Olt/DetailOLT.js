@@ -35,7 +35,7 @@ class DetailOLT extends React.Component {
                 keywords : '',
                 sort : { by : 'name', dir : 'asc' },
                 page : { value : 1, label : 1},
-                data_length : 20, paging : [],
+                data_length : 125, paging : [],
             },
             modals : {
                 customer : { open : false, data : null }
@@ -502,6 +502,7 @@ class DetailOLT extends React.Component {
                                   data={this.state.modals.customer.data}
                                   handleClose={this.modalCustomer}
                                   handleUpdate={this.handleUpdateCustomer}
+                                  onReloadCustomer={this.props.onReloadCustomer}
                                   companies={this.props.companies}
                                   nas={this.props.nas} onNas={this.props.onNas}
                                   pools={this.props.pools} onPool={this.props.onPool}

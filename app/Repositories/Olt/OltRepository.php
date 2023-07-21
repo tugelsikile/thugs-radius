@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Olt;
 
+use App\Helpers\OLT\ZTE\C320;
 use App\Helpers\SwitchDB;
 use App\Helpers\Telnet\Telnet;
 use App\Helpers\Telnet\TelnetMore;
@@ -556,102 +557,35 @@ class OltRepository
         try {
             $response = collect();
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
-            $telnet = new Telnet($olt->hostname, $olt->port,3,'');
-            $telnet->setLoginPrompt("Username:");
-            if ($request->has(__('olt.form_input.prompts.user'))) {
-                $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')]);
-                if ($request->has(__('olt.form_input.prompts.pass'))) {
-                    $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')], $request[__('olt.form_input.prompts.pass')]);
-                }
-            }
-            $telnet->login($olt->user, $olt->pass);
-            $unconfigs = $telnet->exec("show gpon onu uncfg");
-            $unconfigs = explode("\n", $unconfigs);
-            if (count($unconfigs) > 0) {
-                //dd($unconfigs);
-                /*** TODO UNCONFIG PARAMS NOT KNOWN ***/
-                foreach ($unconfigs as $unconfig) {
-                    if (strlen($unconfig) > 10) {
-                        if (!Str::contains($unconfig,"No related information to show")) {
-                            if (!Str::contains($unconfig,"------------------")) {
-                                if (Str::contains($unconfig,"gpon-o")) {
-                                    $line = explode(' ', $unconfig);
-                                    $strings = [];
-                                    if (count($line) > 1) {
-                                        foreach ($line as $item) {
-                                            if (strlen($item) > 4) {
-                                                $strings[] = $item;
-                                            }
-                                        }
-                                    }
-                                    if (count($strings) == 3) {
-                                        $response->push((object)[
-                                            'onu' => str_replace('gpon-onu_','',$strings[0]),
-                                            'serial_number' => $strings[1],
-                                            'admin_state' => null,
-                                            'omcc_state' => null,
-                                            'phase_state' => 'unconfig',
-                                            'channel' => '',
-                                            'loading' => false,
-                                            'details' => null,
-                                        ]);
-                                    }
-                                }
+            switch ($olt->brand->name) {
+                default:
+                case 'zte':
+                    switch ($olt->brand->model) {
+                        default:
+                        case 'zte_320':
+                            if ($request->has(__('olt.form_input.host')) &&
+                                $request->has(__('olt.form_input.port')) &&
+                                $request->has(__('olt.form_input.user')) &&
+                                $request->has(__('olt.form_input.pass'))
+                            ) {
+                                $response = $response->merge((new C320(null, $request))->gPonUnConfigs());
+                                $response = $response->merge((new C320(null, $request))->gPonStates());
+                            } else {
+                                $response = $response->merge((new C320($olt))->gPonUnConfigs());
+                                $response = $response->merge((new C320($olt))->gPonStates());
                             }
-                        }
+                        break;
                     }
-                }
-            }
-
-            $onuResponses = $telnet->execPaging("show gpon onu state");
-            $onuResponses = explode("\n", $onuResponses);
-            if (count($onuResponses) > 0) {
-                unset($onuResponses[0]);
-                unset($onuResponses[1]);
-                $onuResponses = implode("\n",array_values($onuResponses));
-                /*foreach ($onuResponses as $onuResponses) {
-                    if (strlen($onuResponses) > 0) {
-
-                    }
-                }*/
-            }
-            //$onuResponses = str_replace("\x08","",trim($onuResponses));
-            //$curCommands = "  \r\n";
-            //$response = $response->merge($this->parseOnuStateLine($onuResponses));
-            //$breaks = 0;
-            /*for ($index = 0; $index <= 50; $index ++) {
-                if ($breaks < 3) {
-                    $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
-                    $curResponse = str_replace("\x08","",trim($telnet->exec($curCommands)));
-                    if (strlen($curResponse) > 30) {
-                        $onuResponses .= "\n" .$curResponse;
-                    } elseif (Str::contains($curResponse,"#")) {
-                        $breaks++;
-                    }
-                }*/
-                /*if (!Str::contains($onuResponses,"#")) {
-                    if (strlen($onuResponses) > 30) {
-                        ini_set('max_execution_time',100000);
-                        $onuResponses = collect(explode("\n", $onuResponses));
-                        if ($onuResponses->count() > 0) {
-                            $response = $response->merge($this->parseOnuStateLine($onuResponses));
-                        } else {
-                            $breaks++;
-                        }
-                    } else {
-                        $breaks++;
-                        if ($breaks >= 3) {
+                    break;
+                case 'hioso':
+                case 'hsgc':
+                    switch ($olt->brand->model){
+                        default:
+                        case 'none':
                             break;
-                        }
                     }
-                }*/
-            /*}*/
-            $onuResponses = explode("\n", $onuResponses);
-            $telnet->disconnect();
-            if (count($onuResponses) > 0) {
-                $response = $this->parseOnuStateLine($onuResponses);
+                    break;
             }
-            //Log::alert("break counts " . $breaks);
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);

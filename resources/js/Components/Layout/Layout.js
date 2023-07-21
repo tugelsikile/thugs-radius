@@ -46,38 +46,49 @@ export const HeaderAndSideBar = (props) => {
         </React.Fragment>
     )
 }
+export const EmptyMainSidebar2 = () => {
+
+}
 export const EmptyMainSidebar = (props) => {
     return (
         <React.Fragment>
             <aside id="app-main-sidebar" className="main-sidebar layout-fixed sidebar-light-navy elevation-4 text-sm">
-                {props.loadings.site ?
-                    <Skeleton animation="wave" variant="rectangular" height={50} />
+                {typeof props.loadings === 'undefined' ?
+                    <EmptySidebarBrand/>
                     :
-                    <SideBarBrand site={props.site} user={props.user}/>
+                    props.loadings !== null &&
+                    props.loadings.site ?
+                        <Skeleton animation="wave" variant="rectangular" height={50} />
+                        :
+                        <SideBarBrand site={props.site} user={props.user}/>
                 }
                 <div className="sidebar">
-                    <SideBarUser user={props.user}/>
+                    {typeof props.user !== "undefined" && <SideBarUser user={props.user}/>}
 
                     <nav className="mt-2">
                         <ul className="nav nav-flat nav-pills nav-sidebar flex-column nav-child-indent" data-widget="treeview" role="menu" data-accordion="false">
-                            {[0,1,2,3,4,5,6,7,8,9].map((item)=>
-                                item <= props.steps.max &&
+                            {typeof props.steps !== 'undefined' && props.steps !== null &&
+                                [0,1,2,3,4,5,6,7,8,9].map((item)=>
+                                    item <= props.steps.max &&
                                     <li key={`sbMenu_${item}`} className="nav-item">
                                         <a onClick={props.onStep} data-step={item} href="#" className={props.steps.current === item ? 'nav-link active' : 'nav-link'}>
                                             <FontAwesomeIcon style={{height:'12px'}} icon={MenuIcon(Lang.get(`wizard.steps.${item}.icon`))} className="nav-icon" size="xs"/>
                                             <p>{Lang.get(`wizard.steps.${item}.menu`)}</p>
                                         </a>
                                     </li>
-                            )}
-                            {props.loadings.privilege ?
-                                <Skeleton className="mx-2" animation="wave" variant="rectangular" height={30}/>
-                                :
-                                <li className="nav-item">
-                                    <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
-                                        <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
-                                        <p className="text text-danger text-sm">{Lang.get('messages.users.labels.sign_out')}</p>
-                                    </a>
-                                </li>
+                                )
+                            }
+                            {typeof props.loadings === 'undefined' ? null :
+                                props.loadings !== null &&
+                                props.loadings.privilege ?
+                                    <Skeleton className="mx-2" animation="wave" variant="rectangular" height={30}/>
+                                    :
+                                    <li className="nav-item">
+                                        <a onClick={(e)=>{e.preventDefault();logout();}} href="#" className="nav-link">
+                                            <FontAwesomeIcon style={{height:'12px'}} size="xs" icon={faPowerOff} className="nav-icon text-danger"/>
+                                            <p className="text text-danger text-sm">{Lang.get('messages.users.labels.sign_out')}</p>
+                                        </a>
+                                    </li>
                             }
                         </ul>
                     </nav>
@@ -96,7 +107,7 @@ export const EmptyMainHeader = (props)=> {
                         <a className="nav-link" data-widget="pushmenu" href="#" role="button"><FontAwesomeIcon icon={faBars}/></a>
                     </li>
                     <li className="nav-item d-none d-sm-inline-block">
-                        <DigitalClock/>
+
                     </li>
                 </ul>
                 <ul className="navbar-nav ml-auto">
@@ -140,6 +151,14 @@ export const CompanySideBarBrandLogo = (props) => {
             <span className="brand-text font-weight-light">{props.user.meta.company.name}</span>
         </a>
     )
+}
+export const EmptySidebarBrand = () => {
+    return (
+        <a href={window.origin} className="brand-link bg-navy">
+            <img src={`${window.origin}/images/logo-1.png`} alt="" className="brand-image img-circle elevation-3" style={{opacity:.8}}/>
+            <span className="brand-text font-weight-light">&nbsp;</span>
+        </a>
+    );
 }
 export const CompanySideBarBrand = (props) => {
     return (

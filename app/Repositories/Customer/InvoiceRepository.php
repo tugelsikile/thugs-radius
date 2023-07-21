@@ -161,14 +161,11 @@ class InvoiceRepository
             }
             if ($request->has('order_id')) {
                 $orderId = $request->order_id;
-                while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
-                    $orderId = mt_rand(1111111111,9999999999);
-                }
             } else {
-                $orderId = mt_rand(1111111111,9999999999);
-                while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
-                    $orderId = mt_rand(1111111111,9999999999);
-                }
+                $orderId = randomNumeric(15);
+            }
+            while (CustomerInvoice::where('order_id', $orderId)->get('id')->count() > 0) {
+                $orderId = randomNumeric(15);
             }
             $invoice->order_id = $orderId;
             $invoice->customer = $request[__('customers.form_input.name')];
@@ -508,6 +505,30 @@ class InvoiceRepository
                 }
             }
             return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    private function singleGenerate(Request $request) {
+        try {
+            $billPeriod = Carbon::parse($request[__('invoices.form_input.bill_period')]);
+            $exists = CustomerInvoice::where('customer', $request[__('customers.form_input.id')])->whereMonth('bill_period', $billPeriod->format('m'))->whereYear('bill_period', $billPeriod->format('Y'))->first();
+            if ($exists == null) {
+                $newRequest = new Request([
+                    __('invoices.form_input.bill_period') => $billPeriod->format('Y-m-d'),
+                    __('customers.form_input.name') => $request[__('customers.form_input.id')],
+                    __('invoices.form_input.note') => 'auto generate ',
+                    __('invoices.form_input.service.input') => [
+                        //[__('profiles.form_input.name') => 'das' ]
+                    ]
+                ]);
+                $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+                $newRequest[__('invoices.form_input.service.input')][] = [__('profiles.form_input.name') => $customer->profileObj->id];
+                //dd($customer->profileObj);
+                dd($newRequest[__('invoices.form_input.service.input')]);
+                $invoice = $this->create($newRequest);
+            }
+            return $exists->id;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

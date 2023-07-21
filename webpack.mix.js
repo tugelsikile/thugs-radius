@@ -55,9 +55,10 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');
 
 /*---------- CLIENTS ----------*/
 
-/*
 mix.js('resources/js/src/clients/index.js','public/js/clients');
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
+
+/*
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');
@@ -72,9 +73,9 @@ mix.js('resources/js/src/clients/customers/hotspot.js','public/js/clients/custom
 mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
-*/
 mix.js('resources/js/src/clients/backup/backup.js','public/js/clients/backup');
 mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
+*/
 
 
 /********* CUSTOMERS ***********/

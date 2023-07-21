@@ -1,25 +1,23 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {getPrivileges, getRootUrl, logout} from "../../../Components/Authentication";
-import {CardPreloader, formatLocaleDate, formatPhone, responseMessage, siteData} from "../../../Components/mixedConsts";
+import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
+import {CardPreloader, formatLocaleDate, responseMessage, siteData} from "../../../Components/mixedConsts";
 import {crudCompany} from "../../../Services/CompanyService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import {crudPrivileges, crudUsers} from "../../../Services/UserService";
 import PageLoader from "../../../Components/PageLoader";
-import MainHeader from "../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
-import {faCheckCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../Components/TableComponent";
-import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import {sortDate} from "./Tools/Mixed";
 import moment from "moment";
 import FormUser from "./Tools/FormUser";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import {crudNas} from "../../../Services/NasService";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
 
 // noinspection DuplicatedCode
 class UserPage extends React.Component {
@@ -346,10 +344,11 @@ class UserPage extends React.Component {
 
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.users && <CardPreloader/>}
-                                <div className="card-header pl-1" id="page-card-header">
+                                <div className="card-header pl-2" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={<button type="button" disabled={this.state.loadings.users} onClick={()=>this.loadUsers()} className="btn btn-outline-secondary btn-sm text-xs mr-1"><FontAwesomeIcon icon={this.state.loadings.user ? faCircleNotch : faRefresh} spin={this.state.loadings.users} size="xs"/></button>}
                                                    loading={this.state.loadings.users}
-                                                   langs={{create:Lang.get('users.create.button'),delete:Lang.get('users.delete.select')}}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('users.labels.menu')}),delete:Lang.get('users.delete.select')}}
                                                    selected={this.state.users.selected}
                                                    handleModal={this.toggleModal}
                                                    confirmDelete={this.confirmDelete}/>

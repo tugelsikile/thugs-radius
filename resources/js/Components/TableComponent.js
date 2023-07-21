@@ -24,10 +24,18 @@ export const TableAction = (props) => {
                                         </button>
                                 )
                         }
-                        {props.privilege.update &&
-                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-xs text-primary"><FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>{props.langs.update}</button>
+                        {props.privilege.update && props.toggleModal !== null &&
+                            <button type="button" onClick={()=>props.toggleModal(props.item)} className="dropdown-item text-xs text-primary">
+                                {typeof props.icons !== "undefined" ?
+                                    typeof props.icons.update !== "undefined" &&
+                                    <FontAwesomeIcon icon={props.icons.update} className="mr-1"/>
+                                    :
+                                    <FontAwesomeIcon icon={faPencilAlt} className="mr-1"/>
+                                }
+                                {props.langs.update}
+                            </button>
                         }
-                        {props.privilege.delete &&
+                        {props.privilege.delete && props.confirmDelete !== null &&
                             <button type="button" onClick={()=>props.confirmDelete(props.item)} className="dropdown-item text-xs text-danger"><FontAwesomeIcon icon={faTrashAlt} className="mr-1"/>{props.langs.delete}</button>
                         }
                     </div>

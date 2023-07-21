@@ -532,6 +532,9 @@ class InvoiceRepository
                     }
                 }
             }
+            if ($request->has('limit')) {
+                $invoices = $invoices->limit($request->limit);
+            }
             $invoices = $invoices->get();
             if ($invoices->count() > 0) {
                 foreach ($invoices as $invoice) {

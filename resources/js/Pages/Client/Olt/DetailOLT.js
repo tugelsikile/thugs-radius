@@ -121,7 +121,7 @@ class DetailOLT extends React.Component {
             if (onu.length > 0) {
                 let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
                 if (index >= 0) {
-                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'));
+                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'),{fieldName : Lang.get('olt.form_input.id'), fieldValue : this.state.olt.value});
                 }
             }
         }

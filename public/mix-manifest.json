@@ -1,3 +1,4 @@
 {
-    "/js/clients/backup/backup.js": "/js/clients/backup/backup.js"
+    "/js/clients/backup/backup.js": "/js/clients/backup/backup.js",
+    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
 }

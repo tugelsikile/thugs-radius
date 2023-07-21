@@ -240,18 +240,22 @@ function getAvatar(User $user) {
         }
     }
 }
-function companyLogo(ClientCompany $company) {
+
+function companyLogo(ClientCompany $company): ?string
+{
     if ($company->config != null) {
-        if ($company->config->logo != null) {
-            $file = storage_path() . '/app/public/companies/' . $company->id . '/' . $company->config->logo;
-            if (File::exists($file)) {
-                return asset('/storage/companies/' . $company->id . '/' . $company->config->logo);
-            } else {
-                return asset('/images/logo-1.png');
+        if (property_exists($company->config,'logo')) {
+            if ($company->config->logo != null) {
+                $file = storage_path() . '/app/public/companies/' . $company->id . '/' . $company->config->logo;
+                if (File::exists($file)) {
+                    return asset('/storage/companies/' . $company->id . '/' . $company->config->logo);
+                } else {
+                    return asset('/images/logo-1.png');
+                }
             }
         }
     }
-    return null;
+    return asset('/images/logo-1.png');
 }
 function resetStorageLink() {
     $dir = public_path() . '/storage';

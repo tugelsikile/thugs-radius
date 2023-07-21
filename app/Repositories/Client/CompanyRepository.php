@@ -12,6 +12,7 @@ use App\Models\User\User;
 use App\Models\User\UserLevel;
 use App\Repositories\Config\DiscountRepository;
 use App\Repositories\Config\TaxRepository;
+use App\Repositories\ConfigRepository;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -457,10 +458,9 @@ class CompanyRepository
             $companies = $companies->get();
             if ($companies->count() > 0) {
                 foreach ($companies as $company) {
-                    $response->push((object) [
-                        'value' => $company->id,
-                        'label' => $company->name,
-                        'meta' => (object) [
+                    $meta = null;
+                    if (!$request->has('minify')) {
+                        $meta = (object) [
                             'code' => $company->code,
                             'address' => (object) [
                                 'email' => $company->email,
@@ -473,6 +473,17 @@ class CompanyRepository
                                 'village' => $company->villageObj,
                                 'postal' => $company->postal == null ? '' : $company->postal
                             ],
+                            'config' => (object) [
+                                'general' => $company->config,
+                                'currency' => (new ConfigRepository())->currencies(new Request(['id' => $company->currency]))->first(),
+                                'database' => (object) [
+                                    'host' => $company->radius_db_host,
+                                    'port' => env('DB_RADIUS_PORT','3306'),
+                                    'user' => $company->radius_db_user,
+                                    'pass' => $company->radius_db_pass,
+                                    'name' => $company->radius_db_name,
+                                ]
+                            ],
                             'discounts' => $this->companyDiscounts($company),
                             'taxes' => $this->companyTaxes($company),
                             'expiry' => $company->expired_at == null ? null : Carbon::parse($company->expired_at)->format('Y-m-d H:i:s'),
@@ -483,7 +494,12 @@ class CompanyRepository
                                     'by' => $company->activeBy,
                                 ]
                             ]
-                        ]
+                        ];
+                    }
+                    $response->push((object) [
+                        'value' => $company->id,
+                        'label' => $company->name,
+                        'meta' => $meta,
                     ]);
                 }
             }

@@ -19,6 +19,7 @@ class CompanyDiscount extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     public function discountObj(): BelongsTo
     {

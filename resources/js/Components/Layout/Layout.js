@@ -27,8 +27,10 @@ const changeFavIcon = (props) => {
     if (props.user !== null) {
         if (props.user.meta.company !== null) {
             if (props.user.meta.company.config !== null) {
-                if (props.user.meta.company.config.logo !== null) {
-                    logo = props.user.meta.company.config.logo;
+                if (typeof props.user.meta.company.config.logo !== 'undefined') {
+                    if (props.user.meta.company.config.logo !== null) {
+                        logo = props.user.meta.company.config.logo;
+                    }
                 }
             }
         }
@@ -122,10 +124,13 @@ export const SideBarBrand = (props) => {
                 props.user.meta.company.config === null ?
                     <CompanySideBarBrand site={props.site} user={props.user}/>
                     :
-                    props.user.meta.company.config.logo === null ?
-                        <CompanySideBarBrand site={props.site} user={props.user}/>
+                    typeof props.user.meta.company.config.logo === 'undefined' ?
+                        <DefaultSideBarBrand site={props.site}/>
                         :
-                        <CompanySideBarBrandLogo site={props.site} user={props.user}/>
+                        props.user.meta.company.config.logo === null ?
+                            <CompanySideBarBrand site={props.site} user={props.user}/>
+                            :
+                            <CompanySideBarBrandLogo site={props.site} user={props.user}/>
     );
 }
 export const CompanySideBarBrandLogo = (props) => {

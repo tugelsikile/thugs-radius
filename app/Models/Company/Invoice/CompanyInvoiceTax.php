@@ -12,6 +12,7 @@ class CompanyInvoiceTax extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     public function invoiceObj(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

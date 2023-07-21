@@ -28,7 +28,39 @@ class OltRepository
     {
         $this->me = auth()->guard('api')->user();
     }
-
+    public function unConfigure(Request $request) {
+        try {
+            $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
+            $onu = $request[__('olt.form_input.onu')];
+            $portOlt = explode(":", $onu);
+            if (count($portOlt) == 2) {
+                $portOnu = $portOlt[1];
+                $portOlt = $portOlt[0];
+                $telnet = new Telnet($olt->hostname, $olt->port,1,'');
+                $telnet->setLoginPrompt("Username:");
+                if ($olt->configs != null) {
+                    if (property_exists($olt->configs,'prompts')) {
+                        if (property_exists($olt->configs->prompts,'user_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                            if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
+                            }
+                        }
+                    }
+                }
+                $login = $telnet->login($olt->user, $olt->pass);
+                if ($login) {
+                    $responseMessages = $telnet->exec("conf t");
+                    $responseMessages .= "\n" . $telnet->exec("interface gpon-olt_" . $portOlt);
+                    $responseMessages .= "\n" . $telnet->exec("no onu " . $portOnu);
+                    Log::info($responseMessages);
+                    return $this->gponCustomer($request);
+                }
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param OltModel $olt
      * @return Collection

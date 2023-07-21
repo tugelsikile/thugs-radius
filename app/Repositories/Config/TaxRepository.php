@@ -4,7 +4,10 @@
 
 namespace App\Repositories\Config;
 
+use App\Helpers\SwitchDB;
 use App\Models\Tax;
+use App\Repositories\Client\CompanyRepository;
+use App\Repositories\User\UserRepository;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -90,6 +93,7 @@ class TaxRepository
         try {
             $me = auth()->guard('api')->user();
             $response = collect();
+            new SwitchDB("mysql");
             $taxes = Tax::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $taxes = $taxes->where('id', $request->id);
             if ($me != null) {
@@ -100,6 +104,18 @@ class TaxRepository
             $taxes = $taxes->get();
             if ($taxes->count() > 0) {
                 foreach ($taxes as $tax) {
+                    $updateBy = null;
+                    $createBy = null;
+                    if ($tax->created_by != null) {
+                        $createBy = (new UserRepository())->table(new Request(['id' => $tax->created_by, 'minify' => true]))->first();
+                    }
+                    if ($tax->updated_by != null) {
+                        $updateBy = (new UserRepository())->table(new Request(['id' => $tax->updated_by, 'minify' => true]))->first();
+                    }
+                    $company = $tax->company;
+                    if ($company != null) {
+                        $company = (new CompanyRepository())->table(new Request(['id' => $tax->company, 'minify' => true]))->first();
+                    }
                     $response->push((object) [
                         'value' => $tax->id,
                         'label' => $tax->name,
@@ -107,15 +123,15 @@ class TaxRepository
                             'code' => $tax->code,
                             'description' => $tax->description,
                             'percent' => $tax->percent,
-                            'company' => $tax->companyObj,
+                            'company' => $company,
                             'timestamps' => (object) [
                                 'create' => (object) [
                                     'at' => Carbon::parse($tax->created_at)->format('Y-m-d H:i:s'),
-                                    'by' => $tax->createdBy
+                                    'by' => $createBy
                                 ],
                                 'update' => (object) [
                                     'at' => Carbon::parse($tax->updated_at)->format('Y-m-d H:i:s'),
-                                    'by' => $tax->updatedBy
+                                    'by' => $updateBy
                                 ]
                             ]
                         ]

@@ -10,6 +10,7 @@ use App\Models\Nas\NasUserGroup;
 use App\Models\User\User;
 use App\Models\User\UserLevel;
 use App\Models\User\UserLog;
+use App\Repositories\Client\CompanyRepository;
 use App\Repositories\Nas\NasRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -203,21 +204,29 @@ class UserRepository
             }
             $users = $users->get();
             foreach ($users as $user) {
-                $response->push((object) [
-                    'value' => $user->id,
-                    'label' => $user->name,
-                    'meta' => (object) [
+                $company = null;
+                if ($user->company != null) {
+                    $company = (new CompanyRepository())->table(new Request(['id' => $user->company, 'minify' => true]))->first();
+                }
+                $meta = null;
+                if (! $request->has('minify')) {
+                    $meta = (object) [
                         'avatar' => getAvatar($user),
                         'email' => $user->email,
                         'locale' => $user->locale,
-                        'company' => $user->companyObj,
+                        'company' => $company,
                         'level' => (new PrivilegeRepository())->table(new Request(['id' => $user->level]))->first(),
                         'nas' => (new NasRepository())->tableNasGroup(new Request(['user' => $user->id])),
                         'last' => (object) [
                             'login' => UserLog::where('user', $user->id)->orderBy('created_at', 'desc')->where('url', url('/api/login'))->first(),
                             'activity' => UserLog::where('user', $user->id)->orderBy('created_at', 'desc')->first(),
                         ]
-                    ]
+                    ];
+                }
+                $response->push((object) [
+                    'value' => $user->id,
+                    'label' => $user->name,
+                    'meta' => $meta,
                 ]);
             }
             return $response;

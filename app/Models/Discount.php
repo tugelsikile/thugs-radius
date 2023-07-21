@@ -7,6 +7,18 @@ use App\Models\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method static where(string|mixed|null $column, mixed|string|null $value)
+ * @property mixed $created_by
+ * @property mixed $amount
+ * @property mixed $name
+ * @property mixed $company
+ * @property mixed $code
+ * @property mixed $id
+ * @property mixed $updated_by
+ * @property mixed $updated_at
+ * @property mixed $created_at
+ */
 class Discount extends Model
 {
     use HasFactory;

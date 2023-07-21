@@ -248,8 +248,8 @@ class ProfileRepository
                         'label' => $profile->name,
                         'meta' => (object) [
                             'mikrotik_id' => $profile->profile_id,
-                            'nas' => $profile->nasObj,
-                            'pool' => $profile->poolObj,
+                            'nas' => $profile->nasObj()->first(),
+                            'pool' => $profile->poolObj()->first(),
                             'bandwidth' => $profile->bandwidthObj,
                             'description' => $profile->description == null ? '' : $profile->description,
                             'code' => $profile->code,

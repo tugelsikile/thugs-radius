@@ -1064,41 +1064,58 @@ class ModalImportRST extends React.Component {
         } else {
             let lists = this.state.lists;
             if (listValue !== null) {
+                let listsToLoads = [];
                 let index = lists.labels.findIndex((f)=> f.value === listValue);
                 if (index >= 0) {
+                    listsToLoads.push(lists.labels[index].value);
                     lists.process = 0;
                     lists.max = 1;
-                    this.setState({loading:true,lists});
+                    let nextIndex = null;
+                    if (index > 0) {
+                        nextIndex = index - 1;
+                        if (typeof lists.labels[nextIndex] === 'undefined') {
+                            nextIndex = null;
+                        } else {
+                            lists.max = 2;
+                            lists.labels[nextIndex].loading = true;
+                            listsToLoads.push(lists.labels[nextIndex].value);
+                        }
+                    }
                     lists.labels[index].loading = true;
-                    this.setState({lists});
-                    this.loadLists(listValue)
-                        .then((response)=>{
-                            if (response !== null) {
-                                lists.labels[index].loading = false;
-                                lists.labels[index].data = response.data;
-                                this.setState({lists});
-                            }
-                        })
-                        .catch(()=>{
-                            lists.process++;
-                            lists.labels[index].loading = false;
-                            if (lists.process >= lists.max) {
-                                lists.process = 0;
-                                lists.max = 0;
-                                this.setState({loading:false});
-                            }
-                            this.setState({lists});
-                        })
-                        .finally(()=>{
-                            lists.process++;
-                            lists.labels[index].loading = false;
-                            if (lists.process >= lists.max) {
-                                lists.process = 0;
-                                lists.max = 0;
-                                this.setState({loading:false});
-                            }
-                            this.setState({lists});
-                        });
+                    this.setState({loading:true,lists});
+                    listsToLoads.map((item)=>{
+                        let curIndex = lists.labels.findIndex((f)=> f.value === item);
+                        if (curIndex >= 0) {
+                            this.loadLists(item)
+                                .then((response)=>{
+                                    if (response !== null) {
+                                        lists.labels[curIndex].loading = false;
+                                        lists.labels[curIndex].data = response.data;
+                                        this.setState({lists});
+                                    }
+                                })
+                                .catch(()=>{
+                                    lists.process++;
+                                    lists.labels[curIndex].loading = false;
+                                    if (lists.process >= lists.max) {
+                                        lists.process = 0;
+                                        lists.max = 0;
+                                        this.setState({loading:false});
+                                    }
+                                    this.setState({lists});
+                                })
+                                .finally(()=>{
+                                    lists.process++;
+                                    lists.labels[curIndex].loading = false;
+                                    if (lists.process >= lists.max) {
+                                        lists.process = 0;
+                                        lists.max = 0;
+                                        this.setState({loading:false});
+                                    }
+                                    this.setState({lists});
+                                });
+                        }
+                    })
                 }
             } else {
                 lists.max = lists.labels.length;

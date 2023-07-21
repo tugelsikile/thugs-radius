@@ -332,15 +332,17 @@ class NasRepository
             if ($nass->count() > 0) {
                 foreach ($nass as $nas) {
                     $status = (object) ['message' => null, 'success' => false ];
-                    switch ($nas->method) {
-                        case 'api' :
-                            $this->mikrotikAPI = new MikrotikAPI($nas);
-                            $status = $this->mikrotikAPI->testConnection();
-                            break;
-                        case 'ssl' :
-                            $this->mikrotikSSL = new MiktorikSSL($nas);
-                            $status = $this->mikrotikSSL->testConnection();
-                            break;
+                    if (! $request->has('ignore_status')) {
+                        switch ($nas->method) {
+                            case 'api' :
+                                $this->mikrotikAPI = new MikrotikAPI($nas);
+                                $status = $this->mikrotikAPI->testConnection();
+                                break;
+                            case 'ssl' :
+                                $this->mikrotikSSL = new MiktorikSSL($nas);
+                                $status = $this->mikrotikSSL->testConnection();
+                                break;
+                        }
                     }
                     $description = $nas->description;
                     if ($description == null) $description = '';

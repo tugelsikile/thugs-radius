@@ -156,9 +156,7 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
                 Route::any('/', [OltController::class, 'gponCustomer']);
                 Route::post('/loss', [OltController::class, 'lossCustomer']);
             });
-            Route::any('/unconfigure', function () {
-                return formatResponse(200,"Coming soon");
-            });
+            Route::any('/unconfigure', [OltController::class, 'unConfigure']);
             Route::group(['prefix' => 'profiles'],function () {
                 Route::any('/traffics', [TrafficProfileController::class, 'crud']);
                 Route::any('/tconts', [TrafficProfileController::class, 'tconts']);

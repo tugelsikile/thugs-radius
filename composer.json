@@ -9,6 +9,8 @@
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-pdo": "*",
+        "ext-snmp": "*",
+        "ext-zip": "*",
         "divineomega/php-ssh-connection": "^1.3",
         "evilfreelancer/routeros-api-php": "^1.5",
         "freedsx/snmp": "^0.5.0",
@@ -23,11 +25,11 @@
         "laravolt/indonesia": "^0.34.0",
         "lcobucci/jwt": "4.0.4",
         "league/oauth2-server": "8.2.2",
+        "madnest/madzipper": "^1.2",
         "mariuzzo/laravel-js-localization": "^1.10",
         "midtrans/midtrans-php": "^2.5",
         "rap2hpoutre/laravel-log-viewer": "^2.3",
-        "spatie/ssh": "^1.9",
-        "ext-snmp": "*"
+        "spatie/ssh": "^1.9"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.7",

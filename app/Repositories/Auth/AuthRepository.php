@@ -543,7 +543,7 @@ class AuthRepository
                 $company = $user->companyObj;
                 if ($company != null) {
                     if ($company->config != null) {
-                        if ($company->config->logo != null) {
+                        if (property_exists($company->config,'logo')) {
                             $logo = companyLogo($company);
                             if ($logo != null) {
                                 $config = $company->config;

@@ -28,7 +28,7 @@ export const showError = (message,autoClose = 2000) => {
 export const showSuccess = (message, autoClose = 2000) => {
     toast.success(sanitizeMessage(message), { bodyClassName : 'text-xs', autoClose : autoClose});
 }
-export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null,confirmText = null,cancelText = null) => {
+export const confirmDialog = (app, ids, method = 'delete', url = null, title = null, message = null, callBack = null, icon = "question",inputName = 'id',deleteIndex = null,confirmText = null,cancelText = null, additionalForm = null) => {
     if (message === null) message = Lang.get('labels.confirm.message');
     if (message.length === 0) message = Lang.get('labels.confirm.message');
     if (title === null) title = Lang.get('labels.confirm.title');
@@ -46,6 +46,13 @@ export const confirmDialog = (app, ids, method = 'delete', url = null, title = n
             });
         } else {
             formData.append(inputName, ids);
+        }
+        if (additionalForm !== null) {
+            if (typeof additionalForm === 'object') {
+                if (typeof additionalForm.fieldName !== 'undefined' && typeof additionalForm.fieldValue !== "undefined") {
+                    formData.append(additionalForm.fieldName, additionalForm.fieldValue);
+                }
+            }
         }
         message = message.replaceAll("\n",'<br>');
         Swal.fire({

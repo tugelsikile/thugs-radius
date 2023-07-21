@@ -180,6 +180,8 @@ return [
         \Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
         \Laravel\Passport\PassportServiceProvider::class,
 
+        \Madnest\Madzipper\MadzipperServiceProvider::class,
+
     ],
 
     /*

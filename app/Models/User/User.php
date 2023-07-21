@@ -14,6 +14,7 @@ use Laravel\Passport\HasApiTokens;
 
 /**
  * @method static where(string $string, mixed|string $value)
+ * @method static orderBy(string $string, string $string1)
  * @property mixed|string $id
  * @property mixed $level
  * @property mixed|string $company

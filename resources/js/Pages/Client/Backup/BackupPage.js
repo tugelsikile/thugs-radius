@@ -1,17 +1,34 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
-import {CardPreloader, responseMessage, siteData} from "../../../Components/mixedConsts";
+import {
+    CardPreloader,
+    formatBytes,
+    formatLocaleDate,
+    formatPhone,
+    responseMessage,
+    siteData
+} from "../../../Components/mixedConsts";
 import PageLoader from "../../../Components/PageLoader";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
-import {faHdd, faTicketAlt} from "@fortawesome/free-solid-svg-icons";
+import {
+    faCheckCircle,
+    faDownload,
+    faHdd,
+    faTicketAlt,
+    faTimesCircle,
+    faUpload
+} from "@fortawesome/free-solid-svg-icons";
 import {sortStatus, sumGrandtotalCustomer} from "../Customer/Tools/Mixed";
 import {crudClientBackup} from "../../../Services/BackupService";
-import {showError} from "../../../Components/Toaster";
+import {confirmDialog, showError} from "../../../Components/Toaster";
 import ModalImportRST from "./ModalImportRST";
+import {TableHeader} from "./Mixed";
+import {DataNotFound, TableAction, TableCheckBox} from "../../../Components/TableComponent";
+import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 
 
 class BackupPage extends React.Component {
@@ -31,6 +48,12 @@ class BackupPage extends React.Component {
         this.loadBackup = this.loadBackup.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
         this.toggleImport = this.toggleImport.bind(this);
+        this.confirmBackup = this.confirmBackup.bind(this);
+        this.handleCheck = this.handleCheck.bind(this);
+        this.handleSort = this.handleSort.bind(this);
+        this.downloadBackup = this.downloadBackup.bind(this);
+        this.confirmDelete = this.confirmDelete.bind(this);
+        this.confirmRestore = this.confirmRestore.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -56,6 +79,56 @@ class BackupPage extends React.Component {
                     });
             }
         }
+    }
+    downloadBackup(data) {
+        window.open(data.meta.path,'_blank');
+    }
+    confirmDelete(data = null) {
+        let ids = [];
+        if (data === null) {
+            ids = this.state.backups.selected;
+        } else {
+            ids.push(data.value);
+        }
+        confirmDialog(this, ids,'delete',`${window.origin}/api/clients/backups`, Lang.get('labels.delete.confirm.title'),Lang.get('labels.delete.confirm.message',{Attribute:Lang.get('backup.labels.backup')}),'app.loadBackup()','error',Lang.get('backup.form_input.id'),null,Lang.get('labels.delete.confirm.confirm'),Lang.get('labels.delete.confirm.cancel'));
+    }
+    confirmRestore(data) {
+        confirmDialog(this, data.value, 'patch', `${window.origin}/api/clients/backups`, Lang.get('backup.restore.confirm.title'), Lang.get('backup.restore.confirm.message'),'app.loadBackup()','error',Lang.get('backup.form_input.id'),null,Lang.get('backup.restore.confirm.yes'), Lang.get('backup.restore.confirm.cancel'));
+    }
+    handleSort(event) {
+        event.preventDefault();
+        let filter = this.state.filter;
+        filter.sort.by = event.currentTarget.getAttribute('data-sort');
+        if (filter.sort.dir === 'asc') {
+            filter.sort.dir = 'desc';
+        } else {
+            filter.sort.dir = 'asc';
+        }
+        this.setState({filter},()=>this.handleFilter())
+    }
+    handleCheck(event) {
+        let backups = this.state.backups;
+        if (event.currentTarget.getAttribute('data-id').length === 0) {
+            backups.selected = [];
+            if (event.currentTarget.checked) {
+                backups.filtered.map((item)=>{
+                    if (! item.meta.default) {
+                        backups.selected.push(item.value);
+                    }
+                });
+            }
+        } else {
+            let indexSelected = backups.selected.findIndex((f) => f === event.currentTarget.getAttribute('data-id'));
+            if (indexSelected >= 0) {
+                backups.selected.splice(indexSelected,1);
+            } else {
+                let indexTarget = backups.unfiltered.findIndex((f) => f.value === event.currentTarget.getAttribute('data-id'));
+                if (indexTarget >= 0) {
+                    backups.selected.push(event.currentTarget.getAttribute('data-id'));
+                }
+            }
+        }
+        this.setState({backups});
     }
     toggleImport() {
         let modals = this.state.modals;
@@ -88,6 +161,20 @@ class BackupPage extends React.Component {
                     backups.filtered = backups.filtered.sort((a,b)=> (a.label > b.label) ? -1 : ((b.label > a.label) ? 1 : 0));
                 }
                 break;
+            case 'date':
+                if (filter.sort.dir === 'asc') {
+                    backups.filtered = backups.filtered.sort((a,b) => (a.meta.created > b.meta.created) ? 1 : ((b.meta.created > a.meta.created) ? -1 : 0));
+                } else {
+                    backups.filtered = backups.filtered.sort((a,b)=> (a.meta.created > b.meta.created) ? -1 : ((b.meta.created > a.meta.created) ? 1 : 0));
+                }
+                break;
+            case 'size':
+                if (filter.sort.dir === 'asc') {
+                    backups.filtered = backups.filtered.sort((a,b) => (a.meta.size > b.meta.size) ? 1 : ((b.meta.size > a.meta.size) ? -1 : 0));
+                } else {
+                    backups.filtered = backups.filtered.sort((a,b)=> (a.meta.size > b.meta.size) ? -1 : ((b.meta.size > a.meta.size) ? 1 : 0));
+                }
+                break;
         }
 
         filter.paging = [];
@@ -100,8 +187,11 @@ class BackupPage extends React.Component {
         loadings.backups = false;
         this.setState({loadings,backups});
     }
+    confirmBackup() {
+        confirmDialog(this,'','put',`${window.origin}/api/clients/backups`,Lang.get('labels.delete.confirm.title'),Lang.get('labels.create.label',{Attribute:Lang.get('backup.labels.backup')}),'app.loadBackup()','question','id',null,Lang.get('labels.confirm.yes'),Lang.get('labels.confirm.cancel'));
+    }
     async loadBackup(data = null) {
-        /*let backups = this.state.backups;
+        let backups = this.state.backups;
         if (data !== null) {
             if (Number.isInteger(data)) {
                 backups.splice(data,1);
@@ -125,6 +215,7 @@ class BackupPage extends React.Component {
                         showError(response.data.message);
                     } else {
                         loadings.backups = false;
+                        backups.selected = [];
                         backups.unfiltered = response.data.params;
                         this.setState({loadings,backups},()=>this.handleFilter());
                     }
@@ -133,7 +224,7 @@ class BackupPage extends React.Component {
                     responseMessage(e);
                 }
             }
-        }*/
+        }
     }
     render() {
         return (
@@ -154,7 +245,7 @@ class BackupPage extends React.Component {
                                                    loading={this.state.loadings.backups}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('backup.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('backup.labels.menu')})}}
                                                    selected={this.state.backups.selected}
-                                                   handleModal={this.toggleModal}
+                                                   handleModal={this.confirmBackup}
                                                    others={[
                                                        { handle : ()=>this.toggleImport(), loading : this.state.loadings.backups, icon : faHdd, lang : Lang.get('backup.import.rst.button') }
                                                    ]}
@@ -163,6 +254,33 @@ class BackupPage extends React.Component {
                                 </div>
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
+                                        <thead>
+                                            <TableHeader type="rowHeader" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
+                                        </thead>
+                                        <tbody>
+                                        {this.state.backups.filtered.length === 0 ?
+                                            <DataNotFound colSpan={4} message="No data"/>
+                                            :
+                                            this.state.backups.filtered.map((item)=>
+                                                <tr key={item.value}>
+                                                    <TableCheckBox item={item} className="pl-2"
+                                                                   checked={this.state.backups.selected.findIndex((f) => f === item.value) >= 0}
+                                                                   loading={this.state.loadings.backups} handleCheck={this.handleCheck}/>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-xs">{formatLocaleDate(item.meta.created)}</td>
+                                                    <td className="align-middle text-xs">{formatBytes(item.meta.size,0,true,false)}</td>
+                                                    <TableAction
+                                                        others={[
+                                                            {handle : ()=> this.confirmRestore(item), icon : faUpload, color : 'text-info', lang : Lang.get('backup.restore.button')}
+                                                        ]}
+                                                        icons={{update:faDownload}} className="pr-2" privilege={this.state.privilege} item={item} langs={{update:"Download", delete: Lang.get('labels.delete.label',{Attribute:Lang.get('backup.labels.backup')})}} toggleModal={this.downloadBackup} confirmDelete={this.confirmDelete}/>
+                                                </tr>
+                                            )
+                                        }
+                                        </tbody>
+                                        <tfoot>
+                                            <TableHeader type="rowFooter" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

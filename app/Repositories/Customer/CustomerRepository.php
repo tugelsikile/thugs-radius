@@ -470,6 +470,9 @@ class CustomerRepository
                     }
                 }
             }
+            if ($request->has('limit')) {
+                $customers = $customers->limit($request->limit);
+            }
             $customers = $customers->get();
             foreach ($customers as $customer) {
                 $invoice = null;
@@ -507,6 +510,7 @@ class CustomerRepository
                             'type' => $customer->method_type,
                             'user' => $customer->nas_username,
                             'pass' => $customer->nas_password,
+                            'paid' => $customer->paid_type,
                         ],
                         'voucher' => (object) [
                             'is' => $customer->is_voucher,
@@ -531,11 +535,11 @@ class CustomerRepository
                             ],
                             'active' => (object) [
                                 'at' => $customer->active_at,
-                                'by' => $customer->activeBy
+                                'by' => $customer->activeBy()->get()->only(['id','name'])->first()
                             ],
                             'inactive' => (object) [
                                 'at' => $customer->inactive_at,
-                                'by' => $customer->inactiveBy
+                                'by' => $customer->inactiveBy()->get()->only(['id','name'])->first()
                             ]
                         ]
                     ]

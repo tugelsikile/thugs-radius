@@ -359,7 +359,7 @@ class RST
      * @return Collection
      * @throws Exception
      */
-    public function invoices($customers, bool $existOnly = false, int $limitCustomer = 0, int $limitInvoice = 3): Collection
+    public function invoices($customers, bool $existOnly = false, int $limitCustomer = 0, int $limitInvoice = 0): Collection
     {
         try {
             $response = collect();
@@ -432,13 +432,15 @@ class RST
                             $payment->value = null;
                             $payment->system_invoice = null;
                             $exist = CustomerInvoicePayment::select('id')->whereNotNull('system_id')->where('system_id', $payment->id)->first();
-                            if ($exist == null) {
+                            if ($exist != null) {
+                                $payment->value = $exist->id;
+                            } else {
                                 $invoice = CustomerInvoice::where('system_id', $payment->invoice)->select('id')->first();
                                 if ($invoice != null) {
                                     $payment->system_invoice = $invoice->id;
-                                    $response->push($payment);
                                 }
                             }
+                            $response->push($payment);
                         }
                     }
                 }

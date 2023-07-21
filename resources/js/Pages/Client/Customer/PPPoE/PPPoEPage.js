@@ -12,16 +12,13 @@ import {
     sumGrandtotalCustomer
 } from "../Tools/Mixed";
 import {crudDiscounts, crudTaxes} from "../../../../Services/ConfigService";
-import {allProvinces} from "../../../../Services/RegionService";
 import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../../../../Services/NasService";
 import {crudCustomers} from "../../../../Services/CustomerService";
 import {Popover} from "@mui/material";
 import FormCustomer from "../Tools/FormCustomer";
-import MainHeader from "../../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
-import {faCheckCircle, faInfoCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
+import {faCheckCircle, faCircleNotch, faInfoCircle, faRefresh, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
 import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../../Components/TableComponent";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -30,6 +27,7 @@ import PageLoader from "../../../../Components/PageLoader";
 import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import {crudCompany} from "../../../../Services/CompanyService";
 import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {TableHeader} from "./Mixed";
 
 // noinspection DuplicatedCode
 class PPPoEPage extends React.Component {
@@ -665,6 +663,9 @@ class PPPoEPage extends React.Component {
                                 {this.state.loadings.customers && <CardPreloader/>}
                                 <div className="card-header pl-2" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={
+                                        <button className="btn btn-sm btn-outline-secondary mr-1 text-xs" disabled={this.state.loadings.customers} onClick={()=>this.loadCustomers()} type="button"><FontAwesomeIcon icon={this.state.loadings.customers ? faCircleNotch : faRefresh} size="xs" spin={this.state.loadings.customers}/></button>
+                                                   }
                                                    loading={this.state.loadings.customers}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('customers.pppoe.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('customers.pppoe.labels.menu')})}}
                                                    selected={this.state.customers.selected}
@@ -675,52 +676,7 @@ class PPPoEPage extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead id="main-table-header">
-                                        <tr>
-                                            {this.state.customers.filtered.length > 0 &&
-                                                <th className="align-middle text-center pl-2" width={30}>
-                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle" width={80}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('customers.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('customers.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="profile"
-                                                         name={Lang.get('profiles.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="price"
-                                                         name={Lang.get('profiles.labels.price')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="status" center={true}
-                                                         name={Lang.get('customers.labels.status.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="due"
-                                                         name={Lang.get('customers.labels.due.at')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center text-xs pr-2" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                            <TableHeader type="rowHeader" onSort={this.handleSort} onCheck={this.handleCheck} {...this.state}/>
                                         </thead>
                                         <tbody>
                                         {this.state.customers.filtered.length === 0 ?
@@ -779,52 +735,7 @@ class PPPoEPage extends React.Component {
                                         }
                                         </tbody>
                                         <tfoot>
-                                        <tr>
-                                            {this.state.customers.filtered.length > 0 &&
-                                                <th className="align-middle text-center pl-2" width={30}>
-                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
-                                                        <input id="checkAllFooter" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAllFooter" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle" width={80}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('customers.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('customers.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="profile"
-                                                         name={Lang.get('profiles.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="price"
-                                                         name={Lang.get('profiles.labels.price')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="status" center={true}
-                                                         name={Lang.get('customers.labels.status.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="due"
-                                                         name={Lang.get('customers.labels.due.at')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center text-xs pr-2" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                            <TableHeader type="rowFooter" onSort={this.handleSort} onCheck={this.handleCheck} {...this.state}/>
                                         </tfoot>
                                     </table>
                                 </div>

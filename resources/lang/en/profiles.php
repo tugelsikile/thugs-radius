@@ -11,6 +11,7 @@ return [
             'id' => 'queue_id',
             'target' => 'target'
         ],
+        'upload' => 'upload_to_mikrotik',
         'description' => 'service_description',
         'price' => 'service_price',
         'limitation' => [
@@ -52,7 +53,7 @@ return [
             'info_false' => 'This is not an additional service',
         ],
         'validity' => [
-            'rate' => 'Service Duration',
+            'rate' => 'Duration',
             'unit' => 'Service Duration Unit',
         ],
         'service_type' => 'Service Type',
@@ -70,7 +71,7 @@ return [
             'interface' => 'Interface',
         ],
         'customers' => [
-            'length' => 'Customers Count',
+            'length' => 'Cust. Count',
         ]
     ],
     'create' => [

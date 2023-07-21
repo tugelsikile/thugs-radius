@@ -64,6 +64,11 @@ export const TableHeader = (props) => {
                          name={Lang.get('olt.labels.uptime')}
                          filter={props.filter} handleSort={props.onSort}/>
             </th>
+            <th width={50} className="align-middle">
+                <BtnSort sort="loss"
+                         name={Lang.get('olt.labels.loss')}
+                         filter={props.filter} handleSort={props.onSort}/>
+            </th>
             <th width={50} className="align-middle text-center pr-2 text-xs">{Lang.get('messages.action')}</th>
         </tr>
     )
@@ -110,7 +115,7 @@ export const TableContentGponState = (props)=> {
                 {props.item.loading ?
                     props.item.details === null && <Skeleton variant="text" animation="wave"/>
                 :
-                    <FontAwesomeIcon onMouseOver={props.onPopover} onMouseOut={props.onPopover} data-label="detail" data-onu={props.item.onu} icon={faInfoCircle} className="mr-1 text-primary"/>
+                    <FontAwesomeIcon size="lg" onMouseOver={props.onPopover} onMouseOut={props.onPopover} data-label="detail" data-onu={props.item.onu} icon={faInfoCircle} className="mr-1 text-muted"/>
                 }
                 {props.item.details !== null && props.item.details.name}
             </td>
@@ -346,44 +351,44 @@ export const DetailOnuPopover = (props) => {
                     <tr>
                         <td width={100} className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.index')}</td>
                         <td className="align-middle text-xs" width={5}>:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.onu}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.onu}</td>
                     </tr>
                     <tr>
                         <td className="align-middle text-xs pl-2">Admin State</td>
                         <td className="align-middle text-xs">:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.admin_state}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.admin_state}</td>
                     </tr>
                     <tr>
                         <td className="align-middle text-xs pl-2">Omcc State</td>
                         <td className="align-middle text-xs">:</td>
-                        <td className="align-middle text-xs pr-2">{props.data.omcc_state}</td>
+                        <td className="align-middle text-xs pr-2 text-bold">{props.data.omcc_state}</td>
                     </tr>
                     {props.data.details !== null &&
                         <React.Fragment>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.name')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.name}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.name}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.description')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.description}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.description}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.sn')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.serial_number}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.serial_number}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.duration')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.online_duration}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.online_duration}</td>
                             </tr>
                             <tr>
                                 <td className="align-middle text-xs pl-2">{Lang.get('olt.labels.onu.distance')}</td>
                                 <td className="align-middle text-xs">:</td>
-                                <td className="align-middle text-xs pr-2">{props.data.details.onu_distance}</td>
+                                <td className="align-middle text-xs pr-2 text-bold">{props.data.details.onu_distance}</td>
                             </tr>
                         </React.Fragment>
                     }
@@ -508,3 +513,43 @@ export const TcontProfileTable = (props) => {
         </div>
     )
 }
+export const TablePopoverLos = (props) => {
+    return (
+        <div className="mb-0 card card-outline card-primary" style={{minWidth:200,maxWidth:500}}>
+            <div className="card-header">
+                <strong className="card-title text-xs">LOSS</strong>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped">
+                    <thead>
+                    <tr>
+                        <th className="pl-2 align-middle text-xs">{Lang.get('olt.labels.onu.index')}</th>
+                        <th className="align-middle text-xs">{Lang.get('olt.labels.onu.name')}</th>
+                        <th className="pr-2 align-middle text-xs">{Lang.get('olt.labels.onu.description')}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.data.meta.loss.data.length === 0 ?
+                        <DataNotFound colSpan={3} message="Not Found"/>
+                        :
+                        props.data.meta.loss.data.map((item,index)=>
+                            <tr key={`ias_${index}`}>
+                                <td className="align-middle text-xs pl-2">{item.onu}</td>
+                                <td className="align-middle text-xs">{item.name}</td>
+                                <td className="align-middle text-xs pr-2">{item.description}</td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+export const oltZteLists = [
+    { value : 'zte_320', label : 'ZTE C320' }
+];
+export const oltBrandLists = [
+    { value : 'zte', label : 'ZTE', models : oltZteLists },
+]
+

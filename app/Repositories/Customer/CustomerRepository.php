@@ -209,6 +209,9 @@ class CustomerRepository
             $customer->name = $request[__('customers.form_input.name')];
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
+            if ($request->has(__('customers.form_input.paid_type'))) {
+                $customer->paid_type = $request[__('customers.form_input.paid_type')];
+            }
             if ($request->has(__('customers.form_input.address.phone'))) {
                 $customer->phone = $request[__('customers.form_input.address.phone')];
             } else {
@@ -345,7 +348,17 @@ class CustomerRepository
             $customer->profile = $request[__('profiles.form_input.name')];
             $customer->nas = $request[__('nas.form_input.name')];
             $customer->user = $userid;
-            $customer->code = generateCustomerCode();
+            if ($request->has('system_id')) {
+                $customer->system_id = $request->system_id;
+            }
+            if ($request->has('code')) {
+                $customer->code = $request->code;
+            } else {
+                $customer->code = generateCustomerCode();
+            }
+            if ($request->has(__('customers.form_input.paid_type'))) {
+                $customer->paid_type = $request[__('customers.form_input.paid_type')];
+            }
             if ($request->has(__('customers.form_input.address.phone'))) {
                 $customer->phone = $request[__('customers.form_input.address.phone')];
             }
@@ -373,7 +386,13 @@ class CustomerRepository
             $customer->created_by = $this->me->id;
             $customer->active_at = Carbon::now();
             $customer->saveOrFail();
-            $customer->due_at = generateCompanyExpired($customer->active_at,$customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate);
+            if ($request->has('due_at')) {
+                $customer->due_at = $request->due_at;
+            } else {
+                if ($customer->profileObj->limit_rate > 0 && $customer->profileObj->limit_rate_unit != null) {
+                    $customer->due_at = generateCompanyExpired($customer->active_at,$customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate);
+                }
+            }
             $customer->saveOrFail();
 
             if ($request->has(__('customers.form_input.service.input'))) {
@@ -451,6 +470,9 @@ class CustomerRepository
                     }
                 }
             }
+            if ($request->has('limit')) {
+                $customers = $customers->limit($request->limit);
+            }
             $customers = $customers->get();
             foreach ($customers as $customer) {
                 $invoice = null;
@@ -470,6 +492,7 @@ class CustomerRepository
                         'code' => $customer->code,
                         'user' => $customer->userObj,
                         'nas' => $customer->nasObj,
+                        'brand' => $customer->brand,
                         'profile' => $customer->profileObj,
                         'additional' => $this->additionalServices($customer),
                         'taxes' => $this->taxes($customer),
@@ -487,6 +510,7 @@ class CustomerRepository
                             'type' => $customer->method_type,
                             'user' => $customer->nas_username,
                             'pass' => $customer->nas_password,
+                            'paid' => $customer->paid_type,
                         ],
                         'voucher' => (object) [
                             'is' => $customer->is_voucher,
@@ -511,11 +535,11 @@ class CustomerRepository
                             ],
                             'active' => (object) [
                                 'at' => $customer->active_at,
-                                'by' => $customer->activeBy
+                                'by' => $customer->activeBy()->get()->only(['id','name'])->first()
                             ],
                             'inactive' => (object) [
                                 'at' => $customer->inactive_at,
-                                'by' => $customer->inactiveBy
+                                'by' => $customer->inactiveBy()->get()->only(['id','name'])->first()
                             ]
                         ]
                     ]

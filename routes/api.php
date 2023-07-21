@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\Client\CompanyConfigController;
 use App\Http\Controllers\Client\CompanyController;
 use App\Http\Controllers\Client\CompanyInvoiceController;
@@ -95,6 +96,16 @@ Route::group(['prefix' => 'auth', 'middleware' => ['auth:api','logs']], function
     });
 });
 Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], function () {
+    Route::group(['prefix' => 'backups'], function () {
+        Route::any('/', [BackupController::class, 'crud']);
+        Route::group(['prefix' => 'import'], function () {
+            Route::any('/', [BackupController::class, 'import']);
+            Route::group(['prefix' => 'rst'],function () {
+                Route::any('/read', [BackupController::class, 'readRSTData']);
+                Route::any('/branch', [BackupController::class, 'readRSTBranch']);
+            });
+        });
+    });
     Route::group(['prefix' => 'dashboards'],function () {
         Route::any('/server-statuses', [DashboardController::class, 'serverStatus']);
         Route::post('/online-customers', [DashboardController::class, 'onlineCustomer']);
@@ -141,10 +152,11 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::any('/test-connection', [OltController::class, 'testConnection']);
         Route::group(['prefix' => 'gpon'], function () {
             Route::any('/state', [OltController::class, 'gponStates']);
-            Route::any('/customer', [OltController::class, 'gponCustomer']);
-            Route::any('/unconfigure', function () {
-                return formatResponse(200,"Coming soon");
+            Route::group(['prefix' => 'customers'],function () {
+                Route::any('/', [OltController::class, 'gponCustomer']);
+                Route::post('/loss', [OltController::class, 'lossCustomer']);
             });
+            Route::any('/unconfigure', [OltController::class, 'unConfigure']);
             Route::group(['prefix' => 'profiles'],function () {
                 Route::any('/traffics', [TrafficProfileController::class, 'crud']);
                 Route::any('/tconts', [TrafficProfileController::class, 'tconts']);

@@ -19,7 +19,25 @@ class OltController extends Controller
         $this->repository = new OltRepository();
         $this->validation = new OltValidation();
     }
-
+    public function unConfigure(Request $request) {
+        try {
+            return formatResponse(200,"ok", $this->repository->unConfigure($this->validation->unConfigure($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function lossCustomer(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,"ok", $this->repository->lossCustomer($request));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
     /* @
      * @param Request $request
      * @return JsonResponse

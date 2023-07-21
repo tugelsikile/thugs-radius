@@ -25,11 +25,13 @@ class CompanyConfigRepository
                 $dstDir = storage_path() . '/app/public/companies/' . $company->id . '/';
                 /**** DELETE OLD LOGO ****/
                 if ($company->config != null) {
-                    if ($company->config->logo != null) {
-                        $dstFile = $dstDir . $company->config->logo;
-                        if (File::exists($dstFile)) {
-                            if (!File::isWritable($dstFile)) File::chmod($dstFile,0777);
-                            File::delete($dstFile);
+                    if (property_exists($company->config,'logo')) {
+                        if ($company->config->logo != null) {
+                            $dstFile = $dstDir . $company->config->logo;
+                            if (File::exists($dstFile)) {
+                                if (!File::isWritable($dstFile)) File::chmod($dstFile,0777);
+                                File::delete($dstFile);
+                            }
                         }
                     }
                 }
@@ -44,7 +46,9 @@ class CompanyConfigRepository
                 } else {
                     $updating = true;
                     $config = $company->config;
-                    $config->logo = $logoName;
+                    if (property_exists($config,'logo')) {
+                        $config->logo = $logoName;
+                    }
                     $company->config = $config;
                 }
             }

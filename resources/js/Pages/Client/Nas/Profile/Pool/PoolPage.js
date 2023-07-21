@@ -18,6 +18,8 @@ import {DataNotFound, TableAction, TableCheckBox} from "../../../../../Component
 import FormPool from "./Tools/FormPool";
 import {HeaderAndSideBar} from "../../../../../Components/Layout/Layout";
 import {TableHeader} from "./Tools/Mixed";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
 
 class PoolPage extends React.Component {
     constructor(props) {
@@ -281,8 +283,11 @@ class PoolPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.pools && <CardPreloader/>}
-                                <div className="card-header px-2">
+                                <div className="card-header pl-2">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={
+                                        <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={this.state.loadings.pools} onClick={()=>this.loadPools()}><FontAwesomeIcon icon={this.state.loadings.pools ? faCircleNotch : faRefresh} spin={this.state.loadings.pools} size="xs"/></button>
+                                                   }
                                                    loading={this.state.loadings.pools}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.pools.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.pools.labels.menu')})}}
                                                    selected={this.state.pools.selected}

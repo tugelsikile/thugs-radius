@@ -433,7 +433,7 @@ class RadiusDB
                     $mikrotikRateLimit->saveOrFail();
                     $response = $mikrotikRateLimit;
                 } else {
-                    $mikrotikRateLimit->delete();
+                    if ($mikrotikRateLimit != null) $mikrotikRateLimit->delete();
                 }
             } else {
                 if ($mikrotikRateLimit != null) {

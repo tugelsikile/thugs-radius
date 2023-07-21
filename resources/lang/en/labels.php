@@ -44,6 +44,10 @@ return [
     'add' => [
         'label' => 'Add :Attribute',
     ],
+    'read' => [
+        'submit' => 'Read :Attribute',
+        'pending' => 'Reading :Attribute',
+    ],
     'create' => [
         'label' => 'Create :Attribute',
         'form' => 'Create :Attribute Form',

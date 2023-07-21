@@ -8,6 +8,7 @@ use App\Validations\Nas\BandwidthValidation;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class BandwidthController extends Controller
 {
@@ -22,6 +23,7 @@ class BandwidthController extends Controller
     /* @
      * @param Request $request
      * @return JsonResponse
+     * @throws Throwable
      */
     public function crud(Request $request): JsonResponse
     {

@@ -10,7 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @method static whereDate(string $string, string $format)
+ * @method static whereDate(string $column, string $value)
+ * @method static where(string $column, null|string|mixed $value)
+ * @method static whereNotNull(string $column)
+ * @method static select(string|array|mixed $columns)
  * @property mixed|string $id
  * @property mixed $invoice
  * @property false|mixed|string $code

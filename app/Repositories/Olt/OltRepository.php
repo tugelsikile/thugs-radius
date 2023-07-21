@@ -28,6 +28,133 @@ class OltRepository
     {
         $this->me = auth()->guard('api')->user();
     }
+    public function unConfigure(Request $request) {
+        try {
+            $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
+            $onu = $request[__('olt.form_input.onu')];
+            $portOlt = explode(":", $onu);
+            if (count($portOlt) == 2) {
+                $portOnu = $portOlt[1];
+                $portOlt = $portOlt[0];
+                $telnet = new Telnet($olt->hostname, $olt->port,1,'');
+                $telnet->setLoginPrompt("Username:");
+                if ($olt->configs != null) {
+                    if (property_exists($olt->configs,'prompts')) {
+                        if (property_exists($olt->configs->prompts,'user_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                            if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
+                            }
+                        }
+                    }
+                }
+                $login = $telnet->login($olt->user, $olt->pass);
+                if ($login) {
+                    $responseMessages = $telnet->exec("conf t");
+                    $responseMessages .= "\n" . $telnet->exec("interface gpon-olt_" . $portOlt);
+                    $responseMessages .= "\n" . $telnet->exec("no onu " . $portOnu);
+                    Log::info($responseMessages);
+                    return $this->gponCustomer($request);
+                }
+            }
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param OltModel $olt
+     * @return Collection
+     * @throws Exception
+     */
+    private function lossCustomerOlt(OltModel $olt): Collection
+    {
+        try {
+            $response = collect();
+            $telnet = new Telnet($olt->hostname, $olt->port,1,'');
+            $telnet->setLoginPrompt("Username:");
+            if ($olt->configs != null) {
+                if (property_exists($olt->configs,'prompts')) {
+                    if (property_exists($olt->configs->prompts,'user_prompt')) {
+                        $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                        if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
+                        }
+                    }
+                }
+            }
+            $login = $telnet->login($olt->user, $olt->pass);
+            if ($login) {
+                $responseMessages = $telnet->execPaging("show gpon onu state");
+                $telnet->clearBuffer();
+                $responseMessages = explode("\n", $responseMessages);
+                if (count($responseMessages) > 0) {
+                    unset($responseMessages[0]);
+                    unset($responseMessages[1]);
+                    $responseMessages = array_values($responseMessages);
+                    foreach ($responseMessages as $responseMessage) {
+                        if (strlen($responseMessage) > 0) {
+                            $lines = explode(" ", $responseMessage);
+                            foreach ($lines as $index => $line) {
+                                if (strlen($line) == 0) {
+                                    unset($lines[$index]);
+                                }
+                            }
+                            $lines = array_values($lines);
+                            if (array_key_exists(3,$lines)) {
+                                if (strtolower($lines[3]) == 'los') {
+                                    $name = $description = "";
+                                    $response->push(['onu' => $lines[0], 'name' => $name, 'description' => $description, 'states' => implode(' ', $lines), 'olt' => $olt->name, 'olt_id' => $olt->id]);
+                                    /*$configLines = $telnet->exec("show gpon onu detail-info gpon-onu_" . $lines[0]);
+                                    if (strlen($configLines) > 50) {
+                                        $configLines = explode("\n", $configLines);
+                                        if (count($configLines) > 0) {
+                                            $name = $description = "";
+                                            foreach ($configLines as $index => $configLine) {
+                                                if ($index >= 1) {
+                                                    if (Str::contains($configLine,"Name:")) {
+                                                        $name = trim(str_replace("Name:","",trim($configLine)));
+                                                    } elseif (Str::contains($configLine,"Description:")) {
+                                                        $description = trim(str_replace("Description:","",trim($configLine)));
+                                                    }
+                                                }
+                                            }
+                                            $response->push(['name' => $name, 'description' => $description, 'states' => implode(' ', $lines), 'olt' => $olt->name]);
+                                        }
+                                    }*/
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            $telnet->disconnect();
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function lossCustomer(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            new SwitchDB();
+            $olts = OltModel::all();
+            if ($olts->count() > 0) {
+                foreach ($olts as $olt) {
+                    $response = $response->merge($this->lossCustomerOlt($olt));
+                }
+            }
+            //dd($response);
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return bool
@@ -71,6 +198,13 @@ class OltRepository
             }
             if ($this->me != null) {
                 $olt->created_by = $this->me->id;
+            }
+            if ($request->has(__('olt.form_input.brand'))) {
+                $olt->brand = (object) [ 'name' => null];
+                $olt->brand->name = $request[__('olt.form_input.brand')];
+            }
+            if ($request->has(__('olt.form_input.model'))) {
+                $olt->brand->model = $request[__('olt.form_input.model')];
             }
             $configs = (object) [];
             if ($request->has(__('olt.form_input.prompts.user'))) {
@@ -137,6 +271,24 @@ class OltRepository
                 $olt->pass = null;
             }
             $configs = $olt->configs;
+
+            $brand = $olt->brand;
+            if ($brand == null) $brand = (object) [];
+            if ($request->has(__('olt.form_input.brand'))) {
+                $brand->name = $request[__('olt.form_input.brand')];
+            } else {
+                if (property_exists($brand,'model')) {
+                    unset($brand->name);
+                }
+            }
+            if ($request->has(__('olt.form_input.model'))) {
+                $brand->model = $request[__('olt.form_input.model')];
+            } else {
+                if (property_exists($brand,'model')) {
+                    unset($brand->model);
+                }
+            }
+            $olt->brand = $brand;
 
             if ($request->has(__('olt.form_input.prompts.user'))) {
                 if ($configs != null) {
@@ -260,7 +412,13 @@ class OltRepository
                     'value' => $olt->id,
                     'label' => $olt->name,
                     'meta' => (object) [
+                        'brand' => $olt->brand,
                         'description' => $olt->description,
+                        'loss' => [
+                            'loading' => false,
+                            'count' => 0,
+                            'data' => [],
+                        ],
                         'auth' => (object) [
                             'host' => $olt->hostname,
                             'port' => $olt->port,
@@ -350,7 +508,7 @@ class OltRepository
                     //$onuResponse = str_replace("\x08","", trim($onuResponse));
                     if (! Str::contains($onuResponse,"Admin State")) {
                         if (! Str::contains($onuResponse,"---------------------")) {
-                            if (! Str::contains($onuResponse,"#")) {
+                            if (! Str::contains($onuResponse,"#") || ! Str::contains($onuResponse,">")) {
                                 $onuResponse = explode(' ',$onuResponse);
                                 if (count($onuResponse) > 0) {
                                     $lines = [];
@@ -445,12 +603,23 @@ class OltRepository
                 }
             }
 
-            $onuResponses = $telnet->exec("show gpon onu state");
-            $onuResponses = str_replace("\x08","",trim($onuResponses));
-            $curCommands = "  \r\n";
+            $onuResponses = $telnet->execPaging("show gpon onu state");
+            $onuResponses = explode("\n", $onuResponses);
+            if (count($onuResponses) > 0) {
+                unset($onuResponses[0]);
+                unset($onuResponses[1]);
+                $onuResponses = implode("\n",array_values($onuResponses));
+                /*foreach ($onuResponses as $onuResponses) {
+                    if (strlen($onuResponses) > 0) {
+
+                    }
+                }*/
+            }
+            //$onuResponses = str_replace("\x08","",trim($onuResponses));
+            //$curCommands = "  \r\n";
             //$response = $response->merge($this->parseOnuStateLine($onuResponses));
-            $breaks = 0;
-            for ($index = 0; $index <= 50; $index ++) {
+            //$breaks = 0;
+            /*for ($index = 0; $index <= 50; $index ++) {
                 if ($breaks < 3) {
                     $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
                     $curResponse = str_replace("\x08","",trim($telnet->exec($curCommands)));
@@ -459,7 +628,7 @@ class OltRepository
                     } elseif (Str::contains($curResponse,"#")) {
                         $breaks++;
                     }
-                }
+                }*/
                 /*if (!Str::contains($onuResponses,"#")) {
                     if (strlen($onuResponses) > 30) {
                         ini_set('max_execution_time',100000);
@@ -476,13 +645,13 @@ class OltRepository
                         }
                     }
                 }*/
-            }
+            /*}*/
             $onuResponses = explode("\n", $onuResponses);
             $telnet->disconnect();
             if (count($onuResponses) > 0) {
                 $response = $this->parseOnuStateLine($onuResponses);
             }
-            Log::alert("break counts " . $breaks);
+            //Log::alert("break counts " . $breaks);
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -555,13 +724,13 @@ class OltRepository
                 }
                 $telnet->login($olt->user, $olt->pass);
 
-                $responseCommands = $telnet->exec("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
-                for ($index = 0; $index <= 3; $index++) {
+                $responseCommands = $telnet->execPaging("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
+                /*for ($index = 0; $index <= 3; $index++) {
                     $responseCommands .= "\n";
                     $responseCommands .= $telnet->exec("   \n");
-                }
+                }*/
                 $telnet->disconnect();
-                $responseCommands = collect(explode("\n",str_replace("\x08", "", $responseCommands)));
+                $responseCommands = collect(explode("\n",$responseCommands));
                 if ($responseCommands->count() > 20) {
                     $customer = null;
                     if (Customer::where('onu_index', $request[__('olt.form_input.onu')])->first() != null) {

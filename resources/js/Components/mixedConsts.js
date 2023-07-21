@@ -431,31 +431,31 @@ export const siteData = async () => {
 export const customPreventDefault = (event) => {
     event.preventDefault();
 }
-export const responseMessage = (error) => {
+export const responseMessage = (error, autoClose = 5000) => {
     let message = Lang.get('messages.method');
     try {
         if (typeof error.response !== 'undefined') {
             switch (error.response.status) {
                 case 401 :
-                    showError("Unauthenticated");
+                    showError("Unauthenticated", autoClose);
                     logout();
                 break;
                 case 404 :
-                    showError(Lang.get('messages.404'));
+                    showError(Lang.get('messages.404'), autoClose);
                     break;
             }
             if (typeof error.response.data === 'undefined') {
-                showError(Lang.get('messages.undefined'));
+                showError(Lang.get('messages.undefined'), autoClose);
             } else if (typeof error.response.data.message === 'undefined') {
-                showError(Lang.get('messages.undefined'));
+                showError(Lang.get('messages.undefined'), autoClose);
             } else if (error.response.data.message.length > 0){
-                showError(error.response.data.message);
+                showError(error.response.data.message, autoClose);
             }
         } else {
-            showError(message);
+            showError(message, autoClose);
         }
     } catch (e) {
-        showError(e.message);
+        showError(e.message, autoClose);
     }
 }
 export const routerConnectionType = [
@@ -614,7 +614,7 @@ export const getIpRangeFromAddressAndNetmask = (str) => {
         // xxx.xxx.xxx.xxx
         netmaskblocks = part[1].split('.').map(function(el) { return parseInt(el, 10) });
     }
-    // invert for creating broadcast address (highest address)
+    // invert for creating broadcast address (the highest address)
     let invertedNetmaskblocks = netmaskblocks.map(function(el) { return el ^ 255; });
     let baseAddress = ipaddress.map(function(block, idx) { return block & netmaskblocks[idx]; });
     let broadcastaddress = baseAddress.map(function(block, idx) { return block | invertedNetmaskblocks[idx]; });

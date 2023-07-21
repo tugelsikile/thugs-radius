@@ -48,6 +48,20 @@ return [
     */
 
     'channels' => [
+        'client' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/{company}/' . date('Y-m-d') . '.log'),
+            'level' => env('LOG_LEVEL','debug'),
+            'days' => 14,
+        ],
+
+        'server' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/server/' . date('Y-m-d') . '.log'),
+            'level' => env('LOG_LEVEL','debug'),
+            'days' => 30,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],

@@ -13,6 +13,7 @@ class CompanyInvoiceDiscount extends Model
     use HasFactory;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     protected $casts = [
         'amount' => 'double'

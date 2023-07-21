@@ -15,7 +15,13 @@ import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
 import BtnSort from "../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheckCircle, faInfoCircle, faTicketAlt, faTimesCircle} from "@fortawesome/free-solid-svg-icons";
+import {
+    faCheckCircle,
+    faCircleNotch,
+    faInfoCircle, faRefresh,
+    faTicketAlt,
+    faTimesCircle
+} from "@fortawesome/free-solid-svg-icons";
 import {faWhatsapp} from "@fortawesome/free-brands-svg-icons";
 import {allProvinces} from "../../../Services/RegionService";
 import FormCustomer from "./Tools/FormCustomer";
@@ -26,7 +32,7 @@ import {
     DueAtCustomer, FormatPrice,
     sortStatus,
     StatusCustomer,
-    sumGrandtotalCustomer
+    sumGrandtotalCustomer, TableHeader
 } from "./Tools/Mixed";
 import FormGenerate from "./Tools/FormGenerate";
 import {Popover} from "@mui/material";
@@ -681,8 +687,11 @@ class CustomerPage extends React.Component {
 
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.customers && <CardPreloader/>}
-                                <div className="card-header" id="page-card-header">
+                                <div className="card-header pl-2" id="page-card-header">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={
+                                        <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={this.state.loadings.customers} onClick={()=>this.loadCustomers()}><FontAwesomeIcon icon={this.state.loadings.customers ? faCircleNotch : faRefresh} size="xs" spin={this.state.loadings.customers}/></button>
+                                                   }
                                                    loading={this.state.loadings.customers}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('customers.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('customers.labels.menu')})}}
                                                    selected={this.state.customers.selected}
@@ -696,57 +705,7 @@ class CustomerPage extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead id="main-table-header">
-                                        <tr>
-                                            {this.state.customers.filtered.length > 0 &&
-                                                <th className="align-middle text-center" width={30}>
-                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle" width={80}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('customers.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort sort="type"
-                                                         name={Lang.get('customers.labels.type_short')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('customers.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="profile"
-                                                         name={Lang.get('profiles.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="price"
-                                                         name={Lang.get('profiles.labels.price')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="status" center={true}
-                                                         name={Lang.get('customers.labels.status.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="due"
-                                                         name={Lang.get('customers.labels.due.at')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                            <TableHeader type="rowHeader" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
                                         </thead>
                                         <tbody>
                                         {this.state.customers.filtered.length === 0 ?
@@ -754,18 +713,18 @@ class CustomerPage extends React.Component {
                                             :
                                             this.state.customers.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <TableCheckBox item={item}
+                                                    <TableCheckBox item={item} className="pl-2"
                                                                    checked={this.state.customers.selected.findIndex((f) => f === item.value) >= 0}
                                                                    loading={this.state.loadings.customers} handleCheck={this.handleCheck}/>
-                                                    <td className="align-middle text-center">{item.meta.code}</td>
-                                                    <td className="align-middle text-center"><CustomerTypeIcon customer={item}/></td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-center text-xs">{item.meta.code}</td>
+                                                    <td className="align-middle text-center text-xs"><CustomerTypeIcon customer={item}/></td>
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.auth.type !== 'voucher' &&
                                                             <FontAwesomeIcon icon={faInfoCircle} className="mr-1 text-info" data-type="customer" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} size="xs"/>
                                                         }
                                                         {item.label}
                                                     </td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.nas === null ? null :
                                                             <>
                                                                 <FontAwesomeIcon size="xs" data-type="nas" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
@@ -773,7 +732,7 @@ class CustomerPage extends React.Component {
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-xs">
                                                         {item.meta.profile === null ? null :
                                                             <>
                                                                 <FontAwesomeIcon size="xs" data-type="profile" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info"/>
@@ -781,11 +740,11 @@ class CustomerPage extends React.Component {
                                                             </>
                                                         }
                                                     </td>
-                                                    <td className="align-middle">
+                                                    <td className="align-middle text-xs">
                                                         {FormatPrice(sumGrandtotalCustomer(item),<FontAwesomeIcon size="xs" data-type="price" data-value={item.value} onMouseEnter={this.handlePopOver} onMouseLeave={this.handlePopOver} icon={faInfoCircle} className="mr-1 text-info float-left"/>)}
                                                     </td>
-                                                    <td className="align-middle text-center"><StatusCustomer customer={item}/></td>
-                                                    <td className="align-middle"><DueAtCustomer customer={item}/> </td>
+                                                    <td className="align-middle text-center text-xs"><StatusCustomer customer={item}/></td>
+                                                    <td className="align-middle text-xs"><DueAtCustomer customer={item}/> </td>
                                                     <TableAction others={[
                                                         item.meta.address.phone === null ? null :
                                                             item.meta.address.phone.length < 3 ? null :
@@ -800,63 +759,13 @@ class CustomerPage extends React.Component {
                                                                         {lang : Lang.get('customers.labels.status.activate'), icon : faCheckCircle, color : 'text-success', handle : ()=> this.confirmActive(item) }
                                                                         :
                                                                         {lang : Lang.get('customers.labels.status.inactivate'),icon : faTimesCircle, color : 'text-warning', handle : ()=> this.confirmActive(item) }
-                                                    ]} privilege={this.state.privilege} item={item} langs={{update:item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.update') : Lang.get('customers.update.button'), delete: item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.delete') : Lang.get('customers.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
+                                                    ]} className="pr-2" privilege={this.state.privilege} item={item} langs={{update:item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.update') : Lang.get('customers.update.button'), delete: item.meta.voucher.is ? Lang.get('customers.hotspot.vouchers.delete') : Lang.get('customers.delete.button')}} toggleModal={this.toggleModal} confirmDelete={this.confirmDelete}/>
                                                 </tr>
                                             )
                                         }
                                         </tbody>
                                         <tfoot>
-                                        <tr>
-                                            {this.state.customers.filtered.length > 0 &&
-                                                <th className="align-middle text-center" width={30}>
-                                                    <div style={{zIndex:0}} className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.customers} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle" width={80}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('customers.labels.code')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={50}>
-                                                <BtnSort sort="type"
-                                                         name={Lang.get('customers.labels.type_short')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('customers.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="profile"
-                                                         name={Lang.get('profiles.labels.short_name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={110}>
-                                                <BtnSort sort="price"
-                                                         name={Lang.get('profiles.labels.price')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="status" center={true}
-                                                         name={Lang.get('customers.labels.status.label')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="due"
-                                                         name={Lang.get('customers.labels.due.at')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                            <TableHeader type="rowFooter" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
                                         </tfoot>
                                     </table>
                                 </div>

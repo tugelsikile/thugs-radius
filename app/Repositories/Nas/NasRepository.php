@@ -174,7 +174,11 @@ class NasRepository
             new SwitchDB();
             $me = auth()->guard('api')->user();
             $nas = new Nas();
-            $nas->id = Uuid::uuid4()->toString();
+            if ($request->has('default_id')) {
+                $nas->id = $request->default_id;
+            } else {
+                $nas->id = Uuid::uuid4()->toString();
+            }
             $nas->shortname = $request[__('nas.form_input.name')];
             $nas->description = $request[__('nas.form_input.description')];
             $nas->type = 'other';
@@ -328,15 +332,17 @@ class NasRepository
             if ($nass->count() > 0) {
                 foreach ($nass as $nas) {
                     $status = (object) ['message' => null, 'success' => false ];
-                    switch ($nas->method) {
-                        case 'api' :
-                            $this->mikrotikAPI = new MikrotikAPI($nas);
-                            $status = $this->mikrotikAPI->testConnection();
-                            break;
-                        case 'ssl' :
-                            $this->mikrotikSSL = new MiktorikSSL($nas);
-                            $status = $this->mikrotikSSL->testConnection();
-                            break;
+                    if (! $request->has('ignore_status')) {
+                        switch ($nas->method) {
+                            case 'api' :
+                                $this->mikrotikAPI = new MikrotikAPI($nas);
+                                $status = $this->mikrotikAPI->testConnection();
+                                break;
+                            case 'ssl' :
+                                $this->mikrotikSSL = new MiktorikSSL($nas);
+                                $status = $this->mikrotikSSL->testConnection();
+                                break;
+                        }
                     }
                     $description = $nas->description;
                     if ($description == null) $description = '';

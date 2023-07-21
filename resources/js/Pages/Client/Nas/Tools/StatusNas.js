@@ -59,7 +59,10 @@ class StatusNas extends React.Component {
                                 {this.props.user === null ? null :
                                     this.props.user.meta.company === null ? null :
                                         this.props.user.meta.company.package_obj === null ? null :
-                                            this.props.user.meta.company.package_obj.max_routerboards
+                                            this.props.user.meta.company.package_obj.max_routerboards === 0 ?
+                                                'UNLIMITED'
+                                                :
+                                                this.props.user.meta.company.package_obj.max_routerboards
                                 }
                             </h3>
                             <p>{Lang.get('labels.max',{Attribute:Lang.get('nas.labels.menu')})}</p>

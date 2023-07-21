@@ -3,14 +3,14 @@ import ReactDOM from "react-dom/client";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import {getPrivileges, getRootUrl} from "../../../Components/Authentication";
 import {CardPreloader, responseMessage, siteData} from "../../../Components/mixedConsts";
-import {cancelOltService, crudOlt} from "../../../Services/OltService";
+import {cancelOltService, crudOlt, getGponCustomer, losCustomer} from "../../../Services/OltService";
 import PageLoader from "../../../Components/PageLoader";
 import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import PageTitle from "../../../Components/Layout/PageTitle";
 import MainFooter from "../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
 import {faCircleNotch, faPlay, faRefresh, faTicketAlt} from "@fortawesome/free-solid-svg-icons";
-import {TableHeader} from "./Mixed";
+import {TableHeader, TablePopoverLos} from "./Mixed";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../Components/TableComponent";
 import FormOlt from "./FormOlt";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -19,6 +19,7 @@ import {crudNas, crudProfile, crudProfileBandwidth, crudProfilePools} from "../.
 import {crudCustomers} from "../../../Services/CustomerService";
 import {crudCompany} from "../../../Services/CompanyService";
 import {crudDiscounts, crudTaxes} from "../../../Services/ConfigService";
+import {Popover} from "@mui/material";
 
 
 class OltPage extends React.Component {
@@ -26,8 +27,8 @@ class OltPage extends React.Component {
         super(props);
         this.state = {
             user : JSON.parse(localStorage.getItem('user')), root : window.origin,
-            loadings : { privilege : false, site : false, olt : true, customers : true, nas : true, profiles : true, pools : true, bandwidths : true, companies : true, taxes : true, discounts : true },
-            privilege : null, menus : [], site : null, companies : [], taxes : [], discounts : [],
+            loadings : { privilege : false, site : false, olt : true, customers : true, nas : true, profiles : true, pools : true, bandwidths : true, companies : true, taxes : true, discounts : true, loss : true },
+            privilege : null, menus : [], site : null, companies : [], taxes : [], discounts : [], loss : [],
             customers : [], nas : [], profiles : [], pools : [], bandwidths : [],
             olt : { filtered : [], unfiltered : [], selected : [] },
             filter : { olt : null, keywords : '', sort : { by : 'name', dir : 'asc' }, page : { value : 1, label : 1}, data_length : 20, paging : [], },
@@ -51,6 +52,7 @@ class OltPage extends React.Component {
         this.loadTaxes = this.loadTaxes.bind(this);
         this.loadDiscounts = this.loadDiscounts.bind(this);
         this.handleSearchParams = this.handleSearchParams.bind(this);
+        this.handlePopOver = this.handlePopOver.bind(this);
     }
     componentDidMount() {
         this.setState({root:getRootUrl()});
@@ -100,11 +102,25 @@ class OltPage extends React.Component {
                                 })
                                 .then(()=>{
                                     loadings.taxes = false; this.setState({loadings},()=>this.loadTaxes());
+                                })
+                                .then(()=>{
+                                    loadings.loss = false; this.setState({loadings},()=>this.loadLosCustomer());
                                 });
                         });
                     });
             }
         }
+    }
+    handlePopOver(event) {
+        let popover = this.state.popover;
+        popover.open = !this.state.popover.open;
+        popover.anchorEl = event.currentTarget;
+        popover.data = null;
+        let index = this.state.olt.unfiltered.findIndex((f) => f.value === event.currentTarget.getAttribute('data-value'));
+        if (index >= 0) {
+            popover.data = <TablePopoverLos data={this.state.olt.unfiltered[index]}/>;
+        }
+        this.setState({popover});
     }
     handleSearchParams() {
         const queryString = window.location.search;
@@ -256,6 +272,69 @@ class OltPage extends React.Component {
         olt.filtered = olt.filtered.slice(indexFirst, indexLast);
         loadings.olt = false;
         this.setState({loadings,olt});
+    }
+    async loadLosCustomer() {
+        if (! this.state.loadings.loss) {
+            let loadings = this.state.loadings;
+            let olt = this.state.olt;
+            loadings.loss = true; this.setState({loadings});
+            try {
+                let response = await losCustomer();
+                if (response.data.params === null) {
+                    loadings.loss = false; this.setState({loadings});
+                    showError(response.data.message);
+                } else {
+                    loadings.loss = false;
+                    let loss = response.data.params;
+                    this.setState({loadings,loss},()=>{
+                        if (response.data.params.length > 0) {
+                            response.data.params.map((item,index)=>{
+                                this.loadLosDetail(item)
+                                    .then((response)=>{
+                                        if (response !== null) {
+                                            loss[index].name = response.name;
+                                            loss[index].description = response.description;
+                                            if (olt.unfiltered.length > 0) {
+                                                let index = olt.unfiltered.findIndex((f)=> f.value === item.olt_id);
+                                                if (index >= 0) {
+                                                    if (olt.unfiltered[index].meta.loss.data.findIndex((f)=> f.onu === item.onu) < 0) {
+                                                        olt.unfiltered[index].meta.loss.data.push(item);
+                                                    }
+                                                }
+                                                index = olt.filtered.findIndex((f)=> f.value === item.olt_id);
+                                                if (index >= 0) {
+                                                    if (olt.filtered[index].meta.loss.data.findIndex((f)=> f.onu === item.onu) < 0) {
+                                                        olt.filtered[index].meta.loss.data.push(item);
+                                                    }
+                                                }
+                                            }
+                                            this.setState({loss,olt});
+                                        }
+                                    })
+                            })
+                        }
+                    });
+                }
+            } catch (e) {
+                loadings.loss = false; this.setState({loadings});
+                responseMessage(e);
+            }
+        }
+    }
+    async loadLosDetail(item) {
+        try {
+            const formData = new FormData();
+            if (this.state.olt !== null) formData.append(Lang.get('olt.form_input.id'), item.olt_id);
+            formData.append(Lang.get('olt.form_input.onu'), item.onu);
+            let response = await getGponCustomer(formData);
+            if (response.data.params !== null) {
+                return response.data.params;
+            } else {
+                return null;
+            }
+        } catch (e) {
+            return null;
+        }
     }
     async loadTaxes(data = null) {
         if (! this.state.loadings.taxes ) {
@@ -539,6 +618,7 @@ class OltPage extends React.Component {
     render() {
         return (
             <React.StrictMode>
+                <Popover sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
                 <FormOlt open={this.state.modal.open} data={this.state.modal.data} onClose={this.toggleModal} onUpdate={this.loadOlt}/>
 
                 <PageLoader/>
@@ -571,7 +651,7 @@ class OltPage extends React.Component {
                                             </thead>
                                             <tbody>
                                             {this.state.olt.unfiltered.length === 0 ?
-                                                <DataNotFound colSpan={6} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
+                                                <DataNotFound colSpan={7} message={Lang.get('labels.not_found',{Attribute:Lang.get('olt.labels.menu')})}/>
                                                 :
                                                 this.state.olt.unfiltered.map((item)=>
                                                     <tr key={item.value}>
@@ -581,6 +661,11 @@ class OltPage extends React.Component {
                                                         <td className="align-middle text-xs">{item.meta.auth.port}</td>
                                                         <td className="align-middle text-xs">*****</td>
                                                         <td className="align-middle text-xs">{item.meta.remote.uptime}</td>
+                                                        <td className="align-middle text-xs text-center">
+                                                            {this.state.loadings.loss ? <FontAwesomeIcon icon={faCircleNotch} spin={true}/> :
+                                                                <span onMouseOut={this.handlePopOver} onMouseOver={this.handlePopOver} data-value={item.value} className={item.meta.loss.data.length === 0 ? "py-2 badge badge-success d-block" : "py-2 badge badge-warning d-block"}>{item.meta.loss.data.length}</span>
+                                                            }
+                                                        </td>
                                                         <TableAction
                                                             others={[
                                                                 {handle:()=>this.toggleOlt(item), icon : faPlay, lang : Lang.get('olt.labels.detail')}

@@ -11,6 +11,7 @@ class Currency extends Model
 
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
     protected $fillable = [
         'code',
         'name',

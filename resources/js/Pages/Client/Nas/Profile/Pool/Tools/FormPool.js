@@ -51,7 +51,8 @@ class FormPool extends React.Component {
                 form.id = props.data.value, form.name = props.data.label, form.description = props.data.meta.description,
                     form.upload = true, form.code = props.data.meta.address.code,
                     form.first = props.data.meta.address.first, form.last = props.data.meta.address.last,
-                    form.nas = props.data.meta.nas === null ? null : {
+                    form.nas = null;
+                    /*form.nas = props.data.meta.nas === null ? null : {
                         value : props.data.meta.nas.id, label : props.data.meta.nas.shortname,
                         meta : {
                             auth : {
@@ -63,14 +64,28 @@ class FormPool extends React.Component {
                                 pass : props.data.meta.nas.password
                             }
                         }
-                    };
+                    };*/
+                if (props.data.meta.nas !== null && props.nas !== null) {
+                    if (props.nas.length > 0) {
+                        index = props.nas.findIndex((f)=> f.value === props.data.meta.nas.id);
+                        if (index >= 0) {
+                            form.nas = props.nas[index];
+                        }
+                    }
+                }
                 index = poolModuleList.findIndex((f)=> f.value === props.data.meta.address.module);
                 if (index >= 0) {
                     form.module = poolModuleList[index];
                 }
             }
         }
-        this.setState({form,loading:false});
+        this.setState({form,loading:false},()=>{
+            if (props.open) {
+                if (form.nas !== null) {
+                    this.loadInteraces();
+                }
+            }
+        });
     }
     toggleNas(data = null) {
         let modals = this.state.modals;
@@ -239,7 +254,8 @@ class FormPool extends React.Component {
                                             isDisabled={this.state.loading || this.props.loadings.nas}
                                             isLoading={this.props.loadings.nas}/>
                                         :
-                                        <div className="form-control form-control-sm text-xs">{this.state.form.nas.label}</div>
+                                        this.state.form.nas === null ? null :
+                                            <div className="form-control form-control-sm text-xs">{this.state.form.nas.label}</div>
                                     }
                                 </div>
                                 <div className="col-md-3">
@@ -306,11 +322,11 @@ class FormPool extends React.Component {
 
                             <div className="form-group row">
                                 <label className="col-md-3 col-form-label text-xs">{Lang.get('nas.labels.interface',{Attribute:Lang.get('nas.labels.menu')})}</label>
-                                <div className="col-md-5">
+                                <div className="col-md-7">
                                     <Select options={this.state.interfaces.list}
                                             value={this.state.form.interface}
                                             onChange={(e)=>this.handleSelect(e,'interface')}
-                                            maxMenuHeight={150} styles={FormControlSMReactSelect}
+                                            maxMenuHeight={150} styles={FormControlSMReactSelect} menuPlacement="top"
                                             isLoading={this.state.interfaces.loading}
                                             isDisabled={this.state.loading || this.state.interfaces.loading}
                                             loadingMessage={Lang.get('labels.loading',{Attribute:Lang.get('nas.labels.interface',{Attribute:Lang.get('nas.labels.menu')})})}

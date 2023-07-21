@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed $user
  * @property mixed $pass
  * @property mixed|object $configs
+ * @property mixed|object $brand
  */
 class Olt extends Model
 {
@@ -29,5 +30,6 @@ class Olt extends Model
 
     protected $casts = [
         'configs' => 'object',
+        'brand' => 'object',
     ];
 }

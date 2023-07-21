@@ -13,6 +13,7 @@ class CompanyInvoicePackage extends Model
     use HasFactory, softDeletes;
     protected $keyType = 'string';
     public $incrementing = false;
+    protected $connection = 'mysql';
 
     protected $casts = [
         'price' => 'double',

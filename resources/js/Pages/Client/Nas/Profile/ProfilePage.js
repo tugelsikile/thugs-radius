@@ -18,10 +18,11 @@ import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import {DataNotFound, TableAction, TableCheckBox} from "../../../../Components/TableComponent";
 import FormProfile from "./Tools/FormProfile";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faBriefcase,faInfoCircle} from "@fortawesome/free-solid-svg-icons";
+import {faBriefcase, faCircleNotch, faInfoCircle, faRefresh} from "@fortawesome/free-solid-svg-icons";
 import {Popover} from "@mui/material";
 import {DetailBandwidth, DetailNas, DetailPool} from "./Tools/DetailCard";
 import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {TableHeader} from "./Tools/Mixed";
 
 // noinspection DuplicatedCode
 class ProfilePage extends React.Component {
@@ -424,6 +425,9 @@ class ProfilePage extends React.Component {
                                 {this.state.loadings.profiles && <CardPreloader/>}
                                 <div className="card-header pl-2">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={
+                                        <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={this.state.loadings.profiles} onClick={()=>this.loadProfiles()}><FontAwesomeIcon icon={this.state.loadings.profiles ? faCircleNotch : faRefresh} spin={this.state.loadings.profiles} size="xs"/></button>
+                                                   }
                                                    loading={this.state.loadings.profiles}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('profiles.labels.menu')}),delete:Lang.get('labels.delete.label',{Attribute:Lang.get('profiles.labels.menu')})}}
                                                    selected={this.state.profiles.selected}
@@ -434,52 +438,7 @@ class ProfilePage extends React.Component {
                                 <div className="card-body p-0">
                                     <table className="table table-striped table-sm">
                                         <thead>
-                                        <tr>
-                                            {this.state.profiles.filtered.length > 0 &&
-                                                <th rowSpan={2} className="align-middle text-center pl-2" width={30}>
-                                                    <div className="custom-control custom-checkbox">
-                                                        <input id="checkAll" data-id="" disabled={this.state.loadings.profiles} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox"/>
-                                                        <label htmlFor="checkAll" className="custom-control-label"/>
-                                                    </div>
-                                                </th>
-                                            }
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('profiles.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="nas"
-                                                         name={Lang.get('nas.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="pool"
-                                                         name={Lang.get('nas.pools.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="bandwidth"
-                                                         name={Lang.get('bandwidths.labels.name')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="validity"
-                                                         name={Lang.get('profiles.labels.validity.rate')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="price"
-                                                         name={Lang.get('profiles.labels.price')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="customers"
-                                                         name={Lang.get('profiles.labels.customers.length')}
-                                                         filter={this.state.filter} handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center pr-2" width={50}>{Lang.get('messages.action')}</th>
-                                        </tr>
+                                            <TableHeader type="rowHeader" {...this.state} onCheck={this.handleCheck} onSort={this.handleSort}/>
                                         </thead>
                                         <tbody>
                                         {this.state.profiles.filtered.length === 0 ?
@@ -549,6 +508,9 @@ class ProfilePage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                            <TableHeader type="rowFooter" {...this.state} onCheck={this.handleCheck} onSort={this.handleSort}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

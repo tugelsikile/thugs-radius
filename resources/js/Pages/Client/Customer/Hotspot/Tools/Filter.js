@@ -2,13 +2,16 @@
 
 import React from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faFilter} from "@fortawesome/free-solid-svg-icons";
+import {faCircleNotch, faFilter, faRefresh} from "@fortawesome/free-solid-svg-icons";
 import Select from "react-select";
 import {FormControlSMReactSelect, ucFirst} from "../../../../../Components/mixedConsts";
 
 export const FilterButton = (props) => {
     return (
-        <button title={Lang.get('labels.filter',{Attribute:Lang.get('customers.hotspot.labels.menu')})} onClick={props.onClick} disabled={props.loading} type="button" className="btn btn-outline-secondary btn-sm mr-1 text-xs"><FontAwesomeIcon size="sm" icon={faFilter}/></button>
+        <React.Fragment>
+            <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={props.loading} onClick={()=>props.onReload()}><FontAwesomeIcon icon={props.loading ? faCircleNotch : faRefresh} size="xs" spin={props.loading}/></button>
+            <button title={Lang.get('labels.filter',{Attribute:Lang.get('customers.hotspot.labels.menu')})} onClick={props.onClick} disabled={props.loading} type="button" className="btn btn-outline-secondary btn-sm mr-1 text-xs"><FontAwesomeIcon size="sm" icon={faFilter}/></button>
+        </React.Fragment>
     )
 }
 export const FilterWrapper = (props) => {

@@ -477,46 +477,48 @@ class MikrotikAPI
     }
     public function saveProfileHotspot(NasProfile $nasProfile, $defaultName) {
         try {
-            $this->query = (new Query("/ip/hotspot/user/profile/print"))
-                ->where('name', $defaultName);
-            if ($nasProfile->profile_id != null) {
+            if ($this->client != null) {
                 $this->query = (new Query("/ip/hotspot/user/profile/print"))
-                    ->where('.id', $nasProfile->profile_id);
-            }
-            $res = $this->client->query($this->query)->read();
-            if (collect($res)->count() > 0) {
-                $this->query = (new Query("/ip/hotspot/user/profile/set"))
-                    ->equal('name', $defaultName);
-                $res = collect($res)->first();
-                if (array_key_exists('.id', $res)) {
-                    $this->query = $this->query->equal('.id', $res['.id']);
+                    ->where('name', $defaultName);
+                if ($nasProfile->profile_id != null) {
+                    $this->query = (new Query("/ip/hotspot/user/profile/print"))
+                        ->where('.id', $nasProfile->profile_id);
                 }
-            } else {
-                $this->query = (new Query("/ip/hotspot/user/profile/add"))
-                    ->equal("name", $nasProfile->code)
-                    ->equal('session-timeout','00:40:00')
-                    ->equal('idle-timeout','00:20:00')
-                    ->equal('status-autorefresh','00:10:00')
-                    ->equal('shared-users', 1)
-                    ->equal('mac-cookie-timeout','1d 00:00:00')
-                    ->equal('add-mac-cookie','yes');
-            }
-            if ($nasProfile->poolObj->module == 'mikrotik') {
-                $this->query = $this->query->equal("address-pool", $nasProfile->poolObj->code);
-            }
-            $rl = $this->rateLimit($nasProfile->bandwidthObj);
-            if ($rl != null || strlen($rl) > 3) {
-                $this->query = $this->query->equal('rate-limit', $rl);
-            }
-            if ($nasProfile->parent_queue != null) {
-                $this->query = $this->query->equal('parent-queue', $nasProfile->parent_queue->name);
-            }
-            $res = $this->client->query($this->query)->read();
-            if ($res != null) {
-                if (array_key_exists('after', $res)) {
-                    if (array_key_exists('ret', $res['after'])) {
-                        $nasProfile->profile_id = $res['after']['ret'];
-                        $nasProfile->saveOrFail();
+                $res = $this->client->query($this->query)->read();
+                if (collect($res)->count() > 0) {
+                    $this->query = (new Query("/ip/hotspot/user/profile/set"))
+                        ->equal('name', $defaultName);
+                    $res = collect($res)->first();
+                    if (array_key_exists('.id', $res)) {
+                        $this->query = $this->query->equal('.id', $res['.id']);
+                    }
+                } else {
+                    $this->query = (new Query("/ip/hotspot/user/profile/add"))
+                        ->equal("name", $nasProfile->code)
+                        ->equal('session-timeout','00:40:00')
+                        ->equal('idle-timeout','00:20:00')
+                        ->equal('status-autorefresh','00:10:00')
+                        ->equal('shared-users', 1)
+                        ->equal('mac-cookie-timeout','1d 00:00:00')
+                        ->equal('add-mac-cookie','yes');
+                }
+                if ($nasProfile->poolObj->module == 'mikrotik') {
+                    $this->query = $this->query->equal("address-pool", $nasProfile->poolObj->code);
+                }
+                $rl = $this->rateLimit($nasProfile->bandwidthObj);
+                if ($rl != null || strlen($rl) > 3) {
+                    $this->query = $this->query->equal('rate-limit', $rl);
+                }
+                if ($nasProfile->parent_queue != null) {
+                    $this->query = $this->query->equal('parent-queue', $nasProfile->parent_queue->name);
+                }
+                $res = $this->client->query($this->query)->read();
+                if ($res != null) {
+                    if (array_key_exists('after', $res)) {
+                        if (array_key_exists('ret', $res['after'])) {
+                            $nasProfile->profile_id = $res['after']['ret'];
+                            $nasProfile->saveOrFail();
+                        }
                     }
                 }
             }

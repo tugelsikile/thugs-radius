@@ -10,7 +10,7 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+/*const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 mix.webpackConfig({
     plugins: [
         new NodePolyfillPlugin(),
@@ -20,9 +20,9 @@ mix.webpackConfig({
             "querystring" : require.resolve("querystring-es3")
         }
     }
-});
+});*/
 
-mix.sass('resources/css/custom-thead.scss','public/css');
+//mix.sass('resources/css/custom-thead.scss','public/css');
 //mix.copy('node_modules/crypto-js','public/js/plugins/crypto-js');
 //mix.js('resources/js/src/guests/welcome.js','public/js/guests');
 //mix.sass('resources/css/progress-animation.scss','public/css');
@@ -55,7 +55,6 @@ mix.js('resources/js/src/auth/configs/discounts.js','public/js/auth/configs');
 
 /*---------- CLIENTS ----------*/
 
-mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
 /*
 mix.js('resources/js/src/clients/index.js','public/js/clients');
 mix.js('resources/js/src/clients/wizard.js','public/js/clients');
@@ -74,6 +73,9 @@ mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/custo
 mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
 */
+mix.js('resources/js/src/clients/backup/backup.js','public/js/clients/backup');
+mix.js('resources/js/src/clients/olt/index.js','public/js/clients/olt');
+
 
 /********* CUSTOMERS ***********/
 /*

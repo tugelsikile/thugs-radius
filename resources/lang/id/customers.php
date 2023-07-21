@@ -22,6 +22,7 @@ return [
             'name' => 'nama_layanan_tambahan',
             'delete' => 'hapus_layanan_tambahan',
         ],
+        'paid_type' => 'jenis_pembayaran',
         'taxes' => [
             'input' => 'pajak',
             'id' => 'data_pajak',

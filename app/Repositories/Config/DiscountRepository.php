@@ -5,7 +5,10 @@
 
 namespace App\Repositories\Config;
 
+use App\Helpers\SwitchDB;
 use App\Models\Discount;
+use App\Repositories\Client\CompanyRepository;
+use App\Repositories\User\UserRepository;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -93,6 +96,7 @@ class DiscountRepository
         try {
             $me = auth()->guard('api')->user();
             $response = collect();
+            new SwitchDB("mysql");
             $discounts = Discount::orderBy('created_at', 'asc');
             if (strlen($request->id) > 0) $discounts = $discounts->where('id', $request->id);
             if ($me != null) {
@@ -103,6 +107,17 @@ class DiscountRepository
             $discounts = $discounts->get();
             if ($discounts->count() > 0) {
                 foreach ($discounts as $discount) {
+                    $company = $discount->company;
+                    $createBy = $updateBy = null;
+                    if ($discount->created_by != null) {
+                        $createBy = (new UserRepository())->table(new Request(['id' => $discount->created_by, 'minify' => true]))->first();
+                    }
+                    if ($discount->updated_by != null) {
+                        $updateBy = (new UserRepository())->table(new Request(['id' => $discount->updated_by, 'minify' => true]))->first();
+                    }
+                    if ($company != null) {
+                        $company = (new CompanyRepository())->table(new Request(['id' => $company, 'minify' => true]))->first();
+                    }
                     $response->push((object) [
                         'value' => $discount->id,
                         'label' => $discount->name,
@@ -110,15 +125,15 @@ class DiscountRepository
                             'code' => $discount->code,
                             'description' => $discount->description,
                             'amount' => $discount->amount,
-                            'company' => $discount->companyObj,
+                            'company' => $company,
                             'timestamps' => (object) [
                                 'create' => (object) [
                                     'at' => Carbon::parse($discount->created_at)->format('Y-m-d H:i:s'),
-                                    'by' => $discount->createdBy,
+                                    'by' => $createBy,
                                 ],
                                 'update' => (object) [
                                     'at' => Carbon::parse($discount->updated_at)->format('Y-m-d H:i:s'),
-                                    'by' => $discount->updatedBy,
+                                    'by' => $updateBy,
                                 ]
                             ]
                         ]

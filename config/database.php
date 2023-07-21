@@ -74,6 +74,19 @@ return [
             'collation' => 'utf8mb4_unicode_ci',
         ],
 
+        'backup' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_BACKUP_HOST', '127.0.0.1'),
+            'port' => env('DB_BACKUP_PORT', '3306'),
+            'database' => env('DB_BACKUP_DATABASE', 'forge'),
+            'username' => env('DB_BACKUP_USERNAME', 'forge'),
+            'password' => env('DB_BACKUP_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+        ],
+
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),

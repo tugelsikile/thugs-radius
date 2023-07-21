@@ -28,7 +28,7 @@ export const crudGponStates = async (data) => {
 export const getGponCustomer = async (data) => {
     let request = Axios({
         headers : axiosHeader(),
-        method : "post", url : window.origin + "/api/clients/olt/gpon/customer", data : data
+        method : "post", url : window.origin + "/api/clients/olt/gpon/customers", data : data
     });
     return Promise.resolve(request);
 }
@@ -39,7 +39,7 @@ export const cancelOltService = () => {
 export const crudOltCustomer = async (data) => {
     let request = Axios({
         headers : axiosHeader(),
-        method : "post", url : window.origin + "/api/clients/olt/gpon/customer", data : data
+        method : "post", url : window.origin + "/api/clients/olt/gpon/customers", data : data
     });
     return Promise.resolve(request);
 }
@@ -61,6 +61,13 @@ export const crudOltProfileVlan = async (data) => {
     let request = Axios({
         headers : axiosHeader(),
         method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/vlans", data : data
+    });
+    return Promise.resolve(request);
+}
+export const losCustomer = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/customers/loss", data : data
     });
     return Promise.resolve(request);
 }

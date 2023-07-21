@@ -15,6 +15,7 @@ import {HeaderAndSideBar} from "../../../Components/Layout/Layout";
 import {PageCardSearch, PageCardTitle} from "../../../Components/PageComponent";
 import {TableHeader} from "./Tools/Mixed";
 import {DataNotFound, TableAction, TableCheckBox, TablePaging} from "../../../Components/TableComponent";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
 
 // noinspection DuplicatedCode
 class NasPage extends React.Component {
@@ -289,8 +290,11 @@ class NasPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.nas && <CardPreloader/>}
-                                <div className="card-header">
+                                <div className="card-header pl-2">
                                     <PageCardTitle privilege={this.state.privilege}
+                                                   filter={
+                                                        <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" onClick={()=>this.loadNas()} disabled={this.state.loadings.nas}><FontAwesomeIcon icon={this.state.loadings.nas ? faCircleNotch : faRefresh} spin={this.state.loadings.nas} size="xs"/></button>
+                                                   }
                                                    loading={this.state.loadings.nas}
                                                    langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('nas.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('nas.labels.menu')})}}
                                                    selected={this.state.nas.selected}
@@ -322,12 +326,12 @@ class NasPage extends React.Component {
                                                     <td className="align-middle text-center text-xs">*****</td>
                                                     <td className="align-middle text-center text-xs">
                                                         {item.meta.status.success ?
-                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-success">
+                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-success d-block py-2">
                                                                 {item.loading && <FontAwesomeIcon icon="circle-notch" spin={true} className="mr-1"/> }
                                                                 CONNECTED
                                                             </span>
                                                             :
-                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-warning">
+                                                            <span onClick={()=>this.reloadRouterStatus(item)} style={{cursor:'pointer'}} title={item.meta.status.message} className="badge badge-warning d-block py-2">
                                                                 {item.loading && <FontAwesomeIcon icon="circle-notch" spin={true} className="mr-1"/> }
                                                                 NOT CONNECTED
                                                             </span>

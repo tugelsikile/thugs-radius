@@ -8,18 +8,16 @@ import {
 } from "../../../../Components/mixedConsts";
 import {
     CustomerReactSelectComponent,
-    formatVA, midtransTransactionDetails,
+    midtransTransactionDetails,
     PaymentChannelReactSelectComponent,
-    TransactionCards, TransactionQrCard,
-    TransactionQrDuitku
+    TransactionCards, TransactionQrCard
 } from "./Mixed";
 import {crudCustomerInvoices, crudCustomers} from "../../../../Services/CustomerService";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faCartShopping,
     faCircleNotch,
-    faExclamationTriangle, faFileImage,
-    faQrcode,
+    faExclamationTriangle,
     faRefresh
 } from "@fortawesome/free-solid-svg-icons";
 import {showError, showSuccess} from "../../../../Components/Toaster";
@@ -30,11 +28,7 @@ import {
     statusTransactionBRIAPI,
     statusTransactionDUITKU, statusTransactionMidtrans
 } from "../../../../Services/PaymentGatewayService";
-import {faCopy} from "@fortawesome/free-regular-svg-icons";
-import QRCode from "react-qr-code";
-import html2canvas from "html2canvas";
 
-const midtransClient = require('midtrans-client');
 // noinspection CommaExpressionJS
 class OnlinePayment extends React.Component {
     constructor(props) {

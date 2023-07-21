@@ -23,8 +23,6 @@ class Nas extends Model
     public $incrementing = false;
 
     protected $hidden = [
-        'user',
-        'secret',
         'salt_hash',
     ];
 

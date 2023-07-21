@@ -166,4 +166,25 @@ class C320
             return collect();
         }
     }
+
+    /* @
+     * @param string $onuIndex
+     * @return string|null
+     */
+    public function showGPonOnuDetailInfo(string $onuIndex): ?string
+    {
+        try {
+            $response = null;
+            if ($this->telnet != null) {
+                $responseMessage = $this->telnet->execPaging("show gpon onu detail-info gpon-onu_" . $onuIndex);
+                if (strlen($responseMessage) > 10) {
+                    $response = $responseMessage;
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
 }

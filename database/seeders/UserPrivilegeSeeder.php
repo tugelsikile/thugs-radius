@@ -86,6 +86,9 @@ class UserPrivilegeSeeder extends Seeder
                                 case 'clients.customers':
                                 case 'clients.customers.pppoe':
                                 case 'clients.customers.hotspot':
+                                case 'clients.olt':
+                                case 'clients.olt.customers.connect':
+                                case 'clients.olt.gpon.un_configure':
                                     $privilege->read = true;
                                     $privilege->create = true;
                                     $privilege->update = true;

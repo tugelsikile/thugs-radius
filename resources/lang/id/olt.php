@@ -39,10 +39,18 @@ return [
             'sn' => 'Serial Number',
             'distance' => 'ONU Dist.',
             'duration' => 'Durasi Online',
+            'un_configure' => [
+                'menu' => 'Hapus Konfigurasi GPon',
+                'info' => 'Hapus Konfigurasi GPon yang dipilih (awas salah)',
+            ],
         ],
         'customers' => [
             'link' => 'Hubungkan ke Pelanggan',
             'unlink' => 'Putuskan Hubungan Pelanggan',
+            'link_unlink' => [
+                'menu' => 'Hubungkan dan atau putuskan hubungan GPon pelanggan',
+                'info' => 'Bisa menghubungkan dan atau memutuskan hubungan GPon pelanggan (bukan konfigurasi)',
+            ]
         ],
         'loss' => 'LOS',
         'community' => [
@@ -65,4 +73,11 @@ return [
             'cancel' => 'Batal',
         ],
     ],
+    'cards' => [
+        'ports' => [
+            'count' => 'Jumlah Port',
+            'used' => 'Port Terpakai',
+            'available' => 'Port Tersedia',
+        ]
+    ]
 ];

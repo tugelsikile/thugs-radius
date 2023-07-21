@@ -624,6 +624,25 @@ class OltRepository
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             $customer->olt = $olt->id;
             $customer->onu_index = $request[__('olt.form_input.onu')];
+            $config = null;
+            if ($olt->brand != null) {
+                if (property_exists($olt->brand,'name') && property_exists($olt->brand,'model')) {
+                    switch ($olt->brand->name) {
+                        default:
+                        case 'zte':
+                            switch ($olt->brand->model){
+                                default:
+                                case 'zte_320':
+                                    $config = (new C320($olt))->showGPonOnuDetailInfo($customer->onu_index);
+                                    if ($config != null) {
+                                        $customer->gpon_configs = $config;
+                                    }
+                                    break;
+                            }
+                        break;
+                    }
+                }
+            }
             $customer->saveOrFail();
             return $this->gponCustomer(new Request([
                 __('olt.form_input.id') => $olt->id,

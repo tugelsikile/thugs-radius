@@ -473,6 +473,9 @@ class CustomerRepository
             if ($request->has('limit')) {
                 $customers = $customers->limit($request->limit);
             }
+            /*if ($request->has('unregister')) {
+                $customers = $customers->whereNull('onu_index')->whereNull('olt');
+            }*/
             $customers = $customers->get();
             foreach ($customers as $customer) {
                 $invoice = null;

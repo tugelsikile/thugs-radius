@@ -39,10 +39,18 @@ return [
             'sn' => 'Serial Number',
             'distance' => 'ONU Dist.',
             'duration' => 'Online Duration',
+            'un_configure' => [
+                'menu' => 'Delete GPon Configuration',
+                'info' => 'Delete selected GPon configuration (warning)',
+            ],
         ],
         'customers' => [
             'link' => 'Link to Customer',
             'unlink' => 'Delete Customer Link',
+            'link_unlink' => [
+                'menu' => 'Connect and or Disconnect GPon to customer',
+                'info' => 'Ability to connect and or disconnect Gpon to customer (not configure)',
+            ]
         ],
         'loss' => 'LOS',
         'community' => [
@@ -65,4 +73,11 @@ return [
             'cancel' => 'Cancel',
         ],
     ],
+    'cards' => [
+        'ports' => [
+            'count' => 'Port Count',
+            'used' => 'Used Port',
+            'available' => 'Available Port',
+        ]
+    ]
 ];

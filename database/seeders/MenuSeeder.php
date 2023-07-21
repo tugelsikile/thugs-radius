@@ -1,12 +1,11 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
-
-/** @noinspection SpellCheckingInspection */
+<?php /** @noinspection SpellCheckingInspection */
 
 namespace Database\Seeders;
 
 use App\Models\Menu\Menu;
 use Illuminate\Database\Seeder;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class MenuSeeder extends Seeder
 {
@@ -14,6 +13,7 @@ class MenuSeeder extends Seeder
      * Run the database seeds.
      *
      * @return void
+     * @throws Throwable
      */
     public function run()
     {
@@ -56,10 +56,6 @@ class MenuSeeder extends Seeder
             ])
         ]);
         $requests->push((object) [
-            'name' => 'OLT', 'route' => 'clients.olt', 'description' => 'olt.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'olt.labels.menu',
-            'childrens' => collect()
-        ]);
-        $requests->push((object) [
             'name' => 'Customer', 'route' => 'clients.customers', 'description' => 'customers.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-tie', 'lang' => 'customers.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'customers.pppoe.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],
@@ -67,6 +63,13 @@ class MenuSeeder extends Seeder
                 (object) [ 'name' => 'Tagihan', 'route' => 'clients.customers.invoices', 'description' => 'customers.invoices.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-file-invoice', 'lang' => 'customers.invoices.labels.menu'],
                 (object) [ 'name' => 'Pembayaran Tagihan', 'route' => 'clients.customers.invoices.payment', 'description' => 'customers.invoices.payments.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'customers.invoices.payments.labels.menu'],
             ]),
+        ]);
+        $requests->push((object) [
+            'name' => 'OLT', 'route' => 'clients.olt', 'description' => 'olt.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'olt.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Connect Disconnect', 'route' => 'clients.olt.customers.connect', 'description' => 'olt.labels.customers.link_unlink.info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-link', 'lang' => 'olt.labels.customers.link_unlink.menu' ],
+                (object) [ 'name' => 'Unconfigure', 'route' => 'clients.olt.gpon.un_configure', 'description' => 'olt.labels.onu.un_configure.info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-unlink', 'lang' => 'olt.labels.onu.un_configure.menu' ],
+            ])
         ]);
         $requests->push((object) [
             'name' => 'User', 'route' => 'clients.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',

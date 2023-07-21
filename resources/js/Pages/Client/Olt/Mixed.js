@@ -15,13 +15,15 @@ import MaskedInput from "react-text-mask";
 import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
+    faBolt,
+    faChargingStation,
     faCircleNotch,
     faCog,
     faCogs, faExclamationTriangle, faInfoCircle,
     faLink,
     faLinkSlash, faListUl,
-    faPersonBooth,
-    faRefresh
+    faPersonBooth, faPlug,
+    faRefresh, faUnlink
 } from "@fortawesome/free-solid-svg-icons";
 import {faCircle, faUserCircle} from "@fortawesome/free-regular-svg-icons";
 import Select from "react-select";
@@ -155,9 +157,8 @@ export const TableContentGponState = (props)=> {
                                     {props.item.details !== null &&
                                         props.item.phase_state !== 'unconfig' &&
                                         props.item.details.customer === null &&
-                                        typeof props.privilege.customers !== 'undefined' &&
-                                        typeof props.privilege.customers.create !== 'undefined' &&
-                                        props.privilege.customers.create &&
+                                        typeof props.privilege.connect !== 'undefined' &&
+                                        props.privilege.connect &&
                                         <a onClick={props.onCustomer} data-onu={props.item.onu} className="dropdown-item text-xs text-primary" href="#">
                                             <FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/>
                                             {Lang.get('olt.labels.customers.link')}
@@ -166,12 +167,16 @@ export const TableContentGponState = (props)=> {
                                     {props.item.details !== null &&
                                         props.item.phase_state !== 'unconfig' &&
                                         props.item.details.customer !== null &&
+                                        typeof props.privilege.connect !== 'undefined' &&
+                                        props.privilege.connect &&
                                         <a onClick={props.onUnlink} data-onu={props.item.onu} className="dropdown-item text-xs text-warning" href="#">
                                             <FontAwesomeIcon icon={faLinkSlash} size="xs" className="mr-1"/>
                                             {Lang.get('olt.labels.customers.unlink')}
                                         </a>
                                     }
                                     {props.item.phase_state !== 'unconfig' &&
+                                        typeof props.privilege.un_configure !== 'undefined' &&
+                                        props.privilege.un_configure &&
                                         <a onClick={props.onUnconfigure} data-onu={props.item.onu} className="dropdown-item text-danger text-xs" href="#">
                                             <FontAwesomeIcon icon={faCogs} size="xs" className="mr-1"/>
                                             {Lang.get('olt.un_configure.button')}
@@ -559,3 +564,137 @@ export const listDataPerpageOlt = [
     { value : 125, label : '125' },
     { value : 300, label : '300' },
 ];
+export const CardDetailOlt = (props) => {
+    return (
+        <div className="row">
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-info">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faPlug} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.count')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.length + props.port_lists.available.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-success">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faChargingStation} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.used')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12" data-label="available-port" onMouseOver={props.gpon_states.loading ? null : props.onPopover} onMouseOut={props.gpon_states.loading ? null : props.onPopover}>
+                <div className="info-box">
+                    <span className="info-box-icon bg-warning">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faBolt} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.available')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.port_lists.available.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-danger">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faUnlink} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.labels.loss')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.filter((f)=> f.phase_state === 'los').length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+export const PopoverAvailablePort = (props) => {
+    const maxSize = 20;
+    const availablePorts = Array.from({length : Math.ceil(props.ports.length / maxSize)}, (v,i)=> props.ports.slice(i * maxSize, i * maxSize + maxSize));
+    return (
+        <div className="card card-outline card-info mb-0" style={{minWidth:200}}>
+            <div className="card-header p-2">
+                <strong className="text-xs card-title">20 {Lang.get('olt.cards.ports.available')}</strong>
+            </div>
+            <div className="card-body">
+                <ul className="list-unstyled mb-0">
+                    {availablePorts.length > 0 &&
+                        availablePorts[0].map((item)=>
+                            <li className="text-xs" key={item.value}>{item.label}</li>
+                        )
+                    }
+                </ul>
+            </div>
+        </div>
+    )
+}

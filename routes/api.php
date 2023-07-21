@@ -153,10 +153,10 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::group(['prefix' => 'gpon'], function () {
             Route::any('/state', [OltController::class, 'gponStates']);
             Route::group(['prefix' => 'customers'],function () {
-                Route::any('/', [OltController::class, 'gponCustomer']);
+                Route::any('/', [OltController::class, 'gponCustomer'])->name('clients.olt.customers.connect');
                 Route::post('/loss', [OltController::class, 'lossCustomer']);
             });
-            Route::any('/unconfigure', [OltController::class, 'unConfigure']);
+            Route::any('/unconfigure', [OltController::class, 'unConfigure'])->name('clients.olt.gpon.un_configure');
             Route::group(['prefix' => 'profiles'],function () {
                 Route::any('/traffics', [TrafficProfileController::class, 'crud']);
                 Route::any('/tconts', [TrafficProfileController::class, 'tconts']);

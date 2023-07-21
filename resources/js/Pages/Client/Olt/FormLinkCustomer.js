@@ -178,18 +178,18 @@ class FormLinkCustomer extends React.Component {
                                                     isDisabled={this.state.loading} isLoading={this.props.loadings.customers}/>
                                         </div>
                                         <div className="col-md-4">
-                                            <button className="btn btn-outline-primary btn-sm mr-1" type="button" disabled={this.state.loading} onClick={()=>this.props.onReloadCustomer()}><FontAwesomeIcon icon={faRefresh} size="xs"/></button>
+                                            <button className="btn btn-outline-primary btn-sm mr-1" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.props.onReloadCustomer()}><FontAwesomeIcon icon={faRefresh} size="xs"/></button>
                                             {this.props.privilege !== null &&
                                                 typeof this.props.privilege.customers !== 'undefined' &&
                                                 this.props.privilege.customers.create &&
                                                 this.state.form.customer === null &&
-                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading} onClick={()=>this.toggleCustomer()}><FontAwesomeIcon icon={faPlus} size="xs"/></button>
+                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.toggleCustomer()}><FontAwesomeIcon icon={faPlus} size="xs"/></button>
                                             }
                                             {this.props.privilege !== null &&
                                                 typeof this.props.privilege.customers !== 'undefined' &&
                                                 this.props.privilege.customers.update &&
                                                 this.state.form.customer !== null &&
-                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading} onClick={()=>this.toggleCustomer(this.state.form.customer)}><FontAwesomeIcon icon={faPencilAlt} size="xs"/></button>
+                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.toggleCustomer(this.state.form.customer)}><FontAwesomeIcon icon={faPencilAlt} size="xs"/></button>
                                             }
                                         </div>
                                     </div>

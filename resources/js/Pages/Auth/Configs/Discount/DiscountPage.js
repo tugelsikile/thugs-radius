@@ -12,6 +12,7 @@ import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import BtnSort from "../../User/Tools/BtnSort";
 import FormDiscount from "./Tools/FormDiscount";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
 
 // noinspection DuplicatedCode
 class DiscountPage extends React.Component {
@@ -219,11 +220,9 @@ class DiscountPage extends React.Component {
             <React.StrictMode>
                 <FormDiscount user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadDiscounts}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar root={this.state.root} user={this.state.user} site={this.state.site} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('discounts.labels.menu')} childrens={[

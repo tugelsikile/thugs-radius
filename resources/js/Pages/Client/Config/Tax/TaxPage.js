@@ -12,6 +12,11 @@ import MainFooter from "../../../../Components/Layout/MainFooter";
 import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import {crudCompany} from "../../../../Services/CompanyService";
 import FormTax from "../../../Auth/Configs/Tax/Tools/FormTax";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
+import {TableHeader} from "../../../Auth/Configs/Tax/Tools/Mixed";
 
 // noinspection DuplicatedCode
 class TaxPage extends React.Component {
@@ -136,6 +141,29 @@ class TaxPage extends React.Component {
                     }
                 });
             }
+            const tableEl = event.currentTarget.closest('table');
+            const thead = tableEl.getElementsByTagName('thead');
+            const tfoot = tableEl.getElementsByTagName('tfoot');
+            if (thead != null) {
+                if (thead.length > 0) {
+                    const cbx = thead[0].getElementsByTagName('input');
+                    if (cbx != null) {
+                        if (cbx.length > 0) {
+                            cbx[0].checked = event.currentTarget.checked;
+                        }
+                    }
+                }
+            }
+            if (tfoot != null) {
+                if (tfoot.length > 0) {
+                    const cbx = tfoot[0].getElementsByTagName('input');
+                    if (cbx != null) {
+                        if (cbx.length > 0) {
+                            cbx[0].checked = event.currentTarget.checked;
+                        }
+                    }
+                }
+            }
         } else {
             let indexSelected = taxes.selected.findIndex((f) => f === event.currentTarget.getAttribute('data-id'));
             if (indexSelected >= 0) {
@@ -218,11 +246,8 @@ class TaxPage extends React.Component {
                 <FormTax user={this.state.user} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadTaxes} companies={this.state.companies} loadings={this.state.loadings}/>
 
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+                <HeaderAndSideBar loadings={this.state.loadings} root={this.state.root} user={this.state.user} site={this.state.site} route={this.props.route} menus={this.state.menus}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('taxes.labels.menu')} childrens={[
@@ -235,61 +260,20 @@ class TaxPage extends React.Component {
 
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.taxes && <CardPreloader/>}
-                                <div className="card-header">
-                                    <div className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button type="button" onClick={()=>this.toggleModal()} disabled={this.state.loadings.taxes} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('taxes.create.btn')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.taxes.selected.length > 0 &&
-                                                        <button type="button" onClick={()=>this.confirmDelete()} disabled={this.state.loadings.taxes} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('taxes.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </div>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('taxes.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="card-header pl-2">
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   filter={ <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={this.state.loadings.taxes} onClick={()=>this.loadTaxes()}><FontAwesomeIcon icon={this.state.loadings.taxes ? faCircleNotch : faRefresh} size="xs" spin={this.state.loadings.taxes}/></button> }
+                                                   loading={this.state.loadings.taxes}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('taxes.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('taxes.labels.menu')})}}
+                                                   selected={this.state.taxes.selected}
+                                                   handleModal={this.toggleModal}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('taxes.labels.menu')})}/>
                                 </div>
-                                <div className="card-body p-0">
+                                <div className="card-body p-0 table-responsive table-responsive-sm">
                                     <table className="table table-sm table-striped">
                                         <thead>
-                                        <tr>
-                                            <th className="align-middle text-center" width={30}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.taxes} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th className="align-middle" width={120}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('taxes.labels.code')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('taxes.labels.name')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={100}>
-                                                <BtnSort sort="percent"
-                                                         name={Lang.get('taxes.labels.percent')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center" width={40}>
-                                                {Lang.get('messages.action')}
-                                            </th>
-                                        </tr>
+                                            <TableHeader type="rowHeader" onSort={this.handleSort} onCheck={this.handleCheck} {...this.state}/>
                                         </thead>
                                         <tbody>
                                         {this.state.taxes.filtered.length === 0 ?
@@ -297,16 +281,16 @@ class TaxPage extends React.Component {
                                             :
                                             this.state.taxes.filtered.map((item,index)=>
                                                 <tr key={index}>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pl-2">
                                                         <div className="custom-control custom-checkbox">
                                                             <input data-id={item.value} checked={this.state.taxes.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.taxes} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id={`cbx_${item.value}`}/>
                                                             <label htmlFor={`cbx_${item.value}`} className="custom-control-label"/>
                                                         </div>
                                                     </td>
-                                                    <td className="align-middle">{item.meta.code}</td>
-                                                    <td className="align-middle">{item.label}</td>
-                                                    <td className="align-middle text-center">{formatLocaleString(item.meta.percent,2)}%</td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-xs">{item.meta.code}</td>
+                                                    <td className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-center text-xs">{formatLocaleString(item.meta.percent,2)}%</td>
+                                                    <td className="align-middle text-center text-xs pr-2">
                                                         {this.state.privilege !== null &&
                                                             <>
                                                                 <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
@@ -314,10 +298,10 @@ class TaxPage extends React.Component {
                                                                 </button>
                                                                 <div className="dropdown-menu" role="menu">
                                                                     {this.state.privilege.update &&
-                                                                        <button type="button" onClick={()=>this.toggleModal(item)} className="dropdown-item text-primary"><i className="fa fa-pencil-alt mr-1"/> {Lang.get('taxes.update.btn')}</button>
+                                                                        <button type="button" onClick={()=>this.toggleModal(item)} className="dropdown-item text-xs text-primary"><i className="fa fa-pencil-alt mr-1"/> {Lang.get('taxes.update.btn')}</button>
                                                                     }
                                                                     {this.state.privilege.delete &&
-                                                                        <button type="button" onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('taxes.delete.btn')}</button>
+                                                                        <button type="button" onClick={()=>this.confirmDelete(item)} className="dropdown-item text-xs text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('taxes.delete.btn')}</button>
                                                                     }
                                                                 </div>
                                                             </>
@@ -327,6 +311,9 @@ class TaxPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                            <TableHeader type="rowHeader" onSort={this.handleSort} onCheck={this.handleCheck} {...this.state}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                                 <div className="card-footer justify-content-between">

@@ -1,25 +1,7 @@
-/*
-object-assign
-(c) Sindre Sorhus
-@license MIT
-*/
-
 /*!
   Copyright (c) 2017 Jed Watson.
   Licensed under the MIT License (MIT), see
   http://jedwatson.github.io/classnames
-*/
-
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-
-/*!
-* sweetalert2 v11.7.16
-* Released under the MIT License.
 */
 
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
@@ -81,14 +63,6 @@ object-assign
  * LICENSE file in the root directory of this source tree.
  */
 
-//! authors : Tim Wood, Iskren Chernev, Moment.js contributors
-
-//! license : MIT
-
 //! moment.js
 
 //! moment.js locale configuration
-
-//! momentjs.com
-
-//! version : 2.29.4

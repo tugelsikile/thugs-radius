@@ -22,7 +22,6 @@ import {DataNotFound} from "../../../Components/TableComponent";
 import Select from "react-select";
 import FormLinkCustomer from "./FormLinkCustomer";
 import {getRootUrl} from "../../../Components/Authentication";
-import {DetailBandwidth, DetailNas, DetailPool} from "../Nas/Profile/Tools/DetailCard";
 import {Popover} from "@mui/material";
 
 // noinspection CommaExpressionJS

@@ -1,4 +1,3 @@
 {
-    "/js/clients/users/index.js": "/js/clients/users/index.js",
-    "/js/clients/users/privileges.js": "/js/clients/users/privileges.js"
+    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
 }

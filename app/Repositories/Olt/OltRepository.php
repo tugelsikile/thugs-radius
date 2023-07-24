@@ -557,34 +557,38 @@ class OltRepository
         try {
             $response = collect();
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
-            switch ($olt->brand->name) {
-                default:
-                case 'zte':
-                    switch ($olt->brand->model) {
+            if ($olt->brand != null) {
+                if (property_exists($olt->brand,'name') && property_exists($olt->brand,'model')) {
+                    switch ($olt->brand->name) {
                         default:
-                        case 'zte_320':
-                            if ($request->has(__('olt.form_input.host')) &&
-                                $request->has(__('olt.form_input.port')) &&
-                                $request->has(__('olt.form_input.user')) &&
-                                $request->has(__('olt.form_input.pass'))
-                            ) {
-                                $response = $response->merge((new C320(null, $request))->gPonUnConfigs());
-                                $response = $response->merge((new C320(null, $request))->gPonStates());
-                            } else {
-                                $response = $response->merge((new C320($olt))->gPonUnConfigs());
-                                $response = $response->merge((new C320($olt))->gPonStates());
+                        case 'zte':
+                            switch ($olt->brand->model) {
+                                default:
+                                case 'zte_320':
+                                    if ($request->has(__('olt.form_input.host')) &&
+                                        $request->has(__('olt.form_input.port')) &&
+                                        $request->has(__('olt.form_input.user')) &&
+                                        $request->has(__('olt.form_input.pass'))
+                                    ) {
+                                        $response = $response->merge((new C320(null, $request))->gPonUnConfigs());
+                                        $response = $response->merge((new C320(null, $request))->gPonStates());
+                                    } else {
+                                        $response = $response->merge((new C320($olt))->gPonUnConfigs());
+                                        $response = $response->merge((new C320($olt))->gPonStates());
+                                    }
+                                    break;
                             }
-                        break;
-                    }
-                    break;
-                case 'hioso':
-                case 'hsgc':
-                    switch ($olt->brand->model){
-                        default:
-                        case 'none':
+                            break;
+                        case 'hioso':
+                        case 'hsgc':
+                            switch ($olt->brand->model){
+                                default:
+                                case 'none':
+                                    break;
+                            }
                             break;
                     }
-                    break;
+                }
             }
             return $response;
         } catch (Exception $exception) {

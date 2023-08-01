@@ -53,8 +53,8 @@ return [
         ]
     ],
     'labels' => [
-        'menu' => 'OLT (experimental)',
-        'menu_info' => 'Manajemen OLT (experimental)',
+        'menu' => 'OLT',
+        'menu_info' => 'Manajemen OLT',
         'form_info' => 'Saat ini kami menggunakan <em class="text-primary">telnet</em> untuk komunikasi antara <em class="text-info">sistem</em> dengan <em class="text-danger">olt</em>, maka dari itu mohon gunakan variabel <em class="text-primary">telnet</em> untuk konfigurasi disamping ini.',
         'name' => 'Nama OLT',
         'host' => 'Hostname',

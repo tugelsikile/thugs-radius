@@ -53,8 +53,8 @@ return [
         ]
     ],
     'labels' => [
-        'menu' => 'OLT (experimental)',
-        'menu_info' => 'OLT Management (experimental)',
+        'menu' => 'OLT',
+        'menu_info' => 'OLT Management',
         'form_info' => 'Currently, we use <em class="text-primary">telnet</em> as communication tools between <em class="text-info">sistem</em> and <em class="text-danger">olt</em>, so please input form as <em class="text-primary">telnet</em> configuration',
         'name' => 'OLT Name',
         'host' => 'Hostname',

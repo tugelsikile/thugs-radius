@@ -73,7 +73,18 @@ class OltController extends Controller
     public function gponStates(Request $request): JsonResponse
     {
         try {
-            return formatResponse(200,"OK", $this->repository->gponStates($this->validation->gponStates($request)));
+            $code = 400; $message = __('messages.method'); $params = null;
+            switch (strtolower($request->method())) {
+                case 'post':
+                    $params = $this->repository->gponStates($this->validation->gponStates($request));
+                    $code = 200; $message = 'OK';
+                    break;
+                case 'put':
+                    $params = $this->repository->registerCustomer($this->validation->registerCustomer($request));
+                    $code = 200; $message = __('olt.configure.success');
+                    break;
+            }
+            return formatResponse($code,$message, $params);
         } catch (Exception $exception) {
             return formatResponse($exception->getCode(), $exception->getMessage());
         }

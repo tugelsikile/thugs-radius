@@ -4,7 +4,7 @@ import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {CardPreloader, FormControlSMReactSelect, responseMessage} from "../../../Components/mixedConsts";
 import {
     cancelOltService,
-    crudGponStates, crudOltProfileTcont,
+    crudGponStates, crudOltOnuType, crudOltProfileMngVLan, crudOltProfileTcont,
     crudOltProfileTraffic,
     crudOltProfileVlan,
     getGponCustomer
@@ -24,6 +24,7 @@ import Select from "react-select";
 import FormLinkCustomer from "./FormLinkCustomer";
 import {getRootUrl} from "../../../Components/Authentication";
 import {Popover} from "@mui/material";
+import FormConfigure from "./FormConfigure";
 
 // noinspection CommaExpressionJS
 class DetailOLT extends React.Component {
@@ -43,13 +44,15 @@ class DetailOLT extends React.Component {
                 used : [], available : [],
             },
             modals : {
-                customer : { open : false, data : null }
+                customer : { open : false, data : null },
+                configure : { open : false, data : null },
             },
             popover : { open : false, anchorEl : null, data : null },
             profiles : {
-                traffics : { loading : false, lists : [] },
                 vlans : { loading : false, lists : [] },
                 tconts : { loading : false, lists : [] },
+                mng_vlan : { loading : false, lists : [] },
+                onu_type : { loading : false, lists : [] },
             }
         };
         this.loadGponState = this.loadGponState.bind(this);
@@ -67,19 +70,22 @@ class DetailOLT extends React.Component {
         this.confirmUnconfigure = this.confirmUnconfigure.bind(this);
         this.handleReloadCustomer = this.handleReloadCustomer.bind(this);
         this.handlePopOver = this.handlePopOver.bind(this);
-        this.loadTrafficProfile = this.loadTrafficProfile.bind(this);
         this.loadProfileVlan = this.loadProfileVlan.bind(this);
         this.loadTcontProfile = this.loadTcontProfile.bind(this);
+        this.loadOnuType = this.loadOnuType.bind(this);
+        this.loadProfileMngVlan = this.loadProfileMngVlan.bind(this);
         this.handleClosePopover = this.handleClosePopover.bind(this);
         this.handleSelectPort = this.handleSelectPort.bind(this);
+        this.toggleConfigure = this.toggleConfigure.bind(this);
     }
     componentDidMount() {
         this.handleUrlSearch();
         if (this.props.olt !== null) {
             this.setState({olt:this.props.olt},()=>{
                 this.loadGponState()
-                    .then(()=>this.loadTrafficProfile())
                     .then(()=>this.loadTcontProfile())
+                    .then(()=>this.loadOnuType())
+                    .then(()=>this.loadProfileMngVlan())
                     .then(()=>this.loadProfileVlan());
             });
         }
@@ -101,13 +107,29 @@ class DetailOLT extends React.Component {
                 if (! this.state.gpon_states.loading) {
                     if (reload) {
                         this.loadGponState()
-                            .then(()=>this.loadTrafficProfile())
                             .then(()=>this.loadTcontProfile())
+                            .then(()=>this.loadOnuType())
+                            .then(()=>this.loadProfileMngVlan())
                             .then(()=>this.loadProfileVlan());
                     }
                 }
             });
         }
+    }
+    toggleConfigure(event = null) {
+        let modals = this.state.modals;
+        modals.configure.open = ! this.state.modals.configure.open;
+        if (event !== null) {
+            event.preventDefault();
+            let dataValue = event.currentTarget.getAttribute('data-onu');
+            if (dataValue !== null) {
+                let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === dataValue);
+                if (index >= 0) {
+                    modals.configure.data = this.state.gpon_states.unfiltered[index];
+                }
+            }
+        }
+        this.setState({modals});
     }
     handleSelectPort(value) {
         let gpon_states = this.state.gpon_states;
@@ -310,13 +332,14 @@ class DetailOLT extends React.Component {
         if (this.state.gpon_states.unfiltered.length > 0) {
             if (this.state.port_lists.used.length > 0) {
                 let port_lists = this.state.port_lists;
-                port_lists.available = [];
-                this.state.port_lists.used.map((port)=>{
+                this.state.port_lists.used.map((port,indexPort)=>{
                     for (let portNumber = 1; portNumber < 128; portNumber++) {
                         const portName = `${port.value}:${portNumber}`;
-                        let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === portName);
+                        let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === portName && f.phase_state !== 'unconfig');
                         if (index < 0) {
-                            port_lists.available.push({value : portName, label : portName});
+                            if (typeof port_lists.used[indexPort] !== 'undefined') {
+                                port_lists.used[indexPort].available.push({value : portNumber, label : portNumber});
+                            }
                         }
                     }
                 });
@@ -337,7 +360,7 @@ class DetailOLT extends React.Component {
                                 let currentPort = port[0];
                                 let index = port_lists.used.findIndex((f)=> f.value === currentPort);
                                 if (index < 0) {
-                                    port_lists.used.push({value: currentPort, label : currentPort});
+                                    port_lists.used.push({value: currentPort, label : currentPort, available : []});
                                 }
                             }
                         }
@@ -363,15 +386,15 @@ class DetailOLT extends React.Component {
                                         if (typeof this.state.gpon_states.unfiltered[indexUnfiltered] !== 'undefined') {
                                             if (typeof this.state.gpon_states.unfiltered[indexUnfiltered].details !== 'undefined') {
                                                 gpon_states.unfiltered[indexUnfiltered].loading = false;
-                                                gpon_states.unfiltered[indexUnfiltered].details = response;
-                                                /*if (gpon_states.unfiltered[indexUnfiltered].details !== null) {
-                                                    if (typeof response.new_phase_state !== 'undefined') {
-                                                        gpon_states.unfiltered[indexUnfiltered].phase_state = response.new_phase_state;
+                                                if (response !== null) {
+                                                    gpon_states.unfiltered[indexUnfiltered].details = response;
+                                                    if (typeof response.phase_state !== 'undefined') {
+                                                        gpon_states.unfiltered[indexUnfiltered].phase_state = response.phase_state;
                                                     }
-                                                }*/
-                                                let indexFiltered = this.state.gpon_states.filtered.findIndex((f)=> f.onu === this.state.gpon_states.unfiltered[indexUnfiltered].onu);
-                                                if (indexFiltered >= 0) {
-                                                    gpon_states.filtered[indexFiltered] = this.state.gpon_states.unfiltered[indexUnfiltered];
+                                                    let indexFiltered = this.state.gpon_states.filtered.findIndex((f)=> f.onu === this.state.gpon_states.unfiltered[indexUnfiltered].onu);
+                                                    if (indexFiltered >= 0) {
+                                                        gpon_states.filtered[indexFiltered] = this.state.gpon_states.unfiltered[indexUnfiltered];
+                                                    }
                                                 }
                                                 this.setState({gpon_states});
                                             }
@@ -381,6 +404,60 @@ class DetailOLT extends React.Component {
                         }
                     }
                 });
+            }
+        }
+    }
+    async loadProfileMngVlan(data = null) {
+        if (this.state.olt !== null) {
+            if (! this.state.profiles.mng_vlan.loading) {
+                let profiles = this.state.profiles;
+                if (data === null) {
+                    profiles.mng_vlan.lists = [];
+                    profiles.mng_vlan.loading = true;
+                    this.setState({profiles});
+                    try {
+                        const formData = new FormData();
+                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+                        let response = await crudOltProfileMngVLan(formData);
+                        if (response.data.params === null) {
+                            profiles.mng_vlan.loading = false; this.setState({profiles});
+                            showError(response.data.message);
+                        } else {
+                            profiles.mng_vlan.lists = response.data.params;
+                            profiles.mng_vlan.loading = false; this.setState({profiles});
+                        }
+                    } catch (e) {
+                        profiles.mng_vlan.loading = false; this.setState({profiles});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
+    }
+    async loadOnuType(data = null) {
+        if (this.state.olt !== null) {
+            if (! this.state.profiles.onu_type.loading) {
+                let profiles = this.state.profiles;
+                if (data === null) {
+                    profiles.onu_type.lists = [];
+                    profiles.onu_type.loading = true;
+                    this.setState({profiles});
+                    try {
+                        const formData = new FormData();
+                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+                        let response = await crudOltOnuType(formData);
+                        if (response.data.params === null) {
+                            profiles.onu_type.loading = false; this.setState({profiles});
+                            showError(response.data.message);
+                        } else {
+                            profiles.onu_type.lists = response.data.params;
+                            profiles.onu_type.loading = false; this.setState({profiles});
+                        }
+                    } catch (e) {
+                        profiles.onu_type.loading = false; this.setState({profiles});
+                        responseMessage(e);
+                    }
+                }
             }
         }
     }
@@ -444,39 +521,14 @@ class DetailOLT extends React.Component {
             }
         }
     }
-    async loadTrafficProfile(data = null) {
-        if (! this.state.profiles.traffics.loading) {
-            if (this.state.olt !== null) {
-                let profiles = this.state.profiles;
-                if (data !== null) {
-
-                } else {
-                    profiles.traffics.lists = [];
-                    profiles.traffics.loading = true;
-                    this.setState({profiles});
-                    try {
-                        const formData = new FormData();
-                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
-                        let response = await crudOltProfileTraffic(formData);
-                        if (response.data.params === null) {
-                            profiles.traffics.loading = false; this.setState({profiles});
-                            showError(response.data.params);
-                        } else {
-                            profiles.traffics.loading = false;
-                            profiles.traffics.lists = response.data.params;
-                            this.setState({profiles});
-                        }
-                    } catch (e) {
-                        profiles.traffics.loading = false; this.setState({profiles});
-                        responseMessage(e);
-                    }
-                }
-            }
+    async handleReloadCustomer(event = null, data = null) {
+        let onu = null;
+        if (event !== null) {
+            event.preventDefault();
+            onu = event.currentTarget.getAttribute('data-onu');
+        } else if (data !== null) {
+            onu = data.onu;
         }
-    }
-    async handleReloadCustomer(event) {
-        event.preventDefault();
-        const onu = event.currentTarget.getAttribute('data-onu');
         if (onu !== null) {
             if (onu.length > 0) {
                 let gpon_states = this.state.gpon_states;
@@ -494,10 +546,15 @@ class DetailOLT extends React.Component {
                                 if (typeof this.state.gpon_states.unfiltered[index] !== 'undefined') {
                                     if (typeof this.state.gpon_states.unfiltered[index].details !== 'undefined') {
                                         gpon_states.unfiltered[index].loading = false;
-                                        gpon_states.unfiltered[index].details = response;
-                                        let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === onu);
-                                        if (indexFiltered >= 0) {
-                                            gpon_states.filtered[indexFiltered] = gpon_states.unfiltered[index];
+                                        if (response !== null) {
+                                            gpon_states.unfiltered[index].details = response;
+                                            if (typeof response.phase_state !== 'undefined') {
+                                                gpon_states.unfiltered[index].phase_state = response.phase_state;
+                                            }
+                                            let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === onu);
+                                            if (indexFiltered >= 0) {
+                                                gpon_states.filtered[indexFiltered] = gpon_states.unfiltered[index];
+                                            }
                                         }
                                         this.setState({gpon_states},()=>this.handleFilter());
                                     }
@@ -584,8 +641,29 @@ class DetailOLT extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <Popover sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
+                <FormConfigure port_lists={this.state.port_lists}
+                               olt={this.state.olt}
+                               data={this.state.modals.configure.data}
+                               open={this.state.modals.configure.open}
+                               handleClose={this.toggleConfigure} handleUpdate={this.handleReloadCustomer}
+                               olt_profiles={this.state.profiles}
+                               onReloadTcont={this.loadTcontProfile}
+                               onReloadProfileMng={this.loadProfileMngVlan}
+                               onReloadOnuType={this.loadOnuType}
+                               onReloadVLan={this.loadProfileVlan}
 
+                               loadings={this.props.loadings}
+                               privilege={this.props.privilege}
+                               onReloadCustomer={this.props.onReloadCustomer}
+                               companies={this.props.companies}
+                               nas={this.props.nas} onNas={this.props.onNas}
+                               pools={this.props.pools} onPool={this.props.onPool}
+                               profiles={this.props.profiles} onProfile={this.props.onProfile}
+                               bandwidths={this.props.bandwidths} onBandwidth={this.props.onBandwidth}
+                               customers={this.props.customers} onCustomer={this.props.onCustomer}
+                               taxes={this.props.taxes} onTax={this.props.onTax}
+                               discounts={this.props.discounts} onDiscount={this.props.onDiscount}/>
+                <Popover sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
                 <FormLinkCustomer privilege={this.props.privilege}
                                   olt={this.state.olt}
                                   open={this.state.modals.customer.open}
@@ -608,9 +686,6 @@ class DetailOLT extends React.Component {
                         <div className="row">
                             <div className="col-md-3">
                                 <LeftSideBar onClickState={this.handleClickState} handleReload={this.loadGponState} gpon_states={this.state.gpon_states}/>
-                                <TrafficProfileTable {...this.state} onReload={this.loadTrafficProfile}/>
-                                <TcontProfileTable {...this.state} onReload={this.loadTcontProfile}/>
-                                <VlanProfileTable {...this.state} onReload={this.loadProfileVlan}/>
                             </div>
                             <div className="col-md-9">
                                 <div className="card card-outline card-secondary">
@@ -651,14 +726,14 @@ class DetailOLT extends React.Component {
                                                     <DataNotFound colSpan={7} message="Not Found"/>
                                                     :
                                                     this.state.gpon_states.filtered.map((item,index)=>
-                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver}/>
+                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver} onConfig={this.toggleConfigure}/>
                                                     )
                                                 :
                                                 this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).length === 0 ?
                                                     <DataNotFound colSpan={7} message="Not Found"/>
                                                     :
                                                     this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).map((item,index)=>
-                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver}/>
+                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver} onConfig={this.toggleConfigure}/>
                                                     )
                                             }
                                             </tbody>

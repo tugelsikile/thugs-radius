@@ -665,287 +665,165 @@ class OltRepository
     {
         try {
             $response = null;
-            $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
-            if ($olt != null) {
-                $telnet = new Telnet($olt->hostname, $olt->port, 3, '');
-                $telnet->setLoginPrompt("Username:");
-                if ($olt->configs != null) {
-                    if (property_exists($olt->configs,'prompts')) {
-                        if (property_exists($olt->configs->prompts,'user_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
-                            if (property_exists($olt->configs->prompts,'pass_prompt')) {
-                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
-                            }
-                        }
-                    }
-                }
-                $telnet->login($olt->user, $olt->pass);
-
-                $responseCommands = $telnet->execPaging("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
-                /*for ($index = 0; $index <= 3; $index++) {
-                    $responseCommands .= "\n";
-                    $responseCommands .= $telnet->exec("   \n");
-                }*/
-                $telnet->disconnect();
-                $responseCommands = collect(explode("\n",$responseCommands));
-                if ($responseCommands->count() > 20) {
-                    $customer = null;
-                    if (Customer::where('onu_index', $request[__('olt.form_input.onu')])->first() != null) {
-                        $customer = (new CustomerRepository())->table(new Request([__('olt.form_input.onu') => $request[__('olt.form_input.onu')]]))->first();
-                    }
-                    $response = (object) [
-                        'name' => null,
-                        'description' => null,
-                        'username' => null,
-                        'customer' => $customer,
-                        'serial_number' => null,
-                        'onu_distance' => null,
-                        'online_duration' => null,
-                        'state_causes' => collect(),
-                        'full_response' => $responseCommands,
-                    ];
-                    $stateAndCauses = collect();
-                    foreach ($responseCommands as $index => $responseCommand) {
-                        if ($index > 0) {
-                            if ($index == 1) { // name
-                                $response->name = parseLineGponResponse($responseCommand);
-                            } elseif ($index == 11) { //Serial number:
-                                $response->serial_number = parseLineGponResponse($responseCommand, "Serial number:");
-                            } elseif ($index == 13) { //description
-                                $response->description = parseLineGponResponse($responseCommand,"Description:");
-                            } elseif ($index == 20) { //ONU Distance
-                                $response->onu_distance = parseLineGponResponse($responseCommand,"ONU Distance:");
-                            } elseif ($index == 21) { //Online Duration:
-                                $response->online_duration = parseLineGponResponse($responseCommand,"Online Duration:");
-                            } elseif ($index >= 30 && $index <= 39) {
-                                $stateAndCauses->push($responseCommand);
-                            }
-                        }
-                    }
-                    if ($stateAndCauses->count() > 0) {
-                        foreach ($stateAndCauses as $stateAndCause) {
-                            $lines = explode(" ", $stateAndCause);
-                            if (count($lines) > 0) {
-                                foreach ($lines as $key => $line) {
-                                    if (strlen($line) < 3) {
-                                        unset($lines[$key]);
-                                    }
-                                }
-                                if (count($lines) == 5) {
-                                    $lines = collect($lines)->values()->toArray();
-                                    if ($lines[0] != "0000-00-00" && $lines[1] != "00:00:00" && $lines[2] != "0000-00-00" && $lines[3] != "00:00:00") {
-                                        if (strtolower($lines[4]) == 'losi') $lines[4] = 'los';
-                                        $response->state_causes->push((object) [
-                                            'online_time' => $lines[0] . ' ' . $lines[1],
-                                            'offline_time' => $lines[2] . ' ' . $lines[3],
-                                            'phase_state' => strtolower($lines[4]),
-                                        ]);
-                                    }
+            if ($request->phase_state !== 'unconfig') {
+                $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
+                if ($olt != null) {
+                    $telnet = new Telnet($olt->hostname, $olt->port, 3, '');
+                    $telnet->setLoginPrompt("Username:");
+                    if ($olt->configs != null) {
+                        if (property_exists($olt->configs,'prompts')) {
+                            if (property_exists($olt->configs->prompts,'user_prompt')) {
+                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
+                                if (property_exists($olt->configs->prompts,'pass_prompt')) {
+                                    $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
                                 }
                             }
                         }
                     }
-                    if ($response->state_causes->count() > 0) {
-                        $response->new_phase_state = $response->state_causes->last()->phase_state;
-                    }
+                    $telnet->login($olt->user, $olt->pass);
 
+                    $responseCommands = $telnet->execPaging("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
+                    $telnet->disconnect();
+                    $responseCommands = collect(explode("\n",$responseCommands));
+                    if ($responseCommands->count() > 20) {
+                        $customer = null;
+                        if (Customer::where('onu_index', $request[__('olt.form_input.onu')])->first() != null) {
+                            $customer = (new CustomerRepository())->table(new Request([__('olt.form_input.onu') => $request[__('olt.form_input.onu')]]))->first();
+                        }
+                        $response = (object) [
+                            'name' => null,
+                            'description' => null,
+                            'username' => null,
+                            'customer' => $customer,
+                            'serial_number' => null,
+                            'onu_distance' => null,
+                            'online_duration' => null,
+                            'state_causes' => collect(),
+                            'full_response' => $responseCommands,
+                            'phase_state' => null,
+                        ];
+                        $stateAndCauses = collect();
+                        foreach ($responseCommands as $index => $responseCommand) {
+                            if ($index > 0) {
+                                if ($index == 1 && Str::contains($responseCommand,"Name:")) { // name
+                                    $response->name = parseLineGponResponse($responseCommand);
+                                } elseif ($index == 11 && Str::contains($responseCommand,"Serial number:")) { //Serial number:
+                                    $response->serial_number = parseLineGponResponse($responseCommand, "Serial number:");
+                                } elseif ($index == 13 && Str::contains($responseCommand,"Description:")) { //description
+                                    $response->description = parseLineGponResponse($responseCommand,"Description:");
+                                } elseif ($index == 20 && Str::contains($responseCommand,"ONU Distance:")) { //ONU Distance
+                                    $response->onu_distance = parseLineGponResponse($responseCommand,"ONU Distance:");
+                                } elseif ($index == 21 && Str::contains($responseCommand,"Online Duration:")) { //Online Duration:
+                                    $response->online_duration = parseLineGponResponse($responseCommand,"Online Duration:");
+                                } elseif ($index >= 30 && $index <= 39) {
+                                    $stateAndCauses->push($responseCommand);
+                                } elseif ($index >= 3) {
+                                    if (Str::contains($responseCommand,"Phase state:")) {
+                                        $response->phase_state = trim(str_replace("Phase state:","", $responseCommand));
+                                    }
+                                }
+                            }
+                        }
+                        if ($stateAndCauses->count() > 0) {
+                            foreach ($stateAndCauses as $stateAndCause) {
+                                $lines = explode(" ", $stateAndCause);
+                                if (count($lines) > 0) {
+                                    foreach ($lines as $key => $line) {
+                                        if (strlen($line) < 3) {
+                                            unset($lines[$key]);
+                                        }
+                                    }
+                                    if (count($lines) == 5) {
+                                        $lines = collect($lines)->values()->toArray();
+                                        if ($lines[0] != "0000-00-00" && $lines[1] != "00:00:00" && $lines[2] != "0000-00-00" && $lines[3] != "00:00:00") {
+                                            if (strtolower($lines[4]) == 'losi') $lines[4] = 'los';
+                                            $response->state_causes->push((object) [
+                                                'online_time' => $lines[0] . ' ' . $lines[1],
+                                                'offline_time' => $lines[2] . ' ' . $lines[3],
+                                                'phase_state' => strtolower($lines[4]),
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                //dd($responseCommands);
             }
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
     }
+
     /* @
      * @param Request $request
-     * @return object|null
-     * @throws Throwable
+     * @return bool|null
+     * @throws Exception
      */
-    public function gponCustomerBak(Request $request): ?object
+    public function registerCustomer(Request $request): ?bool
     {
         try {
             $response = null;
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             if ($olt != null) {
-                $telnet = new Telnet($olt->hostname, $olt->port,3,'');
-                $telnet->setLoginPrompt("Username:");
-                if ($olt->configs != null) {
-                    if (property_exists($olt->configs,'prompts')) {
-                        if (property_exists($olt->configs->prompts,'user_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
-                        }
-                        if (property_exists($olt->configs->prompts,'pass_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
-                        }
+                $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+                if ($customer != null) {
+                    $commandRegisters = collect();
+                    $commandConfigs = collect();
+                    $commandRegisters->push("config terminal");
+                    $commandRegisters->push("interface gpon-olt_" . $request[__('olt.form_input.onus.olt')]);
+                    $commandRegisters->push("onu " . $request[__('olt.form_input.onus.index')]. " type " . $request[__('olt.form_input.onus.type')]. " sn " . $request[__('olt.form_input.onus.sn')]);
+                    $commandConfigs->push("config terminal");
+                    $gponOnu = $request[__('olt.form_input.onus.olt')] . ':' . $request[__('olt.form_input.onus.index')];
+                    $commandConfigs->push("interface gpon-onu_" . $gponOnu);
+                    $commandConfigs->push("name " . $request[__('olt.form_input.onus.name')]);
+                    $commandConfigs->push("description " . $request[__('olt.form_input.onus.description')]);
+                    foreach ($request[__('olt.form_input.onus.tcont.input')] as $item) {
+                        $commandConfigs->push("tcont " . $item[__('olt.form_input.onus.tcont.id')] . " profile " . $item[__('olt.form_input.onus.tcont.profile')]);
                     }
-                }
-                $telnet->login($olt->user, $olt->pass);
-                $runInterfaceLines = $telnet->exec("show running-config interface gpon-onu_" . $request[__('olt.form_input.onu')]);
-                $telnet->disconnect();
+                    foreach ($request[__('olt.form_input.onus.gemport.input')] as $item) {
+                        $commandConfigs->push("gemport " . $item[__('olt.form_input.onus.gemport.id')] . " tcont " . $item[__('olt.form_input.onus.tcont.input')]);
+                        $commandConfigs->push("gemport " . $item[__('olt.form_input.onus.gemport.id')] . " traffic-limit upstream " . $item[__('olt.form_input.onus.gemport.upstream')]. " downstream " . $item[__('olt.form_input.onus.gemport.downstream')]);
+                    }
+                    foreach ($request[__('olt.form_input.onus.vlan.input')] as $item) {
+                        $commandConfigs->push("service-port " . $item[__('olt.form_input.onus.vlan.port')] . " vport " . $item[__('olt.form_input.onus.vlan.vport')] . " user-vlan " . $item[__('olt.form_input.onus.vlan.user')] . " vlan " . $item[__('olt.form_input.onus.vlan.service')]);
+                    }
+                    $commandConfigs->push("exit");
+                    $commandConfigs->push("config terminal");
+                    $commandConfigs->push("pon-onu-mng gpon-onu_" . $gponOnu);
+                    foreach ($request[__('olt.form_input.onus.pon_mng.input')] as $item) {
+                        $commandConfigs->push("service " . $item[__('olt.form_input.onus.pon_mng.name')] . " gemport " . $item[__('olt.form_input.onus.gemport.input')] . " vlan " . $item[__('olt.form_input.onus.vlan.input')]);
+                    }
 
-                if (strlen($runInterfaceLines) > 0) {
-                    $runInterfaceLines = explode("\n", $runInterfaceLines);
-                    if (count($runInterfaceLines) > 2) {
-                        $response = (object) [
-                            'username' => null,
-                            'customer' => null,
-                            'profile' => (object) [
-                                'tcont' => null,
-                            ],
-                            'gemport' => (object) [
-                                'tcont' => null,
-                                'traffic_limit' => (object) [
-                                    'upstream' => null,
-                                    'downstream' => null,
-                                ],
-                            ],
-                            'vlan' => (object) [
-                                'port' => null,
-                                'name' => null,
-                            ]
-                        ];
-                        foreach ($runInterfaceLines as $index => $runInterfaceLine) {
-                            if ($index >= 2) {
-                                if (strlen($runInterfaceLine) > 10) {
-                                    /* EXAMPLE RESPONSE
-                                     * Building configuration...
-                                     * interface gpon-onu_1/2/8:5
-                                     *      name sitijuleha@judyusnet
-                                     *      tcont 1 profile HOME-5Mb
-                                     *      gemport 1 tcont 1
-                                     *      gemport 1 traffic-limit upstream HOME-5Mb downstream HOME-5Mb
-                                     *      service-port 1 vport 1 user-vlan 111 vlan 111
-                                     *
-                                     * Building configuration...
-                                     * interface gpon-onu_1/1/1:8
-                                     *      name jgr.sugriyanto@rst.net.id
-                                     *      description jgr.sugriyanto@rst.net.id
-                                     *      tcont 1 name jgr.sugriyanto@rst.net.id profile Home-5Mbps
-                                     *      gemport 1 name jgr.sugriyanto@rst.net.id tcont 1
-                                     *      gemport 1 traffic-limit upstream Home-5Mbps downstream Home-5Mbps
-                                     *      service-port 1 vport 1 user-vlan 142 vlan 142
-                                     *      service-port 1 description jgr.sugriyanto@rst.net.id
-                                     */
-                                    if (Str::contains($runInterfaceLine,"description") && ( $index == 2 || $index == 3) ) {
-                                        if ($response->username == null) {
-                                            if (!Str::contains($runInterfaceLine,"service-port")) {
-                                                $line = explode(" ", $runInterfaceLine);
-                                                if (count($line) > 1) {
-                                                    foreach ($line as $key => $item) {
-                                                        if (strlen($item) == 0) {
-                                                            array_splice($line,$key,1);
-                                                        }
-                                                        if ($item == 'description') {
-                                                            array_splice($line,$key,1);
-                                                        }
-                                                    }
-                                                    $response->username = join(' ', $line);
-                                                }
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"name") && ($index == 2 || $index == 3) ) {
-                                        if (! Str::contains($runInterfaceLine,"tcont") && ! Str::contains($runInterfaceLine,"profile")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 1) {
-                                                foreach ($line as $key => $item) {
-                                                    if (strlen($item) == 0) {
-                                                        array_splice($line,$key,1);
-                                                    }
-                                                    if ($item == 'name') {
-                                                        array_splice($line,$key,1);
-                                                    }
-                                                }
-                                                $response->username = join(' ', $line);
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"tcont") && $index > 3) {
-                                        if (Str::contains($runInterfaceLine,"profile")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 3) {
-                                                $response->profile->tcont = $line[count($line) - 1];
-                                            }
-                                        } elseif (Str::contains($runInterfaceLine,"gemport") && $index > 3) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 3) {
-                                                $response->gemport->tcont = $line[count($line) - 1];
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"traffic-limit") && $index > 3) {
-                                        $line = explode(" ", $runInterfaceLine);
-                                        if (count($line) >= 6) {
-                                            $response->gemport->traffic_limit->upstream = $line[4];
-                                            $response->gemport->traffic_limit->downstream = $line[count($line) - 1];
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"service-port") && $index > 3) {
-                                        if (Str::contains($runInterfaceLine,"vport")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) >= 7) {
-                                                $response->vlan->port = $line[5];
-                                                $response->vlan->name = $line[4];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if ($response->username != null) {
-                            $customer = Customer::where('nas_username', $response->username)->first();
-                            if ($customer != null) {
-                                if ($request->has(__('olt.form_input.phase_state'))) {
-                                    $phaseState = CustomerPhaseState::where('created_at', '>=', Carbon::now()->addMinutes(-5)->format('Y-m-d H:i:s'))->where('customer', $customer->id)->first();
-                                    if ($phaseState == null) {
-                                        $phaseState = new CustomerPhaseState();
-                                        $phaseState->id = Uuid::uuid4()->toString();
-                                        $phaseState->customer = $customer->id;
-                                        $phaseState->state = $request[__('olt.form_input.phase_state')];
-                                        $phaseState->onu_index = $request[__('olt.form_input.onu')];
-                                        @$phaseState->saveOrFail();
-                                    }
-                                }
-                                $response->customer = $customer;
-                            }
+                    switch ($request[__('olt.form_input.brand')]) {
+                        case 'zte':
+                            $commandConfigs->push("wan-ip 1 mode pppoe username " . $customer->nas_username . " password " . $customer->nas_password . " vlan-profile " . $request[__('olt.form_input.onus.pon_mng.vlan')] . " host 1");
+                            $commandConfigs->push("wan-ip 1 ping-response enable traceroute-response enable");
+                            $commandConfigs->push("security-mgmt 500 state enable mode forward protocol web");
+                            break;
+                        case 'fiberhome':
+                            $commandConfigs->push("vlan port veip_1 mode hybrid");
+                            $commandConfigs->push("wan-ip 1 mode pppoe username " . $customer->nas_username . " password " . $customer->nas_password . " vlan-profile " . $request[__('olt.form_input.onus.pon_mng.vlan')] . " host 1");
+                            $commandConfigs->push("wan-ip 1 ping-response enable traceroute-response enable");
+                            $commandConfigs->push("security-mgmt 500 state enable mode forward protocol web");
+                            break;
+                    }
+                    $commandConfigs->push("exit");
+                    $commandConfigs->push("write");
+                    $responseRegister = (new C320($olt))->bulkCommands($commandRegisters->toArray());
+                    if (strlen($responseRegister) > 0) {
+                        $responseConfig = (new C320($olt))->bulkCommands($commandConfigs->toArray());
+                        if (strlen($responseConfig) > 0) {
+                            $customer->olt = $olt->id;
+                            $customer->onu_index = $gponOnu;
+                            $customer->saveOrFail();
+                            $response = true;
                         }
                     }
                 }
             }
             return $response;
-        } catch (Exception $exception) {
-            throw new Exception($exception->getMessage(),500);
-        }
-    }
-    public function tableLost(Request $request) {
-        try {
-            $olt = new Olt();
-            $onu = new Onu();
-            $onu->setCommunity("cobaro");
-            $maxPorts = $onu->getInterfaceNumber("10.6.0.2");
-            $online = collect();
-            $offline = collect();
-            $dying = collect();
-
-            for ($port = 1; $port <= $maxPorts; $port++) {
-                $gponId = $onu->getOnu("10.6.0.2", $port);
-                if ($gponId != null) {
-                    $interfaceNames = $onu->getInterfaceNames("10.6.0.2");
-                    //$customerCircuits = $onu->getCustomerCircuit("10.6.0.2", $gponId);
-                    $gponCustomers = collect($onu->getCustomerStatus("10.6.0.2", $gponId));
-                    foreach ($gponCustomers as $index => $gponCustomer) {
-                        if (array_key_exists($index,$interfaceNames)) {
-                            if (strtolower($gponCustomer) == 'online') {
-                                $online->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            } elseif (strtolower($gponCustomer) == 'lost') {
-                                $offline->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            } else {
-                                $dying->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            }
-                        }
-                    }
-                }
-            }
-            dd($offline,$online,$dying);
-            dd($onu->getOnu("10.6.0.2",4),$onu->getCustomerOnuType("10.6.0.2","268568576"));
-            dd($olt->getOltId("10.6.0.2"));
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

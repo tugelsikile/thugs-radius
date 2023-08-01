@@ -64,6 +64,20 @@ export const crudOltProfileVlan = async (data) => {
     });
     return Promise.resolve(request);
 }
+export const crudOltProfileMngVLan = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/vlans/managements", data : data
+    });
+    return Promise.resolve(request);
+}
+export const crudOltOnuType = async (data) => {
+    let request = Axios({
+        headers : axiosHeader(),
+        method : "post", url : window.origin + "/api/clients/olt/gpon/profiles/onu-type", data : data
+    });
+    return Promise.resolve(request);
+}
 export const losCustomer = async (data) => {
     let request = Axios({
         headers : axiosHeader(),

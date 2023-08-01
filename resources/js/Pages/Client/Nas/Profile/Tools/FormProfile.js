@@ -1,14 +1,13 @@
 import React from "react";
 import {
-    createNetmaskAddr,
     durationType, durationTypeByte,
-    formatBytes, FormControlSMReactSelect, getIpRangeFromAddressAndNetmask, hasWhiteSpace,
-    limitType, mask2Subnet,
+    formatBytes, FormControlSMReactSelect, hasWhiteSpace,
+    limitType,
     parseInputFloat, pipeIp,
-    responseMessage, serviceType, subnet2Mask
+    responseMessage, serviceType
 } from "../../../../../Components/mixedConsts";
 import {ModalFooter, ModalHeader} from "../../../../../Components/ModalComponent";
-import {Dialog, DialogContent, Tooltip} from "@mui/material";
+import {Dialog, DialogContent} from "@mui/material";
 import Select from "react-select";
 import {InputText} from "../../../../../Components/CustomInput";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -396,7 +395,7 @@ class FormProfile extends React.Component {
                 this.state.form.address.dns.map((item,index)=>{
                     formData.append(`${Lang.get('profiles.form_input.address.dns')}[${index}]`, item.label);
                 });
-
+                formData.append(Lang.get('nas.pools.form_input.upload'),"1");
                 let response = await crudProfile(formData);
                 if (response.data.params === null) {
                     this.setState({loading:false});

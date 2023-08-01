@@ -160,7 +160,11 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
             Route::group(['prefix' => 'profiles'],function () {
                 Route::any('/traffics', [TrafficProfileController::class, 'crud']);
                 Route::any('/tconts', [TrafficProfileController::class, 'tconts']);
-                Route::any('/vlans', [VlanProfileController::class, 'crud']);
+                Route::any('/onu-type', [TrafficProfileController::class, 'onuType']);
+                Route::group(['prefix' => 'vlans'], function () {
+                    Route::any('/', [VlanProfileController::class, 'crud']);
+                    Route::any('/managements', [VlanProfileController::class, 'crudManagement']);
+                });
             });
         });
     });

@@ -10,7 +10,7 @@ import FormCustomer from "../Customer/Tools/FormCustomer";
 import {crudOltCustomer} from "../../../Services/OltService";
 import {showError, showSuccess} from "../../../Components/Toaster";
 
-// noinspection CommaExpressionJS
+// noinspection CommaExpressionJS,DuplicatedCode
 class FormLinkCustomer extends React.Component {
     constructor(props) {
         super(props);

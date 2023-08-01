@@ -8,9 +8,11 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class C320
 {
+    protected $isLogin  = false;
     protected $telnet   = null;
     public function __construct(Olt $olt = null, Request $request = null)
     {
@@ -36,7 +38,7 @@ class C320
                         }
                     }
                 }
-                $this->telnet->login($olt->user, $olt->pass);
+                $this->isLogin = $this->telnet->login($olt->user, $olt->pass);
             } catch (Exception $exception) {}
         } elseif ($request != null) {
             try {
@@ -48,7 +50,7 @@ class C320
                         $this->telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')], $request[__('olt.form_input.prompts.pass')]);
                     }
                 }
-                $this->telnet->login($request[__('olt.form_input.user')], $request[__('olt.form_input.pass')]);
+                $this->isLogin = $this->telnet->login($request[__('olt.form_input.user')], $request[__('olt.form_input.pass')]);
             } catch (Exception $exception) {}
         }
     }
@@ -127,23 +129,19 @@ class C320
                     $responseCommands = explode("\n", $responseCommands);
                     if (count($responseCommands) > 0) {
                         foreach ($responseCommands as $responseCommand) {
-                            if (! strpos(strtolower($responseCommand),"no related information to show")) {
-                                if (! strpos($responseCommand,"------------------")) {
-                                    if (strpos($responseCommand,"gpon-o")) {
-                                        $line = explode(' ', $responseCommand);
-                                        $strings = [];
-                                        if (count($line) > 1) {
-                                            foreach ($line as $item) {
-                                                if (strlen($item) > 4) {
-                                                    $strings[] = $item;
-                                                }
-                                            }
-                                        }
-                                        if (count($strings) == 3) {
-                                            if (array_key_exists(0,$strings) && array_key_exists(1,$strings)) {
-                                                $response->push((object)[
-                                                    'onu' => str_replace('gpon-onu_','',$strings[0]),
-                                                    'serial_number' => $strings[1],
+                            if (stripos($responseCommand,"unknown")) {
+                                $lines = explode(" ", $responseCommand);
+                                if (count($lines) > 0) {
+                                    foreach ($lines as $index => $line) {
+                                        if (strlen($line) == 0) unset($lines[$index]);
+                                    }
+                                    $lines = array_values($lines);
+                                    if (count($lines) > 0) {
+                                        if (array_key_exists(0,$lines) && array_key_exists(1,$lines)) {
+                                            if (strlen($lines[0]) > 0 && strlen($lines[1]) > 0) {
+                                                $response->push((object) [
+                                                    'onu' => str_replace('gpon-onu_','',$lines[0]),
+                                                    'serial_number' => $lines[1],
                                                     'admin_state' => null,
                                                     'omcc_state' => null,
                                                     'phase_state' => 'unconfig',
@@ -185,6 +183,115 @@ class C320
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             return null;
+        }
+    }
+
+    /* @
+     * @return Collection|null
+     */
+    public function showOnuType(): ?Collection
+    {
+        try {
+            $response = collect();
+            if ($this->telnet != null) {
+                if ($this->isLogin) {
+                    $responseMessages = $this->telnet->execPaging("show onu-type");
+                    $this->telnet->disconnect();
+                    if (strlen($responseMessages) > 10) {
+                        $responseMessages = explode("\n", $responseMessages);
+                        if (count($responseMessages) > 3) {
+                            foreach ($responseMessages as $responseMessage) {
+                                if (Str::contains($responseMessage,"ONU type name:")) {
+                                    $name = trim(str_replace("ONU type name:","", $responseMessage));
+                                    $response->push((object) [
+                                        'value' => $name,
+                                        'label' => $name
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+
+    /* @
+     * @return Collection|null
+     */
+    public function showGPonOnuProfileVLan(): ?Collection
+    {
+        try {
+            $response = collect();
+            if ($this->telnet != null) {
+                if ($this->isLogin) {
+                    $responseMessages = $this->telnet->execPaging("show gpon onu profile vlan");
+                    $this->telnet->disconnect();
+                    if (strlen($responseMessages) > 10) {
+                        $responseMessages = explode("\n", $responseMessages);
+                        if (count($responseMessages) > 3) {
+                            $responseMessages = array_chunk($responseMessages,4);
+                            if (count($responseMessages) > 0) {
+                                foreach ($responseMessages as $row) {
+                                    $name = '';
+                                    $tagMode = '';
+                                    $cvlan = '';
+                                    $priority = '';
+                                    foreach ($row as $column) {
+                                        if (Str::contains($column,"Profile name:")) {
+                                            $name = trim(str_replace("Profile name:","", $column));
+                                        } elseif (Str::contains($column,"Tag mode:")) {
+                                            $tagMode = trim(str_replace("Tag mode:","", $column));
+                                        } elseif (Str::contains($column,"CVLAN:")) {
+                                            $cvlan = trim(str_replace("CVLAN:","", $column));
+                                        } elseif (Str::contains($column,"CVLAN priority:")) {
+                                            $priority = trim(str_replace("CVLAN priority:","", $column));
+                                        }
+                                    }
+                                    $response->push((object) [
+                                        'value' => $name, 'label' => $name,
+                                        'tag_mode' => $tagMode, 'cvlan' => $cvlan, 'priority' => $priority,
+                                    ]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return  $response;
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+            return null;
+        }
+    }
+
+    /* @
+     * @param array $commands
+     * @return string|null
+     * @throws Exception
+     */
+    public function bulkCommands(array $commands): ?string
+    {
+        try {
+            $response = null;
+            if ($this->telnet != null) {
+                if ($this->isLogin) {
+                    if (count($commands) > 0) {
+                        foreach ($commands as $command) {
+                            $responseMessage = trim($this->telnet->exec($command));
+                            Log::info("command = " . $command . ", response = " . $responseMessage);
+                            $response .= $responseMessage;
+                        }
+                    }
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
         }
     }
 }

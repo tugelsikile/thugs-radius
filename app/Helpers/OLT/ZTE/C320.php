@@ -294,4 +294,28 @@ class C320
             throw new Exception($exception->getMessage(),500);
         }
     }
+
+    /* @
+     * @param string $portOlt
+     * @param string $onuIndex
+     * @return string|null
+     * @throws Exception
+     */
+    public function noOnu(string $portOlt, string $onuIndex): ?string
+    {
+        try {
+            $response = null;
+            if ($this->telnet != null) {
+                if ($this->isLogin) {
+                    $response .= trim($this->telnet->exec("conf t"));
+                    $response .= trim($this->telnet->exec("interface gpon-olt_" . $portOlt));
+                    $response .= trim($this->telnet->exec("no onu " . $onuIndex));
+                    $this->telnet->disconnect();
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
 }

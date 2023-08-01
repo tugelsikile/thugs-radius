@@ -77,6 +77,7 @@ class DetailOLT extends React.Component {
         this.handleClosePopover = this.handleClosePopover.bind(this);
         this.handleSelectPort = this.handleSelectPort.bind(this);
         this.toggleConfigure = this.toggleConfigure.bind(this);
+        this.handleUnregister = this.handleUnregister.bind(this);
     }
     componentDidMount() {
         this.handleUrlSearch();
@@ -173,7 +174,27 @@ class DetailOLT extends React.Component {
             if (onu.length > 0) {
                 let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
                 if (index >= 0) {
-                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'),{fieldName : Lang.get('olt.form_input.id'), fieldValue : this.state.olt.value});
+                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUnregister(response.data.params)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'),{fieldName : Lang.get('olt.form_input.id'), fieldValue : this.state.olt.value});
+                }
+            }
+        }
+    }
+    handleUnregister(data = null) {
+        if (data !== null) {
+            if (typeof data === "object") {
+                if (typeof data.onu !== "undefined") {
+                    let gpon_states = this.state.gpon_states;
+                    let indexUnfiltered = gpon_states.unfiltered.findIndex((f)=> f.onu === data.onu);
+                    let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === data.onu);
+                    if (indexFiltered >0 ) {
+                        gpon_states.filtered[indexFiltered].phase_state = "unconfig";
+                        gpon_states.filtered[indexFiltered].details = null;
+                    }
+                    if (indexUnfiltered >= 0) {
+                        gpon_states.unfiltered[indexUnfiltered].phase_state = "unconfig";
+                        gpon_states.unfiltered[indexUnfiltered].details = null;
+                    }
+                    this.setState({gpon_states},()=>this.handleFilter());
                 }
             }
         }
@@ -389,7 +410,9 @@ class DetailOLT extends React.Component {
                                                 if (response !== null) {
                                                     gpon_states.unfiltered[indexUnfiltered].details = response;
                                                     if (typeof response.phase_state !== 'undefined') {
-                                                        gpon_states.unfiltered[indexUnfiltered].phase_state = response.phase_state;
+                                                        if (response.phase_state !== null) {
+                                                            gpon_states.unfiltered[indexUnfiltered].phase_state = response.phase_state;
+                                                        }
                                                     }
                                                     let indexFiltered = this.state.gpon_states.filtered.findIndex((f)=> f.onu === this.state.gpon_states.unfiltered[indexUnfiltered].onu);
                                                     if (indexFiltered >= 0) {
@@ -549,7 +572,9 @@ class DetailOLT extends React.Component {
                                         if (response !== null) {
                                             gpon_states.unfiltered[index].details = response;
                                             if (typeof response.phase_state !== 'undefined') {
-                                                gpon_states.unfiltered[index].phase_state = response.phase_state;
+                                                if (response.phase_state !== null) {
+                                                    gpon_states.unfiltered[index].phase_state = response.phase_state;
+                                                }
                                             }
                                             let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === onu);
                                             if (indexFiltered >= 0) {

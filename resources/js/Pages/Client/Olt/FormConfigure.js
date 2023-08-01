@@ -474,7 +474,7 @@ class FormConfigure extends React.Component {
         form.pon_managements.push({
             name : form.customer === null ? 'PPPOE_' + (form.pon_managements.length + 1).toString() : 'PPPOE_' + form.customer.meta.code + '_' + (form.pon_managements.length).toString(),
             gemport : form.gem_ports.filter((f)=> f.id.length > 0 && f.downstream !== null).length === 0 ? null : {value : form.gem_ports.filter((f)=> f.id.length > 0 && f.downstream !== null)[0].id, label : form.gem_ports.filter((f)=> f.id.length > 0 && f.downstream !== null)[0].downstream.value},
-            vlan : form.virtual_lanes.filter((f)=> f.port.length > 0 && f.user !== null).length === 0 ? null : { value : form.virtual_lanes.filter((f)=> f.port.length > 0 && f.user !== null)[0].port, label : form.virtual_lanes.filter((f)=> f.port.length > 0 && f.user !== null)[0].user.label}
+            vlan : form.virtual_lanes.filter((f)=> f.user !== null).length === 0 ? null : { value : form.virtual_lanes.filter((f)=> f.user !== null)[0].user.value, label : form.virtual_lanes.filter((f)=> f.user !== null)[0].user.label}
         });
         this.setState({form});
     }
@@ -521,6 +521,7 @@ class FormConfigure extends React.Component {
                 this.setState({loading:false});
                 showError(response.data.message);
             } else {
+                this.setState({loading:false});
                 this.props.handleClose();
                 this.props.handleUpdate(null,this.props.data);
                 showSuccess(response.data.message);

@@ -30,13 +30,14 @@ export const PettyCashTypeList = [
     { value : 'output', label : Lang.get('petty_cash.labels.output') },
 ];
 export const PettyCashTableMainRow = (props) => {
+    //console.log(props.index % 2);
     const [visibility,setVisibility] = React.useState(false);
     function handleClick(event) {
         event.preventDefault();
         setVisibility(! visibility);
     }
     return (
-        <React.Fragment key={props.item.value}>
+        <React.Fragment key={`xs_${props.index}`}>
             <tr>
                 <td className="align-middle text-xs pl-2">
                     {props.item.data.length > 0 &&
@@ -57,9 +58,9 @@ export const PettyCashTableMainRow = (props) => {
             {visibility && props.item.data.length > 0 &&
                 <tr>
                     <td colSpan={5} className="p-1">
-                        <table className="table table-hover table-sm table-striped mb-0 table-info">
+                        <table className={`table table-hover table-sm table-striped mb-0 ${props.index % 2 === 0 ? 'table-info' : 'table-primary'}`}>
                             <thead>
-                            <tr className="thead-info">
+                            <tr className={props.index % 2 === 0 ? 'thead-info' : 'thead-primary'}>
                                 <th className="align-middle text-xs text-center pl-2" width={30}><input data-value={null} data-period={props.item.value} onChange={props.onCheck} type="checkbox"/></th>
                                 <th className="align-middle text-xs">{Lang.get('petty_cash.labels.name')}</th>
                                 <th width={100} className="align-middle text-xs">{Lang.get('petty_cash.labels.type')}</th>
@@ -73,7 +74,7 @@ export const PettyCashTableMainRow = (props) => {
                                 <DataNotFound colSpan={6} message={Lang.get('labels.not_found',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
                                 :
                                 props.item.data.map((item,index)=>
-                                    <PettyCashTableChildRow onApprove={props.onApprove} onDelete={props.onDelete} privilege={props.privilege} onEdit={props.onEdit} selected={props.selected} onCheck={props.onCheck} key={item.value} parent={props.item} item={item} index={index}/>
+                                    <PettyCashTableChildRow onApprove={props.onApprove} onDelete={props.onDelete} privilege={props.privilege} onEdit={props.onEdit} selected={props.selected} onCheck={props.onCheck} key={`aa_${index}`} parent={props.item} item={item} index={index}/>
                                 )
                             }
                             </tbody>
@@ -86,7 +87,7 @@ export const PettyCashTableMainRow = (props) => {
 }
 const PettyCashTableChildRow = (props) => {
     return (
-        <tr key={props.item.value} style={{backgroundColor:props.item.meta.timestamps.approve.at === null ? 'antiquewhite' : null}}>
+        <tr key={`xn_${props.index}`} style={{backgroundColor:props.item.meta.timestamps.approve.at === null ? 'antiquewhite' : null}}>
             <td className="align-middle text-center pl-2">
                 <input checked={props.selected.findIndex((f)=> f === props.item.value) >= 0} data-value={props.item.value} data-period={props.item.period} type="checkbox" onChange={props.onCheck}/>
             </td>

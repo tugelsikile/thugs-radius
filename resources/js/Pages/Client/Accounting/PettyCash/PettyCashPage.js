@@ -153,17 +153,19 @@ class PettyCashPage extends React.Component {
         let petty_cashes = this.state.petty_cashes;
         let filter = this.state.filter;
         if (petty_cashes.last.length > 0 && petty_cashes.unfiltered.length > 0) {
-            let dataLastMonth = {
-                value : null,
-                label : Lang.get('petty_cash.labels.end_balance.last'),
-                period : petty_cashes.unfiltered[0].value,
-                meta : {
-                    description : '', type : 'input', remarks : null,
-                    timestamps : { approve : { at : moment().format('yyyy-MM-DD HH:mm:ss') } },
-                    amount : SumEndBalance(petty_cashes.last,null,false),
+            if (petty_cashes.unfiltered[0].data.findIndex((f)=> f.value === null) < 0) {
+                let dataLastMonth = {
+                    value : null,
+                    label : Lang.get('petty_cash.labels.end_balance.last'),
+                    period : petty_cashes.unfiltered[0].value,
+                    meta : {
+                        description : '', type : 'input', remarks : null,
+                        timestamps : { approve : { at : moment().format('yyyy-MM-DD HH:mm:ss') } },
+                        amount : SumEndBalance(petty_cashes.last,null,false),
+                    }
                 }
+                petty_cashes.unfiltered[0].data.unshift(dataLastMonth);
             }
-            petty_cashes.unfiltered[0].data.unshift(dataLastMonth);
         }
         if (filter.keywords.length > 0) {
             let cacheData = JSON.parse(localStorage.getItem('cache_data'));

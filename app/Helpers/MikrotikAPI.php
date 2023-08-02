@@ -460,6 +460,7 @@ class MikrotikAPI
                 if ($this->client->connect()) {
                     Log::info("client connected");
                     $res = $this->client->query($this->query)->read();
+                    Log::info("response mikrotik = " . json_encode($res));
                     if ($res != null) {
                         if (array_key_exists('after', $res)) {
                             if (array_key_exists('ret', $res['after'])) {

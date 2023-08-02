@@ -79,6 +79,13 @@ class MenuSeeder extends Seeder
             ])
         ]);
         $requests->push((object) [
+            'name' => 'Accounting', 'route' => 'clients.accounting', 'description' => 'accounting.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-wallet', 'lang' => 'accounting.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Petty Cash', 'route' => 'clients.accounting.petty-cash', 'description' => 'petty_cash.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'petty_cash.labels.menu' ],
+                (object) [ 'name' => 'Approve Petty Cash', 'route' => 'clients.accounting.petty-cash.approve', 'description' => 'petty_cash.approve.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-check-circle', 'lang' => 'petty_cash.approve.menu' ],
+            ])
+        ]);
+        $requests->push((object) [
             'name' => 'Config', 'route' => 'clients.configs', 'description' => 'Konfigurasi', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cog', 'lang' => 'configs.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Payment Gateway', 'route' => 'clients.configs.payment-gateways', 'description' => 'gateways.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'gateways.labels.menu' ],

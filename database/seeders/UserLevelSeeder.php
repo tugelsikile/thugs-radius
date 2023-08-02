@@ -31,6 +31,9 @@ class UserLevelSeeder extends Seeder
             'name' => 'Operator', 'description' => 'Operator Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => true,
         ]);
         $dumps->push((object) [
+            'name' => 'Billing', 'description' => 'Billing', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => false,
+        ]);
+        $dumps->push((object) [
             'name' => 'Customer', 'description' => 'Customer Clients', 'super' => false, 'is_default' => true, 'for_client' => true, 'for_public' => true, 'require_nas' => false,
         ]);
         $dumps->push((object) [
@@ -38,7 +41,7 @@ class UserLevelSeeder extends Seeder
         ]);
         $this->command->getOutput()->progressStart($dumps->count());
         foreach ($dumps as $dump) {
-            $level = UserLevel::where('name', $dump->name)->first();
+            $level = UserLevel::where('name', $dump->name)->where('for_client', $dump->for_client)->first();
             if ($level == null) {
                 $level = new UserLevel();
                 $level->id = Uuid::uuid4()->toString();

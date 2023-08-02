@@ -1,3 +1,5 @@
 {
-    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
+    "/js/clients/accounting/index.js": "/js/clients/accounting/index.js",
+    "/js/clients/accounting/petty-cash.js": "/js/clients/accounting/petty-cash.js",
+    "/css/custom-thead.css": "/css/custom-thead.css"
 }

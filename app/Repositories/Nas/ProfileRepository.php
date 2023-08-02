@@ -98,10 +98,10 @@ class ProfileRepository
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->saveOrFail();
             if (! $profile->is_additional) {
-                Log::info("has upload = " . json_encode($request->has(__('profiles.form_input.upload'))));
-                if ($request->has(__('profiles.form_input.upload'))) {
-                    Log::info("upload is 1 = " . json_encode($request[__('profiles.form_input.upload')] == 1));
-                    if ($request[__('profiles.form_input.upload')] == 1) {
+                Log::info("has upload = " . json_encode($request->has(__('nas.pools.form_input.upload'))));
+                if ($request->has(__('nas.pools.form_input.upload'))) {
+                    Log::info("upload is 1 = " . json_encode($request[__('nas.pools.form_input.upload')] == 1));
+                    if ($request[__('nas.pools.form_input.upload')] == 1) {
                         if ($profile->nasObj != null) {
                             switch ($profile->nasObj->method) {
                                 case 'ssl' :
@@ -197,10 +197,10 @@ class ProfileRepository
             $profile->saveOrFail();
 
             if (! $profile->is_additional) {
-                Log::info("has upload = " . json_encode($request->has(__('profiles.form_input.upload'))));
-                if ($request->has(__('profiles.form_input.upload'))) {
-                    Log::info("upload is 1 = " . json_encode($request[__('profiles.form_input.upload')] == 1));
-                    if ($request[__('profiles.form_input.upload')] == 1) {
+                Log::info("has upload = " . json_encode($request->has(__('nas.pools.form_input.upload'))));
+                if ($request->has(__('nas.pools.form_input.upload'))) {
+                    Log::info("upload is 1 = " . json_encode($request[__('nas.pools.form_input.upload')] == 1));
+                    if ($request[__('nas.pools.form_input.upload')] == 1) {
                         if ($profile->nasObj != null) {
                             switch ($profile->nasObj->method) {
                                 case 'ssl' :

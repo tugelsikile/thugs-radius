@@ -54,7 +54,7 @@ export const PettyCashTableMainRow = (props) => {
                 <td className="align-middle text-xs">{FormatPrice(SumRow(props.item.data),null,false)}</td>
                 <td className="align-middle text-xs pr-2"><PettyCashMainBalance index={props.index} filtered={props.filtered}/></td>
             </tr>
-            {visibility &&
+            {visibility && props.item.data.length > 0 &&
                 <tr>
                     <td colSpan={5} className="p-1">
                         <table className="table table-hover table-sm table-striped mb-0 table-info">

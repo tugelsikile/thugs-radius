@@ -316,7 +316,7 @@ class PettyCashPage extends React.Component {
                                             <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
                                             :
                                             this.state.petty_cashes.filtered.map((item,index)=>
-                                                <PettyCashTableMainRow onApprove={this.confirmApprove} onDelete={this.confirmDelete} privilege={this.state.privilege} onEdit={this.toggleModal} filtered={this.state.petty_cashes.filtered} selected={this.state.petty_cashes.selected} onCheck={this.handleCheck} item={item} key={`x_${index}`} index={index}/>
+                                                <PettyCashTableMainRow loadings={this.state.loadings} onApprove={this.confirmApprove} onDelete={this.confirmDelete} privilege={this.state.privilege} onEdit={this.toggleModal} filtered={this.state.petty_cashes.filtered} selected={this.state.petty_cashes.selected} onCheck={this.handleCheck} item={item} key={`x_${index}`} index={index}/>
                                             )
                                         }
                                         </tbody>

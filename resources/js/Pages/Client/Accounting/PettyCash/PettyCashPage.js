@@ -300,7 +300,7 @@ class PettyCashPage extends React.Component {
                                                    confirmDelete={this.confirmDelete}/>
                                     <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
                                 </div>
-                                <div className="card-body p-0">
+                                <div className="card-body p-0 table-responsive">
                                     <table className="table table-striped table-sm">
                                         <thead>
                                         <tr>

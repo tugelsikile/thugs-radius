@@ -14,6 +14,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -97,7 +98,9 @@ class ProfileRepository
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->saveOrFail();
             if (! $profile->is_additional) {
+                Log::info("has upload = " . $request->has(__('profiles.form_input.upload')));
                 if ($request->has(__('profiles.form_input.upload'))) {
+                    Log::info("upload is 1 = " . $request[__('profiles.form_input.upload')] == 1);
                     if ($request[__('profiles.form_input.upload')] == 1) {
                         if ($profile->nasObj != null) {
                             switch ($profile->nasObj->method) {
@@ -194,7 +197,9 @@ class ProfileRepository
             $profile->saveOrFail();
 
             if (! $profile->is_additional) {
+                Log::info("has upload = " . $request->has(__('profiles.form_input.upload')));
                 if ($request->has(__('profiles.form_input.upload'))) {
+                    Log::info("upload is 1 = " . $request[__('profiles.form_input.upload')] == 1);
                     if ($request[__('profiles.form_input.upload')] == 1) {
                         if ($profile->nasObj != null) {
                             switch ($profile->nasObj->method) {

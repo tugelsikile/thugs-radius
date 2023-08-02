@@ -457,18 +457,22 @@ class MikrotikAPI
                 if ($rl != null || strlen($rl) > 3) {
                     $this->query = $this->query->equal('rate-limit', $rl);
                 }
-                $res = $this->client->query($this->query)->read();
-                Log::alert($res == null);
-
-                if ($res != null) {
-                    if (array_key_exists('after', $res)) {
-                        if (array_key_exists('ret', $res['after'])) {
-                            $nasProfile->profile_id = $res['after']['ret'];
-                            $nasProfile->saveOrFail();
+                if ($this->client->connect()) {
+                    Log::info("client connected");
+                    $res = $this->client->query($this->query)->read();
+                    if ($res != null) {
+                        if (array_key_exists('after', $res)) {
+                            if (array_key_exists('ret', $res['after'])) {
+                                $nasProfile->profile_id = $res['after']['ret'];
+                                $nasProfile->saveOrFail();
+                            }
                         }
                     }
+                } else {
+                    Log::alert("client not connected");
                 }
             }
+            Log::alert("client is null");
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             return;

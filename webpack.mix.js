@@ -23,6 +23,7 @@ mix.webpackConfig({
 });*/
 
 mix.sass('resources/css/custom-thead.scss','public/css');
+mix.sass('resources/css/print.scss','public/css');
 //mix.copy('node_modules/crypto-js','public/js/plugins/crypto-js');
 //mix.js('resources/js/src/guests/welcome.js','public/js/guests');
 //mix.sass('resources/css/progress-animation.scss','public/css');

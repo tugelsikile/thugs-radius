@@ -26,6 +26,7 @@
         "madnest/madzipper": "^1.2",
         "mariuzzo/laravel-js-localization": "^1.10",
         "midtrans/midtrans-php": "^2.5",
+        "phpoffice/phpspreadsheet": "^1.29",
         "rap2hpoutre/laravel-log-viewer": "^2.3",
         "spatie/ssh": "^1.9"
     },

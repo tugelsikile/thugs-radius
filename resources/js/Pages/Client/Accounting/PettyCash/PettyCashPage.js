@@ -14,7 +14,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCircleNotch, faDownload, faPrint, faRefresh} from "@fortawesome/free-solid-svg-icons";
 import FormPettyCash from "./FormPettyCash";
 import {DataNotFound} from "../../../../Components/TableComponent";
-import {PageCards, PageFilter, PettyCashTableMainRow, SumEndBalance} from "./Mixed";
+import {PageCards, PageFilter, PettyCashTableMainRow, PrintFrame, SumEndBalance} from "./Mixed";
 
 class PettyCashPage extends React.Component {
     constructor(props) {
@@ -25,7 +25,8 @@ class PettyCashPage extends React.Component {
             privilege : null, menus : [], site : null,
             petty_cashes : { filtered : [], unfiltered : [], selected : [], last : [] },
             filter : { period : new Date(), keywords : '', sort : { by : 'type', dir : 'asc' } },
-            modal : { open : false, data : null }
+            modal : { open : false, data : null },
+            print : { open : false },
         };
         this.handleFilter = this.handleFilter.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
@@ -77,11 +78,19 @@ class PettyCashPage extends React.Component {
     handleDownload(event = null) {
         if (event !== null) event.preventDefault();
         let targetUrl = `${window.origin}/clients/accounting/petty-cash/download`;
-        if (this.state.filter.period !== null) targetUrl = `${targetUrl}?period=${moment(this.state.filter.period).format('yyyy-MM-DD')}`;
-        window.open(targetUrl, '_blank');
+        if (this.state.user !== null) {
+            if (this.state.user.meta.company !== null) {
+                targetUrl = `${targetUrl}/${this.state.user.meta.company.id}`;
+                if (this.state.filter.period !== null) targetUrl = `${targetUrl}?period=${moment(this.state.filter.period).format('yyyy-MM-DD')}`;
+                window.open(targetUrl, '_blank');
+            }
+        }
     }
     handlePrint(event = null) {
         if (event !== null) event.preventDefault();
+        let print = this.state.print;
+        print.open = ! this.state.print.open;
+        this.setState({print});
     }
     handleSelectPeriod(value) {
         let filter = this.state.filter;
@@ -152,7 +161,7 @@ class PettyCashPage extends React.Component {
     handleFilter() {
         let petty_cashes = this.state.petty_cashes;
         let filter = this.state.filter;
-        if (petty_cashes.last.length > 0 && petty_cashes.unfiltered.length > 0) {
+        /*if (petty_cashes.last.length > 0 && petty_cashes.unfiltered.length > 0) {
             if (petty_cashes.unfiltered[0].data.findIndex((f)=> f.value === null) < 0) {
                 let dataLastMonth = {
                     value : null,
@@ -166,7 +175,7 @@ class PettyCashPage extends React.Component {
                 }
                 petty_cashes.unfiltered[0].data.unshift(dataLastMonth);
             }
-        }
+        }*/
         if (filter.keywords.length > 0) {
             let cacheData = JSON.parse(localStorage.getItem('cache_data'));
             petty_cashes.filtered = [];
@@ -286,53 +295,57 @@ class PettyCashPage extends React.Component {
 
                             <PageCards {...this.state}/>
 
-                            <div id="main-page-card" className="card card-outline card-primary">
-                                {this.state.loadings.petty_cashes && <CardPreloader/>}
-                                <div className="card-header pl-2" id="page-card-header">
-                                    <PageCardTitle privilege={this.state.privilege}
-                                                   filter={<PageFilter onSelect={this.handleSelectPeriod} {...this.state} onReload={this.loadPettyCash} />}
-                                                   others={[
-                                                       { disabled : this.state.loadings.petty_cashes, icon : faDownload, lang : Lang.get('labels.download', {Attribute : Lang.get('petty_cash.labels.menu')}), handle : ()=> this.handleDownload() },
-                                                       { disabled : this.state.loadings.petty_cashes, icon : faPrint, lang : Lang.get('labels.print', {Attribute : Lang.get('petty_cash.labels.menu')}), handle : ()=> this.handlePrint()}
-                                                   ]}
-                                                   loading={this.state.loadings.petty_cashes}
-                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('petty_cash.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('petty_cash.labels.menu')})}}
-                                                   selected={this.state.petty_cashes.selected}
-                                                   handleModal={this.toggleModal}
-                                                   confirmDelete={this.confirmDelete}/>
-                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
+                            {this.state.print.open ?
+                                <PrintFrame {...this.state} onClose={this.handlePrint}/>
+                                :
+                                <div id="main-page-card" className="card card-outline card-primary">
+                                    {this.state.loadings.petty_cashes && <CardPreloader/>}
+                                    <div className="card-header pl-2" id="page-card-header">
+                                        <PageCardTitle privilege={this.state.privilege}
+                                                       filter={<PageFilter onSelect={this.handleSelectPeriod} {...this.state} onReload={this.loadPettyCash} />}
+                                                       others={[
+                                                           { disabled : this.state.loadings.petty_cashes, icon : faDownload, lang : Lang.get('labels.download', {Attribute : Lang.get('petty_cash.labels.menu')}), handle : ()=> this.handleDownload() },
+                                                           { disabled : this.state.loadings.petty_cashes, icon : faPrint, lang : Lang.get('labels.print', {Attribute : Lang.get('petty_cash.labels.menu')}), handle : ()=> this.handlePrint()}
+                                                       ]}
+                                                       loading={this.state.loadings.petty_cashes}
+                                                       langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('petty_cash.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('petty_cash.labels.menu')})}}
+                                                       selected={this.state.petty_cashes.selected}
+                                                       handleModal={this.toggleModal}
+                                                       confirmDelete={this.confirmDelete}/>
+                                        <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
+                                    </div>
+                                    <div className="card-body p-0 table-responsive">
+                                        <table className="table table-striped table-sm">
+                                            <thead>
+                                            <tr>
+                                                <th className="align-middle text-xs pl-2">{Lang.get('petty_cash.labels.period')}</th>
+                                                <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.input')}</th>
+                                                <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.output')}</th>
+                                                <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.total')}</th>
+                                                <th width={150} className="align-middle text-xs pr-2">{Lang.get('petty_cash.labels.balance')}</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            {this.state.petty_cashes.filtered.length === 0 ?
+                                                <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
+                                                :
+                                                this.state.petty_cashes.filtered.map((item,index)=>
+                                                    <PettyCashTableMainRow loadings={this.state.loadings} onApprove={this.confirmApprove} onDelete={this.confirmDelete} privilege={this.state.privilege} onEdit={this.toggleModal} filtered={this.state.petty_cashes.filtered} selected={this.state.petty_cashes.selected} onCheck={this.handleCheck} item={item} key={`x_${index}`} index={index}/>
+                                                )
+                                            }
+                                            </tbody>
+                                            <tfoot>
+                                            <tr>
+                                                <th className="align-middle text-right text-xs" colSpan={4}>{Lang.get('petty_cash.labels.end_balance.label')}</th>
+                                                <th className="align-middle text-xs pr-2">
+                                                    {SumEndBalance(this.state.petty_cashes.unfiltered)}
+                                                </th>
+                                            </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
                                 </div>
-                                <div className="card-body p-0 table-responsive">
-                                    <table className="table table-striped table-sm">
-                                        <thead>
-                                        <tr>
-                                            <th className="align-middle text-xs pl-2">{Lang.get('petty_cash.labels.period')}</th>
-                                            <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.input')}</th>
-                                            <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.output')}</th>
-                                            <th width={150} className="align-middle text-xs">{Lang.get('petty_cash.labels.total')}</th>
-                                            <th width={150} className="align-middle text-xs pr-2">{Lang.get('petty_cash.labels.balance')}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {this.state.petty_cashes.filtered.length === 0 ?
-                                            <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:Lang.get('petty_cash.labels.menu')})}/>
-                                            :
-                                            this.state.petty_cashes.filtered.map((item,index)=>
-                                                <PettyCashTableMainRow loadings={this.state.loadings} onApprove={this.confirmApprove} onDelete={this.confirmDelete} privilege={this.state.privilege} onEdit={this.toggleModal} filtered={this.state.petty_cashes.filtered} selected={this.state.petty_cashes.selected} onCheck={this.handleCheck} item={item} key={`x_${index}`} index={index}/>
-                                            )
-                                        }
-                                        </tbody>
-                                        <tfoot>
-                                        <tr>
-                                            <th className="align-middle text-right text-xs" colSpan={4}>{Lang.get('petty_cash.labels.end_balance.label')}</th>
-                                            <th className="align-middle text-xs pr-2">
-                                                {SumEndBalance(this.state.petty_cashes.unfiltered)}
-                                            </th>
-                                        </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                            </div>
+                            }
 
                         </div>
 

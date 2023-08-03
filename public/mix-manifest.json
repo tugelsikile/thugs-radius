@@ -1,5 +1,6 @@
 {
     "/js/clients/accounting/index.js": "/js/clients/accounting/index.js",
     "/js/clients/accounting/petty-cash.js": "/js/clients/accounting/petty-cash.js",
+    "/css/print.css": "/css/print.css",
     "/css/custom-thead.css": "/css/custom-thead.css"
 }

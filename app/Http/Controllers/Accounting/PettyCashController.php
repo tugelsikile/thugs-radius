@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Accounting;
 use App\Http\Controllers\Controller;
 use App\Repositories\Accounting\PettyCashRepository;
 use App\Validations\Accounting\PettyCashValidation;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,6 +55,29 @@ class PettyCashController extends Controller
             return formatResponse($code, $message, $params);
         } catch (Exception $exception) {
             return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+
+    /* @
+     * @param Request $request
+     * @return void
+     * @throws Exception
+     */
+    public function download(Request $request) {
+        try {
+            $this->repository->download($request);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
+    public function print(Request $request) {
+        try {
+            $period = Carbon::parse($request->period)->translatedFormat('F Y');
+            $this->repository->switchDBManual($request);
+            $pettyCashes = $this->repository->print($request);
+            return view("clients.accounting.petty-cash-print", compact('pettyCashes','period'));
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
         }
     }
 }

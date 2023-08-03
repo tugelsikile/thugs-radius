@@ -16,7 +16,7 @@ import {
     faCog,
     faExclamationTriangle, faFilter,
     faMoneyBillWave,
-    faPencilAlt, faRefresh,
+    faPencilAlt, faPrint, faRefresh, faTimes,
     faWallet
 } from "@fortawesome/free-solid-svg-icons";
 import moment from "moment/moment";
@@ -328,4 +328,53 @@ export const PageFilter = (props) => {
             }
         </React.Fragment>
     )
+}
+export const PrintFrame = (props) => {
+    function handlePrint() {
+        let formEl = document.getElementById('form-print');
+        if (formEl != null) {
+            let targetUrl = `${window.origin}/clients/accounting/petty-cash/print`;
+            if (props.user !== null) {
+                if (props.user.meta.company !== null) {
+                    targetUrl = `${targetUrl}/${props.user.meta.company.id}`;
+                    if (props.filter.period !== null) {
+                        let inputHidden = document.getElementById('input-hidden-iframe');
+                        if (inputHidden != null) {
+                            inputHidden.value = moment(props.filter.period).format('yyyy-MM-DD');
+                        }
+                    }
+                    formEl.action = targetUrl;
+                    formEl.submit();
+                }
+            }
+        }
+    }
+    setTimeout(()=>{
+        handlePrint();
+    },500);
+    function handlePrintNow() {
+        const iframe = document.getElementById("iframe-print");
+        const iframeWindow = iframe.contentWindow || iframe;
+        iframe.focus();
+        iframeWindow.print();
+    }
+    return (
+        <div className="card card-outline card-info shadow">
+            <form id="form-print" target="iframe-print" method="post" action={`${window.origin}/clients/accounting/petty-cash/print`} className="card-header pl-2">
+                <input type="hidden" name="period" id="input-hidden-iframe"/>
+                <button type="button" onClick={handlePrint} className="btn btn-outline-secondary btn-sm mr-1">
+                    <FontAwesomeIcon icon={faRefresh} size="2xs"/>
+                </button>
+                <button type="button" onClick={handlePrintNow} className="btn btn-outline-primary btn-sm mr-1">
+                    <FontAwesomeIcon icon={faPrint} size="2xs" className="mr-1"/>
+                    {Lang.get('labels.print', {Attribute : Lang.get('petty_cash.labels.menu')})}
+                </button>
+                <button onClick={props.onClose} type="button" className="btn btn-outline-secondary btn-sm">
+                    <FontAwesomeIcon icon={faTimes} size="2xs" className="mr-1"/>
+                    {Lang.get('messages.close')}
+                </button>
+            </form>
+            <iframe name="iframe-print" id="iframe-print" style={{border:'none',minHeight:400,maxHeight:1000,height:600}}/>
+        </div>
+    );
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Accounting\PettyCashController;
 use App\Models\User\User;
 use Illuminate\Support\Facades\Route;
 use Rap2hpoutre\LaravelLogViewer\LogViewerController;
@@ -75,7 +76,11 @@ Route::group(['prefix' => 'clients'], function () {
     });
     Route::group(['prefix' => 'accounting'], function () {
         Route::get('/', function () { return view('clients.accounting.index'); })->name('clients.accounting');
-        Route::get('/petty-cash', function () { return view('clients.accounting.petty-cash'); })->name('clients.accounting.petty-cash');
+        Route::group(['prefix' => 'petty-cash'], function () {
+            Route::get('/', function () { return view('clients.accounting.petty-cash'); })->name('clients.accounting.petty-cash');
+            Route::get('/download/{id}', [PettyCashController::class, 'download']);
+            Route::post('/print/{id}', [PettyCashController::class, 'print']);
+        });
     });
     Route::get('/olt', function (){ return view('clients.olt.index'); })->name('clients.olt');
     Route::get('/wizard', function () { return view('clients.wizard'); });

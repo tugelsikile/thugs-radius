@@ -6,6 +6,7 @@ use App\Helpers\SwitchDB;
 use App\Models\Accounting\Account;
 use App\Models\Accounting\CashFlow;
 use App\Models\Accounting\Category;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -35,7 +36,10 @@ class CashFlowRepository
             $response = collect();
             $cashFlows = CashFlow::orderBy('period', 'asc');
             if ($request->has(__('cash_flow.form_input.id'))) $cashFlows = $cashFlows->where('id', $request[__('cash_flow.form_input.id')]);
-            if ($request->has(__('cash_flow.form_input.periods.start')) && $request->has(__('cash_flow.form_input.periods.end'))) $cashFlows = $cashFlows->whereBetween('period', [$request[__('cash_flow.form_input.periods.start')], $request[__('cash_flow.form_input.periods.end')]]);
+            if ($request->has(__('cash_flow.form_input.periods.start')) && $request->has(__('cash_flow.form_input.periods.end'))) {
+                if (Carbon::parse($request[__('cash_flow.form_input.periods.end')])->isBefore(Carbon::parse($request[__('cash_flow.form_input.periods.start')]))) throw new Exception(__('validation.before_or_equal',['Attribute' => __('cash_flow.form_input.periods.start'), 'date' => __('cash_flow.form_input.periods.end')]),400);
+                $cashFlows = $cashFlows->whereBetween('period', [$request[__('cash_flow.form_input.periods.start')], $request[__('cash_flow.form_input.periods.end')]]);
+            }
             if ($request->has(__('cash_flow.form_input.account.name'))) $cashFlows = $cashFlows->where('account', $request[__('cash_flow.form_input.account.name')]);
             $cashFlows = $cashFlows->get();
             if ($cashFlows->count() > 0) {

@@ -178,6 +178,27 @@ class CashFlowPage extends React.Component {
                     cash_flows.filtered = cash_flows.filtered.sort((a,b)=> (a.meta.amount[filter.sort.by] > b.meta.amount[filter.sort.by]) ? -1 : ((b.meta.amount[filter.sort.by] > a.meta.amount[filter.sort.by]) ? 1 : 0));
                 }
                 break;
+            case 'account':
+                if (filter.sort.dir === 'asc') {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b) => (a.meta.account.label > b.meta.account.label) ? 1 : ((b.meta.account.label > a.meta.account.label) ? -1 : 0));
+                } else {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b)=> (a.meta.account.label > b.meta.account.label) ? -1 : ((b.meta.account.label > a.meta.account.label) ? 1 : 0));
+                }
+                break;
+            case 'category':
+                if (filter.sort.dir === 'asc') {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b) => (a.meta.category.label > b.meta.category.label) ? 1 : ((b.meta.category.label > a.meta.category.label) ? -1 : 0));
+                } else {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b)=> (a.meta.category.label > b.meta.category.label) ? -1 : ((b.meta.category.label > a.meta.category.label) ? 1 : 0));
+                }
+                break;
+            case 'period':
+                if (filter.sort.dir === 'asc') {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b) => (a.meta.period > b.meta.period) ? 1 : ((b.meta.period > a.meta.period) ? -1 : 0));
+                } else {
+                    cash_flows.filtered = cash_flows.filtered.sort((a,b)=> (a.meta.period > b.meta.period) ? -1 : ((b.meta.period > a.meta.period) ? 1 : 0));
+                }
+                break;
         }
 
         this.setState({cash_flows});
@@ -335,8 +356,8 @@ class CashFlowPage extends React.Component {
                                                 <th className="align-middle text-xs pr-2">{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
                                             </tr>
                                             <tr>
-                                                <th className="align-middle text-xs text-right" colSpan={6}>Grand Total</th>
-                                                <th className="align-middle text-xs pr-2" colSpan={7}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
+                                                <th className="align-middle text-lg text-right" colSpan={6}>Grand Total</th>
+                                                <th className={this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0) < 0 ? "align-middle text-lg pr-2 text-danger" : "align-middle text-lg pr-2 text-success"} colSpan={7}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

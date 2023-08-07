@@ -336,7 +336,7 @@ class CashFlowPage extends React.Component {
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-xs text-right" colSpan={6}>Grand Total</th>
-                                                <th className="align-middle text-xs pr-2" colSpan={7}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.amount,0))}</th>
+                                                <th className="align-middle text-xs pr-2" colSpan={7}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

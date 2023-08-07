@@ -3,6 +3,9 @@
 
 /** @noinspection PhpUndefinedFieldInspection */
 
+use App\Models\Accounting\Account;
+use App\Models\Accounting\CashFlow;
+use App\Models\Accounting\Category;
 use App\Models\Company\ClientCompany;
 use App\Models\Company\CompanyPackage;
 use App\Models\Company\Invoice\CompanyInvoice;
@@ -162,6 +165,45 @@ function generateCustomerCode(): string
 function generateCompanyInvoiceCode(): string
 {
     $length = CompanyInvoice::orderBy('code', 'desc')->limit(1)->offset(0)->withTrashed()->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return Carbon::now()->format('ym') . Str::padLeft($length,4,'0');
+}
+function generateCashFlowCode(string $period): string
+{
+    $length = CashFlow::orderBy('code', 'desc')->whereDate('period', $period)->limit(1)->offset(0)->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return "TRX-" . Carbon::parse($period)->format('ymd') . Str::padLeft($length,4,'0');
+}
+function generateAccountCode(): string
+{
+    $length = Account::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
+    if ($length->count() > 0) {
+        $length = $length->first();
+        $length = Str::substr($length,-4);
+        $length = (int) $length;
+        $length = $length + 1;
+    } else {
+        $length = 1;
+    }
+    return Carbon::now()->format('ym') . Str::padLeft($length,4,'0');
+}
+function generateCategoryCode(): string
+{
+    $length = Category::orderBy('code', 'desc')->limit(1)->offset(0)->get('code');
     if ($length->count() > 0) {
         $length = $length->first();
         $length = Str::substr($length,-4);

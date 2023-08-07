@@ -92,6 +92,7 @@ class UserPrivilegeSeeder extends Seeder
                                 case 'clients.accounting.petty-cash':
                                 case 'clients.configs.discounts':
                                 case 'clients.configs.taxes':
+                                case 'clients.accounting.cash-flow':
                                     $privilege->read = true;
                                     $privilege->create = true;
                                     $privilege->update = true;

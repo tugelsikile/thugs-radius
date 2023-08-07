@@ -81,6 +81,9 @@ Route::group(['prefix' => 'clients'], function () {
             Route::get('/download/{id}', [PettyCashController::class, 'download']);
             Route::post('/print/{id}', [PettyCashController::class, 'print']);
         });
+        Route::group(['prefix' => 'cash-flow'], function () {
+            Route::get('/', function (){ return view('clients.accounting.cash-flow'); })->name('clients.accounting.cash-flow');
+        });
     });
     Route::get('/olt', function (){ return view('clients.olt.index'); })->name('clients.olt');
     Route::get('/wizard', function () { return view('clients.wizard'); });

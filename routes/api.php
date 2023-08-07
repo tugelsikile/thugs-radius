@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Accounting\CashFlowController;
 use App\Http\Controllers\Accounting\PettyCashController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BackupController;
@@ -173,6 +174,11 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::group(['prefix' => 'petty-cash'], function () {
             Route::any('/', [PettyCashController::class, 'crud']);
             Route::patch('/approve', [PettyCashController::class, 'approve'])->name('clients.accounting.petty-cash.approve');
+        });
+        Route::group(['prefix' => 'cash-flows'], function () {
+            Route::any('/', [CashFlowController::class, 'crud']);
+            Route::any('/accounts', [CashFlowController::class, 'crudAccount']);
+            Route::any('/categories', [CashFlowController::class, 'crudCategory']);
         });
     });
 });

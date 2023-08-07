@@ -22,8 +22,8 @@ mix.webpackConfig({
     }
 });*/
 
-mix.sass('resources/css/custom-thead.scss','public/css');
-mix.sass('resources/css/print.scss','public/css');
+//mix.sass('resources/css/custom-thead.scss','public/css');
+//mix.sass('resources/css/print.scss','public/css');
 //mix.copy('node_modules/crypto-js','public/js/plugins/crypto-js');
 //mix.js('resources/js/src/guests/welcome.js','public/js/guests');
 //mix.sass('resources/css/progress-animation.scss','public/css');
@@ -71,8 +71,9 @@ mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
 */
 mix.js('resources/js/src/clients/accounting/index.js','public/js/clients/accounting');
-mix.js('resources/js/src/clients/accounting/petty-cash.js','public/js/clients/accounting');
+mix.js('resources/js/src/clients/accounting/cash-flow.js', 'public/js/clients/accounting');
 /*
+mix.js('resources/js/src/clients/accounting/petty-cash.js','public/js/clients/accounting');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/discounts.js','public/js/clients/configs');

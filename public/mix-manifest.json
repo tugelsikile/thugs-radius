@@ -1,3 +1,4 @@
 {
-    "/js/clients/olt/index.js": "/js/clients/olt/index.js"
+    "/js/clients/accounting/index.js": "/js/clients/accounting/index.js",
+    "/js/clients/accounting/cash-flow.js": "/js/clients/accounting/cash-flow.js"
 }

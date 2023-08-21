@@ -29,7 +29,6 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*

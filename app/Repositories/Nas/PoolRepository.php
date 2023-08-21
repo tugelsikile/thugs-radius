@@ -80,15 +80,17 @@ class PoolRepository
             }
             if ($request->has(__('nas.pools.form_input.upload'))) {
                 if ($request[__('nas.pools.form_input.upload')] == 1) {
-                    switch ($pool->nasObj->method) {
-                        case 'api' :
-                            $api = new MikrotikAPI($pool->nasObj);
-                            $api->saveIPPool($pool, $defaultName);
-                            break;
-                        case 'ssl' :
-                            $ssl = new MiktorikSSL($pool->nasObj);
-                            $ssl->saveIPPool($pool, $defaultName);
-                            break;
+                    if ($pool->module !== 'radius') {
+                        switch ($pool->nasObj->method) {
+                            case 'api' :
+                                $api = new MikrotikAPI($pool->nasObj);
+                                $api->saveIPPool($pool, $defaultName);
+                                break;
+                            case 'ssl' :
+                                $ssl = new MiktorikSSL($pool->nasObj);
+                                $ssl->saveIPPool($pool, $defaultName);
+                                break;
+                        }
                     }
                 }
             }
@@ -130,16 +132,18 @@ class PoolRepository
                 $pool->module = $request[__('nas.pools.form_input.module')];
             }
             if ($request->has(__('nas.pools.form_input.upload'))) {
-                if ($request[__('nas.pools.form_input.upload')] == 1) {
-                    switch ($pool->nasObj->method) {
-                        case 'api' :
-                            $api = new MikrotikAPI($pool->nasObj);
-                            $api->saveIPPool($pool, $pool->code);
-                            break;
-                        case 'ssl' :
-                            $ssl = new MiktorikSSL($pool->nasObj);
-                            $ssl->saveIPPool($pool, $pool->code);
-                            break;
+                if ($pool->module !== 'radius') {
+                    if ($request[__('nas.pools.form_input.upload')] == 1) {
+                        switch ($pool->nasObj->method) {
+                            case 'api' :
+                                $api = new MikrotikAPI($pool->nasObj);
+                                $api->saveIPPool($pool, $pool->code);
+                                break;
+                            case 'ssl' :
+                                $ssl = new MiktorikSSL($pool->nasObj);
+                                $ssl->saveIPPool($pool, $pool->code);
+                                break;
+                        }
                     }
                 }
             }

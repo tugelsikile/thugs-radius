@@ -12,8 +12,8 @@ use Throwable;
 
 class PoolController extends Controller
 {
-    protected $repository;
-    protected $validation;
+    protected PoolRepository $repository;
+    protected PoolValidation $validation;
     public function __construct()
     {
         $this->repository = new PoolRepository();
@@ -35,13 +35,11 @@ class PoolController extends Controller
                     $code = 200; $message = __('messages.ok');
                     break;
                 case 'put' :
-                    $valid = $this->validation->create($request);
-                    $params = $this->repository->create($valid);
+                    $params = $this->repository->create($this->validation->create($request));
                     $code = 200; $message = __('labels.create.success',['Attribute' => __('nas.pools.labels.menu')]);
                     break;
                 case 'patch' :
-                    $valid = $this->validation->update($request);
-                    $params = $this->repository->update($valid);
+                    $params = $this->repository->update($this->validation->update($request));
                     $code = 200; $message = __('labels.update.success',['Attribute' => __('nas.pools.labels.menu')]);
                     break;
                 case 'delete' :

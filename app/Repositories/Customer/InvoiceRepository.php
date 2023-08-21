@@ -277,13 +277,6 @@ class InvoiceRepository
                         $invoice->paid_at = Carbon::now()->format('Y-m-d H:i:s');
                         $invoice->paid_by = $this->me->id;
                         (new CustomerRepository())->renewCustomer(new Request(['id' => $invoice->customer]));
-                        /*$customer = Customer::where('id', $invoice->customer)->first();
-                        if ($customer != null) {
-                            if (Carbon::parse($customer->due_at)->isBefore(Carbon::now())) {
-                                $customer->due_at = generateCompanyExpired(Carbon::parse($customer->due_at), $customer->profileObj->limit_rate_unit,$customer->profileObj->limit_rate)->format('Y-m-d H:i:s');
-                                $customer->saveOrFail();
-                            }
-                        }*/
                     }
                 } else {
                     $invoice->paid_at = null;

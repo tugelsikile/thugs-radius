@@ -3,12 +3,14 @@
 namespace App\Repositories\PaymentGateway;
 
 use App\Helpers\SwitchDB;
+use App\Models\Customer\Customer;
 use App\Models\Company\ClientCompany;
 use App\Models\Customer\CustomerInvoice;
 use App\Models\Customer\CustomerInvoicePayment;
 use App\Models\PaymentGateway\PaymentGateway;
+use App\Models\Accounting\Account;
 use App\Models\User\User;
-use App\Repositories\Customer\InvoiceRepository;
+use App\Repositories\Accounting\CashFlowRepository;
 use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
@@ -21,6 +23,7 @@ use Midtrans\Config;
 use Midtrans\Snap;
 use Ramsey\Uuid\Uuid;
 use Throwable;
+use function PHPUnit\Framework\isFalse;
 
 class MidtransRepository
 {
@@ -92,6 +95,21 @@ class MidtransRepository
                             $payment->paid_by = $user->id;
                         }
                         $payment->saveOrFail();
+                        $customer = Customer::where('id', $invoice->customer)->first();
+                        if ($customer != null) {
+                            $account = Account::where('code','000001')->first();
+                            if ($account != null) {
+                                (new CashFlowRepository())->store(new Request([
+                                    __('cash_flow.form_input.periods.label') => $payment->paid_at->format('Y-m-d'),
+                                    __('cash_flow.form_input.account.label') => $account->id,
+                                    __('cash_flow.form_input.category.label') => __('invoices.payments.online', ['Customer' => $customer->name]),
+                                    __('cash_flow.form_input.description') => __('invoices.payments.online', ['Customer' => $customer->name]),
+                                    __('cash_flow.form_input.type') => 'credit',
+                                    __('cash_flow.form_input.amount') => $payment->amount,
+                                    __('cash_flow.form_input.periods.label') => $payment->paid_at,
+                                ]));
+                            }
+                        }
 
                         if ($this->sumTotalPaymentInvoice($invoice) >= $this->sumTotalInvoice($invoice)) {
                             $invoice->paid_at = Carbon::now();

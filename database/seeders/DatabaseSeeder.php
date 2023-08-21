@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             TaxSeeder::class,
             CompanyPackageSeeder::class,
+            CompanyAccountSeeder::class,
         ]);
     }
 }

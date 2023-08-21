@@ -8,8 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @method static orderBy(string $column, string $orderDirection)
  * @method static where(string $column, mixed $value)
- * @property mixed|string $id
- * @property mixed|string $code
+ * @property string $id
+ * @property string $code
+ * @property string $name
+ * @property string|null $description
  */
 class Account extends Model
 {

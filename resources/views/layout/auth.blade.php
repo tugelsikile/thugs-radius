@@ -39,6 +39,20 @@
 <script src="{{asset('messages.js?t=' . time() )}}"></script>
 <script class="destroy-this" src="{{asset('js/plugins/crypto-js/crypto-js.js')}}"></script>
 <script class="destroy-that">
+    if ('{{config('broadcasting.connections.pusher.secret')}}'.length > 0 &&
+        '{{config('broadcasting.connections.pusher.key')}}'.length > 0 &&
+        '{{config('broadcasting.connections.pusher.app_id')}}'.length > 0 &&
+        '{{config('broadcasting.connections.pusher.options.cluster')}}'.length > 0
+    ) {
+        const pusherConfig = {
+            key: '{{config('broadcasting.connections.pusher.key')}}',
+            secret: '{{config('broadcasting.connections.pusher.secret')}}',
+            app_id: '{{config('broadcasting.connections.pusher.app_id')}}',
+            cluster: '{{config('broadcasting.connections.pusher.options.cluster')}}'
+        }
+        const encrypt = CryptoJS.AES.encrypt(JSON.stringify(pusherConfig), window.location.hostname).toString();
+        localStorage.setItem('pusherConfig', encrypt);
+    }
     let apiKey = '{{env('MIX_FIREBASE_API_KEY')}}',
         authDomain = '{{env('MIX_FIREBASE_AUTH_DOMAIN')}}',
         projectId = '{{env('MIX_FIREBASE_PROJECT_ID')}}',
@@ -53,7 +67,7 @@
         appId.length > 20 &&
         measurementId.length > 5
     ) {
-        localCrypt = {
+        const firebaseConfig = {
             apiKey: apiKey,
             authDomain: authDomain,
             projectId: projectId,
@@ -62,12 +76,10 @@
             appId: appId,
             measurementId: measurementId
         }
-        const encrypt = CryptoJS.AES.encrypt(JSON.stringify(localCrypt), window.location.hostname).toString();
+        const encrypt = CryptoJS.AES.encrypt(JSON.stringify(firebaseConfig), window.location.hostname).toString();
         localStorage.setItem('fireCrypt', encrypt);
         const vapidKey = CryptoJS.AES.encrypt("{{env('MIX_FIREBASE_MESSAGING_KEY_PAIR')}}", window.location.hostname).toString();
         localStorage.setItem('fireVapidKey', vapidKey);
-        //const decrypt = CryptoJS.AES.decrypt(encrypt, window.location.hostname);
-        //console.log(encrypt, JSON.parse(decrypt.toString(CryptoJS.enc.Utf8)));
     }
 </script>
 <script>

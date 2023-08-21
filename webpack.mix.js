@@ -37,9 +37,8 @@ mix.js('resources/js/src/errors/under-maintenance.js','public/js/errors');
 */
 
 /******* AUTH ***********/
-
-mix.js('resources/js/src/auth/login.js','public/js');
 /*
+mix.js('resources/js/src/auth/login.js','public/js');
 mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');

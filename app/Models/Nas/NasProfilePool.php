@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property mixed $code
+ * @property string $id
  * @property mixed $module
  * @property mixed $first_address
  * @property mixed $last_address

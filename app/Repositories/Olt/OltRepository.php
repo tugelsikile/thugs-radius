@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Olt;
 
+use App\Helpers\OLT\ZTE\C320;
 use App\Helpers\SwitchDB;
 use App\Helpers\Telnet\Telnet;
 use App\Helpers\Telnet\TelnetMore;
@@ -14,6 +15,7 @@ use App\Repositories\Customer\CustomerRepository;
 use Carbon\Carbon;
 use Exception;
 use Graze\TelnetClient\TelnetClient;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -23,12 +25,19 @@ use Throwable;
 
 class OltRepository
 {
-    protected $me;
+    protected ?Authenticatable $me;
     public function __construct()
     {
         $this->me = auth()->guard('api')->user();
     }
-    public function unConfigure(Request $request) {
+
+    /* @
+     * @param Request $request
+     * @return object|null
+     * @throws Exception
+     */
+    public function unConfigure(Request $request): ?object
+    {
         try {
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             $onu = $request[__('olt.form_input.onu')];
@@ -36,27 +45,19 @@ class OltRepository
             if (count($portOlt) == 2) {
                 $portOnu = $portOlt[1];
                 $portOlt = $portOlt[0];
-                $telnet = new Telnet($olt->hostname, $olt->port,1,'');
-                $telnet->setLoginPrompt("Username:");
-                if ($olt->configs != null) {
-                    if (property_exists($olt->configs,'prompts')) {
-                        if (property_exists($olt->configs->prompts,'user_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
-                            if (property_exists($olt->configs->prompts,'pass_prompt')) {
-                                $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
-                            }
-                        }
+                $responseUnconfig = (new C320($olt))->noOnu($portOlt, $portOnu);
+                if (strlen($responseUnconfig) > 0) {
+                    $customer = Customer::where('onu_index', $onu)->first();
+                    if ($customer != null) {
+                        $customer->olt = null;
+                        $customer->onu_index = null;
+                        $customer->gpon_configs = null;
+                        $customer->saveOrFail();
                     }
-                }
-                $login = $telnet->login($olt->user, $olt->pass);
-                if ($login) {
-                    $responseMessages = $telnet->exec("conf t");
-                    $responseMessages .= "\n" . $telnet->exec("interface gpon-olt_" . $portOlt);
-                    $responseMessages .= "\n" . $telnet->exec("no onu " . $portOnu);
-                    Log::info($responseMessages);
-                    return $this->gponCustomer($request);
+                    return (object) [ 'onu' => $onu ];
                 }
             }
+            return null;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
@@ -104,23 +105,6 @@ class OltRepository
                                 if (strtolower($lines[3]) == 'los') {
                                     $name = $description = "";
                                     $response->push(['onu' => $lines[0], 'name' => $name, 'description' => $description, 'states' => implode(' ', $lines), 'olt' => $olt->name, 'olt_id' => $olt->id]);
-                                    /*$configLines = $telnet->exec("show gpon onu detail-info gpon-onu_" . $lines[0]);
-                                    if (strlen($configLines) > 50) {
-                                        $configLines = explode("\n", $configLines);
-                                        if (count($configLines) > 0) {
-                                            $name = $description = "";
-                                            foreach ($configLines as $index => $configLine) {
-                                                if ($index >= 1) {
-                                                    if (Str::contains($configLine,"Name:")) {
-                                                        $name = trim(str_replace("Name:","",trim($configLine)));
-                                                    } elseif (Str::contains($configLine,"Description:")) {
-                                                        $description = trim(str_replace("Description:","",trim($configLine)));
-                                                    }
-                                                }
-                                            }
-                                            $response->push(['name' => $name, 'description' => $description, 'states' => implode(' ', $lines), 'olt' => $olt->name]);
-                                        }
-                                    }*/
                                 }
                             }
                         }
@@ -556,102 +540,39 @@ class OltRepository
         try {
             $response = collect();
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
-            $telnet = new Telnet($olt->hostname, $olt->port,3,'');
-            $telnet->setLoginPrompt("Username:");
-            if ($request->has(__('olt.form_input.prompts.user'))) {
-                $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')]);
-                if ($request->has(__('olt.form_input.prompts.pass'))) {
-                    $telnet->setLoginPrompt($request[__('olt.form_input.prompts.user')], $request[__('olt.form_input.prompts.pass')]);
-                }
-            }
-            $telnet->login($olt->user, $olt->pass);
-            $unconfigs = $telnet->exec("show gpon onu uncfg");
-            $unconfigs = explode("\n", $unconfigs);
-            if (count($unconfigs) > 0) {
-                //dd($unconfigs);
-                /*** TODO UNCONFIG PARAMS NOT KNOWN ***/
-                foreach ($unconfigs as $unconfig) {
-                    if (strlen($unconfig) > 10) {
-                        if (!Str::contains($unconfig,"No related information to show")) {
-                            if (!Str::contains($unconfig,"------------------")) {
-                                if (Str::contains($unconfig,"gpon-o")) {
-                                    $line = explode(' ', $unconfig);
-                                    $strings = [];
-                                    if (count($line) > 1) {
-                                        foreach ($line as $item) {
-                                            if (strlen($item) > 4) {
-                                                $strings[] = $item;
-                                            }
-                                        }
+            if ($olt->brand != null) {
+                if (property_exists($olt->brand,'name') && property_exists($olt->brand,'model')) {
+                    switch ($olt->brand->name) {
+                        default:
+                        case 'zte':
+                            switch ($olt->brand->model) {
+                                default:
+                                case 'zte_320':
+                                    if ($request->has(__('olt.form_input.host')) &&
+                                        $request->has(__('olt.form_input.port')) &&
+                                        $request->has(__('olt.form_input.user')) &&
+                                        $request->has(__('olt.form_input.pass'))
+                                    ) {
+                                        $response = $response->merge((new C320(null, $request))->gPonUnConfigs());
+                                        $response = $response->merge((new C320(null, $request))->gPonStates());
+                                    } else {
+                                        $response = $response->merge((new C320($olt))->gPonUnConfigs());
+                                        $response = $response->merge((new C320($olt))->gPonStates());
                                     }
-                                    if (count($strings) == 3) {
-                                        $response->push((object)[
-                                            'onu' => str_replace('gpon-onu_','',$strings[0]),
-                                            'serial_number' => $strings[1],
-                                            'admin_state' => null,
-                                            'omcc_state' => null,
-                                            'phase_state' => 'unconfig',
-                                            'channel' => '',
-                                            'loading' => false,
-                                            'details' => null,
-                                        ]);
-                                    }
-                                }
+                                    break;
                             }
-                        }
+                            break;
+                        case 'hioso':
+                        case 'hsgc':
+                            switch ($olt->brand->model){
+                                default:
+                                case 'none':
+                                    break;
+                            }
+                            break;
                     }
                 }
             }
-
-            $onuResponses = $telnet->execPaging("show gpon onu state");
-            $onuResponses = explode("\n", $onuResponses);
-            if (count($onuResponses) > 0) {
-                unset($onuResponses[0]);
-                unset($onuResponses[1]);
-                $onuResponses = implode("\n",array_values($onuResponses));
-                /*foreach ($onuResponses as $onuResponses) {
-                    if (strlen($onuResponses) > 0) {
-
-                    }
-                }*/
-            }
-            //$onuResponses = str_replace("\x08","",trim($onuResponses));
-            //$curCommands = "  \r\n";
-            //$response = $response->merge($this->parseOnuStateLine($onuResponses));
-            //$breaks = 0;
-            /*for ($index = 0; $index <= 50; $index ++) {
-                if ($breaks < 3) {
-                    $curCommands = str_replace("\r\n","",$curCommands) . "  \r\n";
-                    $curResponse = str_replace("\x08","",trim($telnet->exec($curCommands)));
-                    if (strlen($curResponse) > 30) {
-                        $onuResponses .= "\n" .$curResponse;
-                    } elseif (Str::contains($curResponse,"#")) {
-                        $breaks++;
-                    }
-                }*/
-                /*if (!Str::contains($onuResponses,"#")) {
-                    if (strlen($onuResponses) > 30) {
-                        ini_set('max_execution_time',100000);
-                        $onuResponses = collect(explode("\n", $onuResponses));
-                        if ($onuResponses->count() > 0) {
-                            $response = $response->merge($this->parseOnuStateLine($onuResponses));
-                        } else {
-                            $breaks++;
-                        }
-                    } else {
-                        $breaks++;
-                        if ($breaks >= 3) {
-                            break;
-                        }
-                    }
-                }*/
-            /*}*/
-            $onuResponses = explode("\n", $onuResponses);
-            $telnet->disconnect();
-            if (count($onuResponses) > 0) {
-                $response = $this->parseOnuStateLine($onuResponses);
-            }
-            //Log::alert("break counts " . $breaks);
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
@@ -690,6 +611,25 @@ class OltRepository
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             $customer->olt = $olt->id;
             $customer->onu_index = $request[__('olt.form_input.onu')];
+            $config = null;
+            if ($olt->brand != null) {
+                if (property_exists($olt->brand,'name') && property_exists($olt->brand,'model')) {
+                    switch ($olt->brand->name) {
+                        default:
+                        case 'zte':
+                            switch ($olt->brand->model){
+                                default:
+                                case 'zte_320':
+                                    $config = (new C320($olt))->showGPonOnuDetailInfo($customer->onu_index);
+                                    if ($config != null) {
+                                        $customer->gpon_configs = $config;
+                                    }
+                                    break;
+                            }
+                        break;
+                    }
+                }
+            }
             $customer->saveOrFail();
             return $this->gponCustomer(new Request([
                 __('olt.form_input.id') => $olt->id,
@@ -725,10 +665,6 @@ class OltRepository
                 $telnet->login($olt->user, $olt->pass);
 
                 $responseCommands = $telnet->execPaging("show gpon onu detail-info gpon-onu_" . $request[__('olt.form_input.onu')]);
-                /*for ($index = 0; $index <= 3; $index++) {
-                    $responseCommands .= "\n";
-                    $responseCommands .= $telnet->exec("   \n");
-                }*/
                 $telnet->disconnect();
                 $responseCommands = collect(explode("\n",$responseCommands));
                 if ($responseCommands->count() > 20) {
@@ -746,22 +682,28 @@ class OltRepository
                         'online_duration' => null,
                         'state_causes' => collect(),
                         'full_response' => $responseCommands,
+                        'phase_state' => null,
                     ];
                     $stateAndCauses = collect();
                     foreach ($responseCommands as $index => $responseCommand) {
                         if ($index > 0) {
-                            if ($index == 1) { // name
+                            if ($index == 1 && Str::contains($responseCommand,"Name:")) { // name
                                 $response->name = parseLineGponResponse($responseCommand);
-                            } elseif ($index == 11) { //Serial number:
+                            } elseif ($index == 11 && Str::contains($responseCommand,"Serial number:")) { //Serial number:
                                 $response->serial_number = parseLineGponResponse($responseCommand, "Serial number:");
-                            } elseif ($index == 13) { //description
+                            } elseif ($index == 13 && Str::contains($responseCommand,"Description:")) { //description
                                 $response->description = parseLineGponResponse($responseCommand,"Description:");
-                            } elseif ($index == 20) { //ONU Distance
+                            } elseif ($index == 20 && Str::contains($responseCommand,"ONU Distance:")) { //ONU Distance
                                 $response->onu_distance = parseLineGponResponse($responseCommand,"ONU Distance:");
-                            } elseif ($index == 21) { //Online Duration:
+                            } elseif ($index == 21 && Str::contains($responseCommand,"Online Duration:")) { //Online Duration:
                                 $response->online_duration = parseLineGponResponse($responseCommand,"Online Duration:");
                             } elseif ($index >= 30 && $index <= 39) {
                                 $stateAndCauses->push($responseCommand);
+                            } elseif ($index >= 3) {
+                                if (Str::contains($responseCommand,"Phase state:")) {
+                                    $newstate = strtolower(trim(str_replace("Phase state:","", $responseCommand)));
+                                    $response->phase_state = $newstate;
+                                }
                             }
                         }
                     }
@@ -788,207 +730,82 @@ class OltRepository
                             }
                         }
                     }
-                    if ($response->state_causes->count() > 0) {
-                        $response->new_phase_state = $response->state_causes->last()->phase_state;
-                    }
-
                 }
-                //dd($responseCommands);
             }
             return $response;
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }
     }
+
     /* @
      * @param Request $request
-     * @return object|null
-     * @throws Throwable
+     * @return bool|null
+     * @throws Exception
      */
-    public function gponCustomerBak(Request $request): ?object
+    public function registerCustomer(Request $request): ?bool
     {
         try {
             $response = null;
             $olt = OltModel::where('id', $request[__('olt.form_input.id')])->first();
             if ($olt != null) {
-                $telnet = new Telnet($olt->hostname, $olt->port,3,'');
-                $telnet->setLoginPrompt("Username:");
-                if ($olt->configs != null) {
-                    if (property_exists($olt->configs,'prompts')) {
-                        if (property_exists($olt->configs->prompts,'user_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt);
-                        }
-                        if (property_exists($olt->configs->prompts,'pass_prompt')) {
-                            $telnet->setLoginPrompt($olt->configs->prompts->user_prompt, $olt->configs->prompts->pass_prompt);
-                        }
+                $customer = Customer::where('id', $request[__('customers.form_input.id')])->first();
+                if ($customer != null) {
+                    $commandRegisters = collect();
+                    $commandConfigs = collect();
+                    $commandRegisters->push("config terminal");
+                    $commandRegisters->push("interface gpon-olt_" . $request[__('olt.form_input.onus.olt')]);
+                    $commandRegisters->push("onu " . $request[__('olt.form_input.onus.index')]. " type " . $request[__('olt.form_input.onus.type')]. " sn " . $request[__('olt.form_input.onus.sn')]);
+                    $commandConfigs->push("config terminal");
+                    $gponOnu = $request[__('olt.form_input.onus.olt')] . ':' . $request[__('olt.form_input.onus.index')];
+                    $commandConfigs->push("interface gpon-onu_" . $gponOnu);
+                    $commandConfigs->push("name " . $request[__('olt.form_input.onus.name')]);
+                    $commandConfigs->push("description " . $request[__('olt.form_input.onus.description')]);
+                    foreach ($request[__('olt.form_input.onus.tcont.input')] as $item) {
+                        $commandConfigs->push("tcont " . $item[__('olt.form_input.onus.tcont.id')] . " profile " . $item[__('olt.form_input.onus.tcont.profile')]);
                     }
-                }
-                $telnet->login($olt->user, $olt->pass);
-                $runInterfaceLines = $telnet->exec("show running-config interface gpon-onu_" . $request[__('olt.form_input.onu')]);
-                $telnet->disconnect();
+                    foreach ($request[__('olt.form_input.onus.gemport.input')] as $item) {
+                        $commandConfigs->push("gemport " . $item[__('olt.form_input.onus.gemport.id')] . " tcont " . $item[__('olt.form_input.onus.tcont.input')]);
+                        $commandConfigs->push("gemport " . $item[__('olt.form_input.onus.gemport.id')] . " traffic-limit upstream " . $item[__('olt.form_input.onus.gemport.upstream')]. " downstream " . $item[__('olt.form_input.onus.gemport.downstream')]);
+                    }
+                    foreach ($request[__('olt.form_input.onus.vlan.input')] as $item) {
+                        $commandConfigs->push("service-port " . $item[__('olt.form_input.onus.vlan.port')] . " vport " . $item[__('olt.form_input.onus.vlan.vport')] . " user-vlan " . $item[__('olt.form_input.onus.vlan.user')] . " vlan " . $item[__('olt.form_input.onus.vlan.service')]);
+                    }
+                    $commandConfigs->push("exit");
+                    $commandConfigs->push("config terminal");
+                    $commandConfigs->push("pon-onu-mng gpon-onu_" . $gponOnu);
+                    foreach ($request[__('olt.form_input.onus.pon_mng.input')] as $item) {
+                        $commandConfigs->push("service " . $item[__('olt.form_input.onus.pon_mng.name')] . " gemport " . $item[__('olt.form_input.onus.gemport.input')] . " vlan " . $item[__('olt.form_input.onus.vlan.input')]);
+                    }
 
-                if (strlen($runInterfaceLines) > 0) {
-                    $runInterfaceLines = explode("\n", $runInterfaceLines);
-                    if (count($runInterfaceLines) > 2) {
-                        $response = (object) [
-                            'username' => null,
-                            'customer' => null,
-                            'profile' => (object) [
-                                'tcont' => null,
-                            ],
-                            'gemport' => (object) [
-                                'tcont' => null,
-                                'traffic_limit' => (object) [
-                                    'upstream' => null,
-                                    'downstream' => null,
-                                ],
-                            ],
-                            'vlan' => (object) [
-                                'port' => null,
-                                'name' => null,
-                            ]
-                        ];
-                        foreach ($runInterfaceLines as $index => $runInterfaceLine) {
-                            if ($index >= 2) {
-                                if (strlen($runInterfaceLine) > 10) {
-                                    /* EXAMPLE RESPONSE
-                                     * Building configuration...
-                                     * interface gpon-onu_1/2/8:5
-                                     *      name sitijuleha@judyusnet
-                                     *      tcont 1 profile HOME-5Mb
-                                     *      gemport 1 tcont 1
-                                     *      gemport 1 traffic-limit upstream HOME-5Mb downstream HOME-5Mb
-                                     *      service-port 1 vport 1 user-vlan 111 vlan 111
-                                     *
-                                     * Building configuration...
-                                     * interface gpon-onu_1/1/1:8
-                                     *      name jgr.sugriyanto@rst.net.id
-                                     *      description jgr.sugriyanto@rst.net.id
-                                     *      tcont 1 name jgr.sugriyanto@rst.net.id profile Home-5Mbps
-                                     *      gemport 1 name jgr.sugriyanto@rst.net.id tcont 1
-                                     *      gemport 1 traffic-limit upstream Home-5Mbps downstream Home-5Mbps
-                                     *      service-port 1 vport 1 user-vlan 142 vlan 142
-                                     *      service-port 1 description jgr.sugriyanto@rst.net.id
-                                     */
-                                    if (Str::contains($runInterfaceLine,"description") && ( $index == 2 || $index == 3) ) {
-                                        if ($response->username == null) {
-                                            if (!Str::contains($runInterfaceLine,"service-port")) {
-                                                $line = explode(" ", $runInterfaceLine);
-                                                if (count($line) > 1) {
-                                                    foreach ($line as $key => $item) {
-                                                        if (strlen($item) == 0) {
-                                                            array_splice($line,$key,1);
-                                                        }
-                                                        if ($item == 'description') {
-                                                            array_splice($line,$key,1);
-                                                        }
-                                                    }
-                                                    $response->username = join(' ', $line);
-                                                }
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"name") && ($index == 2 || $index == 3) ) {
-                                        if (! Str::contains($runInterfaceLine,"tcont") && ! Str::contains($runInterfaceLine,"profile")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 1) {
-                                                foreach ($line as $key => $item) {
-                                                    if (strlen($item) == 0) {
-                                                        array_splice($line,$key,1);
-                                                    }
-                                                    if ($item == 'name') {
-                                                        array_splice($line,$key,1);
-                                                    }
-                                                }
-                                                $response->username = join(' ', $line);
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"tcont") && $index > 3) {
-                                        if (Str::contains($runInterfaceLine,"profile")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 3) {
-                                                $response->profile->tcont = $line[count($line) - 1];
-                                            }
-                                        } elseif (Str::contains($runInterfaceLine,"gemport") && $index > 3) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) > 3) {
-                                                $response->gemport->tcont = $line[count($line) - 1];
-                                            }
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"traffic-limit") && $index > 3) {
-                                        $line = explode(" ", $runInterfaceLine);
-                                        if (count($line) >= 6) {
-                                            $response->gemport->traffic_limit->upstream = $line[4];
-                                            $response->gemport->traffic_limit->downstream = $line[count($line) - 1];
-                                        }
-                                    } elseif (Str::contains($runInterfaceLine,"service-port") && $index > 3) {
-                                        if (Str::contains($runInterfaceLine,"vport")) {
-                                            $line = explode(" ", $runInterfaceLine);
-                                            if (count($line) >= 7) {
-                                                $response->vlan->port = $line[5];
-                                                $response->vlan->name = $line[4];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if ($response->username != null) {
-                            $customer = Customer::where('nas_username', $response->username)->first();
-                            if ($customer != null) {
-                                if ($request->has(__('olt.form_input.phase_state'))) {
-                                    $phaseState = CustomerPhaseState::where('created_at', '>=', Carbon::now()->addMinutes(-5)->format('Y-m-d H:i:s'))->where('customer', $customer->id)->first();
-                                    if ($phaseState == null) {
-                                        $phaseState = new CustomerPhaseState();
-                                        $phaseState->id = Uuid::uuid4()->toString();
-                                        $phaseState->customer = $customer->id;
-                                        $phaseState->state = $request[__('olt.form_input.phase_state')];
-                                        $phaseState->onu_index = $request[__('olt.form_input.onu')];
-                                        @$phaseState->saveOrFail();
-                                    }
-                                }
-                                $response->customer = $customer;
-                            }
+                    switch ($request[__('olt.form_input.brand')]) {
+                        case 'zte':
+                            $commandConfigs->push("wan-ip 1 mode pppoe username " . $customer->nas_username . " password " . $customer->nas_password . " vlan-profile " . $request[__('olt.form_input.onus.pon_mng.vlan')] . " host 1");
+                            $commandConfigs->push("wan-ip 1 ping-response enable traceroute-response enable");
+                            $commandConfigs->push("security-mgmt 500 state enable mode forward protocol web");
+                            break;
+                        case 'fiberhome':
+                            $commandConfigs->push("vlan port veip_1 mode hybrid");
+                            $commandConfigs->push("wan-ip 1 mode pppoe username " . $customer->nas_username . " password " . $customer->nas_password . " vlan-profile " . $request[__('olt.form_input.onus.pon_mng.vlan')] . " host 1");
+                            $commandConfigs->push("wan-ip 1 ping-response enable traceroute-response enable");
+                            $commandConfigs->push("security-mgmt 500 state enable mode forward protocol web");
+                            break;
+                    }
+                    $commandConfigs->push("exit");
+                    $commandConfigs->push("write");
+                    $responseRegister = (new C320($olt))->bulkCommands($commandRegisters->toArray());
+                    if (strlen($responseRegister) > 0) {
+                        $responseConfig = (new C320($olt))->bulkCommands($commandConfigs->toArray());
+                        if (strlen($responseConfig) > 0) {
+                            $customer->olt = $olt->id;
+                            $customer->onu_index = $gponOnu;
+                            $customer->saveOrFail();
+                            $response = true;
                         }
                     }
                 }
             }
             return $response;
-        } catch (Exception $exception) {
-            throw new Exception($exception->getMessage(),500);
-        }
-    }
-    public function tableLost(Request $request) {
-        try {
-            $olt = new Olt();
-            $onu = new Onu();
-            $onu->setCommunity("cobaro");
-            $maxPorts = $onu->getInterfaceNumber("10.6.0.2");
-            $online = collect();
-            $offline = collect();
-            $dying = collect();
-
-            for ($port = 1; $port <= $maxPorts; $port++) {
-                $gponId = $onu->getOnu("10.6.0.2", $port);
-                if ($gponId != null) {
-                    $interfaceNames = $onu->getInterfaceNames("10.6.0.2");
-                    //$customerCircuits = $onu->getCustomerCircuit("10.6.0.2", $gponId);
-                    $gponCustomers = collect($onu->getCustomerStatus("10.6.0.2", $gponId));
-                    foreach ($gponCustomers as $index => $gponCustomer) {
-                        if (array_key_exists($index,$interfaceNames)) {
-                            if (strtolower($gponCustomer) == 'online') {
-                                $online->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            } elseif (strtolower($gponCustomer) == 'lost') {
-                                $offline->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            } else {
-                                $dying->push(['circuit' => $interfaceNames[$index], 'status' => $gponCustomer]);
-                            }
-                        }
-                    }
-                }
-            }
-            dd($offline,$online,$dying);
-            dd($onu->getOnu("10.6.0.2",4),$onu->getCustomerOnuType("10.6.0.2","268568576"));
-            dd($olt->getOltId("10.6.0.2"));
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage(),500);
         }

@@ -19,6 +19,7 @@ use App\Models\Radius\Radusergroup;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -78,8 +79,10 @@ class RadiusDB
                     }
                 }
                 Radippool::where('pool_name', $nasProfilePool->code)->whereNotIn('framedipaddress', $pools)->delete();
+                DB::statement("ALTER TABLE radippool AUTO_INCREMENT = 1");
             } else {
                 Radippool::where('pool_name', $nasProfilePool->code)->delete();
+                DB::statement("ALTER TABLE radippool AUTO_INCREMENT = 1");
             }
             return;
         } catch (Exception $exception) {

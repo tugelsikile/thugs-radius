@@ -1,12 +1,11 @@
-<?php /** @noinspection PhpUndefinedMethodInspection */
-
-/** @noinspection SpellCheckingInspection */
+<?php /** @noinspection SpellCheckingInspection */
 
 namespace Database\Seeders;
 
 use App\Models\Menu\Menu;
 use Illuminate\Database\Seeder;
 use Ramsey\Uuid\Uuid;
+use Throwable;
 
 class MenuSeeder extends Seeder
 {
@@ -14,6 +13,7 @@ class MenuSeeder extends Seeder
      * Run the database seeds.
      *
      * @return void
+     * @throws Throwable
      */
     public function run()
     {
@@ -56,10 +56,6 @@ class MenuSeeder extends Seeder
             ])
         ]);
         $requests->push((object) [
-            'name' => 'OLT', 'route' => 'clients.olt', 'description' => 'olt.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'olt.labels.menu',
-            'childrens' => collect()
-        ]);
-        $requests->push((object) [
             'name' => 'Customer', 'route' => 'clients.customers', 'description' => 'customers.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-tie', 'lang' => 'customers.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Customer PPPoE', 'route' => 'clients.customers.pppoe', 'description' => 'customers.pppoe.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-ticket-alt', 'lang' => 'customers.pppoe.labels.menu'],
@@ -69,10 +65,25 @@ class MenuSeeder extends Seeder
             ]),
         ]);
         $requests->push((object) [
+            'name' => 'OLT', 'route' => 'clients.olt', 'description' => 'olt.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-server', 'lang' => 'olt.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Connect Disconnect', 'route' => 'clients.olt.customers.connect', 'description' => 'olt.labels.customers.link_unlink.info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-link', 'lang' => 'olt.labels.customers.link_unlink.menu' ],
+                (object) [ 'name' => 'Unconfigure', 'route' => 'clients.olt.gpon.un_configure', 'description' => 'olt.labels.onu.un_configure.info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-unlink', 'lang' => 'olt.labels.onu.un_configure.menu' ],
+            ])
+        ]);
+        $requests->push((object) [
             'name' => 'User', 'route' => 'clients.users', 'description' => 'users.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-secret', 'lang' => 'users.labels.menu',
             'childrens' => collect([
                 (object) [ 'name' => 'Privileges', 'route' => 'clients.users.privileges', 'description' => 'users.privileges.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-user-shield', 'lang' => 'users.privileges.labels.menu' ],
                 (object) [ 'name' => 'Reset Password', 'route' => 'clients.users.reset-password', 'description' => 'users.resets.labels.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-key', 'lang' => 'users.resets.labels.menu' ]
+            ])
+        ]);
+        $requests->push((object) [
+            'name' => 'Accounting', 'route' => 'clients.accounting', 'description' => 'accounting.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-wallet', 'lang' => 'accounting.labels.menu',
+            'childrens' => collect([
+                (object) [ 'name' => 'Cash Flow', 'route' => 'clients.accounting.cash-flow', 'description' => 'cash_flow.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-wind', 'lang' => 'cash_flow.labels.menu' ],
+                (object) [ 'name' => 'Petty Cash', 'route' => 'clients.accounting.petty-cash', 'description' => 'petty_cash.labels.menu_info', 'function' => false, 'for_client' => true, 'icon' => 'fas fa-cash-register', 'lang' => 'petty_cash.labels.menu' ],
+                (object) [ 'name' => 'Approve Petty Cash', 'route' => 'clients.accounting.petty-cash.approve', 'description' => 'petty_cash.approve.menu_info', 'function' => true, 'for_client' => true, 'icon' => 'fas fa-check-circle', 'lang' => 'petty_cash.approve.menu' ],
             ])
         ]);
         $requests->push((object) [

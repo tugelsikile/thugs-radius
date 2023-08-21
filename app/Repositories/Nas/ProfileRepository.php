@@ -14,6 +14,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Ramsey\Uuid\Uuid;
 use Throwable;
 
@@ -95,39 +96,41 @@ class ProfileRepository
             $profile->name = $request[__('profiles.form_input.name')];
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
-
-
-            if ($request->has(__('profiles.form_input.upload'))) {
-                if ($request[__('profiles.form_input.upload')] == 1) {
-                    if ($profile->nasObj != null) {
-                        switch ($profile->nasObj->method) {
-                            case 'ssl' :
-                                $ssl = new MiktorikSSL($profile->nasObj,'put');
-                                switch ($profile->type) {
-                                    case 'pppoe' :
-                                        $ssl->saveProfilePPPoE($profile, $defaultName);
-                                        break;
-                                    case 'hotspot' :
-                                        $ssl->saveProfileHotspot($profile, $defaultName);
-                                        break;
-                                }
-                                break;
-                            case 'api' :
-                                $api = new MikrotikAPI($profile->nasObj);
-                                switch ($profile->type) {
-                                    case 'pppoe' :
-                                        $api->saveProfilePPPoE($profile, $defaultName);
-                                        break;
-                                    case 'hotspot' :
-                                        $api->saveProfileHotspot($profile, $defaultName);
-                                        break;
-                                }
-                                break;
+            $profile->saveOrFail();
+            if (! $profile->is_additional) {
+                Log::info("has upload = " . json_encode($request->has(__('nas.pools.form_input.upload'))));
+                if ($request->has(__('nas.pools.form_input.upload'))) {
+                    Log::info("upload is 1 = " . json_encode($request[__('nas.pools.form_input.upload')] == 1));
+                    if ($request[__('nas.pools.form_input.upload')] == 1) {
+                        if ($profile->nasObj != null) {
+                            switch ($profile->nasObj->method) {
+                                case 'ssl' :
+                                    $ssl = new MiktorikSSL($profile->nasObj,'put');
+                                    switch ($profile->type) {
+                                        case 'pppoe' :
+                                            $ssl->saveProfilePPPoE($profile, $defaultName);
+                                            break;
+                                        case 'hotspot' :
+                                            $ssl->saveProfileHotspot($profile, $defaultName);
+                                            break;
+                                    }
+                                    break;
+                                case 'api' :
+                                    $api = new MikrotikAPI($profile->nasObj);
+                                    switch ($profile->type) {
+                                        case 'pppoe' :
+                                            $api->saveProfilePPPoE($profile, $defaultName);
+                                            break;
+                                        case 'hotspot' :
+                                            $api->saveProfileHotspot($profile, $defaultName);
+                                            break;
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
             }
-            $profile->saveOrFail();
             (new RadiusDB())->saveProfile($profile);
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {
@@ -191,37 +194,42 @@ class ProfileRepository
             $profile->description = $request[__('profiles.form_input.description')];
             $profile->price = $request[__('profiles.form_input.price')];
             $profile->created_by = $this->me->id;
-            if ($request->has(__('profiles.form_input.upload'))) {
-                if ($request[__('profiles.form_input.upload')] == 1) {
-                    if ($profile->nasObj != null) {
-                        switch ($profile->nasObj->method) {
-                            case 'ssl' :
-                                $ssl = new MiktorikSSL($profile->nasObj,'put');
-                                switch ($profile->type) {
-                                    case 'pppoe' :
-                                        $ssl->saveProfilePPPoE($profile, $profile->name);
-                                        break;
-                                    case 'hotspot' :
-                                        $ssl->saveProfileHotspot($profile, $profile->name);
-                                        break;
-                                }
-                                break;
-                            case 'api' :
-                                $api = new MikrotikAPI($profile->nasObj);
-                                switch ($profile->type) {
-                                    case 'pppoe' :
-                                        $api->saveProfilePPPoE($profile, $profile->code);
-                                        break;
-                                    case 'hotspot' :
-                                        $api->saveProfileHotspot($profile, $profile->code);
-                                        break;
-                                }
-                                break;
+            $profile->saveOrFail();
+
+            if (! $profile->is_additional) {
+                Log::info("has upload = " . json_encode($request->has(__('nas.pools.form_input.upload'))));
+                if ($request->has(__('nas.pools.form_input.upload'))) {
+                    Log::info("upload is 1 = " . json_encode($request[__('nas.pools.form_input.upload')] == 1));
+                    if ($request[__('nas.pools.form_input.upload')] == 1) {
+                        if ($profile->nasObj != null) {
+                            switch ($profile->nasObj->method) {
+                                case 'ssl' :
+                                    $ssl = new MiktorikSSL($profile->nasObj,'put');
+                                    switch ($profile->type) {
+                                        case 'pppoe' :
+                                            $ssl->saveProfilePPPoE($profile, $profile->name);
+                                            break;
+                                        case 'hotspot' :
+                                            $ssl->saveProfileHotspot($profile, $profile->name);
+                                            break;
+                                    }
+                                    break;
+                                case 'api' :
+                                    $api = new MikrotikAPI($profile->nasObj);
+                                    switch ($profile->type) {
+                                        case 'pppoe' :
+                                            $api->saveProfilePPPoE($profile, $profile->code);
+                                            break;
+                                        case 'hotspot' :
+                                            $api->saveProfileHotspot($profile, $profile->code);
+                                            break;
+                                    }
+                                    break;
+                            }
                         }
                     }
                 }
             }
-            $profile->saveOrFail();
             (new RadiusDB())->saveProfile($profile);
             return $this->table(new Request(['id' => $profile->id]))->first();
         } catch (Exception $exception) {

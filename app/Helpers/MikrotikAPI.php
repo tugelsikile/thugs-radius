@@ -318,9 +318,6 @@ class MikrotikAPI
                 if ($bw->burst_time_up > 0 || $bw->burst_time_down > 0) {
                     $string->push($bw->burst_time_up . '/' . $bw->burst_time_down);
                 }
-                /*if ($bw->max_limit_up > 0 || $bw->max_limit_down > 0) {
-                    $string->push($bw->priority . '/' . $bw->priority);
-                }*/
                 if ($string->count() > 0) {
                     return $string->join(" ");
                 }
@@ -331,43 +328,117 @@ class MikrotikAPI
             return null;
         }
     }
-    public function saveIPPool(NasProfilePool $nasProfilePool, $defaultName) {
+    private function updateHotspotProfilePool(NasProfilePool $nasProfilePool) {
         try {
             if ($this->client != null) {
-                $this->query = (new Query("/ip/pool/print"))
-                    ->where('name', $defaultName);
-                $find = $this->client->query($this->query)->read();
-                if (collect($find)->count() == 0) {
-                    $this->query = (new Query("/ip/pool/add"))
-                        ->equal("name", $defaultName)
-                        ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
-                    //->equal("comment", $this->me == null ? '' : "created by "  . $this->me->name . ' at ' . Carbon::now()->translatedFormat('d F Y, H:i:s'));
-                } else {
-                    if (array_key_exists('.id', $find)) {
-                        $this->query = (new Query("/ip/pool/set"))
-                            ->where('.id', $find['.id'])
-                            ->equal("name", $defaultName)
-                            ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
-                        //->equal("comment", $this->me == null ? '' : "updated by " . $this->me->name . ' at ' . Carbon::now()->translatedFormat('d F Y, H:i:s'));
+                $nasProfiles = NasProfile::where('pool', $nasProfilePool->id)->where('type','hotspot')->get();
+                if ($nasProfiles->count() > 0) {
+                    if ($nasProfilePool->module == 'mikrotik') {
+                        foreach ($nasProfiles as $nasProfile) {
+                            $this->query = (new Query("/ip/hotspot/user/profile/print"))->where('name', $nasProfile->code);
+                            $find = $this->client->query($this->query)->read();
+                            if (collect($find)->count() > 0) {
+                                $find = collect($find)->first();
+                                $this->query = (new Query("/ip/hotspot/user/profile/set"))
+                                    ->equal(".id", $find['.id'])
+                                    ->equal('address-pool', $nasProfilePool->code);
+                                $this->client->query($this->query)->read();
+                            }
+                        }
+                    } else {
+                        foreach ($nasProfiles as $nasProfile) {
+                            $this->query = (new Query("/ip/hotspot/user/profile/print"))->where('name', $nasProfile->code);
+                            $find = $this->client->query($this->query)->read();
+                            if (collect($find)->count() > 0) {
+                                $find = collect($find)->first();
+                                $this->query = (new Query("/ip/hotspot/user/profile/unset"))
+                                    ->equal(".id", $find['.id'])
+                                    ->equal('value-name','address-pool');
+                                $this->client->query($this->query)->read();
+                            }
+                        }
                     }
                 }
-                $response = $this->client->query($this->query)->read();
-                if (array_key_exists('ret', $response) || array_key_exists('after', $response)) {
-                    if ($nasProfilePool->pool_id == null) {
-                        $nasProfilePool->pool_id = $response['after']['ret'];
-                        $nasProfilePool->saveOrFail();
-                    }
-                } else {
-                    if ($nasProfilePool->pool_id == null) {
-                        $nasProfilePool->pool_id = $response['.id'];
-                        $nasProfilePool->saveOrFail();
-                    }
-                }
-                return  $response;
             }
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
-            return null;
+        }
+    }
+    private function updatePPPProfilePool(NasProfilePool $nasProfilePool) {
+        try {
+            if ($this->client != null) {
+                $nasProfiles = NasProfile::where('pool', $nasProfilePool->id)->where('type','pppoe')->get();
+                if ($nasProfiles->count() > 0) {
+                    if ($nasProfilePool->module == 'mikrotik') {
+                        foreach ($nasProfiles as $nasProfile) {
+                            $this->query = (new Query("/ppp/profile/print"))->where("name", $nasProfile->code);
+                            $find = $this->client->query($this->query)->read();
+                            if (collect($find)->count() > 0) {
+                                $find = collect($find)->first();
+                                $this->query = (new Query("/ppp/profile/set"))
+                                    ->equal(".id", $find['.id'])
+                                    ->equal("remote-address", $nasProfilePool->code);
+                                $this->client->query($this->query)->read();
+                            }
+                        }
+                    } else {
+                        foreach ($nasProfiles as $nasProfile) {
+                            $this->query = (new Query("/ppp/profile/print"))->where("name", $nasProfile->code);
+                            $find = $this->client->query($this->query)->read();
+                            if (collect($find)->count() > 0) {
+                                $find = collect($find)->first();
+                                $this->query = (new Query("/ppp/profile/unset"))
+                                    ->equal(".id", $find['.id'])
+                                    ->equal('value-name', 'remote-address');
+                                $this->client->query($this->query)->read();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
+        }
+    }
+    public function saveIPPool(NasProfilePool $nasProfilePool, $defaultName) {
+        try {
+            if ($this->client != null) {
+                $this->query = (new Query("/ip/pool/print"))->where("name", $defaultName);
+                $find = $this->client->query($this->query)->read();
+                if ($nasProfilePool->module == 'mikrotik') {
+                    if (collect($find)->count() == 0) { //not found
+                        $this->query = (new Query("/ip/pool/add"))
+                            ->equal("name", $nasProfilePool->code)
+                            ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
+                    } else {
+                        $find = collect($find)->first();
+                        $nasProfilePool->pool_id = $find['.id'];
+                        $nasProfilePool->save();
+                        $this->query = (new Query("/ip/pool/set"))
+                            ->equal(".id", $find['.id'])
+                            ->equal("name", $nasProfilePool->code)
+                            ->equal("ranges", $nasProfilePool->first_address . '-' . $nasProfilePool->last_address);
+                    }
+                    $this->client->query($this->query)->read();
+                } else {
+                    if (collect($find)->count() > 0) {
+                        $find = collect($find)->first();
+                        if (array_key_exists('.id', $find)) {
+                            $this->query = (new Query("/ip/pool/remove"))->equal('.id', $find['.id']);
+                            $this->client->query($this->query)->read();
+                        }
+                        if ($nasProfilePool->pool_id != null) {
+                            $nasProfilePool->pool_id = null;
+                            $nasProfilePool->save();
+                        }
+                    }
+
+                }
+            }
+            $this->updatePPPProfilePool($nasProfilePool);
+            $this->updateHotspotProfilePool($nasProfilePool);
+        } catch (Exception $exception) {
+            Log::alert($exception->getMessage());
         }
     }
     public function deleteIPPool(NasProfilePool $nasProfilePool) {
@@ -457,18 +528,23 @@ class MikrotikAPI
                 if ($rl != null || strlen($rl) > 3) {
                     $this->query = $this->query->equal('rate-limit', $rl);
                 }
-                $res = $this->client->query($this->query)->read();
-                Log::alert($res == null);
-
-                if ($res != null) {
-                    if (array_key_exists('after', $res)) {
-                        if (array_key_exists('ret', $res['after'])) {
-                            $nasProfile->profile_id = $res['after']['ret'];
-                            $nasProfile->saveOrFail();
+                if ($this->client->connect()) {
+                    Log::info("client connected");
+                    $res = $this->client->query($this->query)->read();
+                    Log::info("response mikrotik = " . json_encode($res));
+                    if ($res != null) {
+                        if (array_key_exists('after', $res)) {
+                            if (array_key_exists('ret', $res['after'])) {
+                                $nasProfile->profile_id = $res['after']['ret'];
+                                $nasProfile->saveOrFail();
+                            }
                         }
                     }
+                } else {
+                    Log::alert("client not connected");
                 }
             }
+            Log::alert("client is null");
         } catch (Exception $exception) {
             Log::alert($exception->getMessage());
             return;

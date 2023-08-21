@@ -41,7 +41,7 @@
         "crypto-js": "^4.1.1",
         "date-fns": "^2.30.0",
         "duitku": "^0.0.7",
-        "firebase": "^8.6.8",
+        "firebase": "^10.2.0",
         "flag-icons": "^6.7.0",
         "highlight.js": "^11.8.0",
         "html2canvas": "^1.4.1",

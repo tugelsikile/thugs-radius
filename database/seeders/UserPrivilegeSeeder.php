@@ -54,7 +54,7 @@ class UserPrivilegeSeeder extends Seeder
                             $privilege->delete = true;
                         }
                     } elseif ($level->name == 'Billing' && ! $level->for_client && $level->is_default) {
-                        if (! $menu->for_client) {
+                        if (!$menu->for_client) {
                             switch ($menu->route) {
                                 case 'auth.clients':
                                 case 'auth.clients.packages':
@@ -75,6 +75,31 @@ class UserPrivilegeSeeder extends Seeder
                                     break;
                             }
                         }
+                    } elseif ($level->name == 'Billing' && $level->for_client && $level->is_default) {
+                        if ($menu->for_client) {
+                            switch ($menu->route) {
+                                case 'clients.customers':
+                                case 'clients.configs':
+                                case 'clients.configs.payment-gateways':
+                                    $privilege->read = true;
+                                    $privilege->create = false;
+                                    $privilege->update = false;
+                                    $privilege->delete = false;
+                                    break;
+                                case 'clients.customers.invoices':
+                                case 'clients.customers.invoices.payment':
+                                case 'clients.accounting':
+                                case 'clients.accounting.petty-cash':
+                                case 'clients.configs.discounts':
+                                case 'clients.configs.taxes':
+                                case 'clients.accounting.cash-flow':
+                                    $privilege->read = true;
+                                    $privilege->create = true;
+                                    $privilege->update = true;
+                                    $privilege->delete = false;
+                                    break;
+                            }
+                        }
                     } elseif ($level->name == 'Operator' && $level->for_client && $level->is_default) {
                         if ($menu->for_client) {
                             switch ($menu->route) {
@@ -86,6 +111,9 @@ class UserPrivilegeSeeder extends Seeder
                                 case 'clients.customers':
                                 case 'clients.customers.pppoe':
                                 case 'clients.customers.hotspot':
+                                case 'clients.olt':
+                                case 'clients.olt.customers.connect':
+                                case 'clients.olt.gpon.un_configure':
                                     $privilege->read = true;
                                     $privilege->create = true;
                                     $privilege->update = true;

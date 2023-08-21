@@ -404,14 +404,14 @@ class FormUser extends React.Component {
                                             <div className="card card-outline card-primary">
                                                 <div className="card-header" style={{zIndex:0}}>
                                                     <label style={{zIndex:0}} className="card-title text-sm">{Lang.get('nas.labels.menu')}</label>
-                                                    <div className="card-tools">
+                                                    <div className="card-tools" style={{zIndex:0}}>
                                                         <button type="button" className="btn btn-outline-primary btn-sm text-xs" disabled={this.state.loading || this.props.loadings.nas} onClick={this.handleAddNas}>
                                                             <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
                                                             {Lang.get('labels.add.label',{Attribute:Lang.get('nas.labels.menu')})}
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="card-body p-0 table-responsive">
+                                                <div className="card-body p-0">
                                                     <table className="table table-sm table-striped table-hover">
                                                         <thead>
                                                         <tr>

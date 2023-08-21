@@ -23,6 +23,18 @@ class TrafficProfileController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function onuType(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'ok', $this->repository->onuType($this->validation->table($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function tconts(Request $request): JsonResponse
     {
         try {

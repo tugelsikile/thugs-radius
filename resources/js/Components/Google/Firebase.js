@@ -1,6 +1,7 @@
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from "@firebase/app";
+import { getAnalytics } from "@firebase/analytics";
+import { getAuth } from "@firebase/auth";
+
 const CryptoJS = require('crypto-js');
 
 const firebaseConfig = {

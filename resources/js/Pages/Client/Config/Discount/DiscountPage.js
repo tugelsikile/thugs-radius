@@ -6,12 +6,15 @@ import {confirmDialog, showError} from "../../../../Components/Toaster";
 import {crudCompany} from "../../../../Services/CompanyService";
 import {crudDiscounts} from "../../../../Services/ConfigService";
 import PageLoader from "../../../../Components/PageLoader";
-import MainHeader from "../../../../Components/Layout/MainHeader";
-import MainSidebar from "../../../../Components/Layout/MainSidebar";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
-import BtnSort from "../../../Auth/User/Tools/BtnSort";
 import FormDiscount from "../../../Auth/Configs/Discount/Tools/FormDiscount";
+import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
+import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCircleNotch, faRefresh} from "@fortawesome/free-solid-svg-icons";
+import {TableHeader} from "../../../Auth/Configs/Discount/Tools/Mixed";
+import {FormatPrice} from "../../Customer/Tools/Mixed";
 
 // noinspection DuplicatedCode
 class DiscountPage extends React.Component {
@@ -138,6 +141,29 @@ class DiscountPage extends React.Component {
                     }
                 });
             }
+            const tableEl = event.currentTarget.closest('table');
+            const thead = tableEl.getElementsByTagName('thead');
+            const tfoot = tableEl.getElementsByTagName('tfoot');
+            if (thead != null) {
+                if (thead.length > 0) {
+                    const cbx = thead[0].getElementsByTagName('input');
+                    if (cbx != null) {
+                        if (cbx.length > 0) {
+                            cbx[0].checked = event.currentTarget.checked;
+                        }
+                    }
+                }
+            }
+            if (tfoot != null) {
+                if (tfoot.length > 0) {
+                    const cbx = tfoot[0].getElementsByTagName('input');
+                    if (cbx != null) {
+                        if (cbx.length > 0) {
+                            cbx[0].checked = event.currentTarget.checked;
+                        }
+                    }
+                }
+            }
         } else {
             let indexSelected = discounts.selected.findIndex((f) => f === event.currentTarget.getAttribute('data-id'));
             if (indexSelected >= 0) {
@@ -219,11 +245,9 @@ class DiscountPage extends React.Component {
             <React.StrictMode>
                 <FormDiscount user={this.state.user} loadings={this.state.loadings} companies={this.state.companies} open={this.state.modal.open} data={this.state.modal.data} handleClose={this.toggleModal} handleUpdate={this.loadDiscounts}/>
                 <PageLoader/>
-                <MainHeader root={this.state.root} user={this.state.user} site={this.state.site}/>
-                <MainSidebar route={this.props.route} site={this.state.site}
-                             menus={this.state.menus}
-                             root={this.state.root}
-                             user={this.state.user}/>
+
+                <HeaderAndSideBar route={this.props.route} root={this.state.root} user={this.state.user} site={this.state.site} menus={this.state.menus} loadings={this.state.loadings}/>
+
                 <div className="content-wrapper">
 
                     <PageTitle title={Lang.get('discounts.labels.menu')} childrens={[
@@ -235,61 +259,20 @@ class DiscountPage extends React.Component {
                         <div className="container-fluid">
                             <div className="card card-outline card-primary">
                                 {this.state.loadings.discounts && <CardPreloader/>}
-                                <div className="card-header">
-                                    <div className="card-title">
-                                        {this.state.privilege !== null &&
-                                            <>
-                                                {this.state.privilege.create &&
-                                                    <button type="button" onClick={()=>this.toggleModal()} disabled={this.state.loadings.discounts} className="btn btn-tool"><i className="fas fa-plus"/> {Lang.get('discounts.create.btn')}</button>
-                                                }
-                                                {this.state.privilege.delete &&
-                                                    this.state.discounts.selected.length > 0 &&
-                                                    <button type="button" onClick={()=>this.confirmDelete()} disabled={this.state.loadings.discounts} className="btn btn-tool"><i className="fas fa-trash-alt"/> {Lang.get('discounts.delete.select')}</button>
-                                                }
-                                            </>
-                                        }
-                                    </div>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input onChange={this.handleSearch} value={this.state.filter.keywords} type="text" name="table_search" className="form-control float-right" placeholder={Lang.get('discounts.labels.search')}/>
-                                            <div className="input-group-append">
-                                                <button type="submit" className="btn btn-default"><i className="fas fa-search"/></button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="card-header pl-2">
+                                    <PageCardTitle privilege={this.state.privilege}
+                                                   filter={ <button type="button" className="btn btn-outline-secondary btn-sm text-xs mr-1" disabled={this.state.loadings.discounts} onClick={()=>this.loadDiscounts()}><FontAwesomeIcon icon={this.state.loadings.discounts ? faCircleNotch : faRefresh} size="xs" spin={this.state.loadings.discounts}/></button> }
+                                                   loading={this.state.loadings.discounts}
+                                                   langs={{create:Lang.get('labels.create.label',{Attribute:Lang.get('discounts.labels.menu')}),delete:Lang.get('labels.delete.select',{Attribute:Lang.get('discounts.labels.menu')})}}
+                                                   selected={this.state.discounts.selected}
+                                                   handleModal={this.toggleModal}
+                                                   confirmDelete={this.confirmDelete}/>
+                                    <PageCardSearch handleSearch={this.handleSearch} filter={this.state.filter} label={Lang.get('labels.search',{Attribute:Lang.get('discounts.labels.menu')})}/>
                                 </div>
-                                <div className="card-body p-0">
+                                <div className="card-body p-0 table-responsive table-responsive-sm">
                                     <table className="table table-sm table-striped">
                                         <thead>
-                                        <tr>
-                                            <th className="align-middle text-center" width={30}>
-                                                <div className="custom-control custom-checkbox">
-                                                    <input data-id="" disabled={this.state.loadings.discounts} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id="checkAll"/>
-                                                    <label htmlFor="checkAll" className="custom-control-label"/>
-                                                </div>
-                                            </th>
-                                            <th className="align-middle" width={120}>
-                                                <BtnSort sort="code"
-                                                         name={Lang.get('discounts.labels.code')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle">
-                                                <BtnSort sort="name"
-                                                         name={Lang.get('discounts.labels.name')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle" width={150}>
-                                                <BtnSort sort="amount"
-                                                         name={Lang.get('discounts.labels.amount')}
-                                                         filter={this.state.filter}
-                                                         handleSort={this.handleSort}/>
-                                            </th>
-                                            <th className="align-middle text-center" width={40}>
-                                                {Lang.get('messages.action')}
-                                            </th>
-                                        </tr>
+                                            <TableHeader type="rowHeader" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
                                         </thead>
                                         <tbody>
                                         {this.state.discounts.filtered.length === 0 ?
@@ -297,19 +280,18 @@ class DiscountPage extends React.Component {
                                             :
                                             this.state.discounts.filtered.map((item)=>
                                                 <tr key={item.value}>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pl-2">
                                                         <div className="custom-control custom-checkbox">
                                                             <input data-id={item.value} checked={this.state.discounts.selected.findIndex((f) => f === item.value) >= 0} disabled={this.state.loadings.taxes} onChange={this.handleCheck} className="custom-control-input custom-control-input-secondary custom-control-input-outline" type="checkbox" id={`cbx_${item.value}`}/>
                                                             <label htmlFor={`cbx_${item.value}`} className="custom-control-label"/>
                                                         </div>
                                                     </td>
-                                                    <td className="align-middle">{item.meta.code}</td>
-                                                    <td title={item.meta.description} className="align-middle">{item.label}</td>
-                                                    <td className="align-middle text-center">
-                                                        <span className="float-left">Rp.</span>
-                                                        <span className="float-right">{formatLocaleString(item.meta.amount,2)}</span>
+                                                    <td className="align-middle text-xs">{item.meta.code}</td>
+                                                    <td title={item.meta.description} className="align-middle text-xs">{item.label}</td>
+                                                    <td className="align-middle text-center text-xs">
+                                                        {FormatPrice(item.meta.amount)}
                                                     </td>
-                                                    <td className="align-middle text-center">
+                                                    <td className="align-middle text-center pr-2">
                                                         {this.state.privilege !== null &&
                                                             <>
                                                                 <button type="button" className="btn btn-tool dropdown-toggle dropdown-icon" data-toggle="dropdown">
@@ -317,10 +299,10 @@ class DiscountPage extends React.Component {
                                                                 </button>
                                                                 <div className="dropdown-menu" role="menu">
                                                                     {this.state.privilege.update &&
-                                                                        <button type="button" onClick={()=>this.toggleModal(item)} className="dropdown-item text-primary"><i className="fa fa-pencil-alt mr-1"/> {Lang.get('discounts.update.btn')}</button>
+                                                                        <button type="button" onClick={()=>this.toggleModal(item)} className="dropdown-item text-xs text-primary"><i className="fa fa-pencil-alt mr-1"/> {Lang.get('discounts.update.btn')}</button>
                                                                     }
                                                                     {this.state.privilege.delete &&
-                                                                        <button type="button" onClick={()=>this.confirmDelete(item)} className="dropdown-item text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('discounts.delete.btn')}</button>
+                                                                        <button type="button" onClick={()=>this.confirmDelete(item)} className="dropdown-item text-xs text-danger"><i className="fa fa-trash-alt mr-1"/> {Lang.get('discounts.delete.btn')}</button>
                                                                     }
                                                                 </div>
                                                             </>
@@ -330,6 +312,9 @@ class DiscountPage extends React.Component {
                                             )
                                         }
                                         </tbody>
+                                        <tfoot>
+                                            <TableHeader type="rowFooter" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
+                                        </tfoot>
                                     </table>
                                 </div>
                             </div>

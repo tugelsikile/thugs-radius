@@ -57,7 +57,7 @@ return [
 
         'server' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/server/' . date('Y-m-d') . '.log'),
+            'path' => storage_path('logs/' . date('Y-m-d') . '.log'),
             'level' => env('LOG_LEVEL','debug'),
             'days' => 30,
         ],

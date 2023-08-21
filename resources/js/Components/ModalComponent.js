@@ -10,7 +10,20 @@ export const ModalHeader = (props) => {
         <DialogTitle>
             <button type="button" className="close float-right" onClick={()=>props.loading ? null : props.handleClose()}><span aria-hidden="true">×</span></button>
             <span className="modal-title text-sm">
-                {props.form.id === null ? props.langs.create : props.langs.update }
+                {typeof props.form === 'undefined' ?
+                    typeof props.title !== 'undefined' ?
+                        props.title
+                        :
+                        "FORM"
+                    :
+                    typeof props.form.id !== 'undefined' ?
+                        props.form.id === null ? props.langs.create : props.langs.update
+                        :
+                        typeof props.title !== 'undefined' ?
+                            props.title
+                            :
+                            "FORM"
+                }
             </span>
         </DialogTitle>
     );
@@ -20,34 +33,43 @@ export const ButtonSubmit = (props) => {
         <button type="submit" className="btn  btn-outline-success text-xs" disabled={props.loading}>
             <FontAwesomeIcon spin={props.loading} className="mr-2"
                              icon={props.loading ? faCircleNotch : faSave}/>
-            {props.form.id === null ?
-                <React.Fragment>
-                    {
-                        ! props.loading ? props.langs.create
-                            :
-                            typeof props.pendings === 'undefined' ? props.langs.create
-                                :
-                                typeof props.pendings.create === 'undefined' ? props.langs.create
-                                    :
-                                    props.pendings.create === null ? props.langs.create
-                                        :
-                                        props.pendings.create
-                    }
-                </React.Fragment>
+            {typeof props.form === 'undefined' ?
+                typeof props.pending === 'undefined' && typeof props.submit === 'undefined' ?
+                    "Submit"
+                    :
+                    props.loading ?
+                        props.pending
+                        :
+                        props.submit
                 :
-                <React.Fragment>
-                    {
-                        ! props.loading ? props.langs.update
-                            :
-                            typeof props.pendings === 'undefined' ? props.langs.update
+                props.form.id === null ?
+                    <React.Fragment>
+                        {
+                            ! props.loading ? props.langs.create
                                 :
-                                typeof props.pendings.update === 'undefined' ? props.langs.update
+                                typeof props.pendings === 'undefined' ? props.langs.create
                                     :
-                                    props.pendings.update === null ? props.langs.update
+                                    typeof props.pendings.create === 'undefined' ? props.langs.create
                                         :
-                                        props.pendings.update
-                    }
-                </React.Fragment>
+                                        props.pendings.create === null ? props.langs.create
+                                            :
+                                            props.pendings.create
+                        }
+                    </React.Fragment>
+                    :
+                    <React.Fragment>
+                        {
+                            ! props.loading ? props.langs.update
+                                :
+                                typeof props.pendings === 'undefined' ? props.langs.update
+                                    :
+                                    typeof props.pendings.update === 'undefined' ? props.langs.update
+                                        :
+                                        props.pendings.update === null ? props.langs.update
+                                            :
+                                            props.pendings.update
+                        }
+                    </React.Fragment>
             }
         </button>
     );

@@ -3,6 +3,7 @@
 namespace App\Repositories\PaymentGateway;
 
 use App\Helpers\SwitchDB;
+use App\Models\Accounting\Account;
 use App\Models\Company\ClientCompany;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerInvoice;
@@ -11,6 +12,7 @@ use App\Models\Nas\NasProfile;
 use App\Models\PaymentGateway\PaymentGateway;
 use App\Models\User\User;
 use App\Models\User\UserLevel;
+use App\Repositories\Accounting\CashFlowRepository;
 use App\Repositories\Customer\CustomerRepository;
 use Carbon\Carbon;
 use Exception;
@@ -285,6 +287,21 @@ class DuitkuRepository
                 $payment->created_by = $by->id;
                 $payment->saveOrFail();
 
+                $customer = Customer::where('id', $invoice->customer)->first();
+                if ($customer != null) {
+                    $account = Account::where('code','000001')->first();
+                    if ($account != null) {
+                        (new CashFlowRepository())->store(new Request([
+                            __('cash_flow.form_input.periods.label') => $payment->paid_at->format('Y-m-d'),
+                            __('cash_flow.form_input.account.label') => $account->id,
+                            __('cash_flow.form_input.category.label') => __('invoices.payments.online', ['Customer' => $customer->name]),
+                            __('cash_flow.form_input.description') => __('invoices.payments.online', ['Customer' => $customer->name]),
+                            __('cash_flow.form_input.type') => 'credit',
+                            __('cash_flow.form_input.amount') => $payment->amount,
+                            __('cash_flow.form_input.periods.label') => $payment->paid_at,
+                        ]));
+                    }
+                }
                 if ($this->sumPayment($invoice) >= $this->sumInvoice($invoice)) {
                     $invoice->paid_at = Carbon::now();
                     $invoice->paid_by = $by->id;

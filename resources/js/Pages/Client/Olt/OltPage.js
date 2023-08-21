@@ -72,6 +72,8 @@ class OltPage extends React.Component {
                                 {route : 'clients.nas.profiles', can : false },
                                 {route : 'clients.nas.pools', can : false },
                                 {route : 'clients.nas.bandwidths', can : false },
+                                {route : 'clients.olt.customers.connect', can : false },
+                                {route : 'clients.olt.gpon.un_configure', can : false },
                             ])
                                 .then((response)=>{
                                     loadings.privilege = false; this.setState({loadings,privilege:response.privileges,menus:response.menus});
@@ -515,24 +517,37 @@ class OltPage extends React.Component {
             }
         }
     }
-    async loadCustomers(data = null) {
+    async loadCustomers(data = null, removeId = null) {
         if (! this.state.loadings.customers ) {
+            let customers = this.state.customers;
+            let index;
             if (data !== null) {
                 if (typeof data === 'object') {
-                    let customers = this.state.customers;
-                    let index = customers.findIndex((f)=> f.value === data.value);
-                    if (index >= 0) {
-                        customers[index] = data;
-                    } else {
-                        customers.push(data);
+                    if (typeof data.details !== 'undefined') {
+                        if (typeof data.details.customer !== 'undefined') {
+                            index = customers.findIndex((f) => f.value === data.details.customer.value);
+                            if (index >= 0) {
+                                customers[index] = data.details.customer;
+                                this.setState({customers});
+                            }
+                        }
                     }
-                    this.setState({customers});
+                }
+            } else if (removeId !== null) {
+                if (removeId.length > 0) {
+                    index = customers.findIndex((f)=> f.value === removeId);
+                    if (index >= 0) {
+                        customers[index].meta.olt.olt = null;
+                        customers[index].meta.olt.onu = null;
+                        customers[index].meta.olt.configs = null;
+                        this.setState({customers});
+                    }
                 }
             } else {
                 let loadings = this.state.loadings;
                 loadings.customers = true; this.setState({loadings});
                 try {
-                    let response = await crudCustomers({type:'pppoe'});
+                    let response = await crudCustomers({type : 'pppoe', 'unregister' : true});
                     if (response.data.params === null) {
                         loadings.customers = false; this.setState({loadings});
                         showError(response.data.params);
@@ -630,7 +645,7 @@ class OltPage extends React.Component {
 
                         <div className="container-fluid">
                             {this.state.filter.olt !== null ?
-                                <DetailOLT discounts={this.state.discounts} onDiscount={this.loadDiscounts} taxes={this.state.taxes} onTax={this.loadTaxes} loadings={this.state.loadings} olts={this.state.olt} onToggle={this.toggleOlt} olt={this.state.filter.olt} privilege={this.state.privilege} profiles={this.state.profiles} onProfile={this.loadProfiles} customers={this.state.customers} onCustomer={this.loadCustomers} nas={this.state.nas} onNas={this.loadNas} pools={this.state.pools} onPool={this.loadPools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} companies={this.state.companies}/>
+                                <DetailOLT onReloadCustomer={this.loadCustomers} discounts={this.state.discounts} onDiscount={this.loadDiscounts} taxes={this.state.taxes} onTax={this.loadTaxes} loadings={this.state.loadings} olts={this.state.olt} onToggle={this.toggleOlt} olt={this.state.filter.olt} privilege={this.state.privilege} profiles={this.state.profiles} onProfile={this.loadProfiles} customers={this.state.customers} onCustomer={this.loadCustomers} nas={this.state.nas} onNas={this.loadNas} pools={this.state.pools} onPool={this.loadPools} bandwidths={this.state.bandwidths} onBandwidth={this.loadBandwidths} companies={this.state.companies}/>
                                 :
                                 <div id="main-page-card" className="card card-outline card-primary">
                                     {this.state.loadings.olt && <CardPreloader/>}

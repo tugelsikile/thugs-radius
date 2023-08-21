@@ -26,7 +26,7 @@ import {
     faThumbsDown,
     faArrowsAltV,
     faThumbsUp,
-    faUserCheck, faFlagCheckered
+    faUserCheck, faFlagCheckered, faWind, faLink, faUnlink
 } from "@fortawesome/free-solid-svg-icons";
 import {faBuilding, faCheckCircle, faFlag, faHandPointer, faHdd} from "@fortawesome/free-regular-svg-icons";
 
@@ -34,6 +34,9 @@ export const MenuIcon = (iconName) => {
     let icon = faInfoCircle;
     switch (iconName) {
         default : icon = faInfoCircle; break;
+        case 'fas fa-wind': icon = faWind; break;
+        case 'fas fa-link': icon = faLink; break;
+        case 'fas fa-unlink': icon = faUnlink; break;
         case 'fas fa-hdd': icon = faHdd; break;
         case 'fas fa-flag-checkered': icon = faFlagCheckered; break;
         case 'fas fa-user-check': icon = faUserCheck; break;

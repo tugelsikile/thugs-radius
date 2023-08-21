@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @method static where(string $string, mixed $value)
+ * @method static where(string $column, mixed $value)
+ * @method static whereNotIn(string $column, array $value)
+ * @property string $id
  */
 class Menu extends Model
 {

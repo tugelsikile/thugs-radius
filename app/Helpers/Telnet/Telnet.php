@@ -199,7 +199,7 @@ class Telnet {
                 }
             }
             $buf = array_values($buf);
-            unset($buf[count($buf) - 1]);
+            //unset($buf[count($buf) - 1]);
             return implode("\n", $buf);
         }
         return "";

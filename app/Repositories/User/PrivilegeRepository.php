@@ -188,13 +188,13 @@ class PrivilegeRepository
                 if ($request->has(__('companies.form_input.name'))) {
                     $levels = $levels->where('company', $request[__('companies.form_input.name')])->orWhereNull('company')
                         ->where('for_client',true)
-                        ->whereNotIn('name',['Super Admin','Billing','Customer']);
+                        ->whereNotIn('name',['Super Admin','Customer']);
                 }
                 if ($this->me != null) {
                     if ($this->me->company != null) {
                         $levels = $levels->where('company', $this->me->company)->orWhereNull('company')
                             ->where('for_client',true)
-                            ->whereNotIn('name',['Super Admin','Billing','Customer']);
+                            ->whereNotIn('name',['Super Admin','Customer']);
                     }
                 }
             }

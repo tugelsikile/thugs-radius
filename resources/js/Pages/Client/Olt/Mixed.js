@@ -15,15 +15,17 @@ import MaskedInput from "react-text-mask";
 import {NumericFormat} from "react-number-format";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
+    faBolt,
+    faChargingStation,
     faCircleNotch,
     faCog,
     faCogs, faExclamationTriangle, faInfoCircle,
     faLink,
     faLinkSlash, faListUl,
-    faPersonBooth,
-    faRefresh
+    faPersonBooth, faPlug, faPlus,
+    faRefresh, faUnlink
 } from "@fortawesome/free-solid-svg-icons";
-import {faCircle, faUserCircle} from "@fortawesome/free-regular-svg-icons";
+import {faCircle, faTrashAlt, faUserCircle} from "@fortawesome/free-regular-svg-icons";
 import Select from "react-select";
 import Pagination from "@atlaskit/pagination";
 import {DataNotFound, TableRowPreloader} from "../../../Components/TableComponent";
@@ -124,8 +126,17 @@ export const TableContentGponState = (props)=> {
                 {props.item.details === null ? null : props.item.details.customer === null ? null : props.item.details.customer.label}
             </td>
             <td className="align-middle text-xs">
-                {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
-                {props.item.details !== null && props.item.details.serial_number}
+                {props.item.serial_number !== null ?
+                    props.item.serial_number
+                    :
+                    props.item.loading ?
+                        <Skeleton variant="text" animation="wave"/>
+                        :
+                        props.item.details === null ?
+                            null
+                            :
+                            props.item.details.serial_number
+                }
             </td>
             <td className="align-middle text-xs">
                 {props.item.loading && props.item.details === null && <Skeleton variant="text" animation="wave"/>}
@@ -155,23 +166,32 @@ export const TableContentGponState = (props)=> {
                                     {props.item.details !== null &&
                                         props.item.phase_state !== 'unconfig' &&
                                         props.item.details.customer === null &&
-                                        typeof props.privilege.customers !== 'undefined' &&
-                                        typeof props.privilege.customers.create !== 'undefined' &&
-                                        props.privilege.customers.create &&
+                                        typeof props.privilege.connect !== 'undefined' &&
+                                        props.privilege.connect &&
                                         <a onClick={props.onCustomer} data-onu={props.item.onu} className="dropdown-item text-xs text-primary" href="#">
                                             <FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/>
                                             {Lang.get('olt.labels.customers.link')}
                                         </a>
                                     }
+                                    {props.item.phase_state === 'unconfig' &&
+                                        <a onClick={props.onConfig} href="#" data-onu={props.item.onu} className="dropdown-item text-xs text-primary">
+                                            <FontAwesomeIcon icon={faLink} size="xs" className="mr-1"/>
+                                            {Lang.get('olt.configure.button')}
+                                        </a>
+                                    }
                                     {props.item.details !== null &&
                                         props.item.phase_state !== 'unconfig' &&
                                         props.item.details.customer !== null &&
+                                        typeof props.privilege.connect !== 'undefined' &&
+                                        props.privilege.connect &&
                                         <a onClick={props.onUnlink} data-onu={props.item.onu} className="dropdown-item text-xs text-warning" href="#">
                                             <FontAwesomeIcon icon={faLinkSlash} size="xs" className="mr-1"/>
                                             {Lang.get('olt.labels.customers.unlink')}
                                         </a>
                                     }
                                     {props.item.phase_state !== 'unconfig' &&
+                                        typeof props.privilege.un_configure !== 'undefined' &&
+                                        props.privilege.un_configure &&
                                         <a onClick={props.onUnconfigure} data-onu={props.item.onu} className="dropdown-item text-danger text-xs" href="#">
                                             <FontAwesomeIcon icon={faCogs} size="xs" className="mr-1"/>
                                             {Lang.get('olt.un_configure.button')}
@@ -269,7 +289,7 @@ export const TablePaging = (props) => {
                                                 styles={FormControlSMReactSelect}
                                                 isDisabled={props.data.loading || props.data.filtered.filter((f)=> f.loading).length > 0}
                                                 isLoading={props.data.loading}
-                                                onChange={props.handelSelectDataPerPage} options={listDataPerPage}/>
+                                                onChange={props.handelSelectDataPerPage} options={listDataPerpageOlt}/>
                                     </div>
                     }
                     <label className="col-md-9 col-form-label text-muted text-xs">
@@ -553,3 +573,567 @@ export const oltBrandLists = [
     { value : 'zte', label : 'ZTE', models : oltZteLists },
 ]
 
+export const listDataPerpageOlt = [
+    { value : 20, label : '20' },
+    { value : 50, label : '50' },
+    { value : 125, label : '125' },
+    { value : 300, label : '300' },
+];
+export const CardDetailOlt = (props) => {
+    return (
+        <div className="row">
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-info">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faPlug} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.count')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.length + props.port_lists.available.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-success">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faChargingStation} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.used')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12" data-label="available-port" onMouseOver={props.gpon_states.loading ? null : props.onPopover} onMouseOut={props.gpon_states.loading ? null : props.onPopover}>
+                <div className="info-box">
+                    <span className="info-box-icon bg-warning">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faBolt} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.cards.ports.available')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.port_lists.available.length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div className="col-md-3 col-sm-6 col-12">
+                <div className="info-box">
+                    <span className="info-box-icon bg-danger">
+                        {props.gpon_states.loading ?
+                            <Skeleton variant="circular" width={65} height={65}/>
+                            :
+                            <FontAwesomeIcon icon={props.gpon_states.loading ? faCircleNotch : faUnlink} spin={props.gpon_states.loading}/>
+                        }
+                    </span>
+                    <div className="info-box-content">
+                        <span className="info-box-text">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                Lang.get('olt.labels.loss')
+                            }
+                        </span>
+                        <span className="info-box-number">
+                            {props.gpon_states.loading ?
+                                <Skeleton variant="text"/>
+                                :
+                                formatLocaleString(props.gpon_states.unfiltered.filter((f)=> f.phase_state === 'los').length)
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+export const PopoverAvailablePort = (props) => {
+    const maxSize = 20;
+    const availablePorts = Array.from({length : Math.ceil(props.ports.length / maxSize)}, (v,i)=> props.ports.slice(i * maxSize, i * maxSize + maxSize));
+    return (
+        <div className="card card-outline card-info mb-0" style={{minWidth:200}}>
+            <div className="card-header p-2">
+                <strong className="text-xs card-title">20 {Lang.get('olt.cards.ports.available')}</strong>
+            </div>
+            <div className="card-body">
+                <ul className="list-unstyled mb-0">
+                    {availablePorts.length > 0 &&
+                        availablePorts[0].map((item)=>
+                            <li className="text-xs" key={item.value}>{item.label}</li>
+                        )
+                    }
+                </ul>
+            </div>
+        </div>
+    )
+}
+export const FormConfigureTableTCont = (props) => {
+    return (
+        <div className="card card-outline card-primary">
+            <div className="card-header">
+                <strong className="card-title text-sm">TCONT</strong>
+                <div className="card-tools">
+                    <button onClick={props.onAdd} type="button" disabled={props.loading || props.olt_profiles.tconts.loading} className="btn btn-outline-primary btn-sm text-xs">
+                        <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
+                        <small className="text-xs">{Lang.get('labels.add.label',{Attribute:"TCont"})}</small>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th className="align-middle text-center pl-2" width={30}><FontAwesomeIcon icon={faTrashAlt} size="xs"/></th>
+                        <th className="align-middle text-xs" width={100}>ID</th>
+                        <th className="align-middle text-xs pr-2">Profile</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.form.t_controllers.length === 0 ?
+                        <DataNotFound colSpan={3} message={Lang.get('labels.not_found',{Attribute:"TCont"})}/>
+                        :
+                        props.form.t_controllers.map((item,index)=>
+                            <tr key={`tcs_${index}`}>
+                                <td className="align-middle text-center pl-2">
+                                    <button type="button" data-index={index} className="btn btn-sm btn-outline-warning btn-block text-xs" disabled={props.loading} onClick={props.onDelete}>
+                                        <FontAwesomeIcon icon={faTrashAlt} size="xs"/>
+                                    </button>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <input className="form-control form-control-sm text-xs" value={item.id} disabled={props.loading} onChange={props.onChangeId} data-index={index} placeholder="Tcont ID"/>
+                                </td>
+                                <td className="align-middle text-xs pr-2">
+                                    <div className="row">
+                                        <div className="col-sm-11">
+                                            <Select options={props.olt_profiles.tconts.lists}
+                                                    value={item.profile}
+                                                    isDisabled={props.loading || props.olt_profiles.tconts.loading}
+                                                    isLoading={props.olt_profiles.tconts.loading}
+                                                    onChange={(e)=> props.onSelect(e,index)}
+                                                    styles={FormControlSMReactSelect} menuPlacement="top"
+                                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:"Profile"})}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:"Profile"})}/>
+                                        </div>
+                                        <div className="col-sm-1">
+                                            <button title={Lang.get('labels.refresh',{Attribute:"Profile"})} type="button" disabled={props.loading || props.olt_profiles.tconts.loading} className="btn btn-xs btn-outline-primary text-xs btn-block" onClick={()=>props.onReloadProfile()}>
+                                                <FontAwesomeIcon icon={faRefresh} spin={props.olt_profiles.tconts.loading} size="xs"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+
+export const FormConfigureTableGemPort = (props) => {
+    return (
+        <div className="card card-outline card-primary">
+            <div className="card-header">
+                <strong className="card-title text-sm">GEMPORT</strong>
+                <div className="card-tools">
+                    {props.form.t_controllers.filter((f)=> f.id.length > 0 && f.profile !== null).length > 0 &&
+                        <button onClick={props.onAdd} type="button" disabled={props.loading} className="btn btn-outline-primary btn-sm text-xs">
+                            <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
+                            <small className="text-xs">{Lang.get('labels.add.label',{Attribute:"GemPort"})}</small>
+                        </button>
+                    }
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th className="align-middle text-center pl-2" width={30}><FontAwesomeIcon icon={faTrashAlt} size="xs"/></th>
+                        <th className="align-middle text-xs" width={50}>ID</th>
+                        <th className="align-middle text-xs">Upstream</th>
+                        <th className="align-middle text-xs">Downstream</th>
+                        <th className="align-middle text-xs pr-2">TCont</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.form.gem_ports.length === 0 ?
+                        <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:"GemPort"})}/>
+                        :
+                        props.form.gem_ports.map((item,index)=>
+                            <tr key={`tgp_${index}`}>
+                                <td className="align-middle text-center pl-2">
+                                    <button type="button" data-index={index} className="btn btn-sm btn-outline-warning btn-block text-xs" disabled={props.loading} onClick={props.onDelete}>
+                                        <FontAwesomeIcon icon={faTrashAlt} size="xs"/>
+                                    </button>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <input className="form-control form-control-sm text-xs" value={item.id} disabled={props.loading} onChange={props.onChangeId} data-index={index} placeholder="GemPort ID"/>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <div className="row">
+                                        <div className="col-sm-9">
+                                            <Select options={props.olt_profiles.tconts.lists}
+                                                    value={item.upstream}
+                                                    onChange={(e)=>props.onSelectUpstream(e,index)}
+                                                    isDisabled={props.loading || props.olt_profiles.tconts.loading}
+                                                    isLoading={props.olt_profiles.tconts.loading}
+                                                    styles={FormControlSMReactSelect} menuPlacement="top"
+                                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:"Upstream"})}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:"Upstream"})}/>
+                                        </div>
+                                        <div className="col-sm-3">
+                                            <button title={Lang.get('labels.refresh',{Attribute:"Profile"})} type="button" className="btn btn-outline-primary btn-xs text-xs btn-block" disabled={props.loading || props.olt_profiles.tconts.loading} onClick={()=>props.onReloadProfile()}>
+                                                <FontAwesomeIcon icon={faRefresh} spin={props.olt_profiles.tconts.loading} size="xs"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <div className="row">
+                                        <div className="col-sm-9">
+                                            <Select options={props.olt_profiles.tconts.lists}
+                                                    value={item.downstream}
+                                                    onChange={(e)=>props.onSelectDownstream(e,index)}
+                                                    isDisabled={props.loading || props.olt_profiles.tconts.loading}
+                                                    isLoading={props.olt_profiles.tconts.loading}
+                                                    styles={FormControlSMReactSelect} menuPlacement="top"
+                                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:"Downstream"})}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:"Downstream"})}/>
+                                        </div>
+                                        <div className="col-sm-3">
+                                            <button title={Lang.get('labels.refresh',{Attribute:"Profile"})} type="button" className="btn btn-outline-primary btn-xs text-xs btn-block" disabled={props.loading || props.olt_profiles.tconts.loading} onClick={()=>props.onReloadProfile()}>
+                                                <FontAwesomeIcon icon={faRefresh} spin={props.olt_profiles.tconts.loading} size="xs"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <Select options={props.form.t_controllers.filter((f)=> f.profile !== null && f.id.length > 0).map((tcont)=> { return { value : tcont.id, label : tcont.profile.value} })}
+                                            value={item.tcont} isDisabled={props.loading}
+                                            onChange={(e)=>props.onSelectTCont(e,index)}
+                                            styles={FormControlSMReactSelect} menuPlacement="top"
+                                            placeholder={Lang.get('labels.select.option',{Attribute:"TCont"})}/>
+                                </td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+export const FormConfigureTableVLan = (props) => {
+    return (
+        <div className="card card-outline card-primary">
+            <div className="card-header">
+                <strong className="card-title text-sm">Virtual Lan</strong>
+                <div className="card-tools">
+                    <button onClick={props.onAdd} type="button" disabled={props.loading || props.olt_profiles.vlans.loading} className="btn btn-outline-primary btn-sm text-xs">
+                        <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
+                        <small className="text-xs">{Lang.get('labels.add.label',{Attribute:"Virtual Lan"})}</small>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th className="align-middle text-center pl-2" width={30}><FontAwesomeIcon icon={faTrashAlt} size="xs"/></th>
+                        <th className="align-middle text-xs" width={50}>Port</th>
+                        <th className="align-middle text-xs" width={50}>V Port</th>
+                        <th className="align-middle text-xs">User VLan</th>
+                        <th className="align-middle text-xs pr-2">Service VLan</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.form.virtual_lanes.length === 0 ?
+                        <DataNotFound colSpan={5} message={Lang.get('labels.not_found',{Attribute:"VLan"})}/>
+                        :
+                        props.form.virtual_lanes.map((item,index)=>
+                            <tr key={`tvl_${index}`}>
+                                <td className="align-middle text-center pl-2">
+                                    <button type="button" data-index={index} className="btn btn-sm btn-outline-warning btn-block text-xs" disabled={props.loading} onClick={props.onDelete}>
+                                        <FontAwesomeIcon icon={faTrashAlt} size="xs"/>
+                                    </button>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <input className="form-control form-control-sm text-xs" value={item.port} disabled={props.loading} onChange={props.onChangePort} data-index={index} placeholder="VLan Port ID"/>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <input className="form-control form-control-sm text-xs" value={item.vport} disabled={props.loading} onChange={props.onChangeVPort} data-index={index} placeholder="VLan V Port ID"/>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <div className="row">
+                                        <div className="col-sm-10">
+                                            <Select options={props.olt_profiles.vlans.lists} value={item.user}
+                                                    onChange={(e)=>props.onSelectUser(e,index)}
+                                                    isDisabled={props.loading || props.olt_profiles.vlans.loading}
+                                                    isLoading={props.olt_profiles.vlans.loading}
+                                                    styles={FormControlSMReactSelect} menuPlacement="top"
+                                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:"User VLan"})}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:"User VLan"})}/>
+                                        </div>
+                                        <div className="col-sm-2">
+                                            <button onClick={()=>props.onReloadProfile()} type="button" title={Lang.get('labels.refresh',{Attribute:"VLan"})} disabled={props.loading || props.olt_profiles.vlans.loading} className="btn btn-xs btn-block btn-outline-primary text-xs">
+                                                <FontAwesomeIcon icon={faRefresh} spin={props.olt_profiles.vlans.loading} size="xs"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="align-middle text-xs pr-2">
+                                    <div className="row">
+                                        <div className="col-sm-10">
+                                            <Select options={props.olt_profiles.vlans.lists} value={item.service}
+                                                    onChange={(e)=>props.onSelectService(e,index)}
+                                                    isDisabled={props.loading || props.olt_profiles.vlans.loading}
+                                                    isLoading={props.olt_profiles.vlans.loading}
+                                                    styles={FormControlSMReactSelect} menuPlacement="top"
+                                                    noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:"Service VLan"})}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:"Service VLan"})}/>
+                                        </div>
+                                        <div className="col-sm-2">
+                                            <button onClick={()=>props.onReloadProfile()} type="button" title={Lang.get('labels.refresh',{Attribute:"VLan"})} disabled={props.loading || props.olt_profiles.vlans.loading} className="btn btn-xs btn-block btn-outline-primary text-xs">
+                                                <FontAwesomeIcon icon={faRefresh} spin={props.olt_profiles.vlans.loading} size="xs"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+export const FormConfigureTablePonManagement = (props) => {
+    return (
+        <div className="card card-outline card-primary">
+            <div className="card-header">
+                <strong className="card-title text-sm">PON Management</strong>
+                <div className="card-tools">
+                    {props.form.virtual_lanes.filter((f)=> f.port.length > 0 && f.user !== null).length > 0 &&
+                        props.form.gem_ports.filter((f)=> f.id.length > 0 && f.downstream !== null).length > 0 &&
+                            <button onClick={props.onAdd} type="button" disabled={props.loading} className="btn btn-outline-primary btn-sm text-xs">
+                                <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
+                                <small className="text-xs">{Lang.get('labels.add.label',{Attribute:"PON Management"})}</small>
+                            </button>
+                    }
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <table className="table table-sm table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th className="align-middle text-center pl-2" width={30}><FontAwesomeIcon icon={faTrashAlt} size="xs"/></th>
+                        <th className="align-middle text-xs" width={150}>Name</th>
+                        <th className="align-middle text-xs">GemPort</th>
+                        <th className="align-middle text-xs pr-2">VLan</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {props.form.pon_managements.length === 0 ?
+                        <DataNotFound colSpan={4} message={Lang.get('labels.not_found',{Attribute:"PON Management"})}/>
+                        :
+                        props.form.pon_managements.map((item,index)=>
+                            <tr key={`tpm_${index}`}>
+                                <td className="align-middle text-center pl-2">
+                                    <button type="button" data-index={index} className="btn btn-sm btn-outline-warning btn-block text-xs" disabled={props.loading} onClick={props.onDelete}>
+                                        <FontAwesomeIcon icon={faTrashAlt} size="xs"/>
+                                    </button>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <input className="form-control form-control-sm text-xs" value={item.name} disabled={props.loading} onChange={props.onChangeName} data-index={index} placeholder="Name"/>
+                                </td>
+                                <td className="align-middle text-xs">
+                                    <Select options={props.form.gem_ports.filter((f)=> f.id.length > 0 && f.downstream !== null).map((gemport)=> { return { value : gemport.id, label : gemport.downstream.value} })}
+                                            value={item.gemport} isDisabled={props.loading}
+                                            onChange={(e)=>props.onSelectGemPort(e,index)}
+                                            styles={FormControlSMReactSelect} menuPlacement="top"
+                                            placeholder={Lang.get('labels.select.option',{Attribute:"Gem Port"})}/>
+                                </td>
+                                <td className="align-middle text-xs pr-2">
+                                    <Select options={props.form.virtual_lanes.filter((f)=> f.user !== null).map((vlan)=> { return { value : vlan.user.value, label : vlan.user.label} })}
+                                            value={item.vlan} isDisabled={props.loading}
+                                            onChange={(e)=>props.onSelectVLan(e,index)}
+                                            styles={FormControlSMReactSelect} menuPlacement="top"
+                                            placeholder={Lang.get('labels.select.option',{Attribute:"VLan"})}/>
+                                </td>
+                            </tr>
+                        )
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    )
+}
+export const FormConfigureCommandPreview = (props) => {
+    return (
+        <div className="card card-outline card-info">
+            <div className="card-header">
+                <h3 className="card-title">{Lang.get('olt.labels.preview')}</h3>
+                <div className="card-tools">
+                    <button type="button" className="btn btn-tool" data-card-widget="collapse">
+                        <i className="fas fa-minus"/>
+                    </button>
+                </div>
+            </div>
+            <div className="card-body p-0">
+                <div className="p-3" style={{background:'black'}}>
+                    <code className="text-white">
+                        config <span className="text-primary">terminal</span><br/>
+                        {props.form.port.olt !== null &&
+                            <><span className="ml-3">interface</span> <span className="text-danger">gpon-olt_{props.form.port.olt.value}</span><br/></>
+                        }
+                        {props.form.port.onu_index !== null && props.form.sn !== null && props.form.onu_type !== null &&
+                            <>
+                                <span className="ml-3">onu</span> <span className="text-danger">{props.form.port.onu_index.value}</span> <span className="text-primary">type</span> <span className="text-danger">{props.form.onu_type.value}</span> <span className="text-primary">sn</span> <span className="text-danger">{props.form.sn}</span><br/>
+                                exit<br/>
+                                config <span className="text-primary">terminal</span><br/>
+                            </>
+                        }
+                        {props.form.port.olt !== null && props.form.port.onu_index !== null &&
+                            <>
+                                <span className="ml-3">interface</span> <span className="text-danger">gpon-onu_{props.form.port.olt.value}:{props.form.port.onu_index.value}</span><br/>
+                            </>
+                        }
+                        {props.form.name.length > 0 &&
+                            <><span className="ml-3">name</span> <span className="text-danger">{props.form.name}</span><br/></>
+                        }
+                        {props.form.description.length > 0 &&
+                            <><span className="ml-3">description</span> <span className="text-danger">{props.form.description}</span><br/></>
+                        }
+                        {props.form.t_controllers.map((item,index)=>
+                            item.profile !== null && item.id.length > 0 &&
+                            <React.Fragment key={`pt_${index}`}>
+                                <span className="ml-3">tcont</span> <span className="text-danger">{item.id}</span> <span className="text-primary">profile</span> <span className="text-danger">{item.profile.value}</span><br/>
+                            </React.Fragment>
+                        )}
+                        {props.form.gem_ports.map((item,index)=>
+                            item.id.length > 0 && item.downstream !== null && item.upstream !== null && item.tcont !== null &&
+                                <React.Fragment key={`pg_${index}`}>
+                                    <span className="ml-3">gemport</span> <span className="text-danger">{item.id}</span> <span className="text-primary">tcont</span> <span className="text-danger">{item.tcont.value}</span><br/>
+                                    <span className="ml-3">gemport</span> <span className="text-danger">{item.id}</span> <span className="text-primary">traffic-limit upstream</span> <span className="text-danger">{item.upstream.value}</span> <span className="text-primary">downstream</span> <span className="text-danger">{item.downstream.value}</span><br/>
+                                </React.Fragment>
+                        )}
+                        {props.form.virtual_lanes.map((item,index)=>
+                            item.port.length > 0 && item.vport.length > 0 && item.user !== null && item.service !== null &&
+                            <React.Fragment key={`pvl_${index}`}>
+                                <span className="ml-3">service-port</span> <span className="text-danger">{item.port}</span> <span className="text-primary">vport</span> <span className="text-danger">{item.vport}</span> <span className="text-primary">user-vlan</span> <span className="text-danger">{item.user.value}</span> <span className="text-primary">vlan</span> <span className="text-danger">{item.service.value}</span><br/>
+                            </React.Fragment>
+                        )}
+                        exit<br/>
+                        config <span className="text-primary">terminal</span><br/>
+                        {props.form.port.olt !== null && props.form.port.onu_index !== null &&
+                            <>
+                                <span className="ml-3">pon-onu-mng</span> <span className="text-danger">gpon-onu_{props.form.port.olt.value}:{props.form.port.onu_index.value}</span><br/>
+                            </>
+                        }
+                        {props.form.pon_managements.map((item,index)=>
+                            item.name.length > 0 && item.gemport !== null && item.vlan !== null &&
+                                <React.Fragment key={`pp_${index}`}>
+                                    <span className="ml-3">service</span> <span className="text-danger">{item.name}</span> <span className="text-primary">gemport</span> <span className="text-danger">{item.gemport.value}</span> <span className="text-primary">vlan</span> <span className="text-danger">{item.vlan.value}</span><br/>
+                                </React.Fragment>
+                        )}
+                        <PonManagementScripts form={props.form}/>
+                        exit<br/>
+                        write<br/>
+                    </code>
+                </div>
+            </div>
+        </div>
+    )
+}
+const PonManagementScripts = (props) => {
+    let response = null;
+    if (props.form.modem_brand !== null) {
+        switch (props.form.modem_brand.value){
+            case 'huawei':
+                break;
+            case 'zte':
+                response = <ZTEPonManagementScript form={props.form}/>;
+                break;
+            case 'fiberhome':
+                response = <FiberHomeManagementScript form={props.form}/>;
+                break;
+        }
+    }
+    return response;
+}
+const ZTEPonManagementScript = (props) => {
+    if (props.form.customer !== null) {
+        if (props.form.pon_management_vlan !== null) {
+            return (
+                <React.Fragment>
+                    <span className="ml-3">wan-ip</span> <span className="text-danger">1</span> <span className="text-primary">mode</span> <span className="text-danger">pppoe</span> <span className="text-primary">username</span> <span className="text-danger">{props.form.customer.meta.auth.user}</span> <span className="text-primary">password</span> <span className="text-danger">{props.form.customer.meta.auth.pass}</span> <span className="text-primary">vlan-profile</span> <span className="text-danger">{props.form.pon_management_vlan.value}</span> <span className="text-primary">host</span> <span className="text-danger">1</span><br/>
+                    <span className="ml-3">wan-ip</span> <span className="text-danger">1</span> <span className="text-primary">ping-response</span> <span className="text-danger">enable</span> <span className="text-primary">traceroute-response</span> <span className="text-danger">enable</span><br/>
+                    <span className="ml-3">security-mgmt</span> <span className="text-danger">500</span> <span className="text-primary">state</span> <span className="text-danger">enable</span> <span className="text-primary">mode</span> <span className="text-danger">forward</span> <span className="text-primary">protocol</span> <span className="text-danger">web</span><br/>
+                </React.Fragment>
+            )
+        }
+    }
+}
+const FiberHomeManagementScript = (props) => {
+    return (
+        <React.Fragment>
+            <span className="ml-3">vlan</span> <span className="text-primary">port</span> <span className="text-danger">veip_1</span> <span className="text-primary">mode</span> <span className="text-danger">hybrid</span><br/>
+            <ZTEPonManagementScript form={props.form}/>
+        </React.Fragment>
+    )
+}
+export const ModemONTLists = [
+    { value : 'zte', label : 'ZTE' },
+    { value : 'huawei', label : 'Huawei' },
+    { value : 'fiberhome', label : 'Fiberhome' },
+    { value : 'other', label : 'Other' },
+];

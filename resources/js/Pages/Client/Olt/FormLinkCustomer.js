@@ -2,7 +2,7 @@ import React from "react";
 import {ModalFooter, ModalHeader} from "../../../Components/ModalComponent";
 import {Dialog, DialogContent} from "@mui/material";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faLink, faPencilAlt, faPlus} from "@fortawesome/free-solid-svg-icons";
+import {faLink, faPencilAlt, faPlus, faRefresh} from "@fortawesome/free-solid-svg-icons";
 import FormNas from "../Nas/Tools/FormNas";
 import Select from "react-select";
 import {FormControlSMReactSelect, responseMessage, ucWord} from "../../../Components/mixedConsts";
@@ -10,7 +10,7 @@ import FormCustomer from "../Customer/Tools/FormCustomer";
 import {crudOltCustomer} from "../../../Services/OltService";
 import {showError, showSuccess} from "../../../Components/Toaster";
 
-// noinspection CommaExpressionJS
+// noinspection CommaExpressionJS,DuplicatedCode
 class FormLinkCustomer extends React.Component {
     constructor(props) {
         super(props);
@@ -125,69 +125,104 @@ class FormLinkCustomer extends React.Component {
             <React.StrictMode>
                 <FormCustomer privilege={this.props.privilege} loadings={this.props.loadings} type="pppoe" nas={this.props.nas} companies={this.props.companies} open={this.state.modals.customer.open} data={this.state.modals.customer.data} user={JSON.parse(localStorage.getItem('user'))} handleClose={this.toggleCustomer} handleUpdate={this.props.onCustomer} profiles={this.props.profiles} onUpdateProfiles={this.props.onProfile} bandwidths={this.props.bandwidths} onUpdateBandwidth={this.props.onBandwidth} pools={this.props.pools} onUpdatePool={this.props.onPool} taxes={this.props.taxes} onUpdateTaxes={this.props.onTax} discounts={this.props.discounts} onUpdateDiscounts={this.props.onDiscount}/>
 
-                <Dialog fullWidth maxWidth="md" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
+                <Dialog fullWidth maxWidth="lg" scroll="body" open={this.props.open} onClose={()=>this.state.loading ? null : this.props.handleClose()}>
                     <form onSubmit={this.handleSave}>
                         <ModalHeader handleClose={()=>this.props.handleClose()} form={this.state.form} loading={this.state.loading} langs={{create:Lang.get('labels.create.form',{Attribute:Lang.get('olt.labels.customers.link')}),update:Lang.get('labels.update.form',{Attribute:Lang.get('olt.labels.customers.link')})}}/>
                         <DialogContent dividers>
-                            <div className="form-group row">
-                                <label className="col-md-3 col-form-label text-xs">{Lang.get('customers.labels.name')}</label>
+                            <div className="row">
                                 <div className="col-md-5">
-                                    <Select value={this.state.form.customer}
-                                            isClearable={this.state.form.id !== null}
-                                            options={
-                                                this.props.data === null ?
-                                                    this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null)
-                                                    :
-                                                    this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null || f.meta.olt.onu === this.props.data.onu)
-                                            }
-                                            onChange={(e)=>this.handleSelect(e,'customer')}
-                                            styles={FormControlSMReactSelect}
-                                            placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('customers.labels.menu')})}
-                                            isDisabled={this.state.loading} isLoading={this.props.loadings.customers}/>
+                                    {this.props.data !== null &&
+                                        <div className="card card-outline card-info">
+                                            <div className="card-body">
+                                                <div className="form-group row">
+                                                    <label className="col-md-4 col-form-label text-xs">{Lang.get('olt.labels.onu.index')}</label>
+                                                    <div className="col-md-8">
+                                                        <div className="form-control form-control-sm text-xs">{this.props.data.onu}</div>
+                                                    </div>
+                                                </div>
+                                                {this.props.data.details !== null &&
+                                                    <React.Fragment>
+                                                        <div className="form-group row">
+                                                            <label className="col-md-4 col-form-label text-xs">{Lang.get('olt.labels.onu.name')}</label>
+                                                            <div className="col-md-8">
+                                                                <div className="form-control form-control-sm text-xs">{this.props.data.details.name}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="form-group row">
+                                                            <label className="col-md-4 col-form-label text-xs">{Lang.get('olt.labels.onu.description')}</label>
+                                                            <div className="col-md-8">
+                                                                <div className="form-control form-control-sm text-xs">{this.props.data.details.description}</div>
+                                                            </div>
+                                                        </div>
+                                                    </React.Fragment>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
-                                <div className="col-md-1">
-                                    {this.props.privilege !== null &&
-                                        typeof this.props.privilege.customers !== 'undefined' &&
-                                            this.props.privilege.customers.create &&
+                                <div className="col-md-7">
+                                    <div className="form-group row">
+                                        <label className="col-md-3 col-form-label text-xs">{Lang.get('customers.labels.name')}</label>
+                                        <div className="col-md-5">
+                                            <Select value={this.state.form.customer}
+                                                    isClearable={this.state.form.id !== null}
+                                                    options={
+                                                        this.props.data === null ?
+                                                            this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null)
+                                                            :
+                                                            this.props.customers.filter((f)=> f.meta.auth.type === 'pppoe' && f.meta.olt.onu === null || f.meta.olt.onu === this.props.data.onu)
+                                                    }
+                                                    onChange={(e)=>this.handleSelect(e,'customer')}
+                                                    styles={FormControlSMReactSelect}
+                                                    placeholder={Lang.get('labels.select.option',{Attribute:Lang.get('customers.labels.menu')})}
+                                                    isDisabled={this.state.loading} isLoading={this.props.loadings.customers}/>
+                                        </div>
+                                        <div className="col-md-4">
+                                            <button className="btn btn-outline-primary btn-sm mr-1" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.props.onReloadCustomer()}><FontAwesomeIcon icon={faRefresh} size="xs"/></button>
+                                            {this.props.privilege !== null &&
+                                                typeof this.props.privilege.customers !== 'undefined' &&
+                                                this.props.privilege.customers.create &&
                                                 this.state.form.customer === null &&
-                                                    <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading} onClick={()=>this.toggleCustomer()}><FontAwesomeIcon icon={faPlus} size="xs"/></button>
-                                    }
-                                    {this.props.privilege !== null &&
-                                        typeof this.props.privilege.customers !== 'undefined' &&
-                                            this.props.privilege.customers.update &&
+                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.toggleCustomer()}><FontAwesomeIcon icon={faPlus} size="xs"/></button>
+                                            }
+                                            {this.props.privilege !== null &&
+                                                typeof this.props.privilege.customers !== 'undefined' &&
+                                                this.props.privilege.customers.update &&
                                                 this.state.form.customer !== null &&
-                                                    <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading} onClick={()=>this.toggleCustomer(this.state.form.customer)}><FontAwesomeIcon icon={faPencilAlt} size="xs"/></button>
-                                    }
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label className="col-md-3 col-form-label text-xs">{Lang.get('customers.labels.address.street')}</label>
-                                <div className="col-md-9">
-                                    <div className="form-control form-control-sm text-xs" style={{height:70}}>
-                                        &nbsp;
-                                        {this.state.form.customer === null ? null : this.state.form.customer.meta.address.street}
-                                        {this.state.form.customer === null ? null : this.state.form.customer.meta.address.village === null ? null : `, ${ucWord(this.state.form.customer.meta.address.village.name)}` }
-                                        {this.state.form.customer === null ? null : this.state.form.customer.meta.address.district === null ? null : `, ${ucWord(this.state.form.customer.meta.address.district.name)}` }
-                                        {this.state.form.customer === null ? null : this.state.form.customer.meta.address.city === null ? null : `, ${ucWord(this.state.form.customer.meta.address.city.name)}` }
-                                        {this.state.form.customer === null ? null : this.state.form.customer.meta.address.province === null ? null : `, ${ucWord(this.state.form.customer.meta.address.province.name)}` }
+                                                <button className="btn btn-outline-primary btn-sm" type="button" disabled={this.state.loading || this.props.loadings.customers} onClick={()=>this.toggleCustomer(this.state.form.customer)}><FontAwesomeIcon icon={faPencilAlt} size="xs"/></button>
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label className="col-form-label col-md-3 text-xs">{Lang.get('nas.labels.name')}</label>
-                                <div className="col-md-5">
-                                    <div className="form-control-sm form-control text-xs">
-                                        &nbsp;
-                                        {this.state.form.customer !== null && this.state.form.customer.meta.nas.shortname}
+                                    <div className="form-group row">
+                                        <label className="col-md-3 col-form-label text-xs">{Lang.get('customers.labels.address.street')}</label>
+                                        <div className="col-md-9">
+                                            <div className="form-control form-control-sm text-xs" style={{height:70}}>
+                                                &nbsp;
+                                                {this.state.form.customer === null ? null : this.state.form.customer.meta.address.street}
+                                                {this.state.form.customer === null ? null : this.state.form.customer.meta.address.village === null ? null : `, ${ucWord(this.state.form.customer.meta.address.village.name)}` }
+                                                {this.state.form.customer === null ? null : this.state.form.customer.meta.address.district === null ? null : `, ${ucWord(this.state.form.customer.meta.address.district.name)}` }
+                                                {this.state.form.customer === null ? null : this.state.form.customer.meta.address.city === null ? null : `, ${ucWord(this.state.form.customer.meta.address.city.name)}` }
+                                                {this.state.form.customer === null ? null : this.state.form.customer.meta.address.province === null ? null : `, ${ucWord(this.state.form.customer.meta.address.province.name)}` }
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="form-group row">
-                                <label className="col-form-label col-md-3 text-xs">{Lang.get('profiles.labels.name')}</label>
-                                <div className="col-md-5">
-                                    <div className="form-control-sm form-control text-xs">
-                                        &nbsp;
-                                        {this.state.form.customer !== null && this.state.form.customer.meta.profile.name}
+                                    <div className="form-group row">
+                                        <label className="col-form-label col-md-3 text-xs">{Lang.get('nas.labels.name')}</label>
+                                        <div className="col-md-5">
+                                            <div className="form-control-sm form-control text-xs">
+                                                &nbsp;
+                                                {this.state.form.customer !== null && this.state.form.customer.meta.nas.shortname}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="form-group row">
+                                        <label className="col-form-label col-md-3 text-xs">{Lang.get('profiles.labels.name')}</label>
+                                        <div className="col-md-5">
+                                            <div className="form-control-sm form-control text-xs">
+                                                &nbsp;
+                                                {this.state.form.customer !== null && this.state.form.customer.meta.profile.name}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

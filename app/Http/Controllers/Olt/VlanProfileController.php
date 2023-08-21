@@ -23,6 +23,18 @@ class VlanProfileController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+    public function crudManagement(Request $request): JsonResponse
+    {
+        try {
+            return formatResponse(200,'OK', $this->repository->crudManagement($this->validation->table($request)));
+        } catch (Exception $exception) {
+            return formatResponse($exception->getCode(), $exception->getMessage());
+        }
+    }
+    /* @
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function crud(Request $request): JsonResponse
     {
         try {

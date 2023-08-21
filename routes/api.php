@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Accounting\CashFlowController;
+use App\Http\Controllers\Accounting\PettyCashController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\Client\CompanyConfigController;
@@ -27,7 +29,6 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\User\PrivilegeController;
 use App\Http\Controllers\User\UserController;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -153,15 +154,30 @@ Route::group(['prefix' => 'clients', 'middleware' => ['auth:api', 'logs']], func
         Route::group(['prefix' => 'gpon'], function () {
             Route::any('/state', [OltController::class, 'gponStates']);
             Route::group(['prefix' => 'customers'],function () {
-                Route::any('/', [OltController::class, 'gponCustomer']);
+                Route::any('/', [OltController::class, 'gponCustomer'])->name('clients.olt.customers.connect');
                 Route::post('/loss', [OltController::class, 'lossCustomer']);
             });
-            Route::any('/unconfigure', [OltController::class, 'unConfigure']);
+            Route::any('/unconfigure', [OltController::class, 'unConfigure'])->name('clients.olt.gpon.un_configure');
             Route::group(['prefix' => 'profiles'],function () {
                 Route::any('/traffics', [TrafficProfileController::class, 'crud']);
                 Route::any('/tconts', [TrafficProfileController::class, 'tconts']);
-                Route::any('/vlans', [VlanProfileController::class, 'crud']);
+                Route::any('/onu-type', [TrafficProfileController::class, 'onuType']);
+                Route::group(['prefix' => 'vlans'], function () {
+                    Route::any('/', [VlanProfileController::class, 'crud']);
+                    Route::any('/managements', [VlanProfileController::class, 'crudManagement']);
+                });
             });
+        });
+    });
+    Route::group(['prefix' => 'accounting'], function () {
+        Route::group(['prefix' => 'petty-cash'], function () {
+            Route::any('/', [PettyCashController::class, 'crud']);
+            Route::patch('/approve', [PettyCashController::class, 'approve'])->name('clients.accounting.petty-cash.approve');
+        });
+        Route::group(['prefix' => 'cash-flows'], function () {
+            Route::any('/', [CashFlowController::class, 'crud']);
+            Route::any('/accounts', [CashFlowController::class, 'crudAccount']);
+            Route::any('/categories', [CashFlowController::class, 'crudCategory']);
         });
     });
 });

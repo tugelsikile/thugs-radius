@@ -21,7 +21,7 @@ export const PageCardTitle = (props) => {
                         props.filter !== null &&
                             props.filter
                     }
-                    {props.privilege.create &&
+                    {props.privilege.create && props.langs !== null &&
                         <button type="button" onClick={()=>props.handleModal()} disabled={props.loading} className="mr-1 btn btn-outline-primary btn-sm text-xs">
                             <FontAwesomeIcon icon={faPlus} size="xs" className="mr-1"/>
                             <span className="text-xs">{props.langs.create}</span>
@@ -42,7 +42,7 @@ export const PageCardTitle = (props) => {
                                 )
                     }
                     {props.privilege.delete &&
-                        props.selected.length > 0 &&
+                        props.selected.length > 0 && props.langs !== null &&
                         <button type="button" onClick={()=>props.confirmDelete()} disabled={props.loading} className="btn btn-outline-danger btn-sm">
                             <FontAwesomeIcon size="xs" icon={faTrashAlt} className="mr-1"/>
                             <span className="text-xs">{props.langs.delete}</span>

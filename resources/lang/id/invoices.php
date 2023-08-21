@@ -149,6 +149,7 @@ return [
         'success' => 'Tagihan berhasil dihapus',
     ],
     'payments' => [
+        'online' => 'Pembayaran tagihan online :Customer',
         'success' => 'Pembayaran tagihan berhasil disimpan',
         'button' => 'Bayar Tagihan Manual',
         'add' => 'Tambah Pembayaran',

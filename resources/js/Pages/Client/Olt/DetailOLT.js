@@ -4,17 +4,18 @@ import {faSearch, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {CardPreloader, FormControlSMReactSelect, responseMessage} from "../../../Components/mixedConsts";
 import {
     cancelOltService,
-    crudGponStates, crudOltProfileTcont,
+    crudGponStates, crudOltOnuType, crudOltProfileMngVLan, crudOltProfileTcont,
     crudOltProfileTraffic,
     crudOltProfileVlan,
     getGponCustomer
 } from "../../../Services/OltService";
 import {confirmDialog, showError} from "../../../Components/Toaster";
 import {
+    CardDetailOlt,
     CustomerTableHeader,
     DetailOnuPopover,
     LeftSideBar,
-    PhaseStatePopover,
+    PhaseStatePopover, PopoverAvailablePort,
     TableContentGponState,
     TablePaging, TcontProfileTable, TrafficProfileTable, VlanProfileTable
 } from "./Mixed";
@@ -22,8 +23,8 @@ import {DataNotFound} from "../../../Components/TableComponent";
 import Select from "react-select";
 import FormLinkCustomer from "./FormLinkCustomer";
 import {getRootUrl} from "../../../Components/Authentication";
-import {DetailBandwidth, DetailNas, DetailPool} from "../Nas/Profile/Tools/DetailCard";
 import {Popover} from "@mui/material";
+import FormConfigure from "./FormConfigure";
 
 // noinspection CommaExpressionJS
 class DetailOLT extends React.Component {
@@ -37,15 +38,21 @@ class DetailOLT extends React.Component {
                 sort : { by : 'name', dir : 'asc' },
                 page : { value : 1, label : 1},
                 data_length : 20, paging : [],
+                port : null,
+            },
+            port_lists : {
+                used : [], available : [],
             },
             modals : {
-                customer : { open : false, data : null }
+                customer : { open : false, data : null },
+                configure : { open : false, data : null },
             },
             popover : { open : false, anchorEl : null, data : null },
             profiles : {
-                traffics : { loading : false, lists : [] },
                 vlans : { loading : false, lists : [] },
                 tconts : { loading : false, lists : [] },
+                mng_vlan : { loading : false, lists : [] },
+                onu_type : { loading : false, lists : [] },
             }
         };
         this.loadGponState = this.loadGponState.bind(this);
@@ -63,17 +70,23 @@ class DetailOLT extends React.Component {
         this.confirmUnconfigure = this.confirmUnconfigure.bind(this);
         this.handleReloadCustomer = this.handleReloadCustomer.bind(this);
         this.handlePopOver = this.handlePopOver.bind(this);
-        this.loadTrafficProfile = this.loadTrafficProfile.bind(this);
         this.loadProfileVlan = this.loadProfileVlan.bind(this);
         this.loadTcontProfile = this.loadTcontProfile.bind(this);
+        this.loadOnuType = this.loadOnuType.bind(this);
+        this.loadProfileMngVlan = this.loadProfileMngVlan.bind(this);
+        this.handleClosePopover = this.handleClosePopover.bind(this);
+        this.handleSelectPort = this.handleSelectPort.bind(this);
+        this.toggleConfigure = this.toggleConfigure.bind(this);
+        this.handleUnregister = this.handleUnregister.bind(this);
     }
     componentDidMount() {
         this.handleUrlSearch();
         if (this.props.olt !== null) {
             this.setState({olt:this.props.olt},()=>{
                 this.loadGponState()
-                    .then(()=>this.loadTrafficProfile())
                     .then(()=>this.loadTcontProfile())
+                    .then(()=>this.loadOnuType())
+                    .then(()=>this.loadProfileMngVlan())
                     .then(()=>this.loadProfileVlan());
             });
         }
@@ -81,36 +94,76 @@ class DetailOLT extends React.Component {
     componentWillReceiveProps(nextProps, nextContext) {
         this.handleUrlSearch();
         if (nextProps.olt !== null) {
+            let reload = true;
             if (this.state.olt !== null) {
                 if (this.state.olt.value !== nextProps.olt.value) {
                     let profiles = this.state.profiles;
                     profiles.traffics.lists = [], profiles.vlans.lists = [], profiles.tconts.lists = [];
                     this.setState({profiles});
+                } else {
+                    reload = false;
                 }
             }
             this.setState({olt:nextProps.olt},()=>{
-                this.loadGponState()
-                    .then(()=>this.loadTrafficProfile())
-                    .then(()=>this.loadTcontProfile())
-                    .then(()=>this.loadProfileVlan());
+                if (! this.state.gpon_states.loading) {
+                    if (reload) {
+                        this.loadGponState()
+                            .then(()=>this.loadTcontProfile())
+                            .then(()=>this.loadOnuType())
+                            .then(()=>this.loadProfileMngVlan())
+                            .then(()=>this.loadProfileVlan());
+                    }
+                }
             });
         }
     }
+    toggleConfigure(event = null) {
+        let modals = this.state.modals;
+        modals.configure.open = ! this.state.modals.configure.open;
+        if (event !== null) {
+            event.preventDefault();
+            let dataValue = event.currentTarget.getAttribute('data-onu');
+            if (dataValue !== null) {
+                let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === dataValue);
+                if (index >= 0) {
+                    modals.configure.data = this.state.gpon_states.unfiltered[index];
+                }
+            }
+        }
+        this.setState({modals});
+    }
+    handleSelectPort(value) {
+        let gpon_states = this.state.gpon_states;
+        gpon_states.port = value;
+        this.setState({gpon_states},()=>this.handleFilter());
+    }
+    handleClosePopover() {
+        let popover = this.state.popover;
+        popover.open = false;
+        this.setState({popover});
+    }
     handlePopOver(event) {
         let popover = this.state.popover;
+        let index;
         popover.open = ! this.state.popover.open;
         popover.anchorEl = event.currentTarget;
         popover.data = null;
-        let index = this.state.gpon_states.unfiltered.findIndex((f) => f.onu === event.currentTarget.getAttribute('data-onu'));
-        if (index >= 0) {
-            switch (event.currentTarget.getAttribute('data-label')) {
-                case 'phase_state':
-                    popover.data = <PhaseStatePopover data={this.state.gpon_states.unfiltered[index]}/>;
-                    break;
-                case 'detail':
+        switch (event.currentTarget.getAttribute('data-label')) {
+            case 'phase_state':
+                index = this.state.gpon_states.unfiltered.findIndex((f) => f.onu === event.currentTarget.getAttribute('data-onu'));
+                if (index >= 0) {
+                    popover.data = <PhaseStatePopover data={this.state.gpon_states.unfiltered[index]} onPopover={this.handleClosePopover}/>;
+                }
+                break;
+            case 'detail':
+                index = this.state.gpon_states.unfiltered.findIndex((f) => f.onu === event.currentTarget.getAttribute('data-onu'));
+                if (index >= 0) {
                     popover.data = <DetailOnuPopover data={this.state.gpon_states.unfiltered[index]}/>;
-                    break;
-            }
+                }
+                break;
+            case 'available-port':
+                popover.data = <PopoverAvailablePort ports={this.state.port_lists.available}/>;
+                break;
         }
         this.setState({popover});
     }
@@ -121,7 +174,27 @@ class DetailOLT extends React.Component {
             if (onu.length > 0) {
                 let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
                 if (index >= 0) {
-                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'),{fieldName : Lang.get('olt.form_input.id'), fieldValue : this.state.olt.value});
+                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/unconfigure`,Lang.get('olt.un_configure.confirm.title'),Lang.get('olt.un_configure.confirm.message'),'app.handleUnregister(response.data.params)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('olt.un_configure.confirm.yes'),Lang.get('olt.un_configure.confirm.cancel'),{fieldName : Lang.get('olt.form_input.id'), fieldValue : this.state.olt.value});
+                }
+            }
+        }
+    }
+    handleUnregister(data = null) {
+        if (data !== null) {
+            if (typeof data === "object") {
+                if (typeof data.onu !== "undefined") {
+                    let gpon_states = this.state.gpon_states;
+                    let indexUnfiltered = gpon_states.unfiltered.findIndex((f)=> f.onu === data.onu);
+                    let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === data.onu);
+                    if (indexFiltered >0 ) {
+                        gpon_states.filtered[indexFiltered].phase_state = "unconfig";
+                        gpon_states.filtered[indexFiltered].details = null;
+                    }
+                    if (indexUnfiltered >= 0) {
+                        gpon_states.unfiltered[indexUnfiltered].phase_state = "unconfig";
+                        gpon_states.unfiltered[indexUnfiltered].details = null;
+                    }
+                    this.setState({gpon_states},()=>this.handleFilter());
                 }
             }
         }
@@ -133,7 +206,7 @@ class DetailOLT extends React.Component {
             if (onu.length > 0) {
                 let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
                 if (index >= 0) {
-                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/customers`,Lang.get('labels.unlink.title'),Lang.get('labels.unlink.message',{Attribute:Lang.get('customers.labels.menu')}),'app.handleUpdateCustomer(response.data.params,ids)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('labels.unlink.yes'),Lang.get('labels.unlink.cancel'));
+                    confirmDialog(this, onu,'delete',`${window.origin}/api/clients/olt/gpon/customers`,Lang.get('labels.unlink.title'),Lang.get('labels.unlink.message',{Attribute:Lang.get('customers.labels.menu')}),'app.handleUpdateCustomer(response.data.params,ids,true)','error',Lang.get('olt.form_input.onu'),onu,Lang.get('labels.unlink.yes'),Lang.get('labels.unlink.cancel'));
                 }
             }
         }
@@ -218,6 +291,7 @@ class DetailOLT extends React.Component {
         this.setState({gpon_states},()=>this.handleFilter());
     }
     handleFilter() {
+        this.filterPorts();
         let gpon_states = this.state.gpon_states;
         gpon_states.filtered = gpon_states.unfiltered;
         if (gpon_states.keywords.length > 0) {
@@ -262,6 +336,10 @@ class DetailOLT extends React.Component {
         if (gpon_states.status !== null) {
             gpon_states.filtered = gpon_states.filtered.filter((f)=> f.phase_state === gpon_states.status);
         }
+        if (gpon_states.port !== null) {
+            gpon_states.filtered = gpon_states.filtered.filter((f)=> f.onu.indexOf(gpon_states.port.value) !== -1);
+        }
+
         gpon_states.paging = [];
         for (let page = 1; page <= Math.ceil(gpon_states.filtered.length / gpon_states.data_length); page++) {
             gpon_states.paging.push(page);
@@ -270,6 +348,48 @@ class DetailOLT extends React.Component {
         let indexLast = gpon_states.page.value * gpon_states.data_length;
         gpon_states.filtered = gpon_states.filtered.slice(indexFirst, indexLast);
         this.setState({gpon_states},()=>this.handleGponCustomer());
+    }
+    filterAvailablePorts() {
+        if (this.state.gpon_states.unfiltered.length > 0) {
+            if (this.state.port_lists.used.length > 0) {
+                let port_lists = this.state.port_lists;
+                this.state.port_lists.used.map((port,indexPort)=>{
+                    for (let portNumber = 1; portNumber < 128; portNumber++) {
+                        const portName = `${port.value}:${portNumber}`;
+                        let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === portName && f.phase_state !== 'unconfig');
+                        if (index < 0) {
+                            if (typeof port_lists.used[indexPort] !== 'undefined') {
+                                port_lists.used[indexPort].available.push({value : portNumber, label : portNumber});
+                            }
+                        }
+                    }
+                });
+                this.setState({port_lists});
+            }
+        }
+    }
+    filterPorts() {
+        if (this.state.gpon_states.unfiltered.length > 0) {
+            if (this.state.port_lists.used.length === 0) {
+                let port_lists = this.state.port_lists;
+                port_lists.used = [];
+                this.state.gpon_states.unfiltered.map((item)=>{
+                    if (item.onu !== null) {
+                        if (item.onu.length > 0) {
+                            let port = item.onu.split(":");
+                            if (port.length === 2) {
+                                let currentPort = port[0];
+                                let index = port_lists.used.findIndex((f)=> f.value === currentPort);
+                                if (index < 0) {
+                                    port_lists.used.push({value: currentPort, label : currentPort, available : []});
+                                }
+                            }
+                        }
+                    }
+                });
+                this.setState({port_lists},()=>this.filterAvailablePorts());
+            }
+        }
     }
     handleGponCustomer() {
         cancelOltService();
@@ -287,15 +407,17 @@ class DetailOLT extends React.Component {
                                         if (typeof this.state.gpon_states.unfiltered[indexUnfiltered] !== 'undefined') {
                                             if (typeof this.state.gpon_states.unfiltered[indexUnfiltered].details !== 'undefined') {
                                                 gpon_states.unfiltered[indexUnfiltered].loading = false;
-                                                gpon_states.unfiltered[indexUnfiltered].details = response;
-                                                /*if (gpon_states.unfiltered[indexUnfiltered].details !== null) {
-                                                    if (typeof response.new_phase_state !== 'undefined') {
-                                                        gpon_states.unfiltered[indexUnfiltered].phase_state = response.new_phase_state;
+                                                if (response !== null) {
+                                                    gpon_states.unfiltered[indexUnfiltered].details = response;
+                                                    if (typeof response.phase_state !== 'undefined') {
+                                                        if (response.phase_state !== null) {
+                                                            gpon_states.unfiltered[indexUnfiltered].phase_state = response.phase_state;
+                                                        }
                                                     }
-                                                }*/
-                                                let indexFiltered = this.state.gpon_states.filtered.findIndex((f)=> f.onu === this.state.gpon_states.unfiltered[indexUnfiltered].onu);
-                                                if (indexFiltered >= 0) {
-                                                    gpon_states.filtered[indexFiltered] = this.state.gpon_states.unfiltered[indexUnfiltered];
+                                                    let indexFiltered = this.state.gpon_states.filtered.findIndex((f)=> f.onu === this.state.gpon_states.unfiltered[indexUnfiltered].onu);
+                                                    if (indexFiltered >= 0) {
+                                                        gpon_states.filtered[indexFiltered] = this.state.gpon_states.unfiltered[indexUnfiltered];
+                                                    }
                                                 }
                                                 this.setState({gpon_states});
                                             }
@@ -305,6 +427,60 @@ class DetailOLT extends React.Component {
                         }
                     }
                 });
+            }
+        }
+    }
+    async loadProfileMngVlan(data = null) {
+        if (this.state.olt !== null) {
+            if (! this.state.profiles.mng_vlan.loading) {
+                let profiles = this.state.profiles;
+                if (data === null) {
+                    profiles.mng_vlan.lists = [];
+                    profiles.mng_vlan.loading = true;
+                    this.setState({profiles});
+                    try {
+                        const formData = new FormData();
+                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+                        let response = await crudOltProfileMngVLan(formData);
+                        if (response.data.params === null) {
+                            profiles.mng_vlan.loading = false; this.setState({profiles});
+                            showError(response.data.message);
+                        } else {
+                            profiles.mng_vlan.lists = response.data.params;
+                            profiles.mng_vlan.loading = false; this.setState({profiles});
+                        }
+                    } catch (e) {
+                        profiles.mng_vlan.loading = false; this.setState({profiles});
+                        responseMessage(e);
+                    }
+                }
+            }
+        }
+    }
+    async loadOnuType(data = null) {
+        if (this.state.olt !== null) {
+            if (! this.state.profiles.onu_type.loading) {
+                let profiles = this.state.profiles;
+                if (data === null) {
+                    profiles.onu_type.lists = [];
+                    profiles.onu_type.loading = true;
+                    this.setState({profiles});
+                    try {
+                        const formData = new FormData();
+                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
+                        let response = await crudOltOnuType(formData);
+                        if (response.data.params === null) {
+                            profiles.onu_type.loading = false; this.setState({profiles});
+                            showError(response.data.message);
+                        } else {
+                            profiles.onu_type.lists = response.data.params;
+                            profiles.onu_type.loading = false; this.setState({profiles});
+                        }
+                    } catch (e) {
+                        profiles.onu_type.loading = false; this.setState({profiles});
+                        responseMessage(e);
+                    }
+                }
             }
         }
     }
@@ -368,39 +544,14 @@ class DetailOLT extends React.Component {
             }
         }
     }
-    async loadTrafficProfile(data = null) {
-        if (! this.state.profiles.traffics.loading) {
-            if (this.state.olt !== null) {
-                let profiles = this.state.profiles;
-                if (data !== null) {
-
-                } else {
-                    profiles.traffics.lists = [];
-                    profiles.traffics.loading = true;
-                    this.setState({profiles});
-                    try {
-                        const formData = new FormData();
-                        formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
-                        let response = await crudOltProfileTraffic(formData);
-                        if (response.data.params === null) {
-                            profiles.traffics.loading = false; this.setState({profiles});
-                            showError(response.data.params);
-                        } else {
-                            profiles.traffics.loading = false;
-                            profiles.traffics.lists = response.data.params;
-                            this.setState({profiles});
-                        }
-                    } catch (e) {
-                        profiles.traffics.loading = false; this.setState({profiles});
-                        responseMessage(e);
-                    }
-                }
-            }
+    async handleReloadCustomer(event = null, data = null) {
+        let onu = null;
+        if (event !== null) {
+            event.preventDefault();
+            onu = event.currentTarget.getAttribute('data-onu');
+        } else if (data !== null) {
+            onu = data.onu;
         }
-    }
-    async handleReloadCustomer(event) {
-        event.preventDefault();
-        const onu = event.currentTarget.getAttribute('data-onu');
         if (onu !== null) {
             if (onu.length > 0) {
                 let gpon_states = this.state.gpon_states;
@@ -418,10 +569,17 @@ class DetailOLT extends React.Component {
                                 if (typeof this.state.gpon_states.unfiltered[index] !== 'undefined') {
                                     if (typeof this.state.gpon_states.unfiltered[index].details !== 'undefined') {
                                         gpon_states.unfiltered[index].loading = false;
-                                        gpon_states.unfiltered[index].details = response;
-                                        let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === onu);
-                                        if (indexFiltered >= 0) {
-                                            gpon_states.filtered[indexFiltered] = gpon_states.unfiltered[index];
+                                        if (response !== null) {
+                                            gpon_states.unfiltered[index].details = response;
+                                            if (typeof response.phase_state !== 'undefined') {
+                                                if (response.phase_state !== null) {
+                                                    gpon_states.unfiltered[index].phase_state = response.phase_state;
+                                                }
+                                            }
+                                            let indexFiltered = gpon_states.filtered.findIndex((f)=> f.onu === onu);
+                                            if (indexFiltered >= 0) {
+                                                gpon_states.filtered[indexFiltered] = gpon_states.unfiltered[index];
+                                            }
                                         }
                                         this.setState({gpon_states},()=>this.handleFilter());
                                     }
@@ -432,17 +590,28 @@ class DetailOLT extends React.Component {
             }
         }
     }
-    async handleUpdateCustomer(data, onu) {
+    async handleUpdateCustomer(data, onu, remove = false) {
         if (typeof data === 'object') {
             let index = this.state.gpon_states.unfiltered.findIndex((f)=> f.onu === onu);
             if (index >= 0) {
+                let removeId = null;
                 let gpon_states = this.state.gpon_states;
+                if (remove) {
+                    if (gpon_states.unfiltered[index].details.customer != null) {
+                        removeId = gpon_states.unfiltered[index].details.customer.value;
+                    }
+                }
                 gpon_states.unfiltered[index].details = data;
                 let index2 = this.state.gpon_states.filtered.findIndex((f)=> f.onu === onu);
                 if (index2 >= 0) {
                     gpon_states.filtered[index2].details = data;
                 }
                 this.setState({gpon_states});
+                if (removeId === null) {
+                    this.props.onReloadCustomer(gpon_states.unfiltered[index]);
+                } else {
+                    this.props.onReloadCustomer(null, removeId);
+                }
             }
         }
     }
@@ -469,10 +638,12 @@ class DetailOLT extends React.Component {
             if (this.state.olt !== null) {
                 cancelOltService();
                 let gpon_states = this.state.gpon_states;
-                gpon_states.filtered = [];
-                gpon_states.unfiltered = [];
-                //gpon_states.status = null;
-                gpon_states.loading = true; this.setState({gpon_states},()=>this.handleFilter());
+                let port_lists = this.state.port_lists;
+                port_lists.available = [];
+                port_lists.used = [];
+                gpon_states.filtered = [],gpon_states.unfiltered = [],gpon_states.port = null;
+                gpon_states.loading = true;
+                this.setState({gpon_states,port_lists},()=>this.handleFilter());
                 try {
                     const formData = new FormData();
                     formData.append(Lang.get('olt.form_input.id'), this.state.olt.value);
@@ -495,14 +666,36 @@ class DetailOLT extends React.Component {
     render() {
         return (
             <React.StrictMode>
-                <Popover sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
+                <FormConfigure port_lists={this.state.port_lists}
+                               olt={this.state.olt}
+                               data={this.state.modals.configure.data}
+                               open={this.state.modals.configure.open}
+                               handleClose={this.toggleConfigure} handleUpdate={this.handleReloadCustomer}
+                               olt_profiles={this.state.profiles}
+                               onReloadTcont={this.loadTcontProfile}
+                               onReloadProfileMng={this.loadProfileMngVlan}
+                               onReloadOnuType={this.loadOnuType}
+                               onReloadVLan={this.loadProfileVlan}
 
+                               loadings={this.props.loadings}
+                               privilege={this.props.privilege}
+                               onReloadCustomer={this.props.onReloadCustomer}
+                               companies={this.props.companies}
+                               nas={this.props.nas} onNas={this.props.onNas}
+                               pools={this.props.pools} onPool={this.props.onPool}
+                               profiles={this.props.profiles} onProfile={this.props.onProfile}
+                               bandwidths={this.props.bandwidths} onBandwidth={this.props.onBandwidth}
+                               customers={this.props.customers} onCustomer={this.props.onCustomer}
+                               taxes={this.props.taxes} onTax={this.props.onTax}
+                               discounts={this.props.discounts} onDiscount={this.props.onDiscount}/>
+                <Popover sx={{ pointerEvents: 'none', }} open={this.state.popover.open} anchorEl={this.state.popover.anchorEl} anchorOrigin={{ vertical: 'bottom', horizontal: 'left', }} transformOrigin={{ vertical: 'top', horizontal: 'left', }} onClose={this.handlePopOver} disableRestoreFocus>{this.state.popover.data}</Popover>
                 <FormLinkCustomer privilege={this.props.privilege}
                                   olt={this.state.olt}
                                   open={this.state.modals.customer.open}
                                   data={this.state.modals.customer.data}
                                   handleClose={this.modalCustomer}
                                   handleUpdate={this.handleUpdateCustomer}
+                                  onReloadCustomer={this.props.onReloadCustomer}
                                   companies={this.props.companies}
                                   nas={this.props.nas} onNas={this.props.onNas}
                                   pools={this.props.pools} onPool={this.props.onPool}
@@ -513,66 +706,74 @@ class DetailOLT extends React.Component {
                                   discounts={this.props.discounts} onDiscount={this.props.onDiscount}
                                   loadings={this.props.loadings}/>
                 {this.state.olt !== null &&
-                    <div className="row">
-                        <div className="col-md-3">
-                            <LeftSideBar onClickState={this.handleClickState} handleReload={this.loadGponState} gpon_states={this.state.gpon_states}/>
-                            <TrafficProfileTable {...this.state} onReload={this.loadTrafficProfile}/>
-                            <TcontProfileTable {...this.state} onReload={this.loadTcontProfile}/>
-                            <VlanProfileTable {...this.state} onReload={this.loadProfileVlan}/>
-                        </div>
-                        <div className="col-md-9">
-                            <div className="card card-outline card-secondary">
-                                {this.state.gpon_states.loading && <CardPreloader/>}
-                                <div className="card-header pl-2">
-                                    <div className="card-title text-sm">
-                                        <button disabled={this.state.gpon_states.loading || this.props.loadings.olt || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0 } onClick={()=>this.props.onToggle()} type="button" className="btn btn-xs btn-outline-secondary mr-1 float-left">
-                                            <FontAwesomeIcon icon={faTimes}/>
-                                        </button>
-                                        <Select value={this.props.olt} options={this.props.olts.filtered} onChange={this.props.onToggle}
-                                                styles={FormControlSMReactSelect} className="float-left text-xs"
-                                                isLoading={this.props.loadings.olt}
-                                                isDisabled={this.props.loadings.olt || this.state.gpon_states.loading || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0}/>
-                                    </div>
-                                    <div className="card-tools">
-                                        <div className="input-group input-group-sm" style={{width:150}}>
-                                            <input disabled={this.state.gpon_states.loading || this.props.loadings.olt || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0} onChange={this.handleSearch} value={this.state.gpon_states.keywords} type="text" name="table_search" className="form-control text-xs float-right" placeholder="Search ..."/>
-                                            <div style={{zIndex:0}} className="input-group-append"><button type="submit" className="btn btn-default"><FontAwesomeIcon icon={faSearch}/></button></div>
+                    <React.Fragment>
+                        <CardDetailOlt onPopover={this.handlePopOver} {...this.state}/>
+                        <div className="row">
+                            <div className="col-md-3">
+                                <LeftSideBar onClickState={this.handleClickState} handleReload={this.loadGponState} gpon_states={this.state.gpon_states}/>
+                            </div>
+                            <div className="col-md-9">
+                                <div className="card card-outline card-secondary">
+                                    {this.state.gpon_states.loading && <CardPreloader/>}
+                                    <div className="card-header pl-2">
+                                        <div className="card-title text-sm">
+                                            <button disabled={this.state.gpon_states.loading || this.props.loadings.olt || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0 } onClick={()=>this.props.onToggle()} type="button" className="btn btn-xs btn-outline-secondary mr-1 float-left">
+                                                <FontAwesomeIcon icon={faTimes}/>
+                                            </button>
+                                            <Select value={this.props.olt} options={this.props.olts.filtered} onChange={this.props.onToggle}
+                                                    styles={FormControlSMReactSelect} className="float-left text-xs mr-1"
+                                                    isLoading={this.props.loadings.olt}
+                                                    isDisabled={this.props.loadings.olt || this.state.gpon_states.loading || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0}/>
+                                            <div style={{minWidth:100}} className="float-left">
+                                                <Select value={this.state.gpon_states.port} options={this.state.port_lists.used} onChange={this.handleSelectPort}
+                                                        styles={FormControlSMReactSelect} className="text-xs"
+                                                        isClearable={true}
+                                                        placeholder={Lang.get('labels.select.option',{Attribute:'Port'})}
+                                                        noOptionsMessage={()=>Lang.get('labels.select.not_found',{Attribute:'Port'})}
+                                                        isDisabled={this.props.loadings.olt || this.state.gpon_states.loading || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0}/>
+                                            </div>
+                                        </div>
+                                        <div className="card-tools">
+                                            <div className="input-group input-group-sm" style={{width:150}}>
+                                                <input disabled={this.state.gpon_states.loading || this.props.loadings.olt || this.state.gpon_states.filtered.filter((f)=> f.loading).length > 0} onChange={this.handleSearch} value={this.state.gpon_states.keywords} type="text" name="table_search" className="form-control text-xs float-right" placeholder="Search ..."/>
+                                                <div style={{zIndex:0}} className="input-group-append"><button type="submit" className="btn btn-default"><FontAwesomeIcon icon={faSearch}/></button></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="card-body p-0 table-responsive-sm table-responsive">
-                                    <table className="table table-sm table-hover table-striped">
-                                        <thead>
+                                    <div className="card-body p-0 table-responsive-sm table-responsive">
+                                        <table className="table table-sm table-hover table-striped">
+                                            <thead>
                                             <CustomerTableHeader/>
-                                        </thead>
-                                        <tbody>
-                                        {this.state.gpon_states.status === null ?
-                                            this.state.gpon_states.filtered.length === 0 ?
-                                                <DataNotFound colSpan={7} message="Not Found"/>
+                                            </thead>
+                                            <tbody>
+                                            {this.state.gpon_states.status === null ?
+                                                this.state.gpon_states.filtered.length === 0 ?
+                                                    <DataNotFound colSpan={7} message="Not Found"/>
+                                                    :
+                                                    this.state.gpon_states.filtered.map((item,index)=>
+                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver} onConfig={this.toggleConfigure}/>
+                                                    )
                                                 :
-                                                this.state.gpon_states.filtered.map((item,index)=>
-                                                    <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver}/>
-                                                )
-                                            :
-                                            this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).length === 0 ?
-                                                <DataNotFound colSpan={7} message="Not Found"/>
-                                                :
-                                                this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).map((item,index)=>
-                                                    <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver}/>
-                                                )
-                                        }
-                                        </tbody>
-                                        <tfoot>
+                                                this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).length === 0 ?
+                                                    <DataNotFound colSpan={7} message="Not Found"/>
+                                                    :
+                                                    this.state.gpon_states.filtered.filter((f)=> f.phase_state === this.state.gpon_states.status).map((item,index)=>
+                                                        <TableContentGponState gpon_states={this.state.gpon_states} item={item} index={index} key={index} privilege={this.props.privilege} onCustomer={this.toggleCustomer} onUnlink={this.confirmUnlink} onUnconfigure={this.confirmUnconfigure} onReload={this.handleReloadCustomer} onPopover={this.handlePopOver} onConfig={this.toggleConfigure}/>
+                                                    )
+                                            }
+                                            </tbody>
+                                            <tfoot>
                                             <CustomerTableHeader/>
-                                        </tfoot>
-                                    </table>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    <TablePaging showDataPerPage={true}
+                                                 handelSelectDataPerPage={this.handleDataPerPage}
+                                                 data={this.state.gpon_states} handleChangePage={this.handleChangePage}/>
                                 </div>
-                                <TablePaging showDataPerPage={true}
-                                             handelSelectDataPerPage={this.handleDataPerPage}
-                                             data={this.state.gpon_states} handleChangePage={this.handleChangePage}/>
                             </div>
                         </div>
-                    </div>
+                    </React.Fragment>
                 }
             </React.StrictMode>
         )

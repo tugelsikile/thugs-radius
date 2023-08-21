@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Olt;
 
+use App\Helpers\OLT\ZTE\C320;
 use App\Helpers\SwitchDB;
 use App\Helpers\Telnet\Telnet;
 use App\Models\Olt\Olt;
@@ -12,6 +13,27 @@ use Illuminate\Support\Str;
 
 class TrafficProfileRepository
 {
+    /* @
+     * @param Request $request
+     * @return Collection
+     * @throws Exception
+     */
+    public function onuType(Request $request): Collection
+    {
+        try {
+            $response = collect();
+            $olt = Olt::where('id', $request[__('olt.form_input.id')])->first();
+            if ($olt != null) {
+                $responseTelnet = (new C320($olt))->showOnuType();
+                if ($responseTelnet != null) {
+                    $response = $responseTelnet;
+                }
+            }
+            return $response;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),500);
+        }
+    }
     /* @
      * @param Request $request
      * @return Collection

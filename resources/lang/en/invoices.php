@@ -149,6 +149,7 @@ return [
         'success' => 'Bill successfully deleted',
     ],
     'payments' => [
+        'online' => 'Online payment from :Customer',
         'success' => 'Bill payment successfully saved',
         'button' => 'Manual Payment',
         'add' => 'Add Payment',

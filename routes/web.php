@@ -96,6 +96,7 @@ Route::group(['prefix' => 'customer'], function () {
 });
 Route::get('/profile/{id}', function () {
     $user = User::where('id', request()->id)->first();
+    if ($user == null) abort(404);
     return view('auth.users.profile',['id' => request()->id, 'user' => $user]);
 });
 Route::group(['prefix' => 'payment-gateway'],function () {

@@ -51,8 +51,9 @@ class FormCashFlow extends React.Component {
                         form.category = nextProps.data.meta.category,
                         form.period = moment(nextProps.data.meta.period).toDate(),
                         form.description = nextProps.data.label,
-                        form.amount = nextProps.data.meta.amount,
-                        form.type = nextProps.data.meta.type;
+                        form.amount = nextProps.data.meta.amount.amount;
+                    let index = CashFlowType.findIndex((f)=> f.value === nextProps.data.meta.type);
+                    if (index >= 0) form.type = CashFlowType[index];
                 }
             }
         } else {

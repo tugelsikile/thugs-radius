@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import {ToastContainer} from "react-toastify";
 import {LoadCanvasTemplate, loadCaptchaEnginge, validateCaptcha} from "react-simple-captcha";
 import {showError, showSuccess} from "../../../Components/Toaster";
-import {loginSubmit, loginSubmitGoogle, registerGoogleSubmit} from "../../../Services/AuthService";
+import {loginSubmit, loginSubmitGoogle} from "../../../Services/AuthService";
 import {responseMessage, siteData} from "../../../Components/mixedConsts";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBarcode, faLock} from "@fortawesome/free-solid-svg-icons";
@@ -12,7 +12,7 @@ import FadeInOut from "../../../Components/FadeInOut";
 import HtmlParser from "react-html-parser";
 import {faGooglePlus} from "@fortawesome/free-brands-svg-icons";
 import {getRootUrl} from "../../../Components/Authentication";
-import {GoogleAuthProvider, signInWithPopup} from "firebase/auth";
+import {GoogleAuthProvider,signInWithPopup} from "firebase/auth";
 import {auth} from "../../../Components/Google/Firebase";
 
 // noinspection JSUnresolvedVariable,DuplicatedCode,CommaExpressionJS
@@ -199,7 +199,7 @@ class LoginPage extends React.Component {
                                     </div>
                                 </div>
                                 <div className="input-group mb-3">
-                                    <input tabIndex={2} onChange={this.handleChange} onBlur={this.validateCaptcha} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
+                                    <input tabIndex={2} onChange={this.handleChange} value={this.state.form.kode_keamanan} name="kode_keamanan" disabled={this.state.loading} type="text" className="form-control" placeholder={Lang.get('messages.users.labels.captcha')}/>
                                     <div className="input-group-append"><div className="input-group-text"><FontAwesomeIcon icon={faBarcode}/></div></div>
                                 </div>
                                 <div className="row">

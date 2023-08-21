@@ -10,7 +10,7 @@ import {HeaderAndSideBar} from "../../../../Components/Layout/Layout";
 import PageTitle from "../../../../Components/Layout/PageTitle";
 import MainFooter from "../../../../Components/Layout/MainFooter";
 import {PageCardSearch, PageCardTitle} from "../../../../Components/PageComponent";
-import {FilterPage, TableBody, TableHeader} from "./Mixed";
+import {FilterPage, PageFilterStatus, TableBody, TableHeader} from "./Mixed";
 import FormCashFlow from "./FormCashFlow";
 import {FormatPrice} from "../../Customer/Tools/Mixed";
 
@@ -92,12 +92,12 @@ class CashFlowPage extends React.Component {
     handleSelect(value, name) {
         let filter = this.state.filter;
         filter[name] = value;
-        this.setState({filter});
+        this.setState({filter},()=>this.handleFilter());
     }
     handlePeriod(value, name) {
         let filter = this.state.filter;
         filter.periods[name] = value;
-        this.setState({filter});
+        this.setState({filter},()=>this.loadCashFlow());
     }
     toggleModal(data = null) {
         let modal = this.state.modal;
@@ -328,6 +328,8 @@ class CashFlowPage extends React.Component {
                     <section className="content">
                         <div className="container-fluid">
 
+                            <PageFilterStatus onSelect={this.handleSelect} {...this.state}/>
+
                             <div id="main-page-card" className="card card-outline card-primary">
                                 {this.state.loadings.cash_flows && <CardPreloader/>}
                                 <div className="card-header pl-2" id="page-card-header">
@@ -346,7 +348,7 @@ class CashFlowPage extends React.Component {
                                             <TableHeader type="header" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
                                         </thead>
                                         <tbody>
-                                        <TableBody {...this.state} onCheck={this.handleCheck}/>
+                                            <TableBody onEdit={this.toggleModal} onDelete={this.confirmDelete} {...this.state} onCheck={this.handleCheck}/>
                                         </tbody>
                                         <tfoot>
                                             <TableHeader type="header" {...this.state} onSort={this.handleSort} onCheck={this.handleCheck}/>
@@ -354,10 +356,11 @@ class CashFlowPage extends React.Component {
                                                 <th className="align-middle text-xs text-right" colSpan={6}>{Lang.get('labels.total',{Attribute:''})}</th>
                                                 <th className="align-middle text-xs">{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0))}</th>
                                                 <th className="align-middle text-xs pr-2">{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
+                                                <th/>
                                             </tr>
                                             <tr>
                                                 <th className="align-middle text-lg text-right" colSpan={6}>Grand Total</th>
-                                                <th className={this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0) < 0 ? "align-middle text-lg pr-2 text-danger" : "align-middle text-lg pr-2 text-success"} colSpan={7}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
+                                                <th className={this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0) < 0 ? "align-middle text-lg pr-2 text-danger" : "align-middle text-lg pr-2 text-success"} colSpan={2}>{FormatPrice(this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.debit,0) - this.state.cash_flows.unfiltered.reduce((a,b)=> a + b.meta.amount.credit,0))}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

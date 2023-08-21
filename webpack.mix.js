@@ -37,8 +37,9 @@ mix.js('resources/js/src/errors/under-maintenance.js','public/js/errors');
 */
 
 /******* AUTH ***********/
-/*
+
 mix.js('resources/js/src/auth/login.js','public/js');
+/*
 mix.js('resources/js/src/auth/index.js','public/js/auth');
 mix.js('resources/js/src/auth/users/index.js','public/js/auth/users');
 mix.js('resources/js/src/auth/users/privileges.js','public/js/auth/users');
@@ -69,10 +70,8 @@ mix.js('resources/js/src/clients/customers/hotspot.js','public/js/clients/custom
 mix.js('resources/js/src/clients/customers/invoices.js','public/js/clients/customers');
 mix.js('resources/js/src/clients/users/index.js','public/js/clients/users');
 mix.js('resources/js/src/clients/users/privileges.js','public/js/clients/users');
-*/
 mix.js('resources/js/src/clients/accounting/index.js','public/js/clients/accounting');
 mix.js('resources/js/src/clients/accounting/cash-flow.js', 'public/js/clients/accounting');
-/*
 mix.js('resources/js/src/clients/accounting/petty-cash.js','public/js/clients/accounting');
 mix.js('resources/js/src/clients/configs/index.js','public/js/clients/configs');
 mix.js('resources/js/src/clients/configs/payment-gateways.js','public/js/clients/configs');

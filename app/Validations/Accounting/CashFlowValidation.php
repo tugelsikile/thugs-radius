@@ -107,6 +107,26 @@ class CashFlowValidation
             throw new Exception($exception->getMessage(),400);
         }
     }
+    public function update(Request $request): Request
+    {
+        try {
+            new SwitchDB();
+            $valid = Validator::make($request->all(), [
+                __('cash_flow.form_input.id') => 'required|exists:cash_flows,id',
+                __('cash_flow.form_input.code') => 'nullable',
+                __('cash_flow.form_input.type') => 'required|string',
+                __('cash_flow.form_input.account.label') => 'required|exists:accounts,id',
+                __('cash_flow.form_input.category.label') => 'required|exists:categories,id',
+                __('cash_flow.form_input.periods.label') => 'required|dateFormat:Y-m-d',
+                __('cash_flow.form_input.description') => 'required|string|min:1',
+                __('cash_flow.form_input.amount') => 'required|numeric|min:0',
+            ]);
+            if ($valid->fails()) throw new Exception(collect($valid->errors()->all())->join("\n"),400);
+            return $request;
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage(),400);
+        }
+    }
 
     /* @
      * @param Request $request

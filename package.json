@@ -38,7 +38,7 @@
         "chart.js": "^4.3.0",
         "ckeditor-youtube-plugin": "^2.1.19",
         "ckeditor4-react": "^4.1.2",
-        "crypto-js": "^4.1.1",
+        "crypto-js": "^4.2.0",
         "date-fns": "^2.30.0",
         "duitku": "^0.0.7",
         "firebase": "^8.6.8",
